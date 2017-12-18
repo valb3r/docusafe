@@ -52,6 +52,8 @@ For the java implementation version, we can use the java key store format to sto
 - the storepass is also carries the name user-id
 - the keypass is a secret stored by the identity provider and only accessible when the user is logged in
 
+A sample implementation of the object encryption can be found in module encobject of the project: https://github.com/adorsys/cryptoutils
+
 # Functions
 
 DECRYPTION
