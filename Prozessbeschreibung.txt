@@ -60,14 +60,36 @@ Process:	Anhand des Tupels (UserID -> PrivateKeyGuard) wird der PrivateKeyGuard
 			
 Persistente Relationen:
 =======================
+SMine Verchlüsselung
+ oder 
+JWE oder CMS
+JWS 
+
 IDP Server:
 	(Username -> UserID, PasswordHash)
 ResourceServer:
 	(UserID -> PublicKey)
-	(UserID, DocumentID -> DocumentGuard)
+	(UserID, DocumentID -> DocumentGuard)  Jedes verschlüsselte Document hat im Header eine DocKeyID
 	(DocumentID -> encryptedDocument)
 	(UserID -> PrivateKeyGuard)
 	
+Header des DocumentGuard enthält eine UserKeyID (entweder ist das der UserPublicKeyID oder UserSecretKeyID) -> durch einen Store -> UserPrivateKey
+
+Jeder User hat genau einen Store
+StoreName = <UserID>_KeyStore
+Store hat KeyID -> Private/Public Pair
+		-> SecretKey
+	PublicKeys sind frei
+	Private und SecretKeys sind geschützt
+Der Schlüssel des KeyStores ist des UserDataKey, dieser kommt verschlüsselt aus dem JWT
+ 
+DocumentGuard Name = <DocKeyID><UserID><UserPublicKeyID>
+DocumentGuard Name = <DocKeyID><UserID> 
+--> UserID, DocumentId - System sucht Document -> Header -> DocKeyID -> + UserId -> Guard -> UserPublicKeyID -> UserPrivateKeyID -> UserPrivateKey
+
+
+Guard -> <userid>
+
 	
 Verstärkte Sicherheit
 ======================
