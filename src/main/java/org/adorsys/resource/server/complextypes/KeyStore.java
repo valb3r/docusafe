@@ -1,6 +1,6 @@
 package org.adorsys.resource.server.complextypes;
 
-import org.adorsys.resource.server.basetypes.KeyID;
+import org.adorsys.resource.server.basetypes.DocKeyID;
 import org.adorsys.resource.server.basetypes.KeyStoreName;
 import org.adorsys.resource.server.basetypes.UserID;
 import org.adorsys.resource.server.basetypes.UserKey;
@@ -26,9 +26,9 @@ public class KeyStore {
     KeyStoreName keyStoreName;
 
 
-    Map<KeyID, UserKey> privateKeyMap = new HashMap<>();
-    Map<KeyID, UserPublicKey> publicKeyMap = new HashMap<>();
-    Map<KeyID, UserSecretKey> secretKeyKeyMapKeyMap = new HashMap<>();
+    Map<DocKeyID, UserKey> privateKeyMap = new HashMap<>();
+    Map<DocKeyID, UserPublicKey> publicKeyMap = new HashMap<>();
+    Map<DocKeyID, UserSecretKey> secretKeyKeyMapKeyMap = new HashMap<>();
 
 
 }

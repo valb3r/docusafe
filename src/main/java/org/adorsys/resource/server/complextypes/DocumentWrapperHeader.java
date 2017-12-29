@@ -1,12 +1,12 @@
 package org.adorsys.resource.server.complextypes;
 
 import org.adorsys.resource.server.basetypes.DocumentID;
-import org.adorsys.resource.server.basetypes.KeyID;
+import org.adorsys.resource.server.basetypes.DocKeyID;
 
 /**
  * Created by peter on 23.12.17 at 17:24.
  */
-public class DocumentHeader {
+public class DocumentWrapperHeader {
     DocumentID documentID;
-    KeyID keyID;
+    DocKeyID docKeyID;
 }

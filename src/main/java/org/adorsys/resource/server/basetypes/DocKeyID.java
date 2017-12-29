@@ -10,10 +10,10 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 @XmlJavaTypeAdapter(KeyIDRestAdapter.class)
 @XmlType
-public class KeyID extends BaseTypeString {
-    public KeyID() {}
+public class DocKeyID extends BaseTypeString {
+    public DocKeyID() {}
 
-    public KeyID(String value) {
+    public DocKeyID(String value) {
         super(value);
     }
 }

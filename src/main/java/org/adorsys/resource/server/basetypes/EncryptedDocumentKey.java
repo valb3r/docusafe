@@ -10,10 +10,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 @XmlJavaTypeAdapter(EncryptedKeyRestAdapter.class)
 @XmlType
-public class EncryptedKey extends BaseTypeByteArray {
-    public EncryptedKey() {}
-
-    public EncryptedKey(byte[] value) {
+public class EncryptedDocumentKey extends BaseTypeByteArray {
+    public EncryptedDocumentKey() {}
+    public EncryptedDocumentKey(byte[] value) {
         super(value);
     }
 }
