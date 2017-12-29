@@ -1,11 +1,7 @@
 package org.adorsys.resource.server.complextypes;
 
-import org.adorsys.resource.server.basetypes.DocKeyID;
-import org.adorsys.resource.server.basetypes.KeyStoreName;
-import org.adorsys.resource.server.basetypes.UserID;
-import org.adorsys.resource.server.basetypes.UserKey;
-import org.adorsys.resource.server.basetypes.UserPublicKey;
-import org.adorsys.resource.server.basetypes.UserSecretKey;
+import org.adorsys.resource.server.basetypes.*;
+import org.adorsys.resource.server.basetypes.DocumnentKeyID;
 import org.adorsys.resource.server.exceptions.ServiceException;
 
 import java.util.HashMap;
@@ -26,9 +22,9 @@ public class KeyStore {
     KeyStoreName keyStoreName;
 
 
-    Map<DocKeyID, UserKey> privateKeyMap = new HashMap<>();
-    Map<DocKeyID, UserPublicKey> publicKeyMap = new HashMap<>();
-    Map<DocKeyID, UserSecretKey> secretKeyKeyMapKeyMap = new HashMap<>();
+    Map<DocumnentKeyID, UserKey> privateKeyMap = new HashMap<>();
+    Map<DocumnentKeyID, UserPublicKey> publicKeyMap = new HashMap<>();
+    Map<DocumnentKeyID, UserSecretKey> secretKeyKeyMapKeyMap = new HashMap<>();
 
 
 }

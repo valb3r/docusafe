@@ -22,7 +22,7 @@ import org.adorsys.jkeygen.keystore.KeyStoreService;
 import org.adorsys.jkeygen.keystore.KeystoreBuilder;
 import org.adorsys.jkeygen.keystore.PasswordCallbackUtils;
 import org.adorsys.jkeygen.keystore.SecretKeyData;
-import org.adorsys.resource.server.basetypes.DocKeyID;
+import org.adorsys.resource.server.basetypes.DocumnentKeyID;
 
 /**
  * Keystore utilities.
@@ -43,8 +43,8 @@ public class KeystoreAdapter {
 	 * @throws CertificateException
 	 * @throws IOException
 	 */
-	public static KeyStore wrapSecretKEy2KeyStore(SecretKey secretKey, DocKeyID docKeyID, CallbackHandler keyPassHandler) throws NoSuchAlgorithmException, CertificateException, IOException {
-		SecretKeyData secretKeyData = new SecretKeyData(secretKey, docKeyID.getValue(), keyPassHandler);
+	public static KeyStore wrapSecretKEy2KeyStore(SecretKey secretKey, DocumnentKeyID documnentKeyID, CallbackHandler keyPassHandler) throws NoSuchAlgorithmException, CertificateException, IOException {
+		SecretKeyData secretKeyData = new SecretKeyData(secretKey, documnentKeyID.getValue(), keyPassHandler);
 		return new KeystoreBuilder().withKeyEntry(secretKeyData).build();
 	}
 	

@@ -141,4 +141,4 @@ echo "$classtext"     | sed s/CLASSNAME/$classname/g | sed s/BASETYPE/$type/g | 
 
 echo "$adaptertext"   | sed s/CLASSNAME/$classname/g | sed s/BASETYPE/$type/g | sed s/BASETYP2/$type2/g | sed s/COPYDATE/"$timestamp"/g > src/main/java/$ADAPTER_DIR/${classname}RestAdapter.java
 
-echo "$convertertext" | sed s/CLASSNAME/$classname/g | sed s/BASETYPE/$type/g | sed s/BASETYP2/$type2/g | sed s/COPYDATE/"$timestamp"/g > src/main/java/$CONVERTER_DIR/${classname}DBConverter.java
+# echo "$convertertext" | sed s/CLASSNAME/$classname/g | sed s/BASETYPE/$type/g | sed s/BASETYP2/$type2/g | sed s/COPYDATE/"$timestamp"/g > src/main/java/$CONVERTER_DIR/${classname}DBConverter.java

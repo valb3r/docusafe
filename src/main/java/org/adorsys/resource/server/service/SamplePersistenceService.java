@@ -29,6 +29,7 @@ import org.adorsys.jjwk.selector.UnsupportedEncAlgorithmException;
 import org.adorsys.jjwk.selector.UnsupportedKeyLengthException;
 import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
 import org.adorsys.resource.server.basetypes.*;
+import org.adorsys.resource.server.complextypes.DocumentGuard;
 import org.adorsys.resource.server.utils.KeystoreAdapter;
 import org.apache.commons.lang3.RandomStringUtils;
 
@@ -90,8 +91,8 @@ public class SamplePersistenceService {
 
         // Put SecretKey into a keystore so we can use existing ObjectPersistence API
         CallbackHandler randomHandler = new PasswordCallbackHandler(RandomStringUtils.randomAlphanumeric(16).toCharArray());
-        DocKeyID docKeyID = parseDocKeyID(documentGuardName);
-        KeyStore docKeyStore = KeystoreAdapter.wrapSecretKEy2KeyStore(secretKey, docKeyID, keyPassHandler);
+        DocumnentKeyID documnentKeyID = parseDocKeyID(documentGuardName);
+        KeyStore docKeyStore = KeystoreAdapter.wrapSecretKEy2KeyStore(secretKey, documnentKeyID, keyPassHandler);
 
         // Create object handle
         ObjectHandle docHandle = new ObjectHandle(bucketName.getValue(), documentID.getValue());
@@ -99,12 +100,14 @@ public class SamplePersistenceService {
         // Store object.
         ContentMetaInfo metaIno = null;
         EncryptionParams encParams = null;
-        objectPersistence.storeObject(documentContent.getValue(), metaIno, docHandle, docKeyStore, docKeyID.getValue(), randomHandler, encParams);
+        objectPersistence.storeObject(documentContent.getValue(), metaIno, docHandle, docKeyStore, documnentKeyID.getValue(), randomHandler, encParams);
     }
 
     /*
      * Loading the secret key from the guard.
      */
+    // PeterFrage: Wirklich den SecretKey des Benutzers. Oder den DocumentKey des Documents?
+    // Denn im Guard steckt nur die GuardKeyID -> mit der man im KeyStore dann einen Key bekommt.
     private SecretKey loadSecretKeyFromGuard(UserID userID, BucketName bucketName, DocumentGuardName docuGuardName, CallbackHandler userKeystoreHandler,
                                              CallbackHandler userKeyPassHandler) throws ObjectNotFoundException, CertificateException, WrongKeystoreCredentialException, MissingKeystoreAlgorithmException, MissingKeystoreProviderException, MissingKeyAlgorithmException, IOException, UnknownContainerException, WrongKeyCredentialException {
 
@@ -122,15 +125,20 @@ public class SamplePersistenceService {
 
         // load guard file
         ObjectHandle guardHandle = new ObjectHandle(bucketName.getValue(), docuGuardName.getValue());
-        byte[] guardObject = objectPersistence.loadObject(guardHandle, userKeystore, userKeyPassHandler);
+        // PeterFrage: Hier doch lieber den Typen, statt Bytes
+        DocumentGuard guardObject = new DocumentGuard(objectPersistence.loadObject(guardHandle, userKeystore, userKeyPassHandler));
 
-        return deserializeSecretKey(guardObject);
+        // PeterFrage: im DocumentGuard ist kein SecretKey, sondern der DocumentKey. Im DocumentGuard steckt aber
+        // die DocumnentKeyID, die wiederum zu einem Key im KeyStore führt. Das kann aber sowohl ein PrivateKey, als auch ein
+        // SecretKey sein. Ich übergebe so oder so auch den KeyStore mit.
+        // Ausserdem müsste es getDocumentKey oder getSecretKey heissen. Woher das deserialize?
+        return deserializeSecretKey(guardObject, userKeystore);
     }
 
     /*
      * Parses the DokKeyID from the docuGuardName
      */
-    private DocKeyID parseDocKeyID(DocumentGuardName docuGuardName) {
+    private DocumnentKeyID parseDocKeyID(DocumentGuardName docuGuardName) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -144,14 +152,20 @@ public class SamplePersistenceService {
     /*
      * Deserializes the secret key. In order not to define a proper format, we reuse the keystore format system.
      */
-    private SecretKey deserializeSecretKey(byte[] guardObject)
+    private SecretKey deserializeSecretKey(DocumentGuard guardObject, KeyStore keyStore)
+    // PeterFrage: Große Frage: Was soll hier gemacht werden:
+    // Soll der
+    // a) GuardKey zurückgegeben werden (aus dem KeyStore) oder der
+    // b) DocumenetKey (für den man zuvor den GuardKey benötigt hat)
     // TODO move this to a strategy class
             throws CertificateException, WrongKeystoreCredentialException, MissingKeystoreAlgorithmException,
             MissingKeystoreProviderException, MissingKeyAlgorithmException, IOException, WrongKeyCredentialException {
         // TODO use NullCallback instead.
         CallbackHandler nullCallbankHandler = null;
         String docKeyAlias = "docuSecretKey";
-        KeyStore secretKeystore = KeystoreAdapter.fromBytes(guardObject, docKeyAlias, nullCallbankHandler);
+        // Den KeyStore hast Du doch oben schon gelesen. Die bytes, die in guardObject stecken, sind die Bytes
+        // des DocumentGuard.
+        KeyStore secretKeystore = KeystoreAdapter.fromBytes(guardObject.getBytes(), docKeyAlias, nullCallbankHandler);
 
         return (SecretKey) KeystoreAdapter.readKey(secretKeystore, docKeyAlias, nullCallbankHandler);
     }
