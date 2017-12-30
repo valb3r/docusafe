@@ -43,8 +43,8 @@ public class KeystoreAdapter {
 	 * @throws CertificateException
 	 * @throws IOException
 	 */
-	public static KeyStore wrapSecretKEy2KeyStore(SecretKey secretKey, DocumnentKeyID documnentKeyID, CallbackHandler keyPassHandler) throws NoSuchAlgorithmException, CertificateException, IOException {
-		SecretKeyData secretKeyData = new SecretKeyData(secretKey, documnentKeyID.getValue(), keyPassHandler);
+	public static KeyStore wrapSecretKey2KeyStore(SecretKey secretKey, String alias, CallbackHandler keyPassHandler) throws NoSuchAlgorithmException, CertificateException, IOException {
+		SecretKeyData secretKeyData = new SecretKeyData(secretKey, alias, keyPassHandler);
 		return new KeystoreBuilder().withKeyEntry(secretKeyData).build();
 	}
 	
@@ -62,7 +62,7 @@ public class KeystoreAdapter {
 	 * @throws MissingKeyAlgorithmException
 	 * @throws IOException
 	 */
-	public static KeyStore fromBytes(byte[] keyStoreBytes, String storeid, CallbackHandler keystoreHandler) throws CertificateException, WrongKeystoreCredentialException, MissingKeystoreAlgorithmException, MissingKeystoreProviderException, MissingKeyAlgorithmException, IOException{
+	public static KeyStore loadKeystoreFromBytes(byte[] keyStoreBytes, String storeid, CallbackHandler keystoreHandler) throws CertificateException, WrongKeystoreCredentialException, MissingKeystoreAlgorithmException, MissingKeystoreProviderException, MissingKeyAlgorithmException, IOException{
 		KeystoreData keystoreData = loadKeystoreData(keyStoreBytes);
 		return initKeystore(keystoreData, storeid, keystoreHandler);
 	}
@@ -71,7 +71,7 @@ public class KeystoreAdapter {
 	 * Retrieves the key with the given keyID from the keystore. The key password will be retrieved by
 	 * calling the keyPassHandler passing the keyId.
 	 */
-	public static Key readKey(KeyStore keyStore, String keyID, CallbackHandler keyPassHandler) throws WrongKeyCredentialException {
+	public static Key readKeyFromKeystore(KeyStore keyStore, String keyID, CallbackHandler keyPassHandler) throws WrongKeyCredentialException {
 		try {
 			return keyStore.getKey(keyID, PasswordCallbackUtils.getPassword(keyPassHandler, keyID));
 		} catch (UnrecoverableKeyException e) {
@@ -110,5 +110,9 @@ public class KeystoreAdapter {
 		} catch (NoSuchAlgorithmException e) {
 			throw new MissingKeyAlgorithmException(e.getMessage(), e);
 		}
+	}
+
+	public static byte[] toBytes(KeyStore keystore, String storeid, String type, CallbackHandler storePassSrc) throws NoSuchAlgorithmException, CertificateException, IOException {
+		return KeyStoreService.toByteArray(keystore, storeid, storePassSrc);
 	}	
 }

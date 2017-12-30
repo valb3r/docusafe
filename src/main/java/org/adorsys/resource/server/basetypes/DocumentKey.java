@@ -1,19 +1,26 @@
 package org.adorsys.resource.server.basetypes;
 
-import org.adorsys.resource.server.basetypes.adapter.DocumentKeyRestAdapter;
-
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.crypto.SecretKey;
 
 /**
  * Created by peter on 29.12.2017 at 13:55:33.
+ * 
+ * @fpo: we do not need to serialize this class.
  */
-@XmlJavaTypeAdapter(DocumentKeyRestAdapter.class)
-@XmlType
-public class DocumentKey extends BaseTypeByteArray {
-    public DocumentKey() {}
+public class DocumentKey {
+	
+	SecretKey secretKey;
+    
+	public DocumentKey() {}
 
-    public DocumentKey(byte[] value) {
-        super(value);
-    }
+	public DocumentKey(SecretKey secretKey) {
+		super();
+		this.secretKey = secretKey;
+	}
+
+	public SecretKey getSecretKey() {
+		return secretKey;
+	}
+
+	
 }

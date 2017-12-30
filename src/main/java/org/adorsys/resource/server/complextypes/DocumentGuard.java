@@ -1,42 +1,29 @@
 package org.adorsys.resource.server.complextypes;
 
 import org.adorsys.resource.server.basetypes.DocumentGuardName;
-import org.adorsys.resource.server.basetypes.DocumnentKeyID;
-import org.adorsys.resource.server.basetypes.EncryptedDocumentKey;
-import org.adorsys.resource.server.basetypes.GuardKeyID;
+import org.adorsys.resource.server.basetypes.DocumentKey;
 
 /**
  * Created by peter on 23.12.17 at 18:33.
+ * 
+ * THe technical JWE-Implementation happens at the storage layer.
  */
 public class DocumentGuard {
     DocumentGuardName documentGuardName;
-    DocumnentKeyID documnentKeyID;
-    GuardKeyID guardKeyID;
-    EncryptedDocumentKey encryptedDocumentKey;
+    DocumentKey documentKey;
 
-    private byte[] bytes;
-    public DocumentGuard(byte[] content) {
-        bytes = content;
-        // read bytes to get not encrypted Header and the EncryptedDocumentKey
-    }
+    public DocumentGuard(DocumentGuardName documentGuardName, DocumentKey documentKey) {
+		super();
+		this.documentGuardName = documentGuardName;
+		this.documentKey = documentKey;
+	}
 
-    public DocumentGuardName getDocumentGuardName() {
+	public DocumentGuardName getDocumentGuardName() {
         return documentGuardName;
     }
 
-    public DocumnentKeyID getDocumnentKeyID() {
-        return documnentKeyID;
-    }
-
-    public EncryptedDocumentKey getEncryptedDocumentKey() {
-        return encryptedDocumentKey;
-    }
-
-    public GuardKeyID getGuardKeyID() {
-        return guardKeyID;
-    }
-
-    public byte[] getBytes() {
-        return bytes;
-    }
+	public DocumentKey getDocumentKey() {
+		return documentKey;
+	}
+    
 }
