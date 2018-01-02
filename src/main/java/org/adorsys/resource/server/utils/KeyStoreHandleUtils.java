@@ -9,7 +9,7 @@ public class KeyStoreHandleUtils {
     private static KeyStoreName userKeystoreNameFromUserId(UserID userID) {
         // keystore name is user id + keystore
         // TODO : we have a similar idea in the class: org.adorsys.encobject.userdata.UserDataNamingPolicy
-        return new KeyStoreName(userID.getValue() + "_Keystore");
+        return new KeyStoreName(userID.getValue() + ".keystore");
     }
     
     public static ObjectHandle userkeyStoreHandle(BucketName bucketName, UserID userID){

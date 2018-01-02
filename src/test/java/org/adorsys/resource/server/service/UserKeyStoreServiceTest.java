@@ -42,7 +42,7 @@ public class UserKeyStoreServiceTest {
 
     }
 
-    @AfterClass
+    // @AfterClass
     public static void afterClass(){
         try {
             if(containerPersistence!=null && containerPersistence.containerExists(container))
@@ -52,7 +52,7 @@ public class UserKeyStoreServiceTest {
         }
     }
 
-    @Test
+    // @Test
     public void testStoreKeystore() throws NoSuchAlgorithmException, CertificateException, UnknownContainerException {
         String storeid = "AnysampleKeyStorePersistence";
         char[] storePass = "AnyaSimplePass".toCharArray();
@@ -81,5 +81,6 @@ public class UserKeyStoreServiceTest {
         CallbackHandler keyPassHanlder = new PasswordCallbackHandler(keypasswordstring.toCharArray());
         BucketName bucketName = new BucketName(bucketnamestring);
         userKeyStoreService.createUserKeyStore(userID, userKeyStoreHandler, keyPassHanlder, bucketName);
+        Assert.assertTrue(TestFsBlobStoreFactory.existsOnFs(container, useridstring + ".keystore"));
     }
 }
