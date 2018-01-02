@@ -53,17 +53,7 @@ public class UserKeyStoreServiceTest {
     }
 
     @Test
-    public void testStoreKeystore() throws NoSuchAlgorithmException, CertificateException, UnknownContainerException {
-        String storeid = "AnysampleKeyStorePersistence";
-        char[] storePass = "AnyaSimplePass".toCharArray();
-        KeyStore keystore = TestKeyUtils.testSecretKeystore(storeid, storePass, "mainKey", "aSimpleSecretPass".toCharArray());
-        Assume.assumeNotNull(keystore);
-        keystorePersistence.saveKeyStore(keystore, TestKeyUtils.callbackHandlerBuilder(storeid, storePass).build(), new ObjectHandle(container, storeid));
-        Assert.assertTrue(TestFsBlobStoreFactory.existsOnFs(container, storeid));
-    }
-
-    @Test
-    public void test1() throws CertificateException, NoSuchAlgorithmException, UnknownContainerException, MissingKeystoreProviderException, MissingKeyAlgorithmException, WrongKeystoreCredentialException, MissingKeystoreAlgorithmException, KeystoreNotFoundException, IOException, KeyStoreException, UnrecoverableKeyException {
+    public void testCreateUserKeyStore() throws CertificateException, NoSuchAlgorithmException, UnknownContainerException, MissingKeystoreProviderException, MissingKeyAlgorithmException, WrongKeystoreCredentialException, MissingKeystoreAlgorithmException, KeystoreNotFoundException, IOException, KeyStoreException, UnrecoverableKeyException {
         String keypasswordstring = "KeyPassword";
         String useridstring = "UserPeter";
         String bucketnamestring = container;
