@@ -16,8 +16,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlJavaTypeAdapter(DocumentGuardNameRestAdapter.class)
 @XmlType
 public class DocumentGuardName extends BaseTypeString {
+	private static final long serialVersionUID = -3042461057378981231L;
+
 	DocumnentKeyID documnentKeyID;
-	GuardKeyID guardKeyID;
 	UserID userId;
 
 	public DocumentGuardName() {}
@@ -28,10 +29,9 @@ public class DocumentGuardName extends BaseTypeString {
 		fromString(value);
 	}
 
-	public DocumentGuardName(UserID userId, GuardKeyID guardKeyID, DocumnentKeyID documnentKeyID) {
-		super(toGuradName(userId, guardKeyID, documnentKeyID));
+	public DocumentGuardName(UserID userId, DocumnentKeyID documnentKeyID) {
+		super(toGuradName(userId, documnentKeyID));
 		this.documnentKeyID = documnentKeyID;
-		this.guardKeyID = guardKeyID;
 		this.userId = userId;
 	}
 
@@ -39,20 +39,16 @@ public class DocumentGuardName extends BaseTypeString {
 		return documnentKeyID;
 	}
 
-	public GuardKeyID getGuardKeyID() {
-		return guardKeyID;
-	}
-
 	public UserID getUserId() {
 		return userId;
 	}
 	
-	private static String toGuradName(UserID userId, GuardKeyID guardKeyID, DocumnentKeyID documnentKeyID){
-		return userId.getValue() + "." + guardKeyID.getValue() + "." + documnentKeyID.getValue();
+	private static String toGuradName(UserID userId, DocumnentKeyID documnentKeyID){
+		return userId.getValue() + "." + documnentKeyID.getValue();
 	}
 	
 	private static DocumentGuardName fromString(String value){
     	String[] split = value.split(".");
-    	return new DocumentGuardName(new UserID(split[0]), new GuardKeyID(split[1]), new DocumnentKeyID(split[2]));
+    	return new DocumentGuardName(new UserID(split[0]), new DocumnentKeyID(split[2]));
 	}
 }

@@ -3,13 +3,31 @@ package org.adorsys.resource.server.persistence;
 import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.domain.ObjectHandle;
 
+/**
+ * Describes the structure of a persisten object.
+ * 
+ * @author fpo
+ *
+ */
 public class PersistentObjectWrapper {
+	/*
+	 * This is the decrypted payload. This will be :
+	 */
 	private byte[] data;
+	
+	/*
+	 * Meta Info, will be stored unencrypted but tamper resistent in the header of the encrypted object. 
+	 */
 	private ContentMetaInfo metaIno;
-	private String keyID;
+	
+	/*
+	 * Representation of a symmetric DocumentKeyId.
+	 */
+	private KeyID keyID;
+	
 	private ObjectHandle handle;
 
-	public PersistentObjectWrapper(byte[] data, ContentMetaInfo metaIno, String keyID, ObjectHandle handle) {
+	public PersistentObjectWrapper(byte[] data, ContentMetaInfo metaIno, KeyID keyID, ObjectHandle handle) {
 		super();
 		this.data = data;
 		this.metaIno = metaIno;
@@ -26,9 +44,6 @@ public class PersistentObjectWrapper {
 	public ContentMetaInfo getMetaIno() {
 		return metaIno;
 	}
-	public String getKeyID() {
-		return keyID;
-	}
 
 	public void setData(byte[] data) {
 		this.data = data;
@@ -38,12 +53,16 @@ public class PersistentObjectWrapper {
 		this.metaIno = metaIno;
 	}
 
-	public void setKeyID(String keyID) {
-		this.keyID = keyID;
-	}
-
 	public void setHandle(ObjectHandle handle) {
 		this.handle = handle;
+	}
+
+	public KeyID getKeyID() {
+		return keyID;
+	}
+
+	public void setKeyID(KeyID keyID) {
+		this.keyID = keyID;
 	}
 	
 }
