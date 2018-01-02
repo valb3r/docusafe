@@ -1,5 +1,6 @@
 package org.adorsys.resource.server.service;
 
+import java.io.IOException;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -7,8 +8,7 @@ import java.security.cert.CertificateException;
 import javax.security.auth.callback.CallbackHandler;
 
 import org.adorsys.encobject.domain.ObjectHandle;
-import org.adorsys.encobject.service.KeystorePersistence;
-import org.adorsys.encobject.service.UnknownContainerException;
+import org.adorsys.encobject.service.*;
 import org.adorsys.jkeygen.keystore.PasswordCallbackUtils;
 import org.adorsys.resource.server.basetypes.BucketName;
 import org.adorsys.resource.server.basetypes.UserID;
@@ -29,8 +29,8 @@ public class UserKeyStoreService {
 		secretKeyGenerator = new SecretKeyGenerator("AES", 256);
 	}
 
-	public void createUserKeyStore(UserID userId, CallbackHandler userKeystoreHandler, CallbackHandler keyPassHandler,
-			BucketName bucketName) throws NoSuchAlgorithmException, CertificateException, UnknownContainerException {
+	public KeyStore createUserKeyStore(UserID userId, CallbackHandler userKeystoreHandler, CallbackHandler keyPassHandler,
+			BucketName bucketName) throws NoSuchAlgorithmException, CertificateException, UnknownContainerException, MissingKeystoreProviderException, MissingKeyAlgorithmException, WrongKeystoreCredentialException, IOException, KeystoreNotFoundException, MissingKeystoreAlgorithmException {
 		String keyStoreType = null;
 		String serverKeyPairAliasPrefix = userId.getValue();
 		Integer numberOfSignKeyPairs = 5;
@@ -46,5 +46,6 @@ public class UserKeyStoreService {
 		KeyStore userKeyStore = keyStoreGenerator.generate();
 		ObjectHandle keystoreHandle = KeyStoreHandleUtils.userkeyStoreHandle(bucketName, userId);
 		keystorePersistence.saveKeyStore(userKeyStore, userKeystoreHandler, keystoreHandle);
+		return keystorePersistence.loadKeystore(keystoreHandle, userKeystoreHandler);
 	}
 }
