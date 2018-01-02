@@ -71,6 +71,15 @@ public class DocumentPersistenceService {
     	}
     }
     
+    /**
+     * 
+     * @param userID
+     * @param userKeystoreHandler
+     * @param keyPassHandler
+     * @param bucketName
+     * @param documentID
+     * @return
+     */
     public PersistentObjectWrapper loadDocument(
     		UserID userID,
 			CallbackHandler userKeystoreHandler,
