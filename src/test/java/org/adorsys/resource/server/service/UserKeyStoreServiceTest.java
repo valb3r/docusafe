@@ -1,20 +1,37 @@
 package org.adorsys.resource.server.service;
 
-import org.adorsys.encobject.domain.ObjectHandle;
-import org.adorsys.encobject.service.*;
+import org.adorsys.encobject.service.BlobStoreConnection;
+import org.adorsys.encobject.service.BlobStoreContextFactory;
+import org.adorsys.encobject.service.BlobStoreKeystorePersistence;
+import org.adorsys.encobject.service.ContainerExistsException;
+import org.adorsys.encobject.service.ContainerPersistence;
+import org.adorsys.encobject.service.KeystoreNotFoundException;
+import org.adorsys.encobject.service.KeystorePersistence;
+import org.adorsys.encobject.service.MissingKeyAlgorithmException;
+import org.adorsys.encobject.service.MissingKeystoreAlgorithmException;
+import org.adorsys.encobject.service.MissingKeystoreProviderException;
+import org.adorsys.encobject.service.UnknownContainerException;
+import org.adorsys.encobject.service.WrongKeystoreCredentialException;
 import org.adorsys.encobject.utils.ShowKeyStore;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
 import org.adorsys.encobject.utils.TestKeyUtils;
 import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
 import org.adorsys.resource.server.basetypes.BucketName;
 import org.adorsys.resource.server.basetypes.UserID;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import java.io.IOException;
-import java.security.*;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
 /**
@@ -52,6 +69,7 @@ public class UserKeyStoreServiceTest {
         }
     }
 
+    // TODO, warum kann hier ein hohler userKeyStoreHandler übergeben werden??
     @Test
     public void testCreateUserKeyStore() throws CertificateException, NoSuchAlgorithmException, UnknownContainerException, MissingKeystoreProviderException, MissingKeyAlgorithmException, WrongKeystoreCredentialException, MissingKeystoreAlgorithmException, KeystoreNotFoundException, IOException, KeyStoreException, UnrecoverableKeyException {
         String keypasswordstring = "KeyPassword";

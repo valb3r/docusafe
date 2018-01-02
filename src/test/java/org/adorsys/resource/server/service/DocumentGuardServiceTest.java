@@ -1,7 +1,12 @@
 package org.adorsys.resource.server.service;
 
-import de.adorsys.resource.server.keyservice.SecretKeyGenerator;
-import org.adorsys.encobject.service.*;
+import org.adorsys.encobject.service.BlobStoreConnection;
+import org.adorsys.encobject.service.BlobStoreContextFactory;
+import org.adorsys.encobject.service.BlobStoreKeystorePersistence;
+import org.adorsys.encobject.service.ContainerExistsException;
+import org.adorsys.encobject.service.ContainerPersistence;
+import org.adorsys.encobject.service.KeystorePersistence;
+import org.adorsys.encobject.service.UnknownContainerException;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
 import org.adorsys.encobject.utils.TestKeyUtils;
 import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
@@ -10,12 +15,12 @@ import org.adorsys.resource.server.basetypes.DocumentGuardName;
 import org.adorsys.resource.server.basetypes.UserID;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import java.io.IOException;
 import java.security.KeyStore;
 
 /**
@@ -29,7 +34,7 @@ public class DocumentGuardServiceTest {
     private static ExtendedObjectPersistence extendedObjectPersistence;
 
     @BeforeClass
-    public static void beforeClass(){
+    public static void beforeClass() {
         TestKeyUtils.turnOffEncPolicy();
         storeContextFactory = new TestFsBlobStoreFactory();
         keystorePersistence = new BlobStoreKeystorePersistence(storeContextFactory);
@@ -46,16 +51,17 @@ public class DocumentGuardServiceTest {
     }
 
     // @AfterClass
-    public static void afterClass(){
+    public static void afterClass() {
         try {
-            if(containerPersistence!=null && containerPersistence.containerExists(container))
+            if (containerPersistence != null && containerPersistence.containerExists(container))
                 containerPersistence.deleteContainer(container);
         } catch (UnknownContainerException e) {
             Assume.assumeNoException(e);
         }
     }
 
-    @Test  (expected = org.adorsys.resource.server.exceptions.BaseException.class)
+    // TODO, Exception nicht verstanden, muss noch gefixed werden
+    @Test(expected = org.adorsys.resource.server.exceptions.BaseException.class)
     public void createSelfCuard() {
         try {
             String keypasswordstring = "KeyPassword";
