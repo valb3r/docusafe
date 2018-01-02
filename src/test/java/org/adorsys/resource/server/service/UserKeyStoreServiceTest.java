@@ -1,6 +1,5 @@
 package org.adorsys.resource.server.service;
 
-import de.adorsys.resource.server.keyservice.SecretKeyGenerator;
 import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.service.*;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
@@ -67,11 +66,9 @@ public class UserKeyStoreServiceTest {
     public void test1() throws CertificateException, NoSuchAlgorithmException, UnknownContainerException {
         String keypasswordstring = "affe";
         String useridstring = "affe";
-        String bucketnamestring = "affe";
+        String bucketnamestring = container;
 
-        BlobStoreContextFactory blobStoreContextFactory = new TestFsBlobStoreFactory();
-        BlobStoreKeystorePersistence blobStoreKeyStorePersistence = new BlobStoreKeystorePersistence(blobStoreContextFactory);
-        UserKeyStoreService userKeyStoreService = new UserKeyStoreService(blobStoreKeyStorePersistence);
+        UserKeyStoreService userKeyStoreService = new UserKeyStoreService(keystorePersistence);
         UserID userID = new UserID(useridstring);
         CallbackHandler userKeyStoreHandler = new CallbackHandler() {
             @Override
