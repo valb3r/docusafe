@@ -20,16 +20,17 @@ import org.adorsys.resource.server.basetypes.UserID;
 import org.adorsys.resource.server.complextypes.DocumentGuard;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
+import org.adorsys.resource.server.persistence.HexUtil;
 import org.adorsys.resource.server.persistence.KeyID;
 import org.adorsys.resource.server.persistence.KeySource;
 import org.adorsys.resource.server.persistence.KeyStoreBasedKeySourceImpl;
 import org.adorsys.resource.server.persistence.PersistentObjectWrapper;
 import org.adorsys.resource.server.serializer.DocumentGuardSerializer;
 import org.adorsys.resource.server.serializer.DocumentGuardSerializer01;
-import org.adorsys.resource.server.serializer.DocumentGuardSerializerRegistery;
 import org.adorsys.resource.server.utils.KeyStoreHandleUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 
+import javax.crypto.SecretKey;
 import javax.security.auth.callback.CallbackHandler;
 import java.security.KeyStore;
 import java.util.HashMap;
@@ -70,7 +71,8 @@ public class DocumentGuardService {
 			String keyAlias = RandomStringUtils.randomAlphanumeric(20);
 			SecretKeyData secretKeyData = secretKeyGenerator.generate(keyAlias,keyPassHandler);
 			byte[] serializeSecretKeyBytes = serializer.serializeSecretKey(new DocumentKey(secretKeyData.getSecretKey()));
-			
+
+			System.out.println("SAVE DOCUMENTKEY:" + HexUtil.conventBytesToHexString(serializeSecretKeyBytes));
 			
 			DocumnentKeyID documnentKeyID = new DocumnentKeyID(secretKeyData.getAlias());
 			DocumentGuardName documentGuardName = new DocumentGuardName(userId, documnentKeyID);
@@ -111,15 +113,33 @@ public class DocumentGuardService {
 	        
 	        ContentMetaInfo metaIno = wrapper.getMetaIno();
 	        Map<String, Object> addInfos = metaIno.getAddInfos();
-	        Object serializerId = addInfos.get(SERIALIZER_HEADER_KEY);
-	        if(serializerId==null) throw new IllegalStateException("Missing meta info serializer");
-	        
-	        DocumentGuardSerializer serializer = DocumentGuardSerializerRegistery.getInstance().getSerializer(serializerId.toString());
-	        DocumentKey documentKey = serializer.deserializeSecretKey(wrapper.getData());
+
+			DocumentKey documentKey = new DocumentKey(new SecretKeyImpl(wrapper.getData()));
 	        return new DocumentGuard(documentGuardName, documentKey);
     	} catch(Exception e){
     		throw BaseExceptionHandler.handle(e);
     	}
     }
 
+    private static class SecretKeyImpl implements SecretKey {
+		private byte bytes[];
+		public SecretKeyImpl(byte[] bytes) {
+			this.bytes = bytes;
+		}
+
+		@Override
+		public String getAlgorithm() {
+			return null;
+		}
+
+		@Override
+		public String getFormat() {
+			return null;
+		}
+
+		@Override
+		public byte[] getEncoded() {
+			return bytes;
+		}
+	}
 }

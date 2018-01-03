@@ -16,6 +16,7 @@ import org.adorsys.resource.server.basetypes.UserID;
 import org.adorsys.resource.server.complextypes.DocumentGuard;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
+import org.adorsys.resource.server.persistence.HexUtil;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -89,6 +90,7 @@ public class DocumentGuardServiceTest {
             CallbackHandler keyPassHandler = new PasswordCallbackHandler(keypasswordstring.toCharArray());
             DocumentGuard documentGuard = documentGuardService.loadDocumentGuard(guardName, new BucketName(keystoreContainer), new BucketName(guardContainer), userKeyStoreHandler, keyPassHandler);
             System.out.println("key des Guards ist :" + documentGuard.getDocumentKey());
+            System.out.println("LOAD DocumentKey:" + HexUtil.conventBytesToHexString(documentGuard.getDocumentKey().getSecretKey().getEncoded()));
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
