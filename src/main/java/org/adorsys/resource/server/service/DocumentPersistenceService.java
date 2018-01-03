@@ -1,7 +1,5 @@
 package org.adorsys.resource.server.service;
 
-import javax.security.auth.callback.CallbackHandler;
-
 import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.params.EncryptionParams;
@@ -11,10 +9,13 @@ import org.adorsys.resource.server.basetypes.DocumentGuardName;
 import org.adorsys.resource.server.basetypes.DocumentID;
 import org.adorsys.resource.server.basetypes.UserID;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
+import org.adorsys.resource.server.persistence.DocumentGuardBasedKeySourceImpl;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
 import org.adorsys.resource.server.persistence.KeyID;
 import org.adorsys.resource.server.persistence.KeySource;
 import org.adorsys.resource.server.persistence.PersistentObjectWrapper;
+
+import javax.security.auth.callback.CallbackHandler;
 
 /**
  * Sample use of the encobject api to implement our protocol.
@@ -49,7 +50,8 @@ public class DocumentPersistenceService {
     public void persistDocument(
     							CallbackHandler userKeystoreHandler,
                                 CallbackHandler keyPassHandler,
-                                BucketName bucketName,
+								BucketName keysourceBucketName,
+								BucketName documentBucketName,
                                 DocumentGuardName documentGuardName,
                                 DocumentID documentID,
                                 DocumentContent documentContent) {
@@ -57,14 +59,14 @@ public class DocumentPersistenceService {
     	try {
 
 	        // Create object handle
-	        ObjectHandle location = new ObjectHandle(bucketName.getValue(), documentID.getValue());
+	        ObjectHandle location = new ObjectHandle(documentBucketName.getValue(), documentID.getValue());
 	
 	        // Store object.
 	        ContentMetaInfo metaInfo = null;
 	        EncryptionParams encParams = null;
 
 	        KeyID keyID = new KeyID(documentGuardName.getDocumnentKeyID().getValue());
-			KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, documentGuardName.getUserId(), userKeystoreHandler, keyPassHandler, bucketName);
+			KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, documentGuardName.getUserId(), userKeystoreHandler, keyPassHandler, keysourceBucketName, documentBucketName);
 			objectPersistence.storeObject(documentContent.getValue(), metaInfo, location, keySource, keyID , encParams);
     	} catch (Exception e){
     		BaseExceptionHandler.handle(e);
@@ -76,7 +78,6 @@ public class DocumentPersistenceService {
      * @param userID
      * @param userKeystoreHandler
      * @param keyPassHandler
-     * @param bucketName
      * @param documentID
      * @return
      */
@@ -84,14 +85,15 @@ public class DocumentPersistenceService {
     		UserID userID,
 			CallbackHandler userKeystoreHandler,
             CallbackHandler keyPassHandler,
-    		BucketName bucketName, 
-    		DocumentID documentID){
+			BucketName keystoreBucketName,
+			BucketName documentBucketName,
+			DocumentID documentID){
     	
     	try {
 	        // Create object handle
-	        ObjectHandle location = new ObjectHandle(bucketName.getValue(), documentID.getValue());
+	        ObjectHandle location = new ObjectHandle(documentBucketName.getValue(), documentID.getValue());
 	
-	        KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, userID, userKeystoreHandler, keyPassHandler, bucketName);
+	        KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, userID, userKeystoreHandler, keyPassHandler, keystoreBucketName, documentBucketName);
 			return objectPersistence.loadObject(location, keySource);
     	} catch (Exception e){
     		throw BaseExceptionHandler.handle(e);

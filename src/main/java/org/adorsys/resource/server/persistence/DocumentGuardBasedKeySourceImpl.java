@@ -1,8 +1,4 @@
-package org.adorsys.resource.server.service;
-
-import java.security.Key;
-
-import javax.security.auth.callback.CallbackHandler;
+package org.adorsys.resource.server.persistence;
 
 import org.adorsys.resource.server.basetypes.BucketName;
 import org.adorsys.resource.server.basetypes.DocumentGuardName;
@@ -10,8 +6,10 @@ import org.adorsys.resource.server.basetypes.DocumnentKeyID;
 import org.adorsys.resource.server.basetypes.UserID;
 import org.adorsys.resource.server.complextypes.DocumentGuard;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
-import org.adorsys.resource.server.persistence.KeyID;
-import org.adorsys.resource.server.persistence.KeySource;
+import org.adorsys.resource.server.service.DocumentGuardService;
+
+import javax.security.auth.callback.CallbackHandler;
+import java.security.Key;
 
 public class DocumentGuardBasedKeySourceImpl implements KeySource {
 
@@ -20,17 +18,19 @@ public class DocumentGuardBasedKeySourceImpl implements KeySource {
     private UserID userID;
     private CallbackHandler userKeystoreHandler;
     private CallbackHandler keyPassHandler;
-    private BucketName bucketName;
-    
+	private BucketName keysourceBucketName;
+	private BucketName guardBucketName;
+
 	public DocumentGuardBasedKeySourceImpl(DocumentGuardService documentGuardService,
 			UserID userID, CallbackHandler userKeystoreHandler, CallbackHandler keyPassHandler,
-			BucketName bucketName) {
+			BucketName keysourceBucketName, BucketName guardBucketName) {
 		super();
 		this.documentGuardService = documentGuardService;
 		this.userID = userID;
 		this.userKeystoreHandler = userKeystoreHandler;
 		this.keyPassHandler = keyPassHandler;
-		this.bucketName = bucketName;
+		this.keysourceBucketName = keysourceBucketName;
+		this.guardBucketName = guardBucketName;
 	}
 
 	@Override
@@ -39,7 +39,7 @@ public class DocumentGuardBasedKeySourceImpl implements KeySource {
         // Load DokumentKeyID from guard.
         try {
 			DocumentGuardName documentGuardName = new DocumentGuardName(userID, new DocumnentKeyID(keyID.getValue()));
-			DocumentGuard documentGuard = documentGuardService.loadDocumentGuard(documentGuardName, bucketName, userKeystoreHandler, keyPassHandler);
+			DocumentGuard documentGuard = documentGuardService.loadDocumentGuard(documentGuardName, keysourceBucketName, guardBucketName, userKeystoreHandler, keyPassHandler);
 			return documentGuard.getDocumentKey().getSecretKey();
 		} catch (Exception e) {
 			throw BaseExceptionHandler.handle(e);

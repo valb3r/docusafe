@@ -22,6 +22,7 @@ import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
 import org.adorsys.resource.server.persistence.KeyID;
 import org.adorsys.resource.server.persistence.KeySource;
+import org.adorsys.resource.server.persistence.KeyStoreBasedKeySourceImpl;
 import org.adorsys.resource.server.persistence.PersistentObjectWrapper;
 import org.adorsys.resource.server.serializer.DocumentGuardSerializer;
 import org.adorsys.resource.server.serializer.DocumentGuardSerializer01;
@@ -91,12 +92,12 @@ public class DocumentGuardService {
     /**
      * Loading the secret key from the guard.
      */
-    public DocumentGuard loadDocumentGuard(DocumentGuardName documentGuardName, BucketName bucketName, CallbackHandler userKeystoreHandler,
+    public DocumentGuard loadDocumentGuard(DocumentGuardName documentGuardName, BucketName keystoreBucketName, BucketName guardBucketName, CallbackHandler userKeystoreHandler,
                                              CallbackHandler userKeyPassHandler){
     	
     	try {
 	
-	        ObjectHandle keystoreHandle = KeyStoreHandleUtils.userkeyStoreHandle(bucketName, documentGuardName.getUserId());
+	        ObjectHandle keystoreHandle = KeyStoreHandleUtils.userkeyStoreHandle(keystoreBucketName, documentGuardName.getUserId());
 	        if (!keystorePersistence.hasKeystore(keystoreHandle)) {
 	            throw new ObjectNotFoundException("user keystore not found.");
 	        }
@@ -104,7 +105,7 @@ public class DocumentGuardService {
 	
 	
 	        // load guard file
-	        ObjectHandle guardHandle = new ObjectHandle(bucketName.getValue(), documentGuardName.getValue());
+	        ObjectHandle guardHandle = new ObjectHandle(guardBucketName.getValue(), documentGuardName.getValue());
 	        KeySource keySource = new KeyStoreBasedKeySourceImpl(userKeystore, userKeyPassHandler);
 	        PersistentObjectWrapper wrapper = objectPersistence.loadObject(guardHandle, keySource);
 	        

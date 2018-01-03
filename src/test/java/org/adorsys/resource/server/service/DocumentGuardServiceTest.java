@@ -13,6 +13,7 @@ import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
 import org.adorsys.resource.server.basetypes.BucketName;
 import org.adorsys.resource.server.basetypes.DocumentGuardName;
 import org.adorsys.resource.server.basetypes.UserID;
+import org.adorsys.resource.server.complextypes.DocumentGuard;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
 import org.junit.AfterClass;
@@ -38,6 +39,8 @@ public class DocumentGuardServiceTest {
     private static BlobStoreContextFactory guardContextFactory;
     private static ContainerPersistence guardContainerPersistence;
     private static ExtendedObjectPersistence guardExtendedPersistence;
+    private static String keypasswordstring = "KeyPassword";
+
 
     @BeforeClass
     public static void beforeClass() {
@@ -74,8 +77,26 @@ public class DocumentGuardServiceTest {
 
     @Test
     public void createSelfCuard() {
+        createDocumentGuard();
+    }
+
+    @Test
+    public void createAndLoadSelfCuard() {
         try {
-            String keypasswordstring = "KeyPassword";
+            DocumentGuardName guardName = createDocumentGuard();
+            DocumentGuardService documentGuardService = new DocumentGuardService(keystorePersistence, guardExtendedPersistence);
+            CallbackHandler userKeyStoreHandler = new PasswordCallbackHandler(keypasswordstring.toCharArray());
+            CallbackHandler keyPassHandler = new PasswordCallbackHandler(keypasswordstring.toCharArray());
+            DocumentGuard documentGuard = documentGuardService.loadDocumentGuard(guardName, new BucketName(keystoreContainer), new BucketName(guardContainer), userKeyStoreHandler, keyPassHandler);
+            System.out.println("key des Guards ist :" + documentGuard.getDocumentKey());
+        } catch (Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
+
+    }
+
+    private DocumentGuardName createDocumentGuard() {
+        try {
             UserID userID = new UserID("peter_der_user");
 
             CallbackHandler userKeyStoreHandler = new PasswordCallbackHandler(keypasswordstring.toCharArray());
@@ -88,11 +109,11 @@ public class DocumentGuardServiceTest {
             }
 
             DocumentGuardService documentGuardService = new DocumentGuardService(keystorePersistence, guardExtendedPersistence);
-            DocumentGuardName userSelfGuard = documentGuardService.createUserSelfGuard(userID, userKeyStoreHandler, keyPassHandler, new BucketName(keystoreContainer), new BucketName(guardContainer));
-            System.out.println("user guard erzeugt:" + userSelfGuard);
+            DocumentGuardName guardName = documentGuardService.createUserSelfGuard(userID, userKeyStoreHandler, keyPassHandler, new BucketName(keystoreContainer), new BucketName(guardContainer));
+            System.out.println("user guard erzeugt:" + guardName);
+            return guardName;
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
-
     }
 }
