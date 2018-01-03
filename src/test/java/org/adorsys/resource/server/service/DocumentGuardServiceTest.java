@@ -15,6 +15,7 @@ import org.adorsys.resource.server.basetypes.DocumentGuardName;
 import org.adorsys.resource.server.basetypes.UserID;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.BeforeClass;
@@ -59,7 +60,7 @@ public class DocumentGuardServiceTest {
 
     }
 
-    // @AfterClass
+    @AfterClass
     public static void afterClass() {
         try {
             if (keystoreContainerPersistence != null && keystoreContainerPersistence.containerExists(keystoreContainer))
