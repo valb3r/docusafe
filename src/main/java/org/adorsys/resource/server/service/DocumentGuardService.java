@@ -1,11 +1,7 @@
 package org.adorsys.resource.server.service;
 
-import java.security.KeyStore;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.security.auth.callback.CallbackHandler;
-
+import com.nimbusds.jose.jwk.JWKSet;
+import de.adorsys.resource.server.keyservice.SecretKeyGenerator;
 import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.params.EncryptionParams;
@@ -33,9 +29,10 @@ import org.adorsys.resource.server.serializer.DocumentGuardSerializerRegistery;
 import org.adorsys.resource.server.utils.KeyStoreHandleUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 
-import com.nimbusds.jose.jwk.JWKSet;
-
-import de.adorsys.resource.server.keyservice.SecretKeyGenerator;
+import javax.security.auth.callback.CallbackHandler;
+import java.security.KeyStore;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DocumentGuardService {
 	
@@ -56,12 +53,11 @@ public class DocumentGuardService {
 	 * @param userId
 	 * @param userKeystoreHandler
 	 * @param keyPassHandler
-	 * @param bucketName
 	 */
 	public DocumentGuardName createUserSelfGuard(UserID userId, CallbackHandler userKeystoreHandler, CallbackHandler keyPassHandler,
-			BucketName bucketName)  {
+			BucketName keystoreBucketName, BucketName guardBucketName)  {
 		try {
-			ObjectHandle keystoreHandle = KeyStoreHandleUtils.userkeyStoreHandle(bucketName, userId);
+			ObjectHandle keystoreHandle = KeyStoreHandleUtils.userkeyStoreHandle(keystoreBucketName, userId);
 			KeyStore userKeystore = keystorePersistence.loadKeystore(keystoreHandle, userKeystoreHandler);
 			
 			JWKSet jwkSet = JwkExport.exportKeys(userKeystore, userKeystoreHandler);
@@ -78,7 +74,7 @@ public class DocumentGuardService {
 			DocumnentKeyID documnentKeyID = new DocumnentKeyID(secretKeyData.getAlias());
 			DocumentGuardName documentGuardName = new DocumentGuardName(userId, documnentKeyID);
 			
-			ObjectHandle location = new ObjectHandle(bucketName.getValue(), documentGuardName.getValue());
+			ObjectHandle location = new ObjectHandle(guardBucketName.getValue(), documentGuardName.getValue());
 			EncryptionParams encParams = null;
 			ContentMetaInfo metaInfo = new ContentMetaInfo();
 			metaInfo.setAddInfos(new HashMap<>());

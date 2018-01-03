@@ -9,16 +9,24 @@ import java.io.File;
 import java.util.Properties;
 
 public class TestFsBlobStoreFactory implements BlobStoreContextFactory {
-	
-	public static final String STORE_BASEDIR = "./target/filesystemstorage";
+
+	private static final String STORE_BASEDIR = "./target";
+	private static final String DEFAULT_SUBDIR = "filesystemstorage";
+	private String storeBasedir;
+
 	Properties properties = new Properties();
 
 	public TestFsBlobStoreFactory(){
-		properties.setProperty(FilesystemConstants.PROPERTY_BASEDIR, STORE_BASEDIR);
+		this(DEFAULT_SUBDIR);
 	}
-	
-	public static boolean existsOnFs(String container, String name){
-		File file = new File(STORE_BASEDIR + "/" + container + "/" + name );
+
+	public TestFsBlobStoreFactory(String defaultSubDir){
+		this.storeBasedir = STORE_BASEDIR + "/" + defaultSubDir;
+		properties.setProperty(FilesystemConstants.PROPERTY_BASEDIR, storeBasedir);
+	}
+
+	public boolean existsOnFs(String container, String name){
+		File file = new File(storeBasedir + "/" + container + "/" + name );
 		return file.exists();
 	}
 

@@ -1,7 +1,6 @@
 package org.adorsys.resource.server.service;
 
 import org.adorsys.encobject.service.BlobStoreConnection;
-import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.BlobStoreKeystorePersistence;
 import org.adorsys.encobject.service.ContainerExistsException;
 import org.adorsys.encobject.service.ContainerPersistence;
@@ -40,7 +39,7 @@ import java.security.cert.CertificateException;
 public class UserKeyStoreServiceTest {
 
     private static String container = UserKeyStoreServiceTest.class.getSimpleName();
-    private static BlobStoreContextFactory storeContextFactory;
+    private static TestFsBlobStoreFactory storeContextFactory;
     private static KeystorePersistence keystorePersistence;
     private static ContainerPersistence containerPersistence;
 
@@ -89,7 +88,7 @@ public class UserKeyStoreServiceTest {
         CallbackHandler keyPassHanlder = new PasswordCallbackHandler(keypasswordstring.toCharArray());
         BucketName bucketName = new BucketName(bucketnamestring);
         KeyStore userKeyStore = userKeyStoreService.createUserKeyStore(userID, userKeyStoreHandler, keyPassHanlder, bucketName);
-        Assert.assertTrue(TestFsBlobStoreFactory.existsOnFs(container, useridstring + ".keystore"));
+        Assert.assertTrue(storeContextFactory.existsOnFs(container, useridstring + ".keystore"));
         Assert.assertEquals("Number of Entries", 15, userKeyStore.size());
         System.out.println(ShowKeyStore.toString(userKeyStore, keypasswordstring));
     }
