@@ -60,8 +60,7 @@ public class DocumentGuardServiceTest {
         }
     }
 
-    // TODO, Exception nicht verstanden, muss noch gefixed werden
-    @Test(expected = org.adorsys.resource.server.exceptions.BaseException.class)
+    @Test
     public void createSelfCuard() {
         try {
             String keypasswordstring = "KeyPassword";

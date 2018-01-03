@@ -1,13 +1,5 @@
 package org.adorsys.resource.server.serializer;
 
-import java.io.IOException;
-import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-
-import javax.crypto.SecretKey;
-import javax.security.auth.callback.CallbackHandler;
-
 import org.adorsys.encobject.service.MissingKeyAlgorithmException;
 import org.adorsys.encobject.service.MissingKeystoreAlgorithmException;
 import org.adorsys.encobject.service.MissingKeystoreProviderException;
@@ -17,6 +9,13 @@ import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
 import org.adorsys.resource.server.basetypes.DocumentKey;
 import org.adorsys.resource.server.utils.KeystoreAdapter;
 
+import javax.crypto.SecretKey;
+import javax.security.auth.callback.CallbackHandler;
+import java.io.IOException;
+import java.security.KeyStore;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+
 public class DocumentGuardSerializer01 implements DocumentGuardSerializer {
 	
 	/**
@@ -25,7 +24,7 @@ public class DocumentGuardSerializer01 implements DocumentGuardSerializer {
 	 */
 	public static final String SERIALIZER_ID = "dgs01";
 	private static final String DGS01_KEYID = "keyid";
-	private static CallbackHandler keystoreHandler = new PasswordCallbackHandler(null);
+	private static CallbackHandler keystoreHandler = new PasswordCallbackHandler("any-password".toCharArray());
 	
 	/*
 	 * Deserializes the secret key. In order not to define a proper key

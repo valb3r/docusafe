@@ -4,10 +4,11 @@ package org.adorsys.resource.server.exceptions;
  * Created by peter on 23.12.17 at 18:11.
  */
 public class BaseExceptionHandler {
-    private final static String PREFIX = "org.adorsys.resource.server.exceptions";
+    private final static String EXCEPTION_PREFIX = "org.adorsys.resource.server.exceptions";
+    private final static String FILTER_PREFIX = "org.adorsys";
 
     static public BaseException handle (Throwable t) {
-        if (t.getClass().getName().startsWith(PREFIX)) {
+        if (t.getClass().getName().startsWith(EXCEPTION_PREFIX)) {
             throw (RuntimeException) t;
         }
         throw new BaseException(t);
@@ -38,7 +39,7 @@ public class BaseExceptionHandler {
         sb.append("Exception stack:");
         sb.append("\n");
         for (StackTraceElement el : t.getStackTrace()) {
-            if (el.toString().startsWith(PREFIX)) {
+            if (el.toString().startsWith(FILTER_PREFIX)) {
                 sb.append("\t");
                 sb.append(el.toString());
                 sb.append("\n");
@@ -73,13 +74,13 @@ public class BaseExceptionHandler {
             for (StackTraceElement el : t.getStackTrace()) {
                 sb.append(tab);
                 sb.append("\t");
-                sb.append(el.toString().startsWith(PREFIX) ? "-> " : "   ");
+                sb.append(el.toString().startsWith(FILTER_PREFIX) ? "-> " : "   ");
                 sb.append(el.toString());
                 sb.append("\n");
             }
         } else {
             for (StackTraceElement el : t.getStackTrace()) {
-                if (el.toString().startsWith(PREFIX)) {
+                if (el.toString().startsWith(FILTER_PREFIX)) {
                     sb.append(tab);
                     sb.append("\t");
                     sb.append(el.toString());
