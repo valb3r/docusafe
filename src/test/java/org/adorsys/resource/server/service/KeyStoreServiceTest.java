@@ -3,12 +3,7 @@ package org.adorsys.resource.server.service;
 import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.ContainerExistsException;
 import org.adorsys.encobject.service.ContainerPersistence;
-import org.adorsys.encobject.service.KeystoreNotFoundException;
-import org.adorsys.encobject.service.MissingKeyAlgorithmException;
-import org.adorsys.encobject.service.MissingKeystoreAlgorithmException;
-import org.adorsys.encobject.service.MissingKeystoreProviderException;
 import org.adorsys.encobject.service.UnknownContainerException;
-import org.adorsys.encobject.service.WrongKeystoreCredentialException;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
 import org.adorsys.encobject.utils.TestKeyUtils;
 import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
@@ -17,21 +12,13 @@ import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
 import org.adorsys.resource.server.persistence.basetypes.BucketName;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreName;
-import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import java.io.IOException;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 
 /**
  * Created by peter on 02.01.18.
@@ -43,8 +30,7 @@ public class KeyStoreServiceTest {
     private static ExtendedKeystorePersistence keystorePersistence;
     private static ContainerPersistence containerPersistence;
 
-    @BeforeClass
-    public static void beforeClass(){
+    public static void beforeTest() {
         TestKeyUtils.turnOffEncPolicy();
         storeContextFactory = new TestFsBlobStoreFactory();
         keystorePersistence = new ExtendedKeystorePersistence(storeContextFactory);
@@ -58,10 +44,9 @@ public class KeyStoreServiceTest {
 
     }
 
-    @AfterClass
-    public static void afterClass(){
+    public static void afterTest() {
         try {
-            if(containerPersistence!=null && containerPersistence.containerExists(keystoreContainer))
+            if (containerPersistence != null && containerPersistence.containerExists(keystoreContainer))
                 containerPersistence.deleteContainer(keystoreContainer);
         } catch (UnknownContainerException e) {
             Assume.assumeNoException(e);
@@ -69,8 +54,8 @@ public class KeyStoreServiceTest {
     }
 
     // TODO, warum kann hier ein hohler userKeyStoreHandler übergeben werden??
-    @Test
-    public void testCreateKeyStore() throws CertificateException, NoSuchAlgorithmException, UnknownContainerException, MissingKeystoreProviderException, MissingKeyAlgorithmException, WrongKeystoreCredentialException, MissingKeystoreAlgorithmException, KeystoreNotFoundException, IOException, KeyStoreException, UnrecoverableKeyException {
+    public KeyStoreStuff createKeyStore() {
+        BucketName keyStoreBucketName = new BucketName(keystoreContainer);
         String keypasswordstring = "KeyPassword";
         String useridstring = "UserPeter";
         KeyStoreID keyStoreID = new KeyStoreID("key-store-id-123");
@@ -80,15 +65,29 @@ public class KeyStoreServiceTest {
         CallbackHandler userKeyStoreHandler = new CallbackHandler() {
             @Override
             public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-                for (Callback call: callbacks) {
+                for (Callback call : callbacks) {
                     System.out.println("user key Store handler callback:" + call);
                 }
             }
         };
         CallbackHandler keyPassHanlder = new PasswordCallbackHandler(keypasswordstring.toCharArray());
-        KeyStoreName keyStoreName = keyStoreService.createKeyStore(keyStoreID, userKeyStoreHandler, keyPassHanlder, new BucketName(keystoreContainer));
+        KeyStoreName keyStoreName = keyStoreService.createKeyStore(keyStoreID, userKeyStoreHandler, keyPassHanlder, keyStoreBucketName);
         KeyStore userKeyStore = keyStoreService.loadKeystore(keyStoreName, userKeyStoreHandler);
-        Assert.assertEquals("Number of Entries", 15, userKeyStore.size());
+        return new KeyStoreStuff(userKeyStore, keystorePersistence, keyStoreBucketName, keyStoreID);
         // System.out.println(ShowKeyStore.toString(userKeyStore, keypasswordstring));
+    }
+
+    public static class KeyStoreStuff {
+        public KeyStore keyStore;
+        public ExtendedKeystorePersistence keystorePersistence;
+        public BucketName keyStoreBucketName;
+        public KeyStoreID keyStoreID;
+
+        public KeyStoreStuff(KeyStore keyStore, ExtendedKeystorePersistence keystorePersistence, BucketName keyStoreBucketName, KeyStoreID keyStoreID) {
+            this.keyStore = keyStore;
+            this.keystorePersistence = keystorePersistence;
+            this.keyStoreBucketName = keyStoreBucketName;
+            this.keyStoreID = keyStoreID;
+        }
     }
 }
