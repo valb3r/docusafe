@@ -30,7 +30,7 @@ public class KeyStoreName extends BaseTypeString {
 		this.keyStoreID = keyStoreID;
 		this.keyStoreType = keyStoreType;
 	}
-
+	
 	private static String toString(BucketName bucketName, KeyStoreID keyStoreID, KeyStoreType keyStoreType){
 		return toFileName(keyStoreID, keyStoreType) + BucketName.BUCKET_SEPARATOR + bucketName.getValue();
 	}

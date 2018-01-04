@@ -16,6 +16,7 @@ import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
 import org.adorsys.resource.server.persistence.basetypes.BucketName;
+import org.adorsys.resource.server.persistence.basetypes.KeyStoreName;
 import org.adorsys.resource.server.utils.HexUtil;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -87,7 +88,7 @@ public class DocumentGuardServiceTest {
             DocumentGuardService documentGuardService = new DocumentGuardService(keystorePersistence, guardExtendedPersistence);
             CallbackHandler userKeyStoreHandler = new PasswordCallbackHandler(keypasswordstring.toCharArray());
             CallbackHandler keyPassHandler = new PasswordCallbackHandler(keypasswordstring.toCharArray());
-            DocumentGuard documentGuard = documentGuardService.loadDocumentGuard(guardName, new BucketName(keystoreContainer), userKeyStoreHandler, keyPassHandler);
+            DocumentGuard documentGuard = documentGuardService.loadDocumentGuard(guardName, userKeyStoreHandler, keyPassHandler);
             System.out.println("key des Guards ist :" + documentGuard.getDocumentKey());
             System.out.println("LOAD DocumentKey:" + HexUtil.conventBytesToHexString(documentGuard.getDocumentKey().getSecretKey().getEncoded()));
         } catch (Exception e) {
@@ -102,15 +103,16 @@ public class DocumentGuardServiceTest {
 
             CallbackHandler userKeyStoreHandler = new PasswordCallbackHandler(keypasswordstring.toCharArray());
             CallbackHandler keyPassHandler = new PasswordCallbackHandler(keypasswordstring.toCharArray());
+            UserKeyStoreService userKeyStoreService = new UserKeyStoreService(keystorePersistence);
+            KeyStoreName keyStoreName = userKeyStoreService.createUserKeyStore(userID, userKeyStoreHandler, keyPassHandler, new BucketName(keystoreContainer));
 
             {
-                UserKeyStoreService userKeyStoreService = new UserKeyStoreService(keystorePersistence);
-                KeyStore userKeyStore = userKeyStoreService.createUserKeyStore(userID, userKeyStoreHandler, keyPassHandler, new BucketName(keystoreContainer));
+                KeyStore userKeyStore = userKeyStoreService.loadKeystore(keyStoreName, userKeyStoreHandler);
                 Assert.assertEquals("Number of entries of KeyStore is 15", 15, userKeyStore.size());
             }
 
             DocumentGuardService documentGuardService = new DocumentGuardService(keystorePersistence, guardExtendedPersistence);
-            DocumentGuardName guardName = documentGuardService.createUserSelfGuard(userID, userKeyStoreHandler, keyPassHandler, new BucketName(keystoreContainer), new BucketName(guardContainer));
+            DocumentGuardName guardName = documentGuardService.createUserSelfGuard(keyStoreName, userKeyStoreHandler, keyPassHandler);
             System.out.println("user guard erzeugt:" + guardName);
             return guardName;
         } catch (Exception e) {

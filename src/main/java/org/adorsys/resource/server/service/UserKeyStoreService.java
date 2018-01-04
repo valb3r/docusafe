@@ -28,7 +28,7 @@ public class UserKeyStoreService {
         secretKeyGenerator = new SecretKeyGenerator("AES", 256);
     }
 
-    public KeyStore createUserKeyStore(UserID userId, CallbackHandler userKeystoreHandler, CallbackHandler keyPassHandler,
+    public KeyStoreName createUserKeyStore(UserID userId, CallbackHandler userKeystoreHandler, CallbackHandler keyPassHandler,
                                        BucketName bucketName) {
         try {
             String keyStoreType = null;
@@ -47,9 +47,13 @@ public class UserKeyStoreService {
             
             KeyStoreName keyStoreName = new KeyStoreName(bucketName, new KeyStoreID(userId.getValue()), new KeyStoreType(userKeyStore.getType()));
 			keystorePersistence.saveKeyStore(userKeyStore, userKeystoreHandler, keyStoreName);
-			return userKeyStore;
+			return keyStoreName;
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
+    }
+    
+    public KeyStore loadKeystore(KeyStoreName keyStoreName, CallbackHandler userKeystoreHandler){
+    	return keystorePersistence.loadKeystore(keyStoreName, userKeystoreHandler);
     }
 }

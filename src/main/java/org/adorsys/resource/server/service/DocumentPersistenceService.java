@@ -16,6 +16,7 @@ import org.adorsys.resource.server.persistence.KeySource;
 import org.adorsys.resource.server.persistence.PersistentObjectWrapper;
 import org.adorsys.resource.server.persistence.basetypes.BucketName;
 import org.adorsys.resource.server.persistence.basetypes.KeyID;
+import org.adorsys.resource.server.persistence.basetypes.KeyStoreName;
 
 /**
  * Sample use of the encobject api to implement our protocol.
@@ -50,9 +51,8 @@ public class DocumentPersistenceService {
     public void persistDocument(
     							CallbackHandler userKeystoreHandler,
                                 CallbackHandler keyPassHandler,
-								BucketName keysourceBucketName,
-								BucketName documentBucketName,
                                 DocumentGuardName documentGuardName,
+                                BucketName documentBucketName,
                                 DocumentID documentID,
                                 DocumentContent documentContent) {
     	
@@ -66,7 +66,7 @@ public class DocumentPersistenceService {
 	        EncryptionParams encParams = null;
 
 	        KeyID keyID = new KeyID(documentGuardName.getDocumentKeyID().getValue());
-			KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, documentGuardName.getUserId(), userKeystoreHandler, keyPassHandler, keysourceBucketName, documentBucketName);
+			KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, documentGuardName.getKeyStoreName(), userKeystoreHandler, keyPassHandler);
 			objectPersistence.storeObject(documentContent.getValue(), metaInfo, location, keySource, keyID , encParams);
     	} catch (Exception e){
     		BaseExceptionHandler.handle(e);
@@ -82,18 +82,18 @@ public class DocumentPersistenceService {
      * @return
      */
     public PersistentObjectWrapper loadDocument(
-    		UserID userID,
+    		KeyStoreName keyStoreName,
 			CallbackHandler userKeystoreHandler,
             CallbackHandler keyPassHandler,
-			BucketName keystoreBucketName,
 			BucketName documentBucketName,
 			DocumentID documentID){
     	
     	try {
+	        
+	        KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreName, userKeystoreHandler, keyPassHandler);
+
 	        // Create object handle
 	        ObjectHandle location = new ObjectHandle(documentBucketName.getValue(), documentID.getValue());
-	
-	        KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, userID, userKeystoreHandler, keyPassHandler, keystoreBucketName, documentBucketName);
 			return objectPersistence.loadObject(location, keySource);
     	} catch (Exception e){
     		throw BaseExceptionHandler.handle(e);

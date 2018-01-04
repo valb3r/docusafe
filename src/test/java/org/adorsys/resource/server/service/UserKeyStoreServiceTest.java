@@ -26,6 +26,7 @@ import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
 import org.adorsys.resource.server.basetypes.UserID;
 import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
 import org.adorsys.resource.server.persistence.basetypes.BucketName;
+import org.adorsys.resource.server.persistence.basetypes.KeyStoreName;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -86,7 +87,8 @@ public class UserKeyStoreServiceTest {
         };
         CallbackHandler keyPassHanlder = new PasswordCallbackHandler(keypasswordstring.toCharArray());
         BucketName bucketName = new BucketName(bucketnamestring);
-        KeyStore userKeyStore = userKeyStoreService.createUserKeyStore(userID, userKeyStoreHandler, keyPassHanlder, bucketName);
+        KeyStoreName keyStoreName = userKeyStoreService.createUserKeyStore(userID, userKeyStoreHandler, keyPassHanlder, bucketName);
+        KeyStore userKeyStore = userKeyStoreService.loadKeystore(keyStoreName, userKeyStoreHandler);
 //        Assert.assertTrue(storeContextFactory.existsOnFs(container, useridstring + ".keystore"));
         Assert.assertEquals("Number of Entries", 15, userKeyStore.size());
         // System.out.println(ShowKeyStore.toString(userKeyStore, keypasswordstring));

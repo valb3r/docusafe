@@ -1,7 +1,11 @@
 package org.adorsys.resource.server.basetypes;
 
+import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.resource.server.persistence.basetypes.BaseTypeString;
 import org.adorsys.resource.server.persistence.basetypes.BucketName;
+import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;
+import org.adorsys.resource.server.persistence.basetypes.KeyStoreName;
+import org.adorsys.resource.server.persistence.basetypes.KeyStoreType;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -16,9 +20,8 @@ public class DocumentGuardName extends BaseTypeString {
 	
 	public static final String GUARD_NAME_COMPONENT_SEPARATOR = ".";
 	
-	private BucketName guardBucketName;
 	private DocumentKeyID documentKeyID;
-	private UserID userId;
+	private KeyStoreName keyStoreName;
 
 	public DocumentGuardName() {}
 
@@ -28,47 +31,59 @@ public class DocumentGuardName extends BaseTypeString {
 		fromString(value);
 	}
 
-	public DocumentGuardName(BucketName guardBucketName, UserID userId, DocumentKeyID documentKeyID) {
-		super(toString(guardBucketName, userId, documentKeyID));
+	public DocumentGuardName(KeyStoreName keyStoreName, DocumentKeyID documentKeyID) {
+		super(toString(keyStoreName, documentKeyID));
 		this.documentKeyID = documentKeyID;
-		this.userId = userId;
-		this.guardBucketName = guardBucketName;
+		this.keyStoreName = keyStoreName;
 	}
 
 	public DocumentKeyID getDocumentKeyID() {
 		return documentKeyID;
 	}
 
-	public UserID getUserId() {
-		return userId;
+	public KeyStoreName getKeyStoreName() {
+		return keyStoreName;
 	}
-	
-	public BucketName getGuardBucketName() {
-		return guardBucketName;
+
+	public ObjectHandle toLocation(){
+		return new ObjectHandle(keyStoreName.getBucketName().getValue(), toFileName());
+	}
+
+	private String toFileName() {
+		return toFileName(keyStoreName, documentKeyID);
 	}
 
 
-	private static String toString(BucketName guardBucketName, UserID userID, DocumentKeyID documentKeyID){
-		return userID.getValue() + GUARD_NAME_COMPONENT_SEPARATOR + documentKeyID.getValue() + BucketName.BUCKET_SEPARATOR + guardBucketName.getValue();
+	private static String toString(KeyStoreName keyStoreName, DocumentKeyID documentKeyID){
+		return toFileName(keyStoreName, documentKeyID) + BucketName.BUCKET_SEPARATOR + keyStoreName.getBucketName().getValue();
 	}
 	
+	private static String toFileName(KeyStoreName keyStoreName, DocumentKeyID documentKeyID) {
+		return keyStoreName.toFileName() + GUARD_NAME_COMPONENT_SEPARATOR + documentKeyID.getValue() ;
+	}
+
+
 	private void fromString(String guardFQN){
-		String guardBucketNameStr = StringUtils.substringAfterLast(guardFQN, BucketName.BUCKET_SEPARATOR);
-		String guardName = StringUtils.substringBeforeLast(guardFQN, BucketName.BUCKET_SEPARATOR);
-		String documentKeyIDName = StringUtils.substringAfterLast(guardName, GUARD_NAME_COMPONENT_SEPARATOR);
-		String userIdName = StringUtils.substringBeforeLast(guardName, GUARD_NAME_COMPONENT_SEPARATOR);
+		
+		String bucketNameStr = StringUtils.substringAfterLast(guardFQN, BucketName.BUCKET_SEPARATOR);
+		
+		String documentGuardfileName = StringUtils.substringBeforeLast(guardFQN, BucketName.BUCKET_SEPARATOR);
+		String documentKeyIDName = StringUtils.substringAfterLast(documentGuardfileName, GUARD_NAME_COMPONENT_SEPARATOR);
+		String keyStoreFileName = StringUtils.substringBeforeLast(documentGuardfileName, GUARD_NAME_COMPONENT_SEPARATOR);
+		
+		// TOdo Peter refactor
+		String keyStoreType = StringUtils.substringAfterLast(keyStoreFileName, KeyStoreName.FILE_EXTENSION_SEPARATOR);
+		String keyStoreId = StringUtils.substringBeforeLast(keyStoreFileName, KeyStoreName.FILE_EXTENSION_SEPARATOR);
     	
-		guardBucketName = new BucketName(guardBucketNameStr);
-		userId = new UserID(userIdName);
+		keyStoreName = new KeyStoreName(new BucketName(bucketNameStr), new KeyStoreID(keyStoreId), new KeyStoreType(keyStoreType));
 		documentKeyID = new DocumentKeyID(documentKeyIDName);
 	}
 
 	@Override
 	public String toString() {
 		return "DocumentGuardName{" +
-				"guardBucketName=" + guardBucketName +
 				", documentKeyID=" + documentKeyID +
-				", userId=" + userId +
+				", keyStoreName=" + keyStoreName +
 				'}';
 	}
 }
