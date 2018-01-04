@@ -2,6 +2,7 @@ package org.adorsys.resource.server.persistence;
 
 import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.domain.ObjectHandle;
+import org.adorsys.resource.server.persistence.basetypes.KeyID;
 
 /**
  * Describes the structure of a persisten object.

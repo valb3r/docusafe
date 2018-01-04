@@ -2,7 +2,6 @@ package org.adorsys.resource.server.service;
 
 import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
-import org.adorsys.encobject.service.BlobStoreKeystorePersistence;
 import org.adorsys.encobject.service.ContainerExistsException;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.service.KeystorePersistence;
@@ -10,12 +9,13 @@ import org.adorsys.encobject.service.UnknownContainerException;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
 import org.adorsys.encobject.utils.TestKeyUtils;
 import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
-import org.adorsys.resource.server.basetypes.BucketName;
 import org.adorsys.resource.server.basetypes.DocumentGuardName;
 import org.adorsys.resource.server.basetypes.UserID;
 import org.adorsys.resource.server.complextypes.DocumentGuard;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
+import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
+import org.adorsys.resource.server.persistence.basetypes.BucketName;
 import org.adorsys.resource.server.utils.HexUtil;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -34,7 +34,7 @@ public class DocumentGuardServiceTest {
     private static String guardContainer = "guard";
     private static String keystoreContainer = "keystore";
     private static BlobStoreContextFactory keystoreContextFactory;
-    private static KeystorePersistence keystorePersistence;
+    private static ExtendedKeystorePersistence keystorePersistence;
     private static ContainerPersistence keystoreContainerPersistence;
 
     private static BlobStoreContextFactory guardContextFactory;
@@ -42,13 +42,12 @@ public class DocumentGuardServiceTest {
     private static ExtendedObjectPersistence guardExtendedPersistence;
     private static String keypasswordstring = "KeyPassword";
 
-
     @BeforeClass
     public static void beforeClass() {
         TestKeyUtils.turnOffEncPolicy();
 
         keystoreContextFactory = new TestFsBlobStoreFactory();
-        keystorePersistence = new BlobStoreKeystorePersistence(keystoreContextFactory);
+        keystorePersistence = new ExtendedKeystorePersistence(keystoreContextFactory);
         keystoreContainerPersistence = new ContainerPersistence(new BlobStoreConnection(keystoreContextFactory));
 
         guardContextFactory = new TestFsBlobStoreFactory();

@@ -1,9 +1,10 @@
 package org.adorsys.resource.server.service;
 
+import javax.security.auth.callback.CallbackHandler;
+
 import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.params.EncryptionParams;
-import org.adorsys.resource.server.basetypes.BucketName;
 import org.adorsys.resource.server.basetypes.DocumentContent;
 import org.adorsys.resource.server.basetypes.DocumentGuardName;
 import org.adorsys.resource.server.basetypes.DocumentID;
@@ -11,11 +12,10 @@ import org.adorsys.resource.server.basetypes.UserID;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.DocumentGuardBasedKeySourceImpl;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
-import org.adorsys.resource.server.persistence.KeyID;
 import org.adorsys.resource.server.persistence.KeySource;
 import org.adorsys.resource.server.persistence.PersistentObjectWrapper;
-
-import javax.security.auth.callback.CallbackHandler;
+import org.adorsys.resource.server.persistence.basetypes.BucketName;
+import org.adorsys.resource.server.persistence.basetypes.KeyID;
 
 /**
  * Sample use of the encobject api to implement our protocol.

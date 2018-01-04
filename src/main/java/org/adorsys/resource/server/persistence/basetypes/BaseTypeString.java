@@ -1,12 +1,14 @@
-package org.adorsys.resource.server.basetypes;
+package org.adorsys.resource.server.persistence.basetypes;
 
 import java.io.Serializable;
 
 /**
  * Created by peter on 20.02.17.
  */
-class BaseTypeString  implements Serializable {
-    private String value;
+public class BaseTypeString  implements Serializable {
+	
+	private static final long serialVersionUID = 3569239558130703592L;
+	private String value;
 
     protected BaseTypeString() {}
 

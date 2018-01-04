@@ -1,17 +1,18 @@
 package org.adorsys.resource.server.service;
 
-import com.nimbusds.jose.jwk.JWKSet;
-import de.adorsys.resource.server.keyservice.SecretKeyGenerator;
+import java.security.KeyStore;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.security.auth.callback.CallbackHandler;
+
 import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.params.EncryptionParams;
-import org.adorsys.encobject.service.KeystorePersistence;
-import org.adorsys.encobject.service.ObjectNotFoundException;
 import org.adorsys.jjwk.keystore.JwkExport;
 import org.adorsys.jjwk.serverkey.KeyAndJwk;
 import org.adorsys.jjwk.serverkey.ServerKeyMap;
 import org.adorsys.jkeygen.keystore.SecretKeyData;
-import org.adorsys.resource.server.basetypes.BucketName;
 import org.adorsys.resource.server.basetypes.DocumentGuardName;
 import org.adorsys.resource.server.basetypes.DocumentKey;
 import org.adorsys.resource.server.basetypes.DocumentKeyID;
@@ -19,31 +20,33 @@ import org.adorsys.resource.server.basetypes.GuardKeyID;
 import org.adorsys.resource.server.basetypes.UserID;
 import org.adorsys.resource.server.complextypes.DocumentGuard;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
+import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
-import org.adorsys.resource.server.persistence.KeyID;
 import org.adorsys.resource.server.persistence.KeySource;
 import org.adorsys.resource.server.persistence.KeyStoreBasedKeySourceImpl;
 import org.adorsys.resource.server.persistence.PersistentObjectWrapper;
+import org.adorsys.resource.server.persistence.basetypes.BucketName;
+import org.adorsys.resource.server.persistence.basetypes.KeyID;
+import org.adorsys.resource.server.persistence.basetypes.KeyStoreName;
 import org.adorsys.resource.server.serializer.DocumentGuardSerializer;
 import org.adorsys.resource.server.serializer.DocumentGuardSerializer01;
 import org.adorsys.resource.server.serializer.DocumentGuardSerializerRegistery;
 import org.adorsys.resource.server.utils.KeyStoreHandleUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 
-import javax.security.auth.callback.CallbackHandler;
-import java.security.KeyStore;
-import java.util.HashMap;
-import java.util.Map;
+import com.nimbusds.jose.jwk.JWKSet;
+
+import de.adorsys.resource.server.keyservice.SecretKeyGenerator;
 
 public class DocumentGuardService {
 
-    private KeystorePersistence keystorePersistence;
+    private ExtendedKeystorePersistence keystorePersistence;
     private SecretKeyGenerator secretKeyGenerator;
     private ExtendedObjectPersistence objectPersistence;
 
     private DocumentGuardSerializerRegistery serializerRegistry = DocumentGuardSerializerRegistery.getInstance();
 
-    public DocumentGuardService(KeystorePersistence keystorePersistence, ExtendedObjectPersistence objectPersistence) {
+    public DocumentGuardService(ExtendedKeystorePersistence keystorePersistence, ExtendedObjectPersistence objectPersistence) {
         this.keystorePersistence = keystorePersistence;
         this.objectPersistence = objectPersistence;
         this.secretKeyGenerator = new SecretKeyGenerator("AES", 256);
@@ -68,11 +71,10 @@ public class DocumentGuardService {
 
         try {
 
-            ObjectHandle keystoreHandle = KeyStoreHandleUtils.userkeyStoreHandle(keystoreBucketName, documentGuardName.getUserId());
-            if (!keystorePersistence.hasKeystore(keystoreHandle)) {
-                throw new ObjectNotFoundException("user keystore not found.");
-            }
-            KeyStore userKeystore = keystorePersistence.loadKeystore(keystoreHandle, userKeystoreHandler);
+//            ObjectHandle keystoreHandle = KeyStoreHandleUtils.userkeyStoreHandle(keystoreBucketName, documentGuardName.getUserId());
+        	KeyStoreName keyStoreName = KeyStoreName.findUserKeyStoreName(keystoreBucketName, documentGuardName.getUserId());
+        	KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreName, userKeystoreHandler);
+//            KeyStore userKeystore = keystorePersistence.loadKeystore(keystoreHandle, userKeystoreHandler);
 
 
             // load guard file
@@ -102,7 +104,8 @@ public class DocumentGuardService {
         try {
             // KeyStore laden
             ObjectHandle keystoreHandle = KeyStoreHandleUtils.userkeyStoreHandle(keystoreBucketName, userId);
-            KeyStore userKeystore = keystorePersistence.loadKeystore(keystoreHandle, userKeystoreHandler);
+        	KeyStoreName keyStoreName = KeyStoreName.findUserKeyStoreName(keystoreBucketName, userId);            
+            KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreName, userKeystoreHandler);
             KeySource keySource = new KeyStoreBasedKeySourceImpl(userKeystore, keyPassHandler);
 
             // Willkürlich einen SecretKey aus dem KeyStore nehmen für die Verschlüsselung des Guards

@@ -1,15 +1,17 @@
 package org.adorsys.resource.server.persistence;
 
-import org.adorsys.resource.server.basetypes.BucketName;
+import java.security.Key;
+
+import javax.security.auth.callback.CallbackHandler;
+
 import org.adorsys.resource.server.basetypes.DocumentGuardName;
 import org.adorsys.resource.server.basetypes.DocumentKeyID;
 import org.adorsys.resource.server.basetypes.UserID;
 import org.adorsys.resource.server.complextypes.DocumentGuard;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
+import org.adorsys.resource.server.persistence.basetypes.BucketName;
+import org.adorsys.resource.server.persistence.basetypes.KeyID;
 import org.adorsys.resource.server.service.DocumentGuardService;
-
-import javax.security.auth.callback.CallbackHandler;
-import java.security.Key;
 
 public class DocumentGuardBasedKeySourceImpl implements KeySource {
 

@@ -1,13 +1,14 @@
-package org.adorsys.encobject.utils;
+package org.adorsys.resource.server.persistence.basetypes;
 
-import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey;
-
-import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.security.KeyStore;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.crypto.spec.SecretKeySpec;
+
+import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey;
 
 /**
  * Created by peter on 02.01.18.

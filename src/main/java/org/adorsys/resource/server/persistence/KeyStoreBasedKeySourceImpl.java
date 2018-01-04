@@ -1,14 +1,16 @@
 package org.adorsys.resource.server.persistence;
 
-import org.adorsys.jkeygen.keystore.PasswordCallbackUtils;
-import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
-
-import javax.security.auth.callback.CallbackHandler;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
+
+import javax.security.auth.callback.CallbackHandler;
+
+import org.adorsys.jkeygen.keystore.PasswordCallbackUtils;
+import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
+import org.adorsys.resource.server.persistence.basetypes.KeyID;
 
 public class KeyStoreBasedKeySourceImpl implements KeySource{
 

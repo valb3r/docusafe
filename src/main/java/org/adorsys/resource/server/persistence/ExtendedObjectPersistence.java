@@ -9,6 +9,7 @@ import org.adorsys.encobject.params.EncryptionParams;
 import org.adorsys.encobject.service.StoreConnection;
 import org.adorsys.jjwk.selector.JWEEncryptedSelector;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
+import org.adorsys.resource.server.persistence.basetypes.KeyID;
 import org.apache.commons.io.IOUtils;
 
 import com.nimbusds.jose.JWEDecrypter;
@@ -19,7 +20,20 @@ import com.nimbusds.jose.JWEObject;
 import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.factories.DefaultJWEDecrypterFactory;
 
+/**
+ * This class jwe encrypt and store bytes, loads and jwe decrypt bytes. For this purpose, this class always add a ".jwe" to the file name. 
+ * It will stripp this".jwe" file extension before returning the byte to the caller. 
+ * 
+ * e.g.:
+ * -> if you store "peter.doc" in the storage you will find "peter.doc.jwe"
+ * -> if you request "peter.doc", we will look for "peter.doc.jwe"
+ * 
+ * @author fpo
+ *
+ */
 public class ExtendedObjectPersistence {
+
+	private static final String EXTENSION = ".jwe";
 
 	private DefaultJWEDecrypterFactory decrypterFactory = new DefaultJWEDecrypterFactory();
 
@@ -31,6 +45,7 @@ public class ExtendedObjectPersistence {
 	
 	/**
 	 * Encrypt and stores an byte array given additional meta information and encryption details.
+	 * 
 	 * 
 	 * @param data : unencrypted version of bytes to store
 	 * @param metaInfo : document meta information. e.g. content type, compression, expiration
@@ -69,10 +84,14 @@ public class ExtendedObjectPersistence {
 	
 			byte[] bytesToStore = jweEncryptedObject.getBytes("UTF-8");
 
-			blobStoreConnection.putBlob(location, bytesToStore);
+			blobStoreConnection.putBlob(addExtension(location), bytesToStore);
 		} catch (Exception e){
 			BaseExceptionHandler.handle(e);
 		}
+	}
+
+	private ObjectHandle addExtension(ObjectHandle location) {
+		return new ObjectHandle(location.getContainer(), location.getName()+ EXTENSION);
 	}
 
 	public PersistentObjectWrapper loadObject(ObjectHandle location, KeySource keySource) {
@@ -81,6 +100,8 @@ public class ExtendedObjectPersistence {
 			
 			if (location == null)
 				throw new IllegalArgumentException("Object handle must be provided.");
+			
+			location = addExtension(location);
 	
 			byte[] jweEncryptedBytes = blobStoreConnection.getBlob(location);
 			String jweEncryptedObject = IOUtils.toString(jweEncryptedBytes, "UTF-8");

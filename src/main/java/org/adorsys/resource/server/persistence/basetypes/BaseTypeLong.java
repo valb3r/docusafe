@@ -1,27 +1,28 @@
-package org.adorsys.resource.server.persistence;
+package org.adorsys.resource.server.persistence.basetypes;
 
 import java.io.Serializable;
 
 /**
- * Created by peter on 20.02.17.
+ * Created by peter on 21.02.17.
  */
-class BaseTypeString  implements Serializable {
-    private String value;
+public class BaseTypeLong implements Serializable {
+    private Long value;
 
-    protected BaseTypeString() {}
+    protected BaseTypeLong() {
+    }
 
-    protected BaseTypeString(String value) {
+    protected BaseTypeLong(Long value) {
         this.value = value;
     }
 
-    public String getValue() {
+    public Long getValue() {
         return value;
     }
 
     @Override
     public String toString() {
         return this.getClass().getSimpleName() + "{" +
-                "value='" + value + '\'' +
+                "value=" + value +
                 '}';
     }
 
@@ -30,7 +31,7 @@ class BaseTypeString  implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        BaseTypeString that = (BaseTypeString) o;
+        BaseTypeLong that = (BaseTypeLong) o;
 
         return value != null ? value.equals(that.value) : that.value == null;
 
@@ -41,3 +42,4 @@ class BaseTypeString  implements Serializable {
         return value != null ? value.hashCode() : 0;
     }
 }
+

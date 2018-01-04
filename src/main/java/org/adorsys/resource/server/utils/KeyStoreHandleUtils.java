@@ -1,9 +1,9 @@
 package org.adorsys.resource.server.utils;
 
 import org.adorsys.encobject.domain.ObjectHandle;
-import org.adorsys.resource.server.basetypes.BucketName;
-import org.adorsys.resource.server.basetypes.KeyStoreName;
 import org.adorsys.resource.server.basetypes.UserID;
+import org.adorsys.resource.server.persistence.basetypes.BucketName;
+import org.adorsys.resource.server.persistence.basetypes.KeyStoreName;
 
 public class KeyStoreHandleUtils {
     private static KeyStoreName userKeystoreNameFromUserId(UserID userID) {

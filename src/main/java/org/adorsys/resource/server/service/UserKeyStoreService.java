@@ -1,19 +1,17 @@
 package org.adorsys.resource.server.service;
 
-import java.io.IOException;
 import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 
 import javax.security.auth.callback.CallbackHandler;
 
-import org.adorsys.encobject.domain.ObjectHandle;
-import org.adorsys.encobject.service.*;
 import org.adorsys.jkeygen.keystore.PasswordCallbackUtils;
-import org.adorsys.resource.server.basetypes.BucketName;
 import org.adorsys.resource.server.basetypes.UserID;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
-import org.adorsys.resource.server.utils.KeyStoreHandleUtils;
+import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
+import org.adorsys.resource.server.persistence.basetypes.BucketName;
+import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;
+import org.adorsys.resource.server.persistence.basetypes.KeyStoreName;
+import org.adorsys.resource.server.persistence.basetypes.KeyStoreType;
 
 import de.adorsys.resource.server.keyservice.KeyPairGenerator;
 import de.adorsys.resource.server.keyservice.KeyStoreGenerator;
@@ -21,10 +19,10 @@ import de.adorsys.resource.server.keyservice.SecretKeyGenerator;
 
 public class UserKeyStoreService {
 
-    private KeystorePersistence keystorePersistence;
+    private ExtendedKeystorePersistence keystorePersistence;
     SecretKeyGenerator secretKeyGenerator;
 
-    public UserKeyStoreService(KeystorePersistence keystorePersistence) {
+    public UserKeyStoreService(ExtendedKeystorePersistence keystorePersistence) {
         super();
         this.keystorePersistence = keystorePersistence;
         secretKeyGenerator = new SecretKeyGenerator("AES", 256);
@@ -46,9 +44,10 @@ public class UserKeyStoreService {
                     secretKeyGenerator, keyStoreType, serverKeyPairAliasPrefix, numberOfSignKeyPairs, numberOfEncKeyPairs,
                     numberOfSecretKeys, new String(password));
             KeyStore userKeyStore = keyStoreGenerator.generate();
-            ObjectHandle keystoreHandle = KeyStoreHandleUtils.userkeyStoreHandle(bucketName, userId);
-            keystorePersistence.saveKeyStore(userKeyStore, userKeystoreHandler, keystoreHandle);
-            return keystorePersistence.loadKeystore(keystoreHandle, userKeystoreHandler);
+            
+            KeyStoreName keyStoreName = new KeyStoreName(bucketName, new KeyStoreID(userId.getValue()), new KeyStoreType(userKeyStore.getType()));
+			keystorePersistence.saveKeyStore(userKeyStore, userKeystoreHandler, keyStoreName);
+			return userKeyStore;
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }

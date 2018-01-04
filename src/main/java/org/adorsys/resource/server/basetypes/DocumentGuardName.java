@@ -1,5 +1,7 @@
 package org.adorsys.resource.server.basetypes;
 
+import org.adorsys.resource.server.persistence.basetypes.BaseTypeString;
+import org.adorsys.resource.server.persistence.basetypes.BucketName;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -11,10 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 public class DocumentGuardName extends BaseTypeString {
 	private static final long serialVersionUID = -3042461057378981231L;
 
-	/**
-	 * Separator between guard name and containing bucket.
-	 */
-	public static final String BUCKET_SEPARATOR = "@";
 	
 	public static final String GUARD_NAME_COMPONENT_SEPARATOR = ".";
 	
@@ -31,7 +29,7 @@ public class DocumentGuardName extends BaseTypeString {
 	}
 
 	public DocumentGuardName(BucketName guardBucketName, UserID userId, DocumentKeyID documentKeyID) {
-		super(toGuardName(guardBucketName, userId, documentKeyID));
+		super(toString(guardBucketName, userId, documentKeyID));
 		this.documentKeyID = documentKeyID;
 		this.userId = userId;
 		this.guardBucketName = guardBucketName;
@@ -50,17 +48,19 @@ public class DocumentGuardName extends BaseTypeString {
 	}
 
 
-	private static String toGuardName(BucketName guardBucketName, UserID userID, DocumentKeyID documentKeyID){
-		return userID.getValue() + GUARD_NAME_COMPONENT_SEPARATOR + documentKeyID.getValue() + BUCKET_SEPARATOR + guardBucketName.getValue();
+	private static String toString(BucketName guardBucketName, UserID userID, DocumentKeyID documentKeyID){
+		return userID.getValue() + GUARD_NAME_COMPONENT_SEPARATOR + documentKeyID.getValue() + BucketName.BUCKET_SEPARATOR + guardBucketName.getValue();
 	}
 	
-	private static DocumentGuardName fromString(String guardFQN){
-		String guardBucketName = StringUtils.substringAfterLast(guardFQN, BUCKET_SEPARATOR);
-		String guardName = StringUtils.substringBeforeLast(guardFQN, BUCKET_SEPARATOR);
+	private void fromString(String guardFQN){
+		String guardBucketNameStr = StringUtils.substringAfterLast(guardFQN, BucketName.BUCKET_SEPARATOR);
+		String guardName = StringUtils.substringBeforeLast(guardFQN, BucketName.BUCKET_SEPARATOR);
 		String documentKeyIDName = StringUtils.substringAfterLast(guardName, GUARD_NAME_COMPONENT_SEPARATOR);
 		String userIdName = StringUtils.substringBeforeLast(guardName, GUARD_NAME_COMPONENT_SEPARATOR);
     	
-    	return new DocumentGuardName(new BucketName(guardBucketName),new UserID(userIdName), new DocumentKeyID(documentKeyIDName));
+		guardBucketName = new BucketName(guardBucketNameStr);
+		userId = new UserID(userIdName);
+		documentKeyID = new DocumentKeyID(documentKeyIDName);
 	}
 
 	@Override

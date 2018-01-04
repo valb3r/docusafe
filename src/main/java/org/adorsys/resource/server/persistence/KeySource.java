@@ -2,6 +2,8 @@ package org.adorsys.resource.server.persistence;
 
 import java.security.Key;
 
+import org.adorsys.resource.server.persistence.basetypes.KeyID;
+
 /**
  * Retrieves and returns the key with the corresponding keyId.
  * 
