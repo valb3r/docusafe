@@ -1,11 +1,9 @@
 package org.adorsys.resource.server.service;
 
-import java.security.KeyStore;
-
-import javax.security.auth.callback.CallbackHandler;
-
+import de.adorsys.resource.server.keyservice.KeyPairGenerator;
+import de.adorsys.resource.server.keyservice.KeyStoreGenerator;
+import de.adorsys.resource.server.keyservice.SecretKeyGenerator;
 import org.adorsys.jkeygen.keystore.PasswordCallbackUtils;
-import org.adorsys.resource.server.basetypes.UserID;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
 import org.adorsys.resource.server.persistence.basetypes.BucketName;
@@ -13,9 +11,8 @@ import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreName;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreType;
 
-import de.adorsys.resource.server.keyservice.KeyPairGenerator;
-import de.adorsys.resource.server.keyservice.KeyStoreGenerator;
-import de.adorsys.resource.server.keyservice.SecretKeyGenerator;
+import javax.security.auth.callback.CallbackHandler;
+import java.security.KeyStore;
 
 public class UserKeyStoreService {
 
@@ -28,24 +25,24 @@ public class UserKeyStoreService {
         secretKeyGenerator = new SecretKeyGenerator("AES", 256);
     }
 
-    public KeyStoreName createUserKeyStore(UserID userId, CallbackHandler userKeystoreHandler, CallbackHandler keyPassHandler,
-                                       BucketName bucketName) {
+    public KeyStoreName createUserKeyStore(KeyStoreID keyStoreID, CallbackHandler userKeystoreHandler, CallbackHandler keyPassHandler,
+                                       BucketName keystoreBucketName) {
         try {
             String keyStoreType = null;
-            String serverKeyPairAliasPrefix = userId.getValue();
+            String serverKeyPairAliasPrefix = keyStoreID.getValue();
             Integer numberOfSignKeyPairs = 5;
             Integer numberOfEncKeyPairs = 5;
             Integer numberOfSecretKeys = 5;
-            String keyStorePassword = userId.getValue();
+            String keyStorePassword = keyStoreID.getValue();
             char[] password = PasswordCallbackUtils.getPassword(keyPassHandler, keyStorePassword);
-            KeyPairGenerator encKeyPairGenerator = new KeyPairGenerator("RSA", 2048, "SHA256withRSA", "enc-" + userId.getValue());
-            KeyPairGenerator signKeyPairGenerator = new KeyPairGenerator("RSA", 2048, "SHA256withRSA", "sign-" + userId.getValue());
+            KeyPairGenerator encKeyPairGenerator = new KeyPairGenerator("RSA", 2048, "SHA256withRSA", "enc-" + keyStoreID.getValue());
+            KeyPairGenerator signKeyPairGenerator = new KeyPairGenerator("RSA", 2048, "SHA256withRSA", "sign-" + keyStoreID.getValue());
             KeyStoreGenerator keyStoreGenerator = new KeyStoreGenerator(encKeyPairGenerator, signKeyPairGenerator,
                     secretKeyGenerator, keyStoreType, serverKeyPairAliasPrefix, numberOfSignKeyPairs, numberOfEncKeyPairs,
                     numberOfSecretKeys, new String(password));
             KeyStore userKeyStore = keyStoreGenerator.generate();
             
-            KeyStoreName keyStoreName = new KeyStoreName(bucketName, new KeyStoreID(userId.getValue()), new KeyStoreType(userKeyStore.getType()));
+            KeyStoreName keyStoreName = new KeyStoreName(keystoreBucketName, keyStoreID, new KeyStoreType(userKeyStore.getType()));
 			keystorePersistence.saveKeyStore(userKeyStore, userKeystoreHandler, keyStoreName);
 			return keyStoreName;
         } catch (Exception e) {

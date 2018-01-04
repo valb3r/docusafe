@@ -1,16 +1,5 @@
 package org.adorsys.resource.server.service;
 
-import java.io.IOException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
-
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.UnsupportedCallbackException;
-
 import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.ContainerExistsException;
 import org.adorsys.encobject.service.ContainerPersistence;
@@ -26,6 +15,7 @@ import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
 import org.adorsys.resource.server.basetypes.UserID;
 import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
 import org.adorsys.resource.server.persistence.basetypes.BucketName;
+import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreName;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -33,12 +23,22 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import java.io.IOException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+
 /**
  * Created by peter on 02.01.18.
  */
 public class UserKeyStoreServiceTest {
 
-    private static String container = UserKeyStoreServiceTest.class.getSimpleName();
+    private static String keystoreContainer = "keysotre-container-" + UserKeyStoreServiceTest.class.getSimpleName();
     private static TestFsBlobStoreFactory storeContextFactory;
     private static ExtendedKeystorePersistence keystorePersistence;
     private static ContainerPersistence containerPersistence;
@@ -51,7 +51,7 @@ public class UserKeyStoreServiceTest {
         containerPersistence = new ContainerPersistence(new BlobStoreConnection(storeContextFactory));
 
         try {
-            containerPersistence.creteContainer(container);
+            containerPersistence.creteContainer(keystoreContainer);
         } catch (ContainerExistsException e) {
             Assume.assumeNoException(e);
         }
@@ -61,8 +61,8 @@ public class UserKeyStoreServiceTest {
     @AfterClass
     public static void afterClass(){
         try {
-            if(containerPersistence!=null && containerPersistence.containerExists(container))
-                containerPersistence.deleteContainer(container);
+            if(containerPersistence!=null && containerPersistence.containerExists(keystoreContainer))
+                containerPersistence.deleteContainer(keystoreContainer);
         } catch (UnknownContainerException e) {
             Assume.assumeNoException(e);
         }
@@ -73,7 +73,7 @@ public class UserKeyStoreServiceTest {
     public void testCreateUserKeyStore() throws CertificateException, NoSuchAlgorithmException, UnknownContainerException, MissingKeystoreProviderException, MissingKeyAlgorithmException, WrongKeystoreCredentialException, MissingKeystoreAlgorithmException, KeystoreNotFoundException, IOException, KeyStoreException, UnrecoverableKeyException {
         String keypasswordstring = "KeyPassword";
         String useridstring = "UserPeter";
-        String bucketnamestring = container;
+        KeyStoreID keyStoreID = new KeyStoreID("key-store-id-123");
 
         UserKeyStoreService userKeyStoreService = new UserKeyStoreService(keystorePersistence);
         UserID userID = new UserID(useridstring);
@@ -86,10 +86,8 @@ public class UserKeyStoreServiceTest {
             }
         };
         CallbackHandler keyPassHanlder = new PasswordCallbackHandler(keypasswordstring.toCharArray());
-        BucketName bucketName = new BucketName(bucketnamestring);
-        KeyStoreName keyStoreName = userKeyStoreService.createUserKeyStore(userID, userKeyStoreHandler, keyPassHanlder, bucketName);
+        KeyStoreName keyStoreName = userKeyStoreService.createUserKeyStore(keyStoreID, userKeyStoreHandler, keyPassHanlder, new BucketName(keystoreContainer));
         KeyStore userKeyStore = userKeyStoreService.loadKeystore(keyStoreName, userKeyStoreHandler);
-//        Assert.assertTrue(storeContextFactory.existsOnFs(container, useridstring + ".keystore"));
         Assert.assertEquals("Number of Entries", 15, userKeyStore.size());
         // System.out.println(ShowKeyStore.toString(userKeyStore, keypasswordstring));
     }

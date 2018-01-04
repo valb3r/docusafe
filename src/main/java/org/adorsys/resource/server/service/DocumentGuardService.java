@@ -1,11 +1,7 @@
 package org.adorsys.resource.server.service;
 
-import java.security.KeyStore;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.security.auth.callback.CallbackHandler;
-
+import com.nimbusds.jose.jwk.JWKSet;
+import de.adorsys.resource.server.keyservice.SecretKeyGenerator;
 import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.params.EncryptionParams;
 import org.adorsys.jjwk.keystore.JwkExport;
@@ -30,9 +26,10 @@ import org.adorsys.resource.server.serializer.DocumentGuardSerializer01;
 import org.adorsys.resource.server.serializer.DocumentGuardSerializerRegistery;
 import org.apache.commons.lang3.RandomStringUtils;
 
-import com.nimbusds.jose.jwk.JWKSet;
-
-import de.adorsys.resource.server.keyservice.SecretKeyGenerator;
+import javax.security.auth.callback.CallbackHandler;
+import java.security.KeyStore;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DocumentGuardService {
 
@@ -49,7 +46,6 @@ public class DocumentGuardService {
     }
 
     /**
-     * @param userId
      * @param userKeystoreHandler
      * @param keyPassHandler
      */
@@ -69,7 +65,6 @@ public class DocumentGuardService {
         	KeyStore userKeystore = keystorePersistence.loadKeystore(documentGuardName.getKeyStoreName(), userKeystoreHandler);
 
             // load guard file
-//            ObjectHandle guardHandle = new ObjectHandle(documentGuardName.getGuardBucketName().getValue(), documentGuardName.getValue());
             KeySource keySource = new KeyStoreBasedKeySourceImpl(userKeystore, userKeyPassHandler);
             PersistentObjectWrapper wrapper = objectPersistence.loadObject(documentGuardName.toLocation(), keySource);
 
@@ -93,8 +88,6 @@ public class DocumentGuardService {
 
         try {
             // KeyStore laden
-//            ObjectHandle keystoreHandle = KeyStoreHandleUtils.userkeyStoreHandle(keystoreBucketName, userId);
-//        	KeyStoreName keyStoreName = KeyStoreName.findUserKeyStoreName(keystoreBucketName, userId);            
             KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreName, userKeystoreHandler);
             KeySource keySource = new KeyStoreBasedKeySourceImpl(userKeystore, keyPassHandler);
 

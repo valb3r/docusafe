@@ -4,18 +4,17 @@ import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.ContainerExistsException;
 import org.adorsys.encobject.service.ContainerPersistence;
-import org.adorsys.encobject.service.KeystorePersistence;
 import org.adorsys.encobject.service.UnknownContainerException;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
 import org.adorsys.encobject.utils.TestKeyUtils;
 import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
 import org.adorsys.resource.server.basetypes.DocumentGuardName;
-import org.adorsys.resource.server.basetypes.UserID;
 import org.adorsys.resource.server.complextypes.DocumentGuard;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
 import org.adorsys.resource.server.persistence.basetypes.BucketName;
+import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreName;
 import org.adorsys.resource.server.utils.HexUtil;
 import org.junit.AfterClass;
@@ -31,9 +30,7 @@ import java.security.KeyStore;
  * Created by peter on 02.01.18.
  */
 public class DocumentGuardServiceTest {
-    //    private static String container = UserKeyStoreServiceTest.class.getSimpleName();
-    private static String guardContainer = "guard";
-    private static String keystoreContainer = "keystore";
+    private static String keystoreContainer = "keysotre-container-" + DocumentGuardServiceTest.class.getSimpleName();
     private static BlobStoreContextFactory keystoreContextFactory;
     private static ExtendedKeystorePersistence keystorePersistence;
     private static ContainerPersistence keystoreContainerPersistence;
@@ -57,7 +54,6 @@ public class DocumentGuardServiceTest {
 
         try {
             keystoreContainerPersistence.creteContainer(keystoreContainer);
-            guardContainerPersistence.creteContainer(guardContainer);
         } catch (ContainerExistsException e) {
             Assume.assumeNoException(e);
         }
@@ -69,8 +65,6 @@ public class DocumentGuardServiceTest {
         try {
             if (keystoreContainerPersistence != null && keystoreContainerPersistence.containerExists(keystoreContainer))
                 keystoreContainerPersistence.deleteContainer(keystoreContainer);
-            if (guardContainerPersistence != null && guardContainerPersistence.containerExists(guardContainer))
-                guardContainerPersistence.deleteContainer(guardContainer);
         } catch (UnknownContainerException e) {
             Assume.assumeNoException(e);
         }
@@ -99,12 +93,12 @@ public class DocumentGuardServiceTest {
     
     private DocumentGuardName createDocumentGuard() {
         try {
-            UserID userID = new UserID("peter_der_user");
+            KeyStoreID keyStoreID = new KeyStoreID("another-key-store-id-456");
 
             CallbackHandler userKeyStoreHandler = new PasswordCallbackHandler(keypasswordstring.toCharArray());
             CallbackHandler keyPassHandler = new PasswordCallbackHandler(keypasswordstring.toCharArray());
             UserKeyStoreService userKeyStoreService = new UserKeyStoreService(keystorePersistence);
-            KeyStoreName keyStoreName = userKeyStoreService.createUserKeyStore(userID, userKeyStoreHandler, keyPassHandler, new BucketName(keystoreContainer));
+            KeyStoreName keyStoreName = userKeyStoreService.createUserKeyStore(keyStoreID, userKeyStoreHandler, keyPassHandler, new BucketName(keystoreContainer));
 
             {
                 KeyStore userKeyStore = userKeyStoreService.loadKeystore(keyStoreName, userKeyStoreHandler);
