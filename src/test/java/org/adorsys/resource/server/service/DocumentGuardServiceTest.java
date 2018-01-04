@@ -46,7 +46,7 @@ public class DocumentGuardServiceTest {
             DocumentGuard documentGuard = documentGuardService.loadDocumentGuard(guardName, userKeyStoreHandler, keyPassHandler);
             System.out.println("key des Guards ist :" + documentGuard.getDocumentKey());
             System.out.println("LOAD DocumentKey:" + HexUtil.conventBytesToHexString(documentGuard.getDocumentKey().getSecretKey().getEncoded()));
-            return new DocumentGuardStuff(documentGuard);
+            return new DocumentGuardStuff(documentGuard, documentGuardService, guardName);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
@@ -74,8 +74,12 @@ public class DocumentGuardServiceTest {
 
     public static class DocumentGuardStuff {
         public DocumentGuard documentGuard;
-        public DocumentGuardStuff(DocumentGuard documentGuard) {
+        public DocumentGuardService documentGuardService;
+        public DocumentGuardName documentGuardName;
+        public DocumentGuardStuff(DocumentGuard documentGuard, DocumentGuardService documentGuardService, DocumentGuardName documentGuardName) {
             this.documentGuard = documentGuard;
+            this.documentGuardService = documentGuardService;
+            this.documentGuardName = documentGuardName;
         }
     }
 }
