@@ -14,18 +14,18 @@ import org.adorsys.resource.server.persistence.basetypes.KeyStoreType;
 import javax.security.auth.callback.CallbackHandler;
 import java.security.KeyStore;
 
-public class UserKeyStoreService {
+public class KeyStoreService {
 
     private ExtendedKeystorePersistence keystorePersistence;
     SecretKeyGenerator secretKeyGenerator;
 
-    public UserKeyStoreService(ExtendedKeystorePersistence keystorePersistence) {
+    public KeyStoreService(ExtendedKeystorePersistence keystorePersistence) {
         super();
         this.keystorePersistence = keystorePersistence;
         secretKeyGenerator = new SecretKeyGenerator("AES", 256);
     }
 
-    public KeyStoreName createUserKeyStore(KeyStoreID keyStoreID, CallbackHandler userKeystoreHandler, CallbackHandler keyPassHandler,
+    public KeyStoreName createKeyStore(KeyStoreID keyStoreID, CallbackHandler userKeystoreHandler, CallbackHandler keyPassHandler,
                                        BucketName keystoreBucketName) {
         try {
             String keyStoreType = null;

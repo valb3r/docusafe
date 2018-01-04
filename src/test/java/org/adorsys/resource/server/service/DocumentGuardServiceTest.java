@@ -71,12 +71,12 @@ public class DocumentGuardServiceTest {
     }
 
     @Test
-    public void createSelfCuard() {
+    public void testCreateDocumentGuard() {
         createDocumentGuard();
     }
 
     @Test
-    public void createAndLoadSelfCuard() {
+    public void testCreateAndLoadDocumentGuard() {
         try {
             DocumentGuardName guardName = createDocumentGuard();
             DocumentGuardService documentGuardService = new DocumentGuardService(keystorePersistence, guardExtendedPersistence);
@@ -97,16 +97,16 @@ public class DocumentGuardServiceTest {
 
             CallbackHandler userKeyStoreHandler = new PasswordCallbackHandler(keypasswordstring.toCharArray());
             CallbackHandler keyPassHandler = new PasswordCallbackHandler(keypasswordstring.toCharArray());
-            UserKeyStoreService userKeyStoreService = new UserKeyStoreService(keystorePersistence);
-            KeyStoreName keyStoreName = userKeyStoreService.createUserKeyStore(keyStoreID, userKeyStoreHandler, keyPassHandler, new BucketName(keystoreContainer));
+            KeyStoreService keyStoreService = new KeyStoreService(keystorePersistence);
+            KeyStoreName keyStoreName = keyStoreService.createKeyStore(keyStoreID, userKeyStoreHandler, keyPassHandler, new BucketName(keystoreContainer));
 
             {
-                KeyStore userKeyStore = userKeyStoreService.loadKeystore(keyStoreName, userKeyStoreHandler);
+                KeyStore userKeyStore = keyStoreService.loadKeystore(keyStoreName, userKeyStoreHandler);
                 Assert.assertEquals("Number of entries of KeyStore is 15", 15, userKeyStore.size());
             }
 
             DocumentGuardService documentGuardService = new DocumentGuardService(keystorePersistence, guardExtendedPersistence);
-            DocumentGuardName guardName = documentGuardService.createUserSelfGuard(keyStoreName, userKeyStoreHandler, keyPassHandler);
+            DocumentGuardName guardName = documentGuardService.createDocumentGuard(keyStoreName, userKeyStoreHandler, keyPassHandler);
             System.out.println("user guard erzeugt:" + guardName);
             return guardName;
         } catch (Exception e) {

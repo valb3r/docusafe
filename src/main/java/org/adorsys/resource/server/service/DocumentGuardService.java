@@ -49,7 +49,7 @@ public class DocumentGuardService {
      * @param userKeystoreHandler
      * @param keyPassHandler
      */
-    public DocumentGuardName createUserSelfGuard(KeyStoreName keyStoreName, CallbackHandler userKeystoreHandler, CallbackHandler keyPassHandler) {
+    public DocumentGuardName createDocumentGuard(KeyStoreName keyStoreName, CallbackHandler userKeystoreHandler, CallbackHandler keyPassHandler) {
         return createDocumentGuardAndReturnInternals(keyStoreName, userKeystoreHandler, keyPassHandler).documentGuardName;
     }
 

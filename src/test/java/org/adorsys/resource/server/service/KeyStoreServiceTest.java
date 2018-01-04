@@ -36,9 +36,9 @@ import java.security.cert.CertificateException;
 /**
  * Created by peter on 02.01.18.
  */
-public class UserKeyStoreServiceTest {
+public class KeyStoreServiceTest {
 
-    private static String keystoreContainer = "keysotre-container-" + UserKeyStoreServiceTest.class.getSimpleName();
+    private static String keystoreContainer = "keysotre-container-" + KeyStoreServiceTest.class.getSimpleName();
     private static TestFsBlobStoreFactory storeContextFactory;
     private static ExtendedKeystorePersistence keystorePersistence;
     private static ContainerPersistence containerPersistence;
@@ -70,12 +70,12 @@ public class UserKeyStoreServiceTest {
 
     // TODO, warum kann hier ein hohler userKeyStoreHandler übergeben werden??
     @Test
-    public void testCreateUserKeyStore() throws CertificateException, NoSuchAlgorithmException, UnknownContainerException, MissingKeystoreProviderException, MissingKeyAlgorithmException, WrongKeystoreCredentialException, MissingKeystoreAlgorithmException, KeystoreNotFoundException, IOException, KeyStoreException, UnrecoverableKeyException {
+    public void testCreateKeyStore() throws CertificateException, NoSuchAlgorithmException, UnknownContainerException, MissingKeystoreProviderException, MissingKeyAlgorithmException, WrongKeystoreCredentialException, MissingKeystoreAlgorithmException, KeystoreNotFoundException, IOException, KeyStoreException, UnrecoverableKeyException {
         String keypasswordstring = "KeyPassword";
         String useridstring = "UserPeter";
         KeyStoreID keyStoreID = new KeyStoreID("key-store-id-123");
 
-        UserKeyStoreService userKeyStoreService = new UserKeyStoreService(keystorePersistence);
+        KeyStoreService keyStoreService = new KeyStoreService(keystorePersistence);
         UserID userID = new UserID(useridstring);
         CallbackHandler userKeyStoreHandler = new CallbackHandler() {
             @Override
@@ -86,8 +86,8 @@ public class UserKeyStoreServiceTest {
             }
         };
         CallbackHandler keyPassHanlder = new PasswordCallbackHandler(keypasswordstring.toCharArray());
-        KeyStoreName keyStoreName = userKeyStoreService.createUserKeyStore(keyStoreID, userKeyStoreHandler, keyPassHanlder, new BucketName(keystoreContainer));
-        KeyStore userKeyStore = userKeyStoreService.loadKeystore(keyStoreName, userKeyStoreHandler);
+        KeyStoreName keyStoreName = keyStoreService.createKeyStore(keyStoreID, userKeyStoreHandler, keyPassHanlder, new BucketName(keystoreContainer));
+        KeyStore userKeyStore = keyStoreService.loadKeystore(keyStoreName, userKeyStoreHandler);
         Assert.assertEquals("Number of Entries", 15, userKeyStore.size());
         // System.out.println(ShowKeyStore.toString(userKeyStore, keypasswordstring));
     }
