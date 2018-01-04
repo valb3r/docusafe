@@ -1,7 +1,11 @@
 package org.adorsys.resource.server.service;
 
-import com.nimbusds.jose.jwk.JWKSet;
-import de.adorsys.resource.server.keyservice.SecretKeyGenerator;
+import java.security.KeyStore;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.security.auth.callback.CallbackHandler;
+
 import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.params.EncryptionParams;
@@ -27,27 +31,27 @@ import org.adorsys.resource.server.persistence.KeyStoreBasedKeySourceImpl;
 import org.adorsys.resource.server.persistence.PersistentObjectWrapper;
 import org.adorsys.resource.server.serializer.DocumentGuardSerializer;
 import org.adorsys.resource.server.serializer.DocumentGuardSerializer01;
+import org.adorsys.resource.server.serializer.DocumentGuardSerializerRegistery;
 import org.adorsys.resource.server.utils.KeyStoreHandleUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 
-import javax.crypto.SecretKey;
-import javax.security.auth.callback.CallbackHandler;
-import java.security.KeyStore;
-import java.util.HashMap;
-import java.util.Map;
+import com.nimbusds.jose.jwk.JWKSet;
+
+import de.adorsys.resource.server.keyservice.SecretKeyGenerator;
 
 public class DocumentGuardService {
 	
 	public static final String SERIALIZER_HEADER_KEY="serilizer_id";
-	DocumentGuardSerializer serializer = new DocumentGuardSerializer01();
 	private KeystorePersistence keystorePersistence;
 	private SecretKeyGenerator secretKeyGenerator;
 	private ExtendedObjectPersistence objectPersistence;
+	
+	private DocumentGuardSerializerRegistery serializerRegistry = DocumentGuardSerializerRegistery.getInstance();
 
 	public DocumentGuardService(KeystorePersistence keystorePersistence, ExtendedObjectPersistence objectPersistence) {
 		this.keystorePersistence = keystorePersistence;
 		this.objectPersistence = objectPersistence;
-		secretKeyGenerator = new SecretKeyGenerator("AES", 256);
+		this.secretKeyGenerator = new SecretKeyGenerator("AES", 256);
 	}
 
 	/**
@@ -70,12 +74,12 @@ public class DocumentGuardService {
 			// Generate a secret key
 			String keyAlias = RandomStringUtils.randomAlphanumeric(20);
 			SecretKeyData secretKeyData = secretKeyGenerator.generate(keyAlias,keyPassHandler);
-			byte[] serializeSecretKeyBytes = serializer.serializeSecretKey(new DocumentKey(secretKeyData.getSecretKey()));
+			byte[] serializeSecretKeyBytes = serializerRegistry.defaultSerializer().serializeSecretKey(new DocumentKey(secretKeyData.getSecretKey()));
 
 			System.out.println("SAVE DOCUMENTKEY:" + HexUtil.conventBytesToHexString(serializeSecretKeyBytes));
 			
 			DocumnentKeyID documnentKeyID = new DocumnentKeyID(secretKeyData.getAlias());
-			DocumentGuardName documentGuardName = new DocumentGuardName(userId, documnentKeyID);
+			DocumentGuardName documentGuardName = new DocumentGuardName(guardBucketName, userId, documnentKeyID);
 			
 			ObjectHandle location = new ObjectHandle(guardBucketName.getValue(), documentGuardName.getValue());
 			EncryptionParams encParams = null;
@@ -94,7 +98,7 @@ public class DocumentGuardService {
     /**
      * Loading the secret key from the guard.
      */
-    public DocumentGuard loadDocumentGuard(DocumentGuardName documentGuardName, BucketName keystoreBucketName, BucketName guardBucketName, CallbackHandler userKeystoreHandler,
+    public DocumentGuard loadDocumentGuard(DocumentGuardName documentGuardName, BucketName keystoreBucketName, CallbackHandler userKeystoreHandler,
                                              CallbackHandler userKeyPassHandler){
     	
     	try {
@@ -107,39 +111,19 @@ public class DocumentGuardService {
 	
 	
 	        // load guard file
-	        ObjectHandle guardHandle = new ObjectHandle(guardBucketName.getValue(), documentGuardName.getValue());
+	        ObjectHandle guardHandle = new ObjectHandle(documentGuardName.getGuardBucketName().getValue(), documentGuardName.getValue());
 	        KeySource keySource = new KeyStoreBasedKeySourceImpl(userKeystore, userKeyPassHandler);
 	        PersistentObjectWrapper wrapper = objectPersistence.loadObject(guardHandle, keySource);
 	        
 	        ContentMetaInfo metaIno = wrapper.getMetaIno();
 	        Map<String, Object> addInfos = metaIno.getAddInfos();
-
-			DocumentKey documentKey = new DocumentKey(new SecretKeyImpl(wrapper.getData()));
+	        String serializerId = (String) addInfos.get(SERIALIZER_HEADER_KEY);
+			serializerRegistry.getSerializer(serializerId);
+			DocumentGuardSerializer serializer = serializerRegistry.getSerializer(serializerId);
+	        DocumentKey documentKey = serializer.deserializeSecretKey(wrapper.getData());
 	        return new DocumentGuard(documentGuardName, documentKey);
     	} catch(Exception e){
     		throw BaseExceptionHandler.handle(e);
     	}
     }
-
-    private static class SecretKeyImpl implements SecretKey {
-		private byte bytes[];
-		public SecretKeyImpl(byte[] bytes) {
-			this.bytes = bytes;
-		}
-
-		@Override
-		public String getAlgorithm() {
-			return null;
-		}
-
-		@Override
-		public String getFormat() {
-			return null;
-		}
-
-		@Override
-		public byte[] getEncoded() {
-			return bytes;
-		}
-	}
 }

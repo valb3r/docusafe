@@ -38,8 +38,8 @@ public class DocumentGuardBasedKeySourceImpl implements KeySource {
 		
         // Load DokumentKeyID from guard.
         try {
-			DocumentGuardName documentGuardName = new DocumentGuardName(userID, new DocumnentKeyID(keyID.getValue()));
-			DocumentGuard documentGuard = documentGuardService.loadDocumentGuard(documentGuardName, keysourceBucketName, guardBucketName, userKeystoreHandler, keyPassHandler);
+			DocumentGuardName documentGuardName = new DocumentGuardName(guardBucketName, userID, new DocumnentKeyID(keyID.getValue()));
+			DocumentGuard documentGuard = documentGuardService.loadDocumentGuard(documentGuardName, keysourceBucketName, userKeystoreHandler, keyPassHandler);
 			return documentGuard.getDocumentKey().getSecretKey();
 		} catch (Exception e) {
 			throw BaseExceptionHandler.handle(e);

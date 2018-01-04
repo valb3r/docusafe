@@ -5,7 +5,6 @@ import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
@@ -13,16 +12,14 @@ import javax.crypto.SecretKey;
 import javax.security.auth.callback.CallbackHandler;
 
 import org.adorsys.encobject.domain.keystore.KeystoreData;
-import org.adorsys.encobject.service.MissingKeyAlgorithmException;
-import org.adorsys.encobject.service.MissingKeystoreAlgorithmException;
-import org.adorsys.encobject.service.MissingKeystoreProviderException;
 import org.adorsys.encobject.service.WrongKeyCredentialException;
-import org.adorsys.encobject.service.WrongKeystoreCredentialException;
 import org.adorsys.jkeygen.keystore.KeyStoreService;
 import org.adorsys.jkeygen.keystore.KeystoreBuilder;
 import org.adorsys.jkeygen.keystore.PasswordCallbackUtils;
 import org.adorsys.jkeygen.keystore.SecretKeyData;
-import org.adorsys.resource.server.basetypes.DocumnentKeyID;
+import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
+
+import com.google.protobuf.ByteString;
 
 /**
  * Keystore utilities.
@@ -39,13 +36,14 @@ public class KeystoreAdapter {
 	 * @param alias
 	 * @param keyPassHandler
 	 * @return
-	 * @throws NoSuchAlgorithmException
-	 * @throws CertificateException
-	 * @throws IOException
 	 */
-	public static KeyStore wrapSecretKey2KeyStore(SecretKey secretKey, String alias, CallbackHandler keyPassHandler) throws NoSuchAlgorithmException, CertificateException, IOException {
+	public static KeyStore wrapSecretKey2KeyStore(SecretKey secretKey, String alias, CallbackHandler keyPassHandler){
 		SecretKeyData secretKeyData = new SecretKeyData(secretKey, alias, keyPassHandler);
-		return new KeystoreBuilder().withKeyEntry(secretKeyData).build();
+		try {
+			return new KeystoreBuilder().withKeyEntry(secretKeyData).build();
+		} catch (NoSuchAlgorithmException | CertificateException | IOException e) {
+			throw BaseExceptionHandler.handle(e);
+		}
 	}
 	
 	/**
@@ -55,16 +53,14 @@ public class KeystoreAdapter {
 	 * @param storeid
 	 * @param keystoreHandler
 	 * @return
-	 * @throws CertificateException
-	 * @throws WrongKeystoreCredentialException
-	 * @throws MissingKeystoreAlgorithmException
-	 * @throws MissingKeystoreProviderException
-	 * @throws MissingKeyAlgorithmException
-	 * @throws IOException
 	 */
-	public static KeyStore loadKeystoreFromBytes(byte[] keyStoreBytes, String storeid, CallbackHandler keystoreHandler) throws CertificateException, WrongKeystoreCredentialException, MissingKeystoreAlgorithmException, MissingKeystoreProviderException, MissingKeyAlgorithmException, IOException{
-		KeystoreData keystoreData = loadKeystoreData(keyStoreBytes);
-		return initKeystore(keystoreData, storeid, keystoreHandler);
+	public static KeyStore loadKeystoreFromBytes(byte[] keyStoreDataBytes, String storeid, CallbackHandler keystoreHandler){
+		try {
+			KeystoreData keystoreData = KeystoreData.parseFrom(keyStoreDataBytes);
+			return KeyStoreService.loadKeyStore(keystoreData.getKeystore().toByteArray(), storeid, keystoreData.getType(), keystoreHandler);
+		} catch (Exception ex){
+			throw BaseExceptionHandler.handle(ex);
+		}
 	}
 	
 	/**
@@ -79,40 +75,18 @@ public class KeystoreAdapter {
 		} catch (KeyStoreException e) {
 			throw new WrongKeyCredentialException(e);
 		} catch (NoSuchAlgorithmException e) {
-			throw new IllegalStateException(e);
+			throw BaseExceptionHandler.handle(e);
 		}		
 	}
-
-	private static KeystoreData loadKeystoreData(byte[] keyStoreBytes)  {
+	
+	public static byte[] toBytes(KeyStore keystore, String storeid, CallbackHandler storePassHandler){
 		try {
-			return KeystoreData.parseFrom(keyStoreBytes);
-		} catch (IOException e) {
-			throw new IllegalStateException("Invalid protocol buffer", e);
+			String e = keystore.getType();
+			byte[] bs = KeyStoreService.toByteArray(keystore, storeid, storePassHandler);
+			KeystoreData keystoreData = KeystoreData.newBuilder().setType(e).setKeystore(ByteString.copyFrom(bs)).build();
+			return keystoreData.toByteArray();
+		} catch (Exception e) {
+			throw BaseExceptionHandler.handle(e);
 		}
-	}
-
-	private static KeyStore initKeystore(KeystoreData keystoreData, String storeid, CallbackHandler handler) throws WrongKeystoreCredentialException, MissingKeystoreAlgorithmException, MissingKeystoreProviderException, MissingKeyAlgorithmException, CertificateException, IOException {
-		try {
-			return KeyStoreService.loadKeyStore(keystoreData.getKeystore().toByteArray(), storeid, keystoreData.getType(), handler);
-		} catch (UnrecoverableKeyException e) {
-			throw new WrongKeystoreCredentialException(e);
-		} catch (KeyStoreException e) {
-			if(e.getCause()!=null){
-				Throwable cause = e.getCause();
-				if(cause instanceof NoSuchAlgorithmException){
-					throw new MissingKeystoreAlgorithmException(cause.getMessage(), cause);
-				}
-				if(cause instanceof NoSuchProviderException){
-					throw new MissingKeystoreProviderException(cause.getMessage(), cause);
-				}
-			}
-			throw new IllegalStateException("Unidentified keystore exception", e);
-		} catch (NoSuchAlgorithmException e) {
-			throw new MissingKeyAlgorithmException(e.getMessage(), e);
-		}
-	}
-
-	public static byte[] toBytes(KeyStore keystore, String storeid, String type, CallbackHandler storePassSrc) throws NoSuchAlgorithmException, CertificateException, IOException {
-		return KeyStoreService.toByteArray(keystore, storeid, storePassSrc);
 	}	
 }

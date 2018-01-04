@@ -1,10 +1,7 @@
 package org.adorsys.resource.server.serializer;
 
-import java.nio.channels.IllegalSelectorException;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.adorsys.encobject.service.ObjectNotFoundException;
 
 public class DocumentGuardSerializerRegistery {
 	
@@ -26,5 +23,9 @@ public class DocumentGuardSerializerRegistery {
 	
 	public void registerSerializer(String serializerId, DocumentGuardSerializer serializer){
 		serializers.put(serializerId, serializer);
+	}
+	
+	public DocumentGuardSerializer defaultSerializer(){
+		return serializers.get(DocumentGuardSerializer01.SERIALIZER_ID);
 	}
 }

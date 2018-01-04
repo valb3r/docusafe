@@ -1,20 +1,15 @@
 package org.adorsys.resource.server.serializer;
 
-import org.adorsys.encobject.service.MissingKeyAlgorithmException;
-import org.adorsys.encobject.service.MissingKeystoreAlgorithmException;
-import org.adorsys.encobject.service.MissingKeystoreProviderException;
-import org.adorsys.encobject.service.WrongKeyCredentialException;
-import org.adorsys.encobject.service.WrongKeystoreCredentialException;
-import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
-import org.adorsys.resource.server.basetypes.DocumentKey;
-import org.adorsys.resource.server.utils.KeystoreAdapter;
+import java.security.KeyStore;
 
 import javax.crypto.SecretKey;
 import javax.security.auth.callback.CallbackHandler;
-import java.io.IOException;
-import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
+
+import org.adorsys.encobject.service.WrongKeyCredentialException;
+import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
+import org.adorsys.resource.server.basetypes.DocumentKey;
+import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
+import org.adorsys.resource.server.utils.KeystoreAdapter;
 
 public class DocumentGuardSerializer01 implements DocumentGuardSerializer {
 	
@@ -36,21 +31,13 @@ public class DocumentGuardSerializer01 implements DocumentGuardSerializer {
 			secretKeystore = KeystoreAdapter.loadKeystoreFromBytes(decryptedGuardBytes, DGS01_KEYID, keystoreHandler);
 			SecretKey secretKey = (SecretKey) KeystoreAdapter.readKeyFromKeystore(secretKeystore, DGS01_KEYID, keystoreHandler);
 			return new DocumentKey(secretKey);
-		} catch (CertificateException | WrongKeystoreCredentialException | MissingKeystoreAlgorithmException
-				| MissingKeystoreProviderException | MissingKeyAlgorithmException | IOException | WrongKeyCredentialException e) {
-			// Not supposed to happen.
-			throw new IllegalStateException(e);
+		} catch (WrongKeyCredentialException e) {
+			throw BaseExceptionHandler.handle(e);
 		}
 	}
 
 	public byte[] serializeSecretKey(DocumentKey documentKey) {
-		try {
-			KeyStore docKeyStore = KeystoreAdapter.wrapSecretKey2KeyStore(documentKey.getSecretKey(), DGS01_KEYID,
-					keystoreHandler);
-			return KeystoreAdapter.toBytes(docKeyStore, DGS01_KEYID, docKeyStore.getType(), keystoreHandler);
-		} catch (NoSuchAlgorithmException | CertificateException | IOException e) {
-			// Not supposed to happen.
-			throw new IllegalStateException(e);
-		}
+		KeyStore docKeyStore = KeystoreAdapter.wrapSecretKey2KeyStore(documentKey.getSecretKey(), DGS01_KEYID,keystoreHandler);
+		return KeystoreAdapter.toBytes(docKeyStore, DGS01_KEYID, keystoreHandler);
 	}
 }
