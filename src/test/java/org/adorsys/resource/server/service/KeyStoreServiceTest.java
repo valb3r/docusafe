@@ -14,10 +14,7 @@ import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreName;
 import org.junit.Assume;
 
-import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import java.io.IOException;
 import java.security.KeyStore;
 
 /**
@@ -53,7 +50,7 @@ public class KeyStoreServiceTest {
         }
     }
 
-    // TODO, warum kann hier ein hohler userKeyStoreHandler übergeben werden??
+    // TODO, warum koennte hier ein hohler userKeyStoreHandler übergeben werden??
     public KeyStoreStuff createKeyStore() {
         BucketName keyStoreBucketName = new BucketName(keystoreContainer);
         String keypasswordstring = "KeyPassword";
@@ -62,18 +59,11 @@ public class KeyStoreServiceTest {
 
         KeyStoreService keyStoreService = new KeyStoreService(keystorePersistence);
         UserID userID = new UserID(useridstring);
-        CallbackHandler userKeyStoreHandler = new CallbackHandler() {
-            @Override
-            public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-                for (Callback call : callbacks) {
-                    System.out.println("user key Store handler callback:" + call);
-                }
-            }
-        };
+        CallbackHandler userKeyStoreHandler = new PasswordCallbackHandler(keypasswordstring.toCharArray());
         CallbackHandler keyPassHanlder = new PasswordCallbackHandler(keypasswordstring.toCharArray());
         KeyStoreName keyStoreName = keyStoreService.createKeyStore(keyStoreID, userKeyStoreHandler, keyPassHanlder, keyStoreBucketName);
         KeyStore userKeyStore = keyStoreService.loadKeystore(keyStoreName, userKeyStoreHandler);
-        return new KeyStoreStuff(userKeyStore, keystorePersistence, keyStoreBucketName, keyStoreID);
+        return new KeyStoreStuff(userKeyStore, keystorePersistence, keyStoreBucketName, keyStoreID, userKeyStoreHandler, keyPassHanlder);
         // System.out.println(ShowKeyStore.toString(userKeyStore, keypasswordstring));
     }
 
@@ -82,12 +72,16 @@ public class KeyStoreServiceTest {
         public ExtendedKeystorePersistence keystorePersistence;
         public BucketName keyStoreBucketName;
         public KeyStoreID keyStoreID;
+        public CallbackHandler userKeyStoreHandler;
+        public CallbackHandler keyPassHandler;
 
-        public KeyStoreStuff(KeyStore keyStore, ExtendedKeystorePersistence keystorePersistence, BucketName keyStoreBucketName, KeyStoreID keyStoreID) {
+        public KeyStoreStuff(KeyStore keyStore, ExtendedKeystorePersistence keystorePersistence, BucketName keyStoreBucketName, KeyStoreID keyStoreID, CallbackHandler userKeyStoreHandler, CallbackHandler keyPassHandler) {
             this.keyStore = keyStore;
             this.keystorePersistence = keystorePersistence;
             this.keyStoreBucketName = keyStoreBucketName;
             this.keyStoreID = keyStoreID;
+            this.userKeyStoreHandler = userKeyStoreHandler;
+            this.keyPassHandler = keyPassHandler;
         }
     }
 }

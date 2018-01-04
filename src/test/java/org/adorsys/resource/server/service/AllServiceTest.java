@@ -40,6 +40,8 @@ public class AllServiceTest {
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
             new DocumentGuardServiceTest().testCreateDocumentGuard(
+                    keyStoreStuff.userKeyStoreHandler,
+                    keyStoreStuff.keyPassHandler,
                     keyStoreStuff.keystorePersistence,
                     keyStoreStuff.keyStoreBucketName,
                     keyStoreStuff.keyStoreID);
@@ -53,6 +55,8 @@ public class AllServiceTest {
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
             DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = new DocumentGuardServiceTest().testCreateAndLoadDocumentGuard(
+                    keyStoreStuff.userKeyStoreHandler,
+                    keyStoreStuff.keyPassHandler,
                     keyStoreStuff.keystorePersistence,
                     keyStoreStuff.keyStoreBucketName,
                     keyStoreStuff.keyStoreID);

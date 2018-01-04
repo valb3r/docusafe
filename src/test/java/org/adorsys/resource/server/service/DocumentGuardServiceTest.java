@@ -5,7 +5,6 @@ import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
 import org.adorsys.encobject.utils.TestKeyUtils;
-import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
 import org.adorsys.resource.server.basetypes.DocumentGuardName;
 import org.adorsys.resource.server.complextypes.DocumentGuard;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
@@ -28,7 +27,6 @@ public class DocumentGuardServiceTest {
     private static BlobStoreContextFactory guardContextFactory;
     private static ContainerPersistence guardContainerPersistence;
     private static ExtendedObjectPersistence guardExtendedPersistence;
-    private static String keypasswordstring = "KeyPassword";
 
     public static void beforeClass() {
         TestKeyUtils.turnOffEncPolicy();
@@ -41,12 +39,10 @@ public class DocumentGuardServiceTest {
     public static void afterClass() {
 
     }
-    public DocumentGuardStuff testCreateAndLoadDocumentGuard(ExtendedKeystorePersistence keystorePersistence, BucketName keystoreBucketName, KeyStoreID keyStoreID) {
+    public DocumentGuardStuff testCreateAndLoadDocumentGuard(CallbackHandler userKeyStoreHandler, CallbackHandler keyPassHandler, ExtendedKeystorePersistence keystorePersistence, BucketName keystoreBucketName, KeyStoreID keyStoreID) {
         try {
-            DocumentGuardName guardName = testCreateDocumentGuard(keystorePersistence, keystoreBucketName, keyStoreID);
+            DocumentGuardName guardName = testCreateDocumentGuard(userKeyStoreHandler, keyPassHandler, keystorePersistence, keystoreBucketName, keyStoreID);
             DocumentGuardService documentGuardService = new DocumentGuardService(keystorePersistence, guardExtendedPersistence);
-            CallbackHandler userKeyStoreHandler = new PasswordCallbackHandler(keypasswordstring.toCharArray());
-            CallbackHandler keyPassHandler = new PasswordCallbackHandler(keypasswordstring.toCharArray());
             DocumentGuard documentGuard = documentGuardService.loadDocumentGuard(guardName, userKeyStoreHandler, keyPassHandler);
             System.out.println("key des Guards ist :" + documentGuard.getDocumentKey());
             System.out.println("LOAD DocumentKey:" + HexUtil.conventBytesToHexString(documentGuard.getDocumentKey().getSecretKey().getEncoded()));
@@ -57,10 +53,8 @@ public class DocumentGuardServiceTest {
 
     }
     
-    public DocumentGuardName testCreateDocumentGuard(ExtendedKeystorePersistence keystorePersistence, BucketName keystoreBucketName, KeyStoreID keyStoreID) {
+    public DocumentGuardName testCreateDocumentGuard(CallbackHandler userKeyStoreHandler, CallbackHandler keyPassHandler, ExtendedKeystorePersistence keystorePersistence, BucketName keystoreBucketName, KeyStoreID keyStoreID) {
         try {
-            CallbackHandler userKeyStoreHandler = new PasswordCallbackHandler(keypasswordstring.toCharArray());
-            CallbackHandler keyPassHandler = new PasswordCallbackHandler(keypasswordstring.toCharArray());
             KeyStoreService keyStoreService = new KeyStoreService(keystorePersistence);
             KeyStoreName keyStoreName = keyStoreService.createKeyStore(keyStoreID, userKeyStoreHandler, keyPassHandler, keystoreBucketName);
 

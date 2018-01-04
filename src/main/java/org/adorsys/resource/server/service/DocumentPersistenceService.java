@@ -28,8 +28,7 @@ public class DocumentPersistenceService {
     private ExtendedObjectPersistence objectPersistence;
     private DocumentGuardService documentGuardService;
     
-    public DocumentPersistenceService(ExtendedObjectPersistence objectPersistence,
-			DocumentGuardService documentGuardService) {
+    public DocumentPersistenceService(ExtendedObjectPersistence objectPersistence,DocumentGuardService documentGuardService) {
 		super();
 		this.objectPersistence = objectPersistence;
 		this.documentGuardService = documentGuardService;
