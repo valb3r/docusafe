@@ -11,7 +11,6 @@ import org.adorsys.encobject.service.MissingKeystoreAlgorithmException;
 import org.adorsys.encobject.service.MissingKeystoreProviderException;
 import org.adorsys.encobject.service.UnknownContainerException;
 import org.adorsys.encobject.service.WrongKeystoreCredentialException;
-import org.adorsys.encobject.utils.ShowKeyStore;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
 import org.adorsys.encobject.utils.TestKeyUtils;
 import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
@@ -90,6 +89,6 @@ public class UserKeyStoreServiceTest {
         KeyStore userKeyStore = userKeyStoreService.createUserKeyStore(userID, userKeyStoreHandler, keyPassHanlder, bucketName);
         Assert.assertTrue(storeContextFactory.existsOnFs(container, useridstring + ".keystore"));
         Assert.assertEquals("Number of Entries", 15, userKeyStore.size());
-        System.out.println(ShowKeyStore.toString(userKeyStore, keypasswordstring));
+        // System.out.println(ShowKeyStore.toString(userKeyStore, keypasswordstring));
     }
 }

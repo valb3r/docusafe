@@ -20,7 +20,7 @@ class BaseTypeString  implements Serializable {
 
     @Override
     public String toString() {
-        return this.getClass().getCanonicalName() + "{" +
+        return this.getClass().getSimpleName() + "{" +
                 "value='" + value + '\'' +
                 '}';
     }

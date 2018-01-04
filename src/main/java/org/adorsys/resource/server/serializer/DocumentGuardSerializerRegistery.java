@@ -4,7 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DocumentGuardSerializerRegistery {
-	
+	public static final String SERIALIZER_HEADER_KEY = "serilizer_id";
+
 	private static DocumentGuardSerializerRegistery instance = new DocumentGuardSerializerRegistery();
 	public static DocumentGuardSerializerRegistery getInstance(){
 		return instance;

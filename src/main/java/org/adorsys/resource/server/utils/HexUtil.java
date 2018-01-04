@@ -1,4 +1,4 @@
-package org.adorsys.resource.server.persistence;
+package org.adorsys.resource.server.utils;
 
 import java.util.Arrays;
 

@@ -1,15 +1,8 @@
 package org.adorsys.resource.server.basetypes;
 
-import org.adorsys.resource.server.basetypes.adapter.DocumentContentRestAdapter;
-
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
 /**
  * Created by peter on 23.12.2017 at 17:39:26.
  */
-@XmlJavaTypeAdapter(DocumentContentRestAdapter.class)
-@XmlType
 public class DocumentContent extends BaseTypeByteArray {
     public DocumentContent() {}
 

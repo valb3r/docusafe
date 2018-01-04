@@ -65,7 +65,7 @@ public class DocumentPersistenceService {
 	        ContentMetaInfo metaInfo = null;
 	        EncryptionParams encParams = null;
 
-	        KeyID keyID = new KeyID(documentGuardName.getDocumnentKeyID().getValue());
+	        KeyID keyID = new KeyID(documentGuardName.getDocumentKeyID().getValue());
 			KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, documentGuardName.getUserId(), userKeystoreHandler, keyPassHandler, keysourceBucketName, documentBucketName);
 			objectPersistence.storeObject(documentContent.getValue(), metaInfo, location, keySource, keyID , encParams);
     	} catch (Exception e){

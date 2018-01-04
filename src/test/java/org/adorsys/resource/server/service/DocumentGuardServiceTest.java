@@ -16,7 +16,7 @@ import org.adorsys.resource.server.basetypes.UserID;
 import org.adorsys.resource.server.complextypes.DocumentGuard;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
-import org.adorsys.resource.server.persistence.HexUtil;
+import org.adorsys.resource.server.utils.HexUtil;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Assume;

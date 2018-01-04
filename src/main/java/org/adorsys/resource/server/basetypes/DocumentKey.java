@@ -1,5 +1,7 @@
 package org.adorsys.resource.server.basetypes;
 
+import org.adorsys.resource.server.utils.HexUtil;
+
 import javax.crypto.SecretKey;
 
 /**
@@ -22,5 +24,10 @@ public class DocumentKey {
 		return secretKey;
 	}
 
-	
+	@Override
+	public String toString() {
+		return "DocumentKey{" +
+				HexUtil.conventBytesToHexString(secretKey.getEncoded()) +
+				'}';
+	}
 }

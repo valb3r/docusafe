@@ -2,7 +2,7 @@ package org.adorsys.resource.server.persistence;
 
 import org.adorsys.resource.server.basetypes.BucketName;
 import org.adorsys.resource.server.basetypes.DocumentGuardName;
-import org.adorsys.resource.server.basetypes.DocumnentKeyID;
+import org.adorsys.resource.server.basetypes.DocumentKeyID;
 import org.adorsys.resource.server.basetypes.UserID;
 import org.adorsys.resource.server.complextypes.DocumentGuard;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
@@ -38,7 +38,7 @@ public class DocumentGuardBasedKeySourceImpl implements KeySource {
 		
         // Load DokumentKeyID from guard.
         try {
-			DocumentGuardName documentGuardName = new DocumentGuardName(guardBucketName, userID, new DocumnentKeyID(keyID.getValue()));
+			DocumentGuardName documentGuardName = new DocumentGuardName(guardBucketName, userID, new DocumentKeyID(keyID.getValue()));
 			DocumentGuard documentGuard = documentGuardService.loadDocumentGuard(documentGuardName, keysourceBucketName, userKeystoreHandler, keyPassHandler);
 			return documentGuard.getDocumentKey().getSecretKey();
 		} catch (Exception e) {
