@@ -72,8 +72,8 @@ public class AllServiceTest {
         }
     }
 
-    // TODO
-    @Test (expected = BaseException.class)
+    // Bug fixed.
+    @Test //(expected = BaseException.class)
     public void testCreateDocument() {
         try {
             BucketName documentBucketName = new BucketName("document-bucket");

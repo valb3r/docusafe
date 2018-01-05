@@ -5,10 +5,10 @@ import javax.security.auth.callback.CallbackHandler;
 import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.params.EncryptionParams;
+import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.resource.server.basetypes.DocumentContent;
 import org.adorsys.resource.server.basetypes.DocumentGuardName;
 import org.adorsys.resource.server.basetypes.DocumentID;
-import org.adorsys.resource.server.basetypes.UserID;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.DocumentGuardBasedKeySourceImpl;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
@@ -27,9 +27,11 @@ public class DocumentPersistenceService {
 	
     private ExtendedObjectPersistence objectPersistence;
     private DocumentGuardService documentGuardService;
-    
-    public DocumentPersistenceService(ExtendedObjectPersistence objectPersistence,DocumentGuardService documentGuardService) {
+	private ContainerPersistence containerPersistence;
+
+    public DocumentPersistenceService(ContainerPersistence containerPersistence, ExtendedObjectPersistence objectPersistence,DocumentGuardService documentGuardService) {
 		super();
+		this.containerPersistence = containerPersistence;
 		this.objectPersistence = objectPersistence;
 		this.documentGuardService = documentGuardService;
 	}
@@ -66,6 +68,10 @@ public class DocumentPersistenceService {
 
 	        KeyID keyID = new KeyID(documentGuardName.getDocumentKeyID().getValue());
 			KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, documentGuardName.getKeyStoreName(), userKeystoreHandler, keyPassHandler);
+			// Create container if non existent
+			if(!containerPersistence.containerExists(location.getContainer())){
+				containerPersistence.creteContainer(location.getContainer());
+			}
 			objectPersistence.storeObject(documentContent.getValue(), metaInfo, location, keySource, keyID , encParams);
     	} catch (Exception e){
     		BaseExceptionHandler.handle(e);

@@ -26,6 +26,7 @@ public class DocumentGuardBasedKeySourceImpl implements KeySource {
 		this.documentGuardService = documentGuardService;
 		this.userKeystoreHandler = userKeystoreHandler;
 		this.keyPassHandler = keyPassHandler;
+		this.keyStoreName = keyStoreName;
 	}
 
 	@Override
