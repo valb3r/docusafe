@@ -1,5 +1,7 @@
 package org.adorsys.resource.server.persistence.basetypes;
 
+import org.adorsys.resource.server.utils.HexUtil;
+
 import java.io.Serializable;
 import java.util.Arrays;
 
@@ -22,7 +24,7 @@ public class BaseTypeByteArray implements Serializable {
     @Override
     public String toString() {
         return this.getClass().getSimpleName() + "{" +
-                "value='" + value + '\'' +
+                "value='" + HexUtil.conventBytesToHexString(value) + '\'' +
                 '}';
     }
 

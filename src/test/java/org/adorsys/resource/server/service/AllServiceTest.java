@@ -2,7 +2,6 @@ package org.adorsys.resource.server.service;
 
 import org.adorsys.resource.server.basetypes.DocumentContent;
 import org.adorsys.resource.server.basetypes.DocumentID;
-import org.adorsys.resource.server.exceptions.BaseException;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.basetypes.BucketName;
 import org.adorsys.resource.server.utils.HexUtil;
@@ -72,13 +71,9 @@ public class AllServiceTest {
         }
     }
 
-    // Bug fixed.
-    @Test //(expected = BaseException.class)
+    @Test
     public void testCreateDocument() {
         try {
-            BucketName documentBucketName = new BucketName("document-bucket");
-            DocumentID documentID = new DocumentID("document-id-123");
-            DocumentContent documentContent = new DocumentContent("Der Inhalt ist ein Affe".getBytes());
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
             DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = new DocumentGuardServiceTest().testCreateAndLoadDocumentGuard(
                     keyStoreStuff.userKeyStoreHandler,
@@ -90,12 +85,37 @@ public class AllServiceTest {
                     documentGuardStuff.documentGuardService,
                     keyStoreStuff.userKeyStoreHandler,
                     keyStoreStuff.keyPassHandler,
-                    documentGuardStuff.documentGuardName,
-                    documentBucketName,
-                    documentID,
-                    documentContent);
+                    documentGuardStuff.documentGuardName);
 
             System.out.println("DocumentKey is " + HexUtil.conventBytesToHexString(documentGuardStuff.documentGuard.getDocumentKey().getSecretKey().getEncoded()));
+        } catch (Exception e) {
+            BaseExceptionHandler.handle(e);
+        }
+    }
+
+
+    @Test
+    public void testPersistAndLoadDocument() {
+        try {
+            BucketName documentBucketName = new BucketName("document-bucket");
+            DocumentID documentID = new DocumentID("document-id-123");
+            DocumentContent documentContent = new DocumentContent("Der Inhalt ist ein Affe".getBytes());
+            KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
+            DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = new DocumentGuardServiceTest().testCreateAndLoadDocumentGuard(
+                    keyStoreStuff.userKeyStoreHandler,
+                    keyStoreStuff.keyPassHandler,
+                    keyStoreStuff.keystorePersistence,
+                    keyStoreStuff.keyStoreBucketName,
+                    keyStoreStuff.keyStoreID);
+            new DocumentPersistenceServiceTest().testPersistAndLoadDocument(
+                    documentGuardStuff.documentGuardService,
+                    keyStoreStuff.userKeyStoreHandler,
+                    keyStoreStuff.keyPassHandler,
+                    keyStoreStuff.keyStoreName,
+                    documentGuardStuff.documentGuardName);
+
+            System.out.println("DocumentKey is " + HexUtil.conventBytesToHexString(documentGuardStuff.documentGuard.getDocumentKey().getSecretKey().getEncoded()));
+
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
         }

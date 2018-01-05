@@ -63,7 +63,7 @@ public class KeyStoreServiceTest {
         CallbackHandler keyPassHanlder = new PasswordCallbackHandler(keypasswordstring.toCharArray());
         KeyStoreName keyStoreName = keyStoreService.createKeyStore(keyStoreID, userKeyStoreHandler, keyPassHanlder, keyStoreBucketName);
         KeyStore userKeyStore = keyStoreService.loadKeystore(keyStoreName, userKeyStoreHandler);
-        return new KeyStoreStuff(userKeyStore, keystorePersistence, keyStoreBucketName, keyStoreID, userKeyStoreHandler, keyPassHanlder);
+        return new KeyStoreStuff(userKeyStore, keystorePersistence, keyStoreBucketName, keyStoreID, userKeyStoreHandler, keyPassHanlder, keyStoreName);
         // System.out.println(ShowKeyStore.toString(userKeyStore, keypasswordstring));
     }
 
@@ -74,14 +74,16 @@ public class KeyStoreServiceTest {
         public KeyStoreID keyStoreID;
         public CallbackHandler userKeyStoreHandler;
         public CallbackHandler keyPassHandler;
+        public KeyStoreName keyStoreName;
 
-        public KeyStoreStuff(KeyStore keyStore, ExtendedKeystorePersistence keystorePersistence, BucketName keyStoreBucketName, KeyStoreID keyStoreID, CallbackHandler userKeyStoreHandler, CallbackHandler keyPassHandler) {
+        public KeyStoreStuff(KeyStore keyStore, ExtendedKeystorePersistence keystorePersistence, BucketName keyStoreBucketName, KeyStoreID keyStoreID, CallbackHandler userKeyStoreHandler, CallbackHandler keyPassHandler, KeyStoreName keyStoreName) {
             this.keyStore = keyStore;
             this.keystorePersistence = keystorePersistence;
             this.keyStoreBucketName = keyStoreBucketName;
             this.keyStoreID = keyStoreID;
             this.userKeyStoreHandler = userKeyStoreHandler;
             this.keyPassHandler = keyPassHandler;
+            this.keyStoreName = keyStoreName;
         }
     }
 }
