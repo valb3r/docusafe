@@ -52,7 +52,7 @@ public class KeyStoreServiceTest {
     public KeyStoreStuff createKeyStore() {
         BucketName keyStoreBucketName = new BucketName(keystoreContainer);
         String keypasswordstring = "KeyPassword";
-        String userpasswordstring = "KeyPassword";
+        String userpasswordstring = "userPassword";
         String useridstring = "UserPeter";
         KeyStoreID keyStoreID = new KeyStoreID("key-store-id-123");
 

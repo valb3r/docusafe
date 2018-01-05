@@ -60,7 +60,7 @@ public class DocumentGuardService {
         	KeyStore userKeystore = keystorePersistence.loadKeystore(documentGuardName.getKeyStoreName(), keyStoreAuth.getUserpass());
 
             // load guard file
-            KeySource keySource = new KeyStoreBasedKeySourceImpl(userKeystore, keyStoreAuth.getUserpass());
+            KeySource keySource = new KeyStoreBasedKeySourceImpl(userKeystore, keyStoreAuth.getKeypass());
             PersistentObjectWrapper wrapper = objectPersistence.loadObject(documentGuardName.toLocation(), keySource);
 
             ContentMetaInfo metaIno = wrapper.getMetaIno();
@@ -87,7 +87,7 @@ public class DocumentGuardService {
             KeySource keySource = new KeyStoreBasedKeySourceImpl(userKeystore, keyStoreAuth.getKeypass());
 
             // Willkürlich einen SecretKey aus dem KeyStore nehmen für die Verschlüsselung des Guards
-            JWKSet jwkSet = JwkExport.exportKeys(userKeystore, keyStoreAuth.getUserpass());
+            JWKSet jwkSet = JwkExport.exportKeys(userKeystore, keyStoreAuth.getKeypass());
             ServerKeyMap serverKeyMap = new ServerKeyMap(jwkSet);
             KeyAndJwk randomSecretKey = serverKeyMap.randomSecretKey();
             GuardKeyID guardKeyID = new GuardKeyID(randomSecretKey.jwk.getKeyID());
