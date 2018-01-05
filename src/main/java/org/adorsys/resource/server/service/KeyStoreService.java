@@ -7,6 +7,7 @@ import org.adorsys.jkeygen.keystore.PasswordCallbackUtils;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
 import org.adorsys.resource.server.persistence.basetypes.BucketName;
+import org.adorsys.resource.server.persistence.basetypes.KeyStoreAuth;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreName;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreType;
@@ -25,7 +26,8 @@ public class KeyStoreService {
         secretKeyGenerator = new SecretKeyGenerator("AES", 256);
     }
 
-    public KeyStoreName createKeyStore(KeyStoreID keyStoreID, CallbackHandler userKeystoreHandler, CallbackHandler keyPassHandler,
+    public KeyStoreName createKeyStore(KeyStoreID keyStoreID,
+                                       KeyStoreAuth keyStoreAuth,
                                        BucketName keystoreBucketName) {
         try {
             String keyStoreType = null;
@@ -34,7 +36,7 @@ public class KeyStoreService {
             Integer numberOfEncKeyPairs = 5;
             Integer numberOfSecretKeys = 5;
             String keyStorePassword = keyStoreID.getValue();
-            char[] password = PasswordCallbackUtils.getPassword(keyPassHandler, keyStorePassword);
+            char[] password = PasswordCallbackUtils.getPassword(keyStoreAuth.getKeypass(), keyStorePassword);
             KeyPairGenerator encKeyPairGenerator = new KeyPairGenerator("RSA", 2048, "SHA256withRSA", "enc-" + keyStoreID.getValue());
             KeyPairGenerator signKeyPairGenerator = new KeyPairGenerator("RSA", 2048, "SHA256withRSA", "sign-" + keyStoreID.getValue());
             KeyStoreGenerator keyStoreGenerator = new KeyStoreGenerator(encKeyPairGenerator, signKeyPairGenerator,
@@ -43,7 +45,7 @@ public class KeyStoreService {
             KeyStore userKeyStore = keyStoreGenerator.generate();
             
             KeyStoreName keyStoreName = new KeyStoreName(keystoreBucketName, keyStoreID, new KeyStoreType(userKeyStore.getType()));
-			keystorePersistence.saveKeyStore(userKeyStore, userKeystoreHandler, keyStoreName);
+			keystorePersistence.saveKeyStore(userKeyStore, keyStoreAuth.getUserpass(), keyStoreName);
 			return keyStoreName;
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);

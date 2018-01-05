@@ -20,13 +20,13 @@ import org.adorsys.resource.server.persistence.KeySource;
 import org.adorsys.resource.server.persistence.KeyStoreBasedKeySourceImpl;
 import org.adorsys.resource.server.persistence.PersistentObjectWrapper;
 import org.adorsys.resource.server.persistence.basetypes.KeyID;
+import org.adorsys.resource.server.persistence.basetypes.KeyStoreAuth;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreName;
 import org.adorsys.resource.server.serializer.DocumentGuardSerializer;
 import org.adorsys.resource.server.serializer.DocumentGuardSerializer01;
 import org.adorsys.resource.server.serializer.DocumentGuardSerializerRegistery;
 import org.apache.commons.lang3.RandomStringUtils;
 
-import javax.security.auth.callback.CallbackHandler;
 import java.security.KeyStore;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,27 +45,22 @@ public class DocumentGuardService {
         this.secretKeyGenerator = new SecretKeyGenerator("AES", 256);
     }
 
-    /**
-     * @param userKeystoreHandler
-     * @param keyPassHandler
-     */
-    public DocumentGuardName createDocumentGuard(KeyStoreName keyStoreName, CallbackHandler userKeystoreHandler, CallbackHandler keyPassHandler) {
-        return createDocumentGuardAndReturnInternals(keyStoreName, userKeystoreHandler, keyPassHandler).documentGuardName;
+    public DocumentGuardName createDocumentGuard(KeyStoreName keyStoreName, KeyStoreAuth keyStoreAuth) {
+        return createDocumentGuardAndReturnInternals(keyStoreName, keyStoreAuth).documentGuardName;
     }
 
 
     /**
      * Loading the secret key from the guard.
      */
-    public DocumentGuard loadDocumentGuard(DocumentGuardName documentGuardName, CallbackHandler userKeystoreHandler,
-                                           CallbackHandler userKeyPassHandler) {
+    public DocumentGuard loadDocumentGuard(DocumentGuardName documentGuardName, KeyStoreAuth keyStoreAuth) {
 
         try {
 
-        	KeyStore userKeystore = keystorePersistence.loadKeystore(documentGuardName.getKeyStoreName(), userKeystoreHandler);
+        	KeyStore userKeystore = keystorePersistence.loadKeystore(documentGuardName.getKeyStoreName(), keyStoreAuth.getUserpass());
 
             // load guard file
-            KeySource keySource = new KeyStoreBasedKeySourceImpl(userKeystore, userKeyPassHandler);
+            KeySource keySource = new KeyStoreBasedKeySourceImpl(userKeystore, keyStoreAuth.getUserpass());
             PersistentObjectWrapper wrapper = objectPersistence.loadObject(documentGuardName.toLocation(), keySource);
 
             ContentMetaInfo metaIno = wrapper.getMetaIno();
@@ -84,15 +79,15 @@ public class DocumentGuardService {
     /* This method is made for junit Tests.
      * wrapped by the public method with much less information
      */
-    private DocumentGuardInternals createDocumentGuardAndReturnInternals(KeyStoreName keyStoreName, CallbackHandler userKeystoreHandler, CallbackHandler keyPassHandler) {
+    private DocumentGuardInternals createDocumentGuardAndReturnInternals(KeyStoreName keyStoreName, KeyStoreAuth keyStoreAuth) {
 
         try {
             // KeyStore laden
-            KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreName, userKeystoreHandler);
-            KeySource keySource = new KeyStoreBasedKeySourceImpl(userKeystore, keyPassHandler);
+            KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreName, keyStoreAuth.getUserpass());
+            KeySource keySource = new KeyStoreBasedKeySourceImpl(userKeystore, keyStoreAuth.getKeypass());
 
             // Willkürlich einen SecretKey aus dem KeyStore nehmen für die Verschlüsselung des Guards
-            JWKSet jwkSet = JwkExport.exportKeys(userKeystore, userKeystoreHandler);
+            JWKSet jwkSet = JwkExport.exportKeys(userKeystore, keyStoreAuth.getUserpass());
             ServerKeyMap serverKeyMap = new ServerKeyMap(jwkSet);
             KeyAndJwk randomSecretKey = serverKeyMap.randomSecretKey();
             GuardKeyID guardKeyID = new GuardKeyID(randomSecretKey.jwk.getKeyID());
@@ -107,7 +102,7 @@ public class DocumentGuardService {
             EncryptionParams encParams = null;
 
             // Für die DocumentKeyID einen DocumentKey erzeugen
-            SecretKeyData secretKeyData = secretKeyGenerator.generate(documentKeyID.getValue(), keyPassHandler);
+            SecretKeyData secretKeyData = secretKeyGenerator.generate(documentKeyID.getValue(), keyStoreAuth.getKeypass());
             DocumentKey documentKey = new DocumentKey(secretKeyData.getSecretKey());
 
             // Den DocumentKey serialisieren, in der MetaInfo die SerializerID vermerken

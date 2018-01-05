@@ -46,8 +46,7 @@ public class AllServiceTest {
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
             new DocumentGuardServiceTest().testCreateDocumentGuard(
-                    keyStoreStuff.userKeyStoreHandler,
-                    keyStoreStuff.keyPassHandler,
+                    keyStoreStuff.keyStoreAuth,
                     keyStoreStuff.keystorePersistence,
                     keyStoreStuff.keyStoreBucketName,
                     keyStoreStuff.keyStoreID);
@@ -62,14 +61,12 @@ public class AllServiceTest {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
             DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest();
             DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = documentGuardServiceTest.testCreateDocumentGuard(
-                    keyStoreStuff.userKeyStoreHandler,
-                    keyStoreStuff.keyPassHandler,
+                    keyStoreStuff.keyStoreAuth,
                     keyStoreStuff.keystorePersistence,
                     keyStoreStuff.keyStoreBucketName,
                     keyStoreStuff.keyStoreID);
             DocumentGuard documentGuard = documentGuardServiceTest.testLoadDocumentGuard(
-                    keyStoreStuff.userKeyStoreHandler,
-                    keyStoreStuff.keyPassHandler,
+                    keyStoreStuff.keyStoreAuth,
                     keyStoreStuff.keystorePersistence,
                     documentGuardStuff.documentGuardName);
 
@@ -85,20 +82,17 @@ public class AllServiceTest {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
             DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest();
             DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = documentGuardServiceTest.testCreateDocumentGuard(
-                    keyStoreStuff.userKeyStoreHandler,
-                    keyStoreStuff.keyPassHandler,
+                    keyStoreStuff.keyStoreAuth,
                     keyStoreStuff.keystorePersistence,
                     keyStoreStuff.keyStoreBucketName,
                     keyStoreStuff.keyStoreID);
             DocumentGuard documentGuard = documentGuardServiceTest.testLoadDocumentGuard(
-                    keyStoreStuff.userKeyStoreHandler,
-                    keyStoreStuff.keyPassHandler,
+                    keyStoreStuff.keyStoreAuth,
                     keyStoreStuff.keystorePersistence,
                     documentGuardStuff.documentGuardName);
             new DocumentPersistenceServiceTest().testPersistDocument(
                     documentGuardStuff.documentGuardService,
-                    keyStoreStuff.userKeyStoreHandler,
-                    keyStoreStuff.keyPassHandler,
+                    keyStoreStuff.keyStoreAuth,
                     documentGuardStuff.documentGuardName);
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
@@ -115,25 +109,21 @@ public class AllServiceTest {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
             DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest();
             DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = documentGuardServiceTest.testCreateDocumentGuard(
-                    keyStoreStuff.userKeyStoreHandler,
-                    keyStoreStuff.keyPassHandler,
+                    keyStoreStuff.keyStoreAuth,
                     keyStoreStuff.keystorePersistence,
                     keyStoreStuff.keyStoreBucketName,
                     keyStoreStuff.keyStoreID);
             DocumentGuard documentGuard = documentGuardServiceTest.testLoadDocumentGuard(
-                    keyStoreStuff.userKeyStoreHandler,
-                    keyStoreStuff.keyPassHandler,
+                    keyStoreStuff.keyStoreAuth,
                     keyStoreStuff.keystorePersistence,
                     documentGuardStuff.documentGuardName);
             DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest();
             DocumentPersistenceServiceTest.DocumentStuff documentStuff = documentPersistenceServiceTest.testPersistDocument(
                     documentGuardStuff.documentGuardService,
-                    keyStoreStuff.userKeyStoreHandler,
-                    keyStoreStuff.keyPassHandler,
+                    keyStoreStuff.keyStoreAuth,
                     documentGuardStuff.documentGuardName);
             documentPersistenceServiceTest.testLoadDocument(documentGuardStuff.documentGuardService,
-                    keyStoreStuff.userKeyStoreHandler,
-                    keyStoreStuff.keyPassHandler,
+                    keyStoreStuff.keyStoreAuth,
                     keyStoreStuff.keyStoreName,
                     documentStuff.documentBucketName,
                     documentStuff.documentID);

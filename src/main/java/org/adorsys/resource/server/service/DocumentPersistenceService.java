@@ -1,7 +1,5 @@
 package org.adorsys.resource.server.service;
 
-import javax.security.auth.callback.CallbackHandler;
-
 import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.params.EncryptionParams;
@@ -16,6 +14,7 @@ import org.adorsys.resource.server.persistence.KeySource;
 import org.adorsys.resource.server.persistence.PersistentObjectWrapper;
 import org.adorsys.resource.server.persistence.basetypes.BucketName;
 import org.adorsys.resource.server.persistence.basetypes.KeyID;
+import org.adorsys.resource.server.persistence.basetypes.KeyStoreAuth;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreName;
 
 /**
@@ -50,8 +49,7 @@ public class DocumentPersistenceService {
      *
      */
     public void persistDocument(
-    							CallbackHandler userKeystoreHandler,
-                                CallbackHandler keyPassHandler,
+    							KeyStoreAuth keyStoreAuth,
                                 DocumentGuardName documentGuardName,
                                 BucketName documentBucketName,
                                 DocumentID documentID,
@@ -67,7 +65,7 @@ public class DocumentPersistenceService {
 	        EncryptionParams encParams = null;
 
 	        KeyID keyID = new KeyID(documentGuardName.getDocumentKeyID().getValue());
-			KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, documentGuardName.getKeyStoreName(), userKeystoreHandler, keyPassHandler);
+			KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, documentGuardName.getKeyStoreName(), keyStoreAuth);
 			// Create container if non existent
 			if(!containerPersistence.containerExists(location.getContainer())){
 				containerPersistence.creteContainer(location.getContainer());
@@ -80,22 +78,16 @@ public class DocumentPersistenceService {
     
     /**
      * 
-     * @param userID
-     * @param userKeystoreHandler
-     * @param keyPassHandler
-     * @param documentID
-     * @return
      */
     public PersistentObjectWrapper loadDocument(
     		KeyStoreName keyStoreName,
-			CallbackHandler userKeystoreHandler,
-            CallbackHandler keyPassHandler,
+			KeyStoreAuth keyStoreAuth,
 			BucketName documentBucketName,
 			DocumentID documentID){
     	
     	try {
 	        
-	        KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreName, userKeystoreHandler, keyPassHandler);
+	        KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreName, keyStoreAuth);
 
 	        // Create object handle
 	        ObjectHandle location = new ObjectHandle(documentBucketName.getValue(), documentID.getValue());

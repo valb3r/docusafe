@@ -11,10 +11,9 @@ import org.adorsys.resource.server.basetypes.DocumentID;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
 import org.adorsys.resource.server.persistence.PersistentObjectWrapper;
 import org.adorsys.resource.server.persistence.basetypes.BucketName;
+import org.adorsys.resource.server.persistence.basetypes.KeyStoreAuth;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreName;
 import org.junit.Assert;
-
-import javax.security.auth.callback.CallbackHandler;
 
 /**
  * Created by peter on 02.01.18.
@@ -43,13 +42,11 @@ public class DocumentPersistenceServiceTest {
     }
 
     public DocumentStuff testPersistDocument(DocumentGuardService documentGuardService,
-                                             CallbackHandler userKeystoreHandler,
-                                             CallbackHandler keyPassHandler,
+                                             KeyStoreAuth keyStoreAuth,
                                              DocumentGuardName documentGuardName) {
         DocumentPersistenceService documentPersistenceService = new DocumentPersistenceService(containerPersistence, documentExtendedPersistence, documentGuardService);
         documentPersistenceService.persistDocument(
-                userKeystoreHandler,
-                keyPassHandler,
+                keyStoreAuth,
                 documentGuardName,
                 documentBucketName,
                 documentID,
@@ -58,16 +55,14 @@ public class DocumentPersistenceServiceTest {
     }
 
     public void testLoadDocument(DocumentGuardService documentGuardService,
-                                 CallbackHandler userKeystoreHandler,
-                                 CallbackHandler keyPassHandler,
+                                 KeyStoreAuth keyStoreAuth,
                                  KeyStoreName keyStoreName,
                                  BucketName documentBucketName,
                                  DocumentID documentID) {
         DocumentPersistenceService documentPersistenceService = new DocumentPersistenceService(containerPersistence, documentExtendedPersistence, documentGuardService);
         PersistentObjectWrapper persistentObjectWrapper = documentPersistenceService.loadDocument(
                 keyStoreName,
-                userKeystoreHandler,
-                keyPassHandler,
+                keyStoreAuth,
                 documentBucketName,
                 documentID);
 
