@@ -42,10 +42,10 @@ public class DocumentPersistenceServiceTest {
 
     }
 
-    public void testPersistDocument(DocumentGuardService documentGuardService,
-                                    CallbackHandler userKeystoreHandler,
-                                    CallbackHandler keyPassHandler,
-                                    DocumentGuardName documentGuardName) {
+    public DocumentStuff testPersistDocument(DocumentGuardService documentGuardService,
+                                             CallbackHandler userKeystoreHandler,
+                                             CallbackHandler keyPassHandler,
+                                             DocumentGuardName documentGuardName) {
         DocumentPersistenceService documentPersistenceService = new DocumentPersistenceService(containerPersistence, documentExtendedPersistence, documentGuardService);
         documentPersistenceService.persistDocument(
                 userKeystoreHandler,
@@ -54,21 +54,16 @@ public class DocumentPersistenceServiceTest {
                 documentBucketName,
                 documentID,
                 documentContent);
+        return new DocumentStuff(documentBucketName, documentID);
     }
 
-    public void testPersistAndLoadDocument(DocumentGuardService documentGuardService,
-                                                              CallbackHandler userKeystoreHandler,
-                                                              CallbackHandler keyPassHandler,
-                                                              KeyStoreName keyStoreName,
-                                                              DocumentGuardName documentGuardName) {
+    public void testLoadDocument(DocumentGuardService documentGuardService,
+                                 CallbackHandler userKeystoreHandler,
+                                 CallbackHandler keyPassHandler,
+                                 KeyStoreName keyStoreName,
+                                 BucketName documentBucketName,
+                                 DocumentID documentID) {
         DocumentPersistenceService documentPersistenceService = new DocumentPersistenceService(containerPersistence, documentExtendedPersistence, documentGuardService);
-        documentPersistenceService.persistDocument(
-                userKeystoreHandler,
-                keyPassHandler,
-                documentGuardName,
-                documentBucketName,
-                documentID,
-                documentContent);
         PersistentObjectWrapper persistentObjectWrapper = documentPersistenceService.loadDocument(
                 keyStoreName,
                 userKeystoreHandler,
@@ -79,6 +74,18 @@ public class DocumentPersistenceServiceTest {
         DocumentContent readContent = new DocumentContent(persistentObjectWrapper.getData());
         Assert.assertEquals("Content of Document", this.documentContent.toString(), readContent.toString());
         System.out.println("Gelesenes Document enthält:" + readContent + " bzw " + new String(readContent.getValue()));
+    }
+
+    public static class DocumentStuff {
+        public BucketName documentBucketName;
+        public DocumentID documentID;
+
+        public DocumentStuff(BucketName documentBucketName, DocumentID documentID) {
+            this.documentBucketName = documentBucketName;
+            this.documentID = documentID;
+        }
+
+
     }
 
 }

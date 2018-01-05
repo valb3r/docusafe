@@ -39,21 +39,8 @@ public class DocumentGuardServiceTest {
     public static void afterClass() {
 
     }
-    public DocumentGuardStuff testCreateAndLoadDocumentGuard(CallbackHandler userKeyStoreHandler, CallbackHandler keyPassHandler, ExtendedKeystorePersistence keystorePersistence, BucketName keystoreBucketName, KeyStoreID keyStoreID) {
-        try {
-            DocumentGuardName guardName = testCreateDocumentGuard(userKeyStoreHandler, keyPassHandler, keystorePersistence, keystoreBucketName, keyStoreID);
-            DocumentGuardService documentGuardService = new DocumentGuardService(keystorePersistence, guardExtendedPersistence);
-            DocumentGuard documentGuard = documentGuardService.loadDocumentGuard(guardName, userKeyStoreHandler, keyPassHandler);
-            System.out.println("key des Guards ist :" + documentGuard.getDocumentKey());
-            System.out.println("LOAD DocumentKey:" + HexUtil.conventBytesToHexString(documentGuard.getDocumentKey().getSecretKey().getEncoded()));
-            return new DocumentGuardStuff(documentGuard, documentGuardService, guardName);
-        } catch (Exception e) {
-            throw BaseExceptionHandler.handle(e);
-        }
 
-    }
-    
-    public DocumentGuardName testCreateDocumentGuard(CallbackHandler userKeyStoreHandler, CallbackHandler keyPassHandler, ExtendedKeystorePersistence keystorePersistence, BucketName keystoreBucketName, KeyStoreID keyStoreID) {
+    public DocumentGuardStuff testCreateDocumentGuard(CallbackHandler userKeyStoreHandler, CallbackHandler keyPassHandler, ExtendedKeystorePersistence keystorePersistence, BucketName keystoreBucketName, KeyStoreID keyStoreID) {
         try {
             KeyStoreService keyStoreService = new KeyStoreService(keystorePersistence);
             KeyStoreName keyStoreName = keyStoreService.createKeyStore(keyStoreID, userKeyStoreHandler, keyPassHandler, keystoreBucketName);
@@ -66,18 +53,33 @@ public class DocumentGuardServiceTest {
             DocumentGuardService documentGuardService = new DocumentGuardService(keystorePersistence, guardExtendedPersistence);
             DocumentGuardName guardName = documentGuardService.createDocumentGuard(keyStoreName, userKeyStoreHandler, keyPassHandler);
             System.out.println("user guard erzeugt:" + guardName);
-            return guardName;
+            return new DocumentGuardStuff(documentGuardService, guardName);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
     }
 
+    public DocumentGuard testLoadDocumentGuard(
+            CallbackHandler userKeyStoreHandler,
+            CallbackHandler keyPassHandler,
+            ExtendedKeystorePersistence keystorePersistence,
+            DocumentGuardName documentGuardName) {
+        try {
+            DocumentGuardService documentGuardService = new DocumentGuardService(keystorePersistence, guardExtendedPersistence);
+            DocumentGuard documentGuard = documentGuardService.loadDocumentGuard(documentGuardName, userKeyStoreHandler, keyPassHandler);
+            System.out.println("key des Guards ist :" + documentGuard.getDocumentKey());
+            System.out.println("LOAD DocumentKey:" + HexUtil.conventBytesToHexString(documentGuard.getDocumentKey().getSecretKey().getEncoded()));
+            return documentGuard;
+        } catch (Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
+
+    }
+
     public static class DocumentGuardStuff {
-        public DocumentGuard documentGuard;
         public DocumentGuardService documentGuardService;
         public DocumentGuardName documentGuardName;
-        public DocumentGuardStuff(DocumentGuard documentGuard, DocumentGuardService documentGuardService, DocumentGuardName documentGuardName) {
-            this.documentGuard = documentGuard;
+        public DocumentGuardStuff(DocumentGuardService documentGuardService, DocumentGuardName documentGuardName) {
             this.documentGuardService = documentGuardService;
             this.documentGuardName = documentGuardName;
         }

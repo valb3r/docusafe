@@ -2,6 +2,7 @@ package org.adorsys.resource.server.service;
 
 import org.adorsys.resource.server.basetypes.DocumentContent;
 import org.adorsys.resource.server.basetypes.DocumentID;
+import org.adorsys.resource.server.complextypes.DocumentGuard;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.basetypes.BucketName;
 import org.adorsys.resource.server.utils.HexUtil;
@@ -59,13 +60,20 @@ public class AllServiceTest {
     public void testCreateKeyStoreAndDocumentGuardAndLoadDocumentGuard() {
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
-            DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = new DocumentGuardServiceTest().testCreateAndLoadDocumentGuard(
+            DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest();
+            DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = documentGuardServiceTest.testCreateDocumentGuard(
                     keyStoreStuff.userKeyStoreHandler,
                     keyStoreStuff.keyPassHandler,
                     keyStoreStuff.keystorePersistence,
                     keyStoreStuff.keyStoreBucketName,
                     keyStoreStuff.keyStoreID);
-            System.out.println("DocumentKey is " + HexUtil.conventBytesToHexString(documentGuardStuff.documentGuard.getDocumentKey().getSecretKey().getEncoded()));
+            DocumentGuard documentGuard = documentGuardServiceTest.testLoadDocumentGuard(
+                    keyStoreStuff.userKeyStoreHandler,
+                    keyStoreStuff.keyPassHandler,
+                    keyStoreStuff.keystorePersistence,
+                    documentGuardStuff.documentGuardName);
+
+            System.out.println("DocumentKey is " + HexUtil.conventBytesToHexString(documentGuard.getDocumentKey().getSecretKey().getEncoded()));
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
         }
@@ -75,19 +83,23 @@ public class AllServiceTest {
     public void testCreateDocument() {
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
-            DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = new DocumentGuardServiceTest().testCreateAndLoadDocumentGuard(
+            DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest();
+            DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = documentGuardServiceTest.testCreateDocumentGuard(
                     keyStoreStuff.userKeyStoreHandler,
                     keyStoreStuff.keyPassHandler,
                     keyStoreStuff.keystorePersistence,
                     keyStoreStuff.keyStoreBucketName,
                     keyStoreStuff.keyStoreID);
+            DocumentGuard documentGuard = documentGuardServiceTest.testLoadDocumentGuard(
+                    keyStoreStuff.userKeyStoreHandler,
+                    keyStoreStuff.keyPassHandler,
+                    keyStoreStuff.keystorePersistence,
+                    documentGuardStuff.documentGuardName);
             new DocumentPersistenceServiceTest().testPersistDocument(
                     documentGuardStuff.documentGuardService,
                     keyStoreStuff.userKeyStoreHandler,
                     keyStoreStuff.keyPassHandler,
                     documentGuardStuff.documentGuardName);
-
-            System.out.println("DocumentKey is " + HexUtil.conventBytesToHexString(documentGuardStuff.documentGuard.getDocumentKey().getSecretKey().getEncoded()));
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
         }
@@ -101,21 +113,30 @@ public class AllServiceTest {
             DocumentID documentID = new DocumentID("document-id-123");
             DocumentContent documentContent = new DocumentContent("Der Inhalt ist ein Affe".getBytes());
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
-            DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = new DocumentGuardServiceTest().testCreateAndLoadDocumentGuard(
+            DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest();
+            DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = documentGuardServiceTest.testCreateDocumentGuard(
                     keyStoreStuff.userKeyStoreHandler,
                     keyStoreStuff.keyPassHandler,
                     keyStoreStuff.keystorePersistence,
                     keyStoreStuff.keyStoreBucketName,
                     keyStoreStuff.keyStoreID);
-            new DocumentPersistenceServiceTest().testPersistAndLoadDocument(
+            DocumentGuard documentGuard = documentGuardServiceTest.testLoadDocumentGuard(
+                    keyStoreStuff.userKeyStoreHandler,
+                    keyStoreStuff.keyPassHandler,
+                    keyStoreStuff.keystorePersistence,
+                    documentGuardStuff.documentGuardName);
+            DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest();
+            DocumentPersistenceServiceTest.DocumentStuff documentStuff = documentPersistenceServiceTest.testPersistDocument(
                     documentGuardStuff.documentGuardService,
                     keyStoreStuff.userKeyStoreHandler,
                     keyStoreStuff.keyPassHandler,
-                    keyStoreStuff.keyStoreName,
                     documentGuardStuff.documentGuardName);
-
-            System.out.println("DocumentKey is " + HexUtil.conventBytesToHexString(documentGuardStuff.documentGuard.getDocumentKey().getSecretKey().getEncoded()));
-
+            documentPersistenceServiceTest.testLoadDocument(documentGuardStuff.documentGuardService,
+                    keyStoreStuff.userKeyStoreHandler,
+                    keyStoreStuff.keyPassHandler,
+                    keyStoreStuff.keyStoreName,
+                    documentStuff.documentBucketName,
+                    documentStuff.documentID);
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
         }
