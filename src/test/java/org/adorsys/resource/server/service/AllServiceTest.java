@@ -1,10 +1,7 @@
 package org.adorsys.resource.server.service;
 
-import org.adorsys.resource.server.basetypes.DocumentContent;
-import org.adorsys.resource.server.basetypes.DocumentID;
 import org.adorsys.resource.server.complextypes.DocumentGuard;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
-import org.adorsys.resource.server.persistence.basetypes.BucketName;
 import org.adorsys.resource.server.utils.HexUtil;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -86,10 +83,6 @@ public class AllServiceTest {
                     keyStoreStuff.keystorePersistence,
                     keyStoreStuff.keyStoreBucketName,
                     keyStoreStuff.keyStoreID);
-            DocumentGuard documentGuard = documentGuardServiceTest.testLoadDocumentGuard(
-                    keyStoreStuff.keyStoreAuth,
-                    keyStoreStuff.keystorePersistence,
-                    documentGuardStuff.documentGuardName);
             new DocumentPersistenceServiceTest().testPersistDocument(
                     documentGuardStuff.documentGuardService,
                     keyStoreStuff.keyStoreAuth,
@@ -101,11 +94,8 @@ public class AllServiceTest {
 
 
     @Test
-    public void testPersistAndLoadDocument() {
+    public void testCreateAndLoadDocument() {
         try {
-            BucketName documentBucketName = new BucketName("document-bucket");
-            DocumentID documentID = new DocumentID("document-id-123");
-            DocumentContent documentContent = new DocumentContent("Der Inhalt ist ein Affe".getBytes());
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
             DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest();
             DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = documentGuardServiceTest.testCreateDocumentGuard(
@@ -113,10 +103,6 @@ public class AllServiceTest {
                     keyStoreStuff.keystorePersistence,
                     keyStoreStuff.keyStoreBucketName,
                     keyStoreStuff.keyStoreID);
-            DocumentGuard documentGuard = documentGuardServiceTest.testLoadDocumentGuard(
-                    keyStoreStuff.keyStoreAuth,
-                    keyStoreStuff.keystorePersistence,
-                    documentGuardStuff.documentGuardName);
             DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest();
             DocumentPersistenceServiceTest.DocumentStuff documentStuff = documentPersistenceServiceTest.testPersistDocument(
                     documentGuardStuff.documentGuardService,
