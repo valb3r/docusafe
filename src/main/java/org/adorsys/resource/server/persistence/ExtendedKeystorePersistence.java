@@ -35,7 +35,7 @@ public class ExtendedKeystorePersistence {
 			byte[] bs = KeyStoreService.toByteArray(keystore, keyStoreLocation.getKeyStoreName().getValue(), storePassHandler);
 			
 			// write byte array to blob store.
-			blobStoreConnection.putBlob(keyStoreLocation.toLocationHandle() , bs);
+			blobStoreConnection.putBlob(keyStoreLocation.getLocationHandle() , bs);
 		} catch (Exception e) {
 			BaseExceptionHandler.handle(e);
 		}
@@ -45,7 +45,7 @@ public class ExtendedKeystorePersistence {
 		try {
 			
 			// Read bytes
-			byte[] ksBytes = blobStoreConnection.getBlob(keyStoreLocation.toLocationHandle());
+			byte[] ksBytes = blobStoreConnection.getBlob(keyStoreLocation.getLocationHandle());
 			
 			// Initialize key store
 			return KeyStoreService.loadKeyStore(ksBytes, keyStoreLocation.getKeyStoreName().getValue(), keyStoreLocation.getKeyStoreType().getValue(), handler);

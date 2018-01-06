@@ -7,7 +7,7 @@ import org.adorsys.resource.server.persistence.basetypes.DocumentBucketName;
 /**
  * Created by peter on 06.01.18.
  */
-public class DocumentLocation {
+public class DocumentLocation implements LocationInterface {
     private final DocumentID documentID;
     private final DocumentBucketName documentBucketName;
     public DocumentLocation(DocumentID documentID, DocumentBucketName documentBucketName) {
@@ -15,15 +15,7 @@ public class DocumentLocation {
         this.documentBucketName = documentBucketName;
     }
 
-    public DocumentID getDocumentID() {
-        return documentID;
-    }
-
-    public DocumentBucketName getDocumentBucketName() {
-        return documentBucketName;
-    }
-
-    public ObjectHandle getLocationHanlde() {
+    public ObjectHandle getLocationHandle() {
         return new ObjectHandle(documentBucketName.getValue(), documentID.getValue());
     }
 

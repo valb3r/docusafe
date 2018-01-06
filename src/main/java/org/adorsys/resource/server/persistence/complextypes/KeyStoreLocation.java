@@ -9,7 +9,7 @@ import org.adorsys.resource.server.persistence.basetypes.KeyStoreType;
 /**
  * Created by peter on 29.12.2017 at 14:11:52.
  */
-public class KeyStoreLocation {
+public class KeyStoreLocation implements LocationInterface {
 	
 	public static final String FILE_EXTENSION_SEPARATOR = ".";
 
@@ -21,10 +21,6 @@ public class KeyStoreLocation {
 		this.keyStoreBucketName = keyStoreBucketName;
 		this.keyStoreID = keyStoreID;
 		this.keyStoreType = keyStoreType;
-	}
-	
-	private static String toString(KeyStoreBucketName bucketName, KeyStoreID keyStoreID, KeyStoreType keyStoreType){
-		return toFileName(keyStoreID, keyStoreType) + KeyStoreBucketName.BUCKET_SEPARATOR + bucketName.getValue();
 	}
 	
 	public KeyStoreBucketName getKeyStoreBucketName() {
@@ -39,19 +35,14 @@ public class KeyStoreLocation {
 		return keyStoreType;
 	}
 
-	public ObjectHandle toLocationHandle(){
-		return new ObjectHandle(getKeyStoreBucketName().getValue(), toFileName());
+	public ObjectHandle getLocationHandle(){
+		return new ObjectHandle(
+				getKeyStoreBucketName().getValue(),
+				getKeyStoreName().getValue());
 	}
 
 	public KeyStoreName getKeyStoreName() {
-		return new KeyStoreName(toFileName());
-	}
-
-	public String toFileName() {
-		return toFileName(keyStoreID, keyStoreType);
-	}
-	private static String toFileName(KeyStoreID keyStoreID, KeyStoreType keyStoreType) {
-		return keyStoreID.getValue() + FILE_EXTENSION_SEPARATOR + keyStoreType.getValue();
+		return new KeyStoreName(keyStoreID.getValue() + FILE_EXTENSION_SEPARATOR + keyStoreType.getValue());
 	}
 
 
