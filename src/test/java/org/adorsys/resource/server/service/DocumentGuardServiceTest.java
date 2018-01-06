@@ -4,7 +4,6 @@ import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
-import org.adorsys.encobject.utils.TestKeyUtils;
 import org.adorsys.resource.server.basetypes.DocumentGuardName;
 import org.adorsys.resource.server.complextypes.DocumentGuard;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
@@ -29,8 +28,6 @@ public class DocumentGuardServiceTest {
     private static ExtendedObjectPersistence guardExtendedPersistence;
 
     public static void beforeClass() {
-        TestKeyUtils.turnOffEncPolicy();
-
         guardContextFactory = new TestFsBlobStoreFactory();
         guardContainerPersistence = new ContainerPersistence(new BlobStoreConnection(guardContextFactory));
         guardExtendedPersistence = new ExtendedObjectPersistence(new BlobStoreConnection(guardContextFactory));

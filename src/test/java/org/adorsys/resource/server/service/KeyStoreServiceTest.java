@@ -5,7 +5,6 @@ import org.adorsys.encobject.service.ContainerExistsException;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.service.UnknownContainerException;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
-import org.adorsys.encobject.utils.TestKeyUtils;
 import org.adorsys.resource.server.basetypes.UserID;
 import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
 import org.adorsys.resource.server.persistence.basetypes.BucketName;
@@ -27,7 +26,6 @@ public class KeyStoreServiceTest {
     private static ContainerPersistence containerPersistence;
 
     public static void beforeTest() {
-        TestKeyUtils.turnOffEncPolicy();
         storeContextFactory = new TestFsBlobStoreFactory();
         keystorePersistence = new ExtendedKeystorePersistence(storeContextFactory);
         containerPersistence = new ContainerPersistence(new BlobStoreConnection(storeContextFactory));

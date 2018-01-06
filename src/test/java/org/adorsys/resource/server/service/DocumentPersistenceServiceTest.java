@@ -4,7 +4,6 @@ import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
-import org.adorsys.encobject.utils.TestKeyUtils;
 import org.adorsys.resource.server.basetypes.DocumentContent;
 import org.adorsys.resource.server.basetypes.DocumentGuardName;
 import org.adorsys.resource.server.basetypes.DocumentID;
@@ -29,8 +28,6 @@ public class DocumentPersistenceServiceTest {
 
 
     public static void beforeClass() {
-        TestKeyUtils.turnOffEncPolicy();
-
         documentContextFactory = new TestFsBlobStoreFactory();
         BlobStoreConnection blobStoreConnection = new BlobStoreConnection(documentContextFactory);
         documentExtendedPersistence = new ExtendedObjectPersistence(blobStoreConnection);
