@@ -88,7 +88,7 @@ public class DocumentPersistenceService {
     	
     	try {
 	        KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreLocation, keyStoreAuth);
-			return objectPersistence.loadObject(documentLocation.getLocationHanlde(), keySource);
+			return objectPersistence.loadObject(documentLocation.getLocationHandle(), keySource);
     	} catch (Exception e){
     		throw BaseExceptionHandler.handle(e);
     	}
