@@ -45,7 +45,7 @@ public class AllServiceTest {
             new DocumentGuardServiceTest().testCreateDocumentGuard(
                     keyStoreStuff.keyStoreAuth,
                     keyStoreStuff.keystorePersistence,
-                    keyStoreStuff.keyStoreBucketName,
+                    keyStoreStuff.keyStoreLocation,
                     keyStoreStuff.keyStoreID);
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
@@ -60,12 +60,12 @@ public class AllServiceTest {
             DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = documentGuardServiceTest.testCreateDocumentGuard(
                     keyStoreStuff.keyStoreAuth,
                     keyStoreStuff.keystorePersistence,
-                    keyStoreStuff.keyStoreBucketName,
+                    keyStoreStuff.keyStoreLocation,
                     keyStoreStuff.keyStoreID);
             DocumentGuard documentGuard = documentGuardServiceTest.testLoadDocumentGuard(
                     keyStoreStuff.keyStoreAuth,
                     keyStoreStuff.keystorePersistence,
-                    documentGuardStuff.documentGuardName);
+                    documentGuardStuff.documentGuardLocation);
 
             System.out.println("DocumentKey is " + HexUtil.conventBytesToHexString(documentGuard.getDocumentKey().getSecretKey().getEncoded()));
         } catch (Exception e) {
@@ -81,12 +81,12 @@ public class AllServiceTest {
             DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = documentGuardServiceTest.testCreateDocumentGuard(
                     keyStoreStuff.keyStoreAuth,
                     keyStoreStuff.keystorePersistence,
-                    keyStoreStuff.keyStoreBucketName,
+                    keyStoreStuff.keyStoreLocation,
                     keyStoreStuff.keyStoreID);
             new DocumentPersistenceServiceTest().testPersistDocument(
                     documentGuardStuff.documentGuardService,
                     keyStoreStuff.keyStoreAuth,
-                    documentGuardStuff.documentGuardName);
+                    documentGuardStuff.documentGuardLocation);
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
         }
@@ -101,21 +101,20 @@ public class AllServiceTest {
             DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = documentGuardServiceTest.testCreateDocumentGuard(
                     keyStoreStuff.keyStoreAuth,
                     keyStoreStuff.keystorePersistence,
-                    keyStoreStuff.keyStoreBucketName,
+                    keyStoreStuff.keyStoreLocation,
                     keyStoreStuff.keyStoreID);
             DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest();
             DocumentPersistenceServiceTest.DocumentStuff documentStuff = documentPersistenceServiceTest.testPersistDocument(
                     documentGuardStuff.documentGuardService,
                     keyStoreStuff.keyStoreAuth,
-                    documentGuardStuff.documentGuardName);
+                    documentGuardStuff.documentGuardLocation);
             documentPersistenceServiceTest.testLoadDocument(documentGuardStuff.documentGuardService,
                     keyStoreStuff.keyStoreAuth,
-                    keyStoreStuff.keyStoreName,
-                    documentStuff.documentBucketName,
-                    documentStuff.documentID);
-            System.out.println("DocumentID       :" + documentStuff.documentID);
-            System.out.println("DocumentGuardName:" + documentGuardStuff.documentGuardName);
-            System.out.println("KeyStoreName     :" + keyStoreStuff.keyStoreName);
+                    keyStoreStuff.keyStoreLocation,
+                    documentStuff.documentLocation);
+            System.out.println("DocumentLocation     :" + documentStuff.documentLocation);
+            System.out.println("DocumentGuardLocation:" + documentGuardStuff.documentGuardLocation);
+            System.out.println("KeyStoreLocation     :" + keyStoreStuff.keyStoreLocation);
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
         }

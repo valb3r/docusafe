@@ -1,4 +1,4 @@
-package org.adorsys.resource.server.persistence.basetypes;
+package org.adorsys.resource.server.persistence.complextypes;
 
 import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
 

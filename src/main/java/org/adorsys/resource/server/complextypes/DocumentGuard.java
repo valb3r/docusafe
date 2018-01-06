@@ -1,6 +1,6 @@
 package org.adorsys.resource.server.complextypes;
 
-import org.adorsys.resource.server.basetypes.DocumentGuardName;
+import org.adorsys.resource.server.persistence.complextypes.DocumentGuardLocation;
 import org.adorsys.resource.server.basetypes.DocumentKey;
 
 /**
@@ -9,17 +9,17 @@ import org.adorsys.resource.server.basetypes.DocumentKey;
  * THe technical JWE-Implementation happens at the storage layer.
  */
 public class DocumentGuard {
-    DocumentGuardName documentGuardName;
+    DocumentGuardLocation documentGuardLocation;
     DocumentKey documentKey;
 
-    public DocumentGuard(DocumentGuardName documentGuardName, DocumentKey documentKey) {
+    public DocumentGuard(DocumentGuardLocation documentGuardLocation, DocumentKey documentKey) {
 		super();
-		this.documentGuardName = documentGuardName;
+		this.documentGuardLocation = documentGuardLocation;
 		this.documentKey = documentKey;
 	}
 
-	public DocumentGuardName getDocumentGuardName() {
-        return documentGuardName;
+	public DocumentGuardLocation getDocumentGuardLocation() {
+        return documentGuardLocation;
     }
 
 	public DocumentKey getDocumentKey() {

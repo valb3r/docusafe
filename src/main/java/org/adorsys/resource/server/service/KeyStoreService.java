@@ -6,10 +6,10 @@ import de.adorsys.resource.server.keyservice.SecretKeyGenerator;
 import org.adorsys.jkeygen.keystore.PasswordCallbackUtils;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
-import org.adorsys.resource.server.persistence.basetypes.KeyStoreAuth;
+import org.adorsys.resource.server.persistence.complextypes.KeyStoreAuth;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreBucketName;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;
-import org.adorsys.resource.server.persistence.basetypes.KeyStoreName;
+import org.adorsys.resource.server.persistence.complextypes.KeyStoreLocation;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreType;
 
 import javax.security.auth.callback.CallbackHandler;
@@ -26,9 +26,9 @@ public class KeyStoreService {
         secretKeyGenerator = new SecretKeyGenerator("AES", 256);
     }
 
-    public KeyStoreName createKeyStore(KeyStoreID keyStoreID,
-                                       KeyStoreAuth keyStoreAuth,
-                                       KeyStoreBucketName keystoreBucketName) {
+    public KeyStoreLocation createKeyStore(KeyStoreID keyStoreID,
+                                           KeyStoreAuth keyStoreAuth,
+                                           KeyStoreBucketName keystoreBucketName) {
         try {
             String keyStoreType = null;
             String serverKeyPairAliasPrefix = keyStoreID.getValue();
@@ -43,16 +43,16 @@ public class KeyStoreService {
                     secretKeyGenerator, keyStoreType, serverKeyPairAliasPrefix, numberOfSignKeyPairs, numberOfEncKeyPairs,
                     numberOfSecretKeys, new String(password));
             KeyStore userKeyStore = keyStoreGenerator.generate();
-            
-            KeyStoreName keyStoreName = new KeyStoreName(keystoreBucketName, keyStoreID, new KeyStoreType(userKeyStore.getType()));
-			keystorePersistence.saveKeyStore(userKeyStore, keyStoreAuth.getUserpass(), keyStoreName);
-			return keyStoreName;
+
+            KeyStoreLocation keyStoreLocation = new KeyStoreLocation(keystoreBucketName, keyStoreID, new KeyStoreType(userKeyStore.getType()));
+			keystorePersistence.saveKeyStore(userKeyStore, keyStoreAuth.getUserpass(), keyStoreLocation);
+			return keyStoreLocation;
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
     }
     
-    public KeyStore loadKeystore(KeyStoreName keyStoreName, CallbackHandler userKeystoreHandler){
-    	return keystorePersistence.loadKeystore(keyStoreName, userKeystoreHandler);
+    public KeyStore loadKeystore(KeyStoreLocation keyStoreLocation, CallbackHandler userKeystoreHandler){
+    	return keystorePersistence.loadKeystore(keyStoreLocation, userKeystoreHandler);
     }
 }

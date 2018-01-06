@@ -5,7 +5,6 @@ import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.params.EncryptionParams;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.resource.server.basetypes.DocumentContent;
-import org.adorsys.resource.server.basetypes.DocumentGuardName;
 import org.adorsys.resource.server.basetypes.DocumentID;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.DocumentGuardBasedKeySourceImpl;
@@ -14,8 +13,10 @@ import org.adorsys.resource.server.persistence.KeySource;
 import org.adorsys.resource.server.persistence.PersistentObjectWrapper;
 import org.adorsys.resource.server.persistence.basetypes.DocumentBucketName;
 import org.adorsys.resource.server.persistence.basetypes.KeyID;
-import org.adorsys.resource.server.persistence.basetypes.KeyStoreAuth;
-import org.adorsys.resource.server.persistence.basetypes.KeyStoreName;
+import org.adorsys.resource.server.persistence.complextypes.DocumentGuardLocation;
+import org.adorsys.resource.server.persistence.complextypes.DocumentLocation;
+import org.adorsys.resource.server.persistence.complextypes.KeyStoreAuth;
+import org.adorsys.resource.server.persistence.complextypes.KeyStoreLocation;
 
 /**
  * Sample use of the encobject api to implement our protocol.
@@ -48,9 +49,9 @@ public class DocumentPersistenceService {
      * - DOcument bytes found in document content.
      *
      */
-    public void persistDocument(
+    public DocumentLocation persistDocument(
     							KeyStoreAuth keyStoreAuth,
-                                DocumentGuardName documentGuardName,
+                                DocumentGuardLocation documentGuardLocation,
                                 DocumentBucketName documentBucketName,
                                 DocumentID documentID,
                                 DocumentContent documentContent) {
@@ -64,15 +65,16 @@ public class DocumentPersistenceService {
 	        ContentMetaInfo metaInfo = null;
 	        EncryptionParams encParams = null;
 
-	        KeyID keyID = new KeyID(documentGuardName.getDocumentKeyID().getValue());
-			KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, documentGuardName.getKeyStoreName(), keyStoreAuth);
+	        KeyID keyID = new KeyID(documentGuardLocation.getDocumentKeyID().getValue());
+			KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, documentGuardLocation.getKeyStoreLocation(), keyStoreAuth);
 			// Create container if non existent
 			if(!containerPersistence.containerExists(location.getContainer())){
 				containerPersistence.creteContainer(location.getContainer());
 			}
 			objectPersistence.storeObject(documentContent.getValue(), metaInfo, location, keySource, keyID , encParams);
+			return new DocumentLocation(documentID, documentBucketName);
     	} catch (Exception e){
-    		BaseExceptionHandler.handle(e);
+    		throw BaseExceptionHandler.handle(e);
     	}
     }
     
@@ -80,18 +82,13 @@ public class DocumentPersistenceService {
      * 
      */
     public PersistentObjectWrapper loadDocument(
-    		KeyStoreName keyStoreName,
+    		KeyStoreLocation keyStoreLocation,
 			KeyStoreAuth keyStoreAuth,
-			DocumentBucketName documentBucketName,
-			DocumentID documentID){
+			DocumentLocation documentLocation){
     	
     	try {
-	        
-	        KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreName, keyStoreAuth);
-
-	        // Create object handle
-	        ObjectHandle location = new ObjectHandle(documentBucketName.getValue(), documentID.getValue());
-			return objectPersistence.loadObject(location, keySource);
+	        KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreLocation, keyStoreAuth);
+			return objectPersistence.loadObject(documentLocation.getLocationHanlde(), keySource);
     	} catch (Exception e){
     		throw BaseExceptionHandler.handle(e);
     	}
