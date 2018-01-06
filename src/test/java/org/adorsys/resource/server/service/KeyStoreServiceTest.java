@@ -5,11 +5,10 @@ import org.adorsys.encobject.service.ContainerExistsException;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.service.UnknownContainerException;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
-import org.adorsys.resource.server.basetypes.UserID;
 import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
-import org.adorsys.resource.server.persistence.complextypes.KeyStoreAuth;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreBucketName;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;
+import org.adorsys.resource.server.persistence.complextypes.KeyStoreAuth;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreLocation;
 import org.junit.Assume;
 
@@ -51,11 +50,9 @@ public class KeyStoreServiceTest {
         KeyStoreBucketName keyStoreBucketName = new KeyStoreBucketName(keystoreContainer);
         String keypasswordstring = "KeyPassword";
         String userpasswordstring = "userPassword";
-        String useridstring = "UserPeter";
         KeyStoreID keyStoreID = new KeyStoreID("key-store-id-123");
 
         KeyStoreService keyStoreService = new KeyStoreService(keystorePersistence);
-        UserID userID = new UserID(useridstring);
         KeyStoreAuth keyStoreAuth = new KeyStoreAuth(keypasswordstring, userpasswordstring);
         KeyStoreLocation keyStoreLocation = keyStoreService.createKeyStore(keyStoreID, keyStoreAuth, keyStoreBucketName);
         KeyStore userKeyStore = keyStoreService.loadKeystore(keyStoreLocation, keyStoreAuth.getUserpass());
