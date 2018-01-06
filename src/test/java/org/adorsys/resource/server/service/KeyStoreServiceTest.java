@@ -7,8 +7,8 @@ import org.adorsys.encobject.service.UnknownContainerException;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
 import org.adorsys.resource.server.basetypes.UserID;
 import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
-import org.adorsys.resource.server.persistence.basetypes.BucketName;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreAuth;
+import org.adorsys.resource.server.persistence.basetypes.KeyStoreBucketName;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreName;
 import org.junit.Assume;
@@ -20,7 +20,7 @@ import java.security.KeyStore;
  */
 public class KeyStoreServiceTest {
 
-    private static String keystoreContainer = "keysotre-container-" + KeyStoreServiceTest.class.getSimpleName();
+    private static String keystoreContainer = "keystore-container-" + KeyStoreServiceTest.class.getSimpleName();
     private static TestFsBlobStoreFactory storeContextFactory;
     private static ExtendedKeystorePersistence keystorePersistence;
     private static ContainerPersistence containerPersistence;
@@ -48,7 +48,7 @@ public class KeyStoreServiceTest {
     }
 
     public KeyStoreStuff createKeyStore() {
-        BucketName keyStoreBucketName = new BucketName(keystoreContainer);
+        KeyStoreBucketName keyStoreBucketName = new KeyStoreBucketName(keystoreContainer);
         String keypasswordstring = "KeyPassword";
         String userpasswordstring = "userPassword";
         String useridstring = "UserPeter";
@@ -66,12 +66,12 @@ public class KeyStoreServiceTest {
     public static class KeyStoreStuff {
         public KeyStore keyStore;
         public ExtendedKeystorePersistence keystorePersistence;
-        public BucketName keyStoreBucketName;
+        public KeyStoreBucketName keyStoreBucketName;
         public KeyStoreID keyStoreID;
         public KeyStoreAuth keyStoreAuth;
         public KeyStoreName keyStoreName;
 
-        public KeyStoreStuff(KeyStore keyStore, ExtendedKeystorePersistence keystorePersistence, BucketName keyStoreBucketName, KeyStoreID keyStoreID, KeyStoreAuth keyStoreAuth, KeyStoreName keyStoreName) {
+        public KeyStoreStuff(KeyStore keyStore, ExtendedKeystorePersistence keystorePersistence, KeyStoreBucketName keyStoreBucketName, KeyStoreID keyStoreID, KeyStoreAuth keyStoreAuth, KeyStoreName keyStoreName) {
             this.keyStore = keyStore;
             this.keystorePersistence = keystorePersistence;
             this.keyStoreBucketName = keyStoreBucketName;

@@ -12,7 +12,7 @@ import org.adorsys.resource.server.persistence.DocumentGuardBasedKeySourceImpl;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
 import org.adorsys.resource.server.persistence.KeySource;
 import org.adorsys.resource.server.persistence.PersistentObjectWrapper;
-import org.adorsys.resource.server.persistence.basetypes.BucketName;
+import org.adorsys.resource.server.persistence.basetypes.DocumentBucketName;
 import org.adorsys.resource.server.persistence.basetypes.KeyID;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreAuth;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreName;
@@ -51,7 +51,7 @@ public class DocumentPersistenceService {
     public void persistDocument(
     							KeyStoreAuth keyStoreAuth,
                                 DocumentGuardName documentGuardName,
-                                BucketName documentBucketName,
+                                DocumentBucketName documentBucketName,
                                 DocumentID documentID,
                                 DocumentContent documentContent) {
     	
@@ -82,7 +82,7 @@ public class DocumentPersistenceService {
     public PersistentObjectWrapper loadDocument(
     		KeyStoreName keyStoreName,
 			KeyStoreAuth keyStoreAuth,
-			BucketName documentBucketName,
+			DocumentBucketName documentBucketName,
 			DocumentID documentID){
     	
     	try {

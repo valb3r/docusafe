@@ -6,8 +6,8 @@ import de.adorsys.resource.server.keyservice.SecretKeyGenerator;
 import org.adorsys.jkeygen.keystore.PasswordCallbackUtils;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
-import org.adorsys.resource.server.persistence.basetypes.BucketName;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreAuth;
+import org.adorsys.resource.server.persistence.basetypes.KeyStoreBucketName;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreName;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreType;
@@ -28,7 +28,7 @@ public class KeyStoreService {
 
     public KeyStoreName createKeyStore(KeyStoreID keyStoreID,
                                        KeyStoreAuth keyStoreAuth,
-                                       BucketName keystoreBucketName) {
+                                       KeyStoreBucketName keystoreBucketName) {
         try {
             String keyStoreType = null;
             String serverKeyPairAliasPrefix = keyStoreID.getValue();

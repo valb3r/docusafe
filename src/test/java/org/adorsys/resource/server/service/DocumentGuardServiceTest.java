@@ -9,8 +9,8 @@ import org.adorsys.resource.server.complextypes.DocumentGuard;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
-import org.adorsys.resource.server.persistence.basetypes.BucketName;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreAuth;
+import org.adorsys.resource.server.persistence.basetypes.KeyStoreBucketName;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreName;
 import org.adorsys.resource.server.utils.HexUtil;
@@ -37,7 +37,7 @@ public class DocumentGuardServiceTest {
 
     }
 
-    public DocumentGuardStuff testCreateDocumentGuard(KeyStoreAuth keyStoreAuth, ExtendedKeystorePersistence keystorePersistence, BucketName keystoreBucketName, KeyStoreID keyStoreID) {
+    public DocumentGuardStuff testCreateDocumentGuard(KeyStoreAuth keyStoreAuth, ExtendedKeystorePersistence keystorePersistence, KeyStoreBucketName keystoreBucketName, KeyStoreID keyStoreID) {
         try {
             KeyStoreService keyStoreService = new KeyStoreService(keystorePersistence);
             KeyStoreName keyStoreName = keyStoreService.createKeyStore(keyStoreID, keyStoreAuth, keystoreBucketName);

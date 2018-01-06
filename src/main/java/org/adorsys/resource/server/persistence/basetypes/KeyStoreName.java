@@ -11,10 +11,8 @@ public class KeyStoreName extends BaseTypeString {
 	
 	public static final String FILE_EXTENSION_SEPARATOR = ".";
 
-	private BucketName bucketName;
-
+	private KeyStoreBucketName keyStoreBucketName;
 	private KeyStoreID keyStoreID;
-	
 	private KeyStoreType keyStoreType;
 	
 	public KeyStoreName() {}
@@ -24,15 +22,15 @@ public class KeyStoreName extends BaseTypeString {
         fromString(value);
     }
 
-	public KeyStoreName(BucketName bucketName, KeyStoreID keyStoreID, KeyStoreType keyStoreType) {
-		super(toString(bucketName, keyStoreID, keyStoreType));
-		this.bucketName = bucketName;
+	public KeyStoreName(KeyStoreBucketName keyStoreBucketName, KeyStoreID keyStoreID, KeyStoreType keyStoreType) {
+		super(toString(keyStoreBucketName, keyStoreID, keyStoreType));
+		this.keyStoreBucketName = keyStoreBucketName;
 		this.keyStoreID = keyStoreID;
 		this.keyStoreType = keyStoreType;
 	}
 	
-	private static String toString(BucketName bucketName, KeyStoreID keyStoreID, KeyStoreType keyStoreType){
-		return toFileName(keyStoreID, keyStoreType) + BucketName.BUCKET_SEPARATOR + bucketName.getValue();
+	private static String toString(KeyStoreBucketName bucketName, KeyStoreID keyStoreID, KeyStoreType keyStoreType){
+		return toFileName(keyStoreID, keyStoreType) + KeyStoreBucketName.BUCKET_SEPARATOR + bucketName.getValue();
 	}
 	
 	private static String toFileName(KeyStoreID keyStoreID, KeyStoreType keyStoreType) {
@@ -40,14 +38,14 @@ public class KeyStoreName extends BaseTypeString {
 	}
 	
 	private void fromString(String storeFQN){ // Fuly qualifierd Name
-		bucketName = new BucketName(StringUtils.substringAfterLast(storeFQN, BucketName.BUCKET_SEPARATOR));
-		String storeName = StringUtils.substringBeforeLast(storeFQN, BucketName.BUCKET_SEPARATOR);
+		keyStoreBucketName = new KeyStoreBucketName(StringUtils.substringAfterLast(storeFQN, KeyStoreBucketName.BUCKET_SEPARATOR));
+		String storeName = StringUtils.substringBeforeLast(storeFQN, KeyStoreBucketName.BUCKET_SEPARATOR);
 		keyStoreType = new KeyStoreType(StringUtils.substringAfterLast(storeName, FILE_EXTENSION_SEPARATOR));
 		keyStoreID = new KeyStoreID(StringUtils.substringBeforeLast(storeName, FILE_EXTENSION_SEPARATOR));
 	}
 
-	public BucketName getBucketName() {
-		return bucketName;
+	public KeyStoreBucketName getKeyStoreBucketName() {
+		return keyStoreBucketName;
 	}
 
 	public KeyStoreID getKeyStoreID() {
@@ -63,10 +61,20 @@ public class KeyStoreName extends BaseTypeString {
 	}
 	
 	public ObjectHandle toLocation(){
-		return new ObjectHandle(getBucketName().getValue(), toFileName());
+		return new ObjectHandle(getKeyStoreBucketName().getValue(), toFileName());
 	}
 
-    public static KeyStoreName findUserKeyStoreName(BucketName bucketName, UserID userId){
-    	return new KeyStoreName(bucketName, new KeyStoreID(userId.getValue()), new KeyStoreType("UBER"));
+    public static KeyStoreName findUserKeyStoreName(KeyStoreBucketName keyStoreBucketName, UserID userId){
+    	return new KeyStoreName(keyStoreBucketName, new KeyStoreID(userId.getValue()), new KeyStoreType("UBER"));
     }
+
+	@Override
+	public String toString() {
+		return "KeyStoreName{" +
+				"keyStoreBucketName=" + keyStoreBucketName +
+				", keyStoreID=" + keyStoreID +
+				", keyStoreType=" + keyStoreType +
+				", value=" + getValue() +
+				'}';
+	}
 }

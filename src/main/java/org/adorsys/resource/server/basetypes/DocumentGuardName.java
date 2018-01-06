@@ -2,7 +2,8 @@ package org.adorsys.resource.server.basetypes;
 
 import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.resource.server.persistence.basetypes.BaseTypeString;
-import org.adorsys.resource.server.persistence.basetypes.BucketName;
+import org.adorsys.resource.server.persistence.basetypes.DocumentGuardBucketName;
+import org.adorsys.resource.server.persistence.basetypes.KeyStoreBucketName;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreName;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreType;
@@ -46,7 +47,7 @@ public class DocumentGuardName extends BaseTypeString {
 	}
 
 	public ObjectHandle toLocation(){
-		return new ObjectHandle(keyStoreName.getBucketName().getValue(), toFileName());
+		return new ObjectHandle(keyStoreName.getKeyStoreBucketName().getValue(), toFileName());
 	}
 
 	private String toFileName() {
@@ -55,7 +56,7 @@ public class DocumentGuardName extends BaseTypeString {
 
 
 	private static String toString(KeyStoreName keyStoreName, DocumentKeyID documentKeyID){
-		return toFileName(keyStoreName, documentKeyID) + BucketName.BUCKET_SEPARATOR + keyStoreName.getBucketName().getValue();
+		return toFileName(keyStoreName, documentKeyID) + DocumentGuardBucketName.BUCKET_SEPARATOR + keyStoreName.getKeyStoreBucketName().getValue();
 	}
 	
 	private static String toFileName(KeyStoreName keyStoreName, DocumentKeyID documentKeyID) {
@@ -65,9 +66,9 @@ public class DocumentGuardName extends BaseTypeString {
 
 	private void fromString(String guardFQN){
 		
-		String bucketNameStr = StringUtils.substringAfterLast(guardFQN, BucketName.BUCKET_SEPARATOR);
+		String bucketNameStr = StringUtils.substringAfterLast(guardFQN, DocumentGuardBucketName.BUCKET_SEPARATOR);
 		
-		String documentGuardfileName = StringUtils.substringBeforeLast(guardFQN, BucketName.BUCKET_SEPARATOR);
+		String documentGuardfileName = StringUtils.substringBeforeLast(guardFQN, DocumentGuardBucketName.BUCKET_SEPARATOR);
 		String documentKeyIDName = StringUtils.substringAfterLast(documentGuardfileName, GUARD_NAME_COMPONENT_SEPARATOR);
 		String keyStoreFileName = StringUtils.substringBeforeLast(documentGuardfileName, GUARD_NAME_COMPONENT_SEPARATOR);
 		
@@ -75,15 +76,16 @@ public class DocumentGuardName extends BaseTypeString {
 		String keyStoreType = StringUtils.substringAfterLast(keyStoreFileName, KeyStoreName.FILE_EXTENSION_SEPARATOR);
 		String keyStoreId = StringUtils.substringBeforeLast(keyStoreFileName, KeyStoreName.FILE_EXTENSION_SEPARATOR);
     	
-		keyStoreName = new KeyStoreName(new BucketName(bucketNameStr), new KeyStoreID(keyStoreId), new KeyStoreType(keyStoreType));
+		keyStoreName = new KeyStoreName(new KeyStoreBucketName(bucketNameStr), new KeyStoreID(keyStoreId), new KeyStoreType(keyStoreType));
 		documentKeyID = new DocumentKeyID(documentKeyIDName);
 	}
 
 	@Override
 	public String toString() {
 		return "DocumentGuardName{" +
-				", documentKeyID=" + documentKeyID +
+				"documentKeyID=" + documentKeyID +
 				", keyStoreName=" + keyStoreName +
+				", value=" + getValue() +
 				'}';
 	}
 }

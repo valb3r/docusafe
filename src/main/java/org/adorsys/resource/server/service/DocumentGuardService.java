@@ -97,7 +97,7 @@ public class DocumentGuardService {
 
             // Zielpfad für den DocumentGuard bestimmen
             DocumentGuardName documentGuardName = new DocumentGuardName(keyStoreName, documentKeyID);
-//            ObjectHandle location = new ObjectHandle(keyStoreName.getBucketName().getValue(), documentGuardName.getValue());
+//            ObjectHandle location = new ObjectHandle(keyStoreName.getKeyStoreBucketName().getValue(), documentGuardName.getValue());
 
             EncryptionParams encParams = null;
 

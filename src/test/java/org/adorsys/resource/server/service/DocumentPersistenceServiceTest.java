@@ -9,7 +9,7 @@ import org.adorsys.resource.server.basetypes.DocumentGuardName;
 import org.adorsys.resource.server.basetypes.DocumentID;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
 import org.adorsys.resource.server.persistence.PersistentObjectWrapper;
-import org.adorsys.resource.server.persistence.basetypes.BucketName;
+import org.adorsys.resource.server.persistence.basetypes.DocumentBucketName;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreAuth;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreName;
 import org.junit.Assert;
@@ -22,7 +22,7 @@ public class DocumentPersistenceServiceTest {
     private static ExtendedObjectPersistence documentExtendedPersistence;
     private static ContainerPersistence containerPersistence;
 
-    private BucketName documentBucketName = new BucketName("document-bucket");
+    private DocumentBucketName documentBucketName = new DocumentBucketName("document-bucket");
     private DocumentID documentID = new DocumentID("document-id-123");
     private DocumentContent documentContent = new DocumentContent("Der Inhalt ist ein Affe".getBytes());
 
@@ -54,7 +54,7 @@ public class DocumentPersistenceServiceTest {
     public void testLoadDocument(DocumentGuardService documentGuardService,
                                  KeyStoreAuth keyStoreAuth,
                                  KeyStoreName keyStoreName,
-                                 BucketName documentBucketName,
+                                 DocumentBucketName documentBucketName,
                                  DocumentID documentID) {
         DocumentPersistenceService documentPersistenceService = new DocumentPersistenceService(containerPersistence, documentExtendedPersistence, documentGuardService);
         PersistentObjectWrapper persistentObjectWrapper = documentPersistenceService.loadDocument(
@@ -69,10 +69,10 @@ public class DocumentPersistenceServiceTest {
     }
 
     public static class DocumentStuff {
-        public BucketName documentBucketName;
+        public DocumentBucketName documentBucketName;
         public DocumentID documentID;
 
-        public DocumentStuff(BucketName documentBucketName, DocumentID documentID) {
+        public DocumentStuff(DocumentBucketName documentBucketName, DocumentID documentID) {
             this.documentBucketName = documentBucketName;
             this.documentID = documentID;
         }

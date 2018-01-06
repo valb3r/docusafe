@@ -113,6 +113,9 @@ public class AllServiceTest {
                     keyStoreStuff.keyStoreName,
                     documentStuff.documentBucketName,
                     documentStuff.documentID);
+            System.out.println("DocumentID       :" + documentStuff.documentID);
+            System.out.println("DocumentGuardName:" + documentGuardStuff.documentGuardName);
+            System.out.println("KeyStoreName     :" + keyStoreStuff.keyStoreName);
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
         }
