@@ -1,20 +1,6 @@
 package org.adorsys.encobject.utils;
 
-import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.jwk.JWKSet;
-import org.adorsys.jjwk.keystore.JwkExport;
-import org.adorsys.jkeygen.keystore.KeyStoreService;
-import org.adorsys.jkeygen.keystore.KeystoreBuilder;
-import org.adorsys.jkeygen.keystore.SecretKeyData;
-import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
-import org.adorsys.jkeygen.pwd.PasswordMapCallbackHandler;
-import org.adorsys.jkeygen.secretkey.SecretKeyBuilder;
-
-import javax.crypto.SecretKey;
-import javax.security.auth.callback.CallbackHandler;
-import java.io.ByteArrayInputStream;
 import java.lang.reflect.Field;
-import java.security.KeyStore;
 
 public class TestKeyUtils {
 	
@@ -28,38 +14,5 @@ public class TestKeyUtils {
 	    } catch (ClassNotFoundException | NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
 	        ex.printStackTrace(System.err);
 	    }		
-	}
-
-	
-	public static KeyStore testSecretKeystore(String storeName, char[] storePass, String secretKeyAlias, char[] secretKeyPass){
-		try {
-			CallbackHandler storePassHandler = new PasswordCallbackHandler(storePass);
-			CallbackHandler secretKeyPassHandler = new PasswordCallbackHandler(secretKeyPass);
-			
-			byte[] bs = new KeystoreBuilder()
-					.withKeyEntry(newSecretKey(secretKeyAlias, secretKeyPassHandler))
-					.withStoreId(storeName)
-					.build(storePassHandler);
-
-			ByteArrayInputStream bis = new ByteArrayInputStream(bs);
-			return KeyStoreService.loadKeyStore(bis, storeName, null, storePassHandler);
-		} catch (Exception e) {
-			return null;
-		}
-	}
-
-	public static SecretKeyData newSecretKey(String alias, CallbackHandler secretKeyPassHandler){
-		SecretKey secretKey = new SecretKeyBuilder().withKeyAlg("AES").withKeyLength(256).build();	
-		return new SecretKeyData(secretKey, alias, secretKeyPassHandler);
-	}
-	
-	public static PasswordMapCallbackHandler.Builder callbackHandlerBuilder(String secretKeyAlias, char[] secretKeyPass){
-		return new PasswordMapCallbackHandler.Builder()
-				.withEntry(secretKeyAlias, secretKeyPass);
-	}
-	
-	public static JWK readKeyAsJWK(KeyStore keyStore, String alias, CallbackHandler callbackHandler){
-		JWKSet exportKeys = JwkExport.exportKeys(keyStore, callbackHandler);
-		return JwkExport.selectKey(exportKeys, alias);
 	}
 }

@@ -5,11 +5,10 @@ import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
 import org.adorsys.resource.server.basetypes.DocumentContent;
-import org.adorsys.resource.server.persistence.complextypes.DocumentGuardLocation;
 import org.adorsys.resource.server.basetypes.DocumentID;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
-import org.adorsys.resource.server.persistence.PersistentObjectWrapper;
 import org.adorsys.resource.server.persistence.basetypes.DocumentBucketName;
+import org.adorsys.resource.server.persistence.complextypes.DocumentGuardLocation;
 import org.adorsys.resource.server.persistence.complextypes.DocumentLocation;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreAuth;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreLocation;
@@ -57,12 +56,10 @@ public class DocumentPersistenceServiceTest {
                                  KeyStoreLocation keyStoreLocation,
                                  DocumentLocation documentLocation) {
         DocumentPersistenceService documentPersistenceService = new DocumentPersistenceService(containerPersistence, documentExtendedPersistence, documentGuardService);
-        PersistentObjectWrapper persistentObjectWrapper = documentPersistenceService.loadDocument(
+        DocumentContent readContent = documentPersistenceService.loadDocument(
                 keyStoreLocation,
                 keyStoreAuth,
                 documentLocation);
-
-        DocumentContent readContent = new DocumentContent(persistentObjectWrapper.getData());
         Assert.assertEquals("Content of Document", this.documentContent.toString(), readContent.toString());
         System.out.println("Gelesenes Document enthält:" + readContent + " bzw " + new String(readContent.getValue()));
     }

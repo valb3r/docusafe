@@ -10,7 +10,6 @@ import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.DocumentGuardBasedKeySourceImpl;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
 import org.adorsys.resource.server.persistence.KeySource;
-import org.adorsys.resource.server.persistence.PersistentObjectWrapper;
 import org.adorsys.resource.server.persistence.basetypes.DocumentBucketName;
 import org.adorsys.resource.server.persistence.basetypes.KeyID;
 import org.adorsys.resource.server.persistence.complextypes.DocumentGuardLocation;
@@ -81,14 +80,14 @@ public class DocumentPersistenceService {
     /**
      * 
      */
-    public PersistentObjectWrapper loadDocument(
+    public DocumentContent loadDocument(
     		KeyStoreLocation keyStoreLocation,
 			KeyStoreAuth keyStoreAuth,
 			DocumentLocation documentLocation){
     	
     	try {
 	        KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreLocation, keyStoreAuth);
-			return objectPersistence.loadObject(documentLocation.getLocationHandle(), keySource);
+			return new DocumentContent(objectPersistence.loadObject(documentLocation.getLocationHandle(), keySource).getData());
     	} catch (Exception e){
     		throw BaseExceptionHandler.handle(e);
     	}

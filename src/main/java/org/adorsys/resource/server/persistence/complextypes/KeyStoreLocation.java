@@ -3,7 +3,6 @@ package org.adorsys.resource.server.persistence.complextypes;
 import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreBucketName;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;
-import org.adorsys.resource.server.persistence.basetypes.KeyStoreName;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreType;
 
 /**
@@ -38,13 +37,8 @@ public class KeyStoreLocation implements LocationInterface {
 	public ObjectHandle getLocationHandle(){
 		return new ObjectHandle(
 				getKeyStoreBucketName().getValue(),
-				getKeyStoreName().getValue());
+				keyStoreID.getValue() + FILE_EXTENSION_SEPARATOR + keyStoreType.getValue());
 	}
-
-	public KeyStoreName getKeyStoreName() {
-		return new KeyStoreName(keyStoreID.getValue() + FILE_EXTENSION_SEPARATOR + keyStoreType.getValue());
-	}
-
 
 	@Override
 	public String toString() {

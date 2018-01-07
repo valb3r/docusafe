@@ -32,7 +32,7 @@ public class ExtendedKeystorePersistence {
 					throw new BaseException("Invalid store type - expected : " + keystore.getType() + " but is: " + keyStoreLocation.getKeyStoreType().getValue());
 			
 			// write keystore to byte array.
-			byte[] bs = KeyStoreService.toByteArray(keystore, keyStoreLocation.getKeyStoreName().getValue(), storePassHandler);
+			byte[] bs = KeyStoreService.toByteArray(keystore, keyStoreLocation.getLocationHandle().getName(), storePassHandler);
 			
 			// write byte array to blob store.
 			blobStoreConnection.putBlob(keyStoreLocation.getLocationHandle() , bs);
@@ -48,7 +48,7 @@ public class ExtendedKeystorePersistence {
 			byte[] ksBytes = blobStoreConnection.getBlob(keyStoreLocation.getLocationHandle());
 			
 			// Initialize key store
-			return KeyStoreService.loadKeyStore(ksBytes, keyStoreLocation.getKeyStoreName().getValue(), keyStoreLocation.getKeyStoreType().getValue(), handler);
+			return KeyStoreService.loadKeyStore(ksBytes, keyStoreLocation.getLocationHandle().getName(), keyStoreLocation.getKeyStoreType().getValue(), handler);
 		} catch (Exception e) {
 			throw BaseExceptionHandler.handle(e);
 		}
