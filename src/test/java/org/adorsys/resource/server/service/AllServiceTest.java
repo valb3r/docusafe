@@ -1,6 +1,6 @@
 package org.adorsys.resource.server.service;
 
-import org.adorsys.resource.server.complextypes.DocumentGuard;
+import org.adorsys.resource.server.persistence.complextypes.DocumentGuard;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.utils.HexUtil;
 import org.junit.AfterClass;

@@ -1,8 +1,8 @@
 package org.adorsys.resource.server.persistence;
 
 import org.adorsys.resource.server.persistence.complextypes.DocumentGuardLocation;
-import org.adorsys.resource.server.basetypes.DocumentKeyID;
-import org.adorsys.resource.server.complextypes.DocumentGuard;
+import org.adorsys.resource.server.persistence.basetypes.DocumentKeyID;
+import org.adorsys.resource.server.persistence.complextypes.DocumentGuard;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.basetypes.KeyID;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreAuth;

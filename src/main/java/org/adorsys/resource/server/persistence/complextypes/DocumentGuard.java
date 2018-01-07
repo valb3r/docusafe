@@ -1,7 +1,6 @@
-package org.adorsys.resource.server.complextypes;
+package org.adorsys.resource.server.persistence.complextypes;
 
-import org.adorsys.resource.server.persistence.complextypes.DocumentGuardLocation;
-import org.adorsys.resource.server.basetypes.DocumentKey;
+import org.adorsys.resource.server.persistence.basetypes.DocumentKey;
 
 /**
  * Created by peter on 23.12.17 at 18:33.

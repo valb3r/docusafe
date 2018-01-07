@@ -1,6 +1,6 @@
 package org.adorsys.resource.server.serializer;
 
-import org.adorsys.resource.server.basetypes.DocumentKey;
+import org.adorsys.resource.server.persistence.basetypes.DocumentKey;
 
 /**
  * Serializer for the content of a document guard.  

@@ -1,4 +1,4 @@
-package org.adorsys.resource.server.basetypes;
+package org.adorsys.resource.server.persistence.basetypes;
 
 import javax.crypto.SecretKey;
 

@@ -1,7 +1,7 @@
 package org.adorsys.resource.server.persistence.complextypes;
 
 import org.adorsys.encobject.domain.ObjectHandle;
-import org.adorsys.resource.server.basetypes.DocumentKeyID;
+import org.adorsys.resource.server.persistence.basetypes.DocumentKeyID;
 
 /**
  * Created by peter on 23.12.2017 at 18:33:14.

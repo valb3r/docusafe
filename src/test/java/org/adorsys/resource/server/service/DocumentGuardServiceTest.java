@@ -4,7 +4,7 @@ import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
-import org.adorsys.resource.server.complextypes.DocumentGuard;
+import org.adorsys.resource.server.persistence.complextypes.DocumentGuard;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;

@@ -7,7 +7,7 @@ import javax.security.auth.callback.CallbackHandler;
 
 import org.adorsys.encobject.service.WrongKeyCredentialException;
 import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
-import org.adorsys.resource.server.basetypes.DocumentKey;
+import org.adorsys.resource.server.persistence.basetypes.DocumentKey;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.utils.KeystoreAdapter;
 
