@@ -56,7 +56,7 @@ public class DocumentGuardService {
             DocumentKeyID documentKeyID = new DocumentKeyID(RandomStringUtils.randomAlphanumeric(20));
 
             // Für die DocumentKeyID einen DocumentKey erzeugen
-            SecretKeyData secretKeyData = secretKeyGenerator.generate(documentKeyID.getValue(), keyStoreAccess.getKeyStoreAuth().getKeypass());
+            SecretKeyData secretKeyData = secretKeyGenerator.generate(documentKeyID.getValue(), null);
             DocumentKey documentKey = new DocumentKey(secretKeyData.getSecretKey());
 
             createDocumentGuard(keyStoreAccess, new DocumentKeyIDWithKey(documentKeyID, documentKey));
