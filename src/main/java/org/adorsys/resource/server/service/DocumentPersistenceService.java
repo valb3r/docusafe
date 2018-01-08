@@ -6,13 +6,14 @@ import org.adorsys.encobject.params.EncryptionParams;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.DocumentGuardBasedKeySourceImpl;
+import org.adorsys.resource.server.persistence.DocumentKeyIDWithKeyBasedSourceImpl;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
 import org.adorsys.resource.server.persistence.KeySource;
 import org.adorsys.resource.server.persistence.basetypes.DocumentBucketName;
 import org.adorsys.resource.server.persistence.basetypes.DocumentContent;
 import org.adorsys.resource.server.persistence.basetypes.DocumentID;
-import org.adorsys.resource.server.persistence.basetypes.DocumentKeyID;
 import org.adorsys.resource.server.persistence.basetypes.KeyID;
+import org.adorsys.resource.server.persistence.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.resource.server.persistence.complextypes.DocumentLocation;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreAccess;
 
@@ -34,19 +35,37 @@ public class DocumentPersistenceService {
 		this.documentGuardService = documentGuardService;
 	}
 
-
-
 	/**
-     * Stored the document on behalf of a user.
-     * - We use userid to find the user key store
-     * - the store pass is a standard value derived from the user id
-     * - the key pass is extracted from the bearer token authenticating the user.
-     * - The bucket name specifies the user container.
-     * - The document guard name specifies the key used by a user to encrypt the document. This must have been created in a former call.
-     * - The document id is created by the user. If not unique, existing document will be overriden
-     * - DOcument bytes found in document content.
-     *
-     */
+	 */
+	public DocumentLocation persistDocument(
+			DocumentKeyIDWithKey documentKeyIDWithKey,
+			DocumentBucketName documentBucketName,
+			DocumentID documentID,
+			DocumentContent documentContent) {
+
+		try {
+
+			// Create object handle
+			ObjectHandle location = new ObjectHandle(documentBucketName.getValue(), documentID.getValue());
+
+			// Store object.
+			ContentMetaInfo metaInfo = null;
+			EncryptionParams encParams = null;
+
+			KeySource keySource = new DocumentKeyIDWithKeyBasedSourceImpl(documentKeyIDWithKey);
+			// Create container if non existent
+			if(!containerPersistence.containerExists(location.getContainer())){
+				containerPersistence.creteContainer(location.getContainer());
+			}
+			KeyID keyID = new KeyID(documentKeyIDWithKey.getDocumentKeyID().getValue());
+			objectPersistence.storeObject(documentContent.getValue(), metaInfo, location, keySource, keyID , encParams);
+			return new DocumentLocation(documentID, documentBucketName);
+		} catch (Exception e){
+			throw BaseExceptionHandler.handle(e);
+		}
+	}
+
+/*
     public DocumentLocation persistDocument(
     							KeyStoreAccess keyStoreAccess,
                                 DocumentKeyID documentKeyID,
@@ -75,7 +94,8 @@ public class DocumentPersistenceService {
     		throw BaseExceptionHandler.handle(e);
     	}
     }
-    
+*/
+
     /**
      * 
      */

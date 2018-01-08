@@ -8,7 +8,7 @@ import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
 import org.adorsys.resource.server.persistence.basetypes.DocumentKeyID;
-import org.adorsys.resource.server.persistence.complextypes.DocumentGuard;
+import org.adorsys.resource.server.persistence.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreAccess;
 import org.adorsys.resource.server.utils.HexUtil;
 import org.junit.Assert;
@@ -34,6 +34,24 @@ public class DocumentGuardServiceTest {
 
     }
 
+    public DocumentGuardStuff testCreateDocumentGuardForDocumentKeyIDWithKey(KeyStoreAccess keyStoreAccess, DocumentKeyIDWithKey documentKeyIDWithKey, ExtendedKeystorePersistence keystorePersistence) {
+        try {
+            KeyStoreService keyStoreService = new KeyStoreService(keystorePersistence);
+
+            {
+                KeyStore userKeyStore = keyStoreService.loadKeystore(keyStoreAccess.getKeyStoreLocation(), keyStoreAccess.getKeyStoreAuth().getUserpass());
+                Assert.assertEquals("Number of entries of KeyStore is 15", 15, userKeyStore.size());
+            }
+
+            DocumentGuardService documentGuardService = new DocumentGuardService(keystorePersistence, guardExtendedPersistence);
+            documentGuardService.createDocumentGuard(keyStoreAccess, documentKeyIDWithKey);
+            System.out.println("documentKeyID:" + documentKeyIDWithKey.getDocumentKeyID());
+            return new DocumentGuardStuff(documentGuardService, documentKeyIDWithKey.getDocumentKeyID());
+        } catch (Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
+    }
+
     public DocumentGuardStuff testCreateDocumentGuard(KeyStoreAccess keyStoreAccess, ExtendedKeystorePersistence keystorePersistence) {
         try {
             KeyStoreService keyStoreService = new KeyStoreService(keystorePersistence);
@@ -52,16 +70,16 @@ public class DocumentGuardServiceTest {
         }
     }
 
-    public DocumentGuard testLoadDocumentGuard(
+    public DocumentKeyIDWithKey testLoadDocumentGuard(
             KeyStoreAccess keyStoreAccess,
             ExtendedKeystorePersistence keystorePersistence,
             DocumentKeyID documentKeyID) {
         try {
             DocumentGuardService documentGuardService = new DocumentGuardService(keystorePersistence, guardExtendedPersistence);
-            DocumentGuard documentGuard = documentGuardService.loadDocumentGuard(keyStoreAccess, documentKeyID);
-            System.out.println("key des Guards ist :" + documentGuard.getDocumentKey());
-            System.out.println("LOAD DocumentKey:" + HexUtil.conventBytesToHexString(documentGuard.getDocumentKey().getSecretKey().getEncoded()));
-            return documentGuard;
+            DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardService.loadDocumentKeyIDWithKeyFromDocumentGuard(keyStoreAccess, documentKeyID);
+            System.out.println("key des Guards ist :" + documentKeyIDWithKey.getDocumentKey());
+            System.out.println("LOAD DocumentKey:" + HexUtil.conventBytesToHexString(documentKeyIDWithKey.getDocumentKey().getSecretKey().getEncoded()));
+            return documentKeyIDWithKey;
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }

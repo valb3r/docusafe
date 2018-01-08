@@ -8,11 +8,11 @@ import org.adorsys.resource.server.persistence.basetypes.DocumentKeyID;
  * 
  * THe technical JWE-Implementation happens at the storage layer.
  */
-public class DocumentGuard {
+public class DocumentKeyIDWithKey {
     private final DocumentKeyID documentKeyID;
     private final DocumentKey documentKey;
 
-	public DocumentGuard(DocumentKeyID documentKeyID, DocumentKey documentKey) {
+	public DocumentKeyIDWithKey(DocumentKeyID documentKeyID, DocumentKey documentKey) {
 		this.documentKeyID = documentKeyID;
 		this.documentKey = documentKey;
 	}

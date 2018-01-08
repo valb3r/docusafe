@@ -8,7 +8,7 @@ import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
 import org.adorsys.resource.server.persistence.basetypes.DocumentBucketName;
 import org.adorsys.resource.server.persistence.basetypes.DocumentContent;
 import org.adorsys.resource.server.persistence.basetypes.DocumentID;
-import org.adorsys.resource.server.persistence.basetypes.DocumentKeyID;
+import org.adorsys.resource.server.persistence.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.resource.server.persistence.complextypes.DocumentLocation;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreAccess;
 import org.junit.Assert;
@@ -38,12 +38,10 @@ public class DocumentPersistenceServiceTest {
     }
 
     public DocumentStuff testPersistDocument(DocumentGuardService documentGuardService,
-                                             KeyStoreAccess keyStoreAccess,
-                                             DocumentKeyID documentKeyID) {
+                                             DocumentKeyIDWithKey documentKeyIDWithKey) {
         DocumentPersistenceService documentPersistenceService = new DocumentPersistenceService(containerPersistence, documentExtendedPersistence, documentGuardService);
         DocumentLocation documentLocation = documentPersistenceService.persistDocument(
-                keyStoreAccess,
-                documentKeyID,
+                documentKeyIDWithKey,
                 documentBucketName,
                 documentID,
                 documentContent);

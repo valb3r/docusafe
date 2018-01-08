@@ -48,13 +48,14 @@ public class KeyStoreServiceTest {
     }
 
     public KeyStoreStuff createKeyStore() {
+        return createKeyStore("userpassword", "keypassword", new KeyStoreID("key-store-id-123"));
+    }
+
+        public KeyStoreStuff createKeyStore(String keyPassword, String userPassword, KeyStoreID keyStoreID) {
         KeyStoreBucketName keyStoreBucketName = new KeyStoreBucketName(keystoreContainer);
-        String keypasswordstring = "KeyPassword";
-        String userpasswordstring = "userPassword";
-        KeyStoreID keyStoreID = new KeyStoreID("key-store-id-123");
 
         KeyStoreService keyStoreService = new KeyStoreService(keystorePersistence);
-        KeyStoreAuth keyStoreAuth = new KeyStoreAuth(keypasswordstring, userpasswordstring);
+        KeyStoreAuth keyStoreAuth = new KeyStoreAuth(keyPassword, userPassword);
         KeyStoreLocation keyStoreLocation = keyStoreService.createKeyStore(keyStoreID, keyStoreAuth, keyStoreBucketName);
         KeyStore userKeyStore = keyStoreService.loadKeystore(keyStoreLocation, keyStoreAuth.getUserpass());
         return new KeyStoreStuff(userKeyStore, keystorePersistence, keyStoreID, new KeyStoreAccess(keyStoreLocation, keyStoreAuth));

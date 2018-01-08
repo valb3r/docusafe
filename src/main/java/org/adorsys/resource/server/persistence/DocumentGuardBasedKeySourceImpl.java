@@ -3,7 +3,7 @@ package org.adorsys.resource.server.persistence;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.basetypes.DocumentKeyID;
 import org.adorsys.resource.server.persistence.basetypes.KeyID;
-import org.adorsys.resource.server.persistence.complextypes.DocumentGuard;
+import org.adorsys.resource.server.persistence.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreAccess;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreLocation;
 import org.adorsys.resource.server.service.DocumentGuardService;
@@ -30,8 +30,8 @@ public class DocumentGuardBasedKeySourceImpl implements KeySource {
         try {
         	// We assume keystore container is docuement guard container
             DocumentKeyID documentKeyID = new DocumentKeyID(keyID.getValue());
-			DocumentGuard documentGuard = documentGuardService.loadDocumentGuard(keyStoreAccess, documentKeyID);
-			return documentGuard.getDocumentKey().getSecretKey();
+			DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardService.loadDocumentKeyIDWithKeyFromDocumentGuard(keyStoreAccess, documentKeyID);
+			return documentKeyIDWithKey.getDocumentKey().getSecretKey();
 		} catch (Exception e) {
 			throw BaseExceptionHandler.handle(e);
 		}
