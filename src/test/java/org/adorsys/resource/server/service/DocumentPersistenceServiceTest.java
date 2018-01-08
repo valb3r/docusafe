@@ -4,14 +4,13 @@ import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
-import org.adorsys.resource.server.persistence.basetypes.DocumentContent;
-import org.adorsys.resource.server.persistence.basetypes.DocumentID;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
 import org.adorsys.resource.server.persistence.basetypes.DocumentBucketName;
-import org.adorsys.resource.server.persistence.complextypes.DocumentGuardLocation;
+import org.adorsys.resource.server.persistence.basetypes.DocumentContent;
+import org.adorsys.resource.server.persistence.basetypes.DocumentID;
+import org.adorsys.resource.server.persistence.basetypes.DocumentKeyID;
 import org.adorsys.resource.server.persistence.complextypes.DocumentLocation;
-import org.adorsys.resource.server.persistence.complextypes.KeyStoreAuth;
-import org.adorsys.resource.server.persistence.complextypes.KeyStoreLocation;
+import org.adorsys.resource.server.persistence.complextypes.KeyStoreAccess;
 import org.junit.Assert;
 
 /**
@@ -39,12 +38,12 @@ public class DocumentPersistenceServiceTest {
     }
 
     public DocumentStuff testPersistDocument(DocumentGuardService documentGuardService,
-                                             KeyStoreAuth keyStoreAuth,
-                                             DocumentGuardLocation documentGuardLocation) {
+                                             KeyStoreAccess keyStoreAccess,
+                                             DocumentKeyID documentKeyID) {
         DocumentPersistenceService documentPersistenceService = new DocumentPersistenceService(containerPersistence, documentExtendedPersistence, documentGuardService);
         DocumentLocation documentLocation = documentPersistenceService.persistDocument(
-                keyStoreAuth,
-                documentGuardLocation,
+                keyStoreAccess,
+                documentKeyID,
                 documentBucketName,
                 documentID,
                 documentContent);
@@ -52,13 +51,11 @@ public class DocumentPersistenceServiceTest {
     }
 
     public void testLoadDocument(DocumentGuardService documentGuardService,
-                                 KeyStoreAuth keyStoreAuth,
-                                 KeyStoreLocation keyStoreLocation,
+                                 KeyStoreAccess keyStoreAccess,
                                  DocumentLocation documentLocation) {
         DocumentPersistenceService documentPersistenceService = new DocumentPersistenceService(containerPersistence, documentExtendedPersistence, documentGuardService);
         DocumentContent readContent = documentPersistenceService.loadDocument(
-                keyStoreLocation,
-                keyStoreAuth,
+                keyStoreAccess,
                 documentLocation);
         Assert.assertEquals("Content of Document", this.documentContent.toString(), readContent.toString());
         System.out.println("Gelesenes Document enthält:" + readContent + " bzw " + new String(readContent.getValue()));

@@ -4,14 +4,12 @@ import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
-import org.adorsys.resource.server.persistence.complextypes.DocumentGuard;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
-import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;
-import org.adorsys.resource.server.persistence.complextypes.DocumentGuardLocation;
-import org.adorsys.resource.server.persistence.complextypes.KeyStoreAuth;
-import org.adorsys.resource.server.persistence.complextypes.KeyStoreLocation;
+import org.adorsys.resource.server.persistence.basetypes.DocumentKeyID;
+import org.adorsys.resource.server.persistence.complextypes.DocumentGuard;
+import org.adorsys.resource.server.persistence.complextypes.KeyStoreAccess;
 import org.adorsys.resource.server.utils.HexUtil;
 import org.junit.Assert;
 
@@ -36,32 +34,31 @@ public class DocumentGuardServiceTest {
 
     }
 
-    public DocumentGuardStuff testCreateDocumentGuard(KeyStoreAuth keyStoreAuth, ExtendedKeystorePersistence keystorePersistence, KeyStoreLocation keystoreLocation, KeyStoreID keyStoreID) {
+    public DocumentGuardStuff testCreateDocumentGuard(KeyStoreAccess keyStoreAccess, ExtendedKeystorePersistence keystorePersistence) {
         try {
             KeyStoreService keyStoreService = new KeyStoreService(keystorePersistence);
-            KeyStoreLocation keyStoreLocation = keyStoreService.createKeyStore(keystoreLocation.getKeyStoreID(), keyStoreAuth, keystoreLocation.getKeyStoreBucketName());
 
             {
-                KeyStore userKeyStore = keyStoreService.loadKeystore(keyStoreLocation, keyStoreAuth.getUserpass());
+                KeyStore userKeyStore = keyStoreService.loadKeystore(keyStoreAccess.getKeyStoreLocation(), keyStoreAccess.getKeyStoreAuth().getUserpass());
                 Assert.assertEquals("Number of entries of KeyStore is 15", 15, userKeyStore.size());
             }
 
             DocumentGuardService documentGuardService = new DocumentGuardService(keystorePersistence, guardExtendedPersistence);
-            DocumentGuardLocation guardName = documentGuardService.createDocumentGuard(keyStoreLocation, keyStoreAuth);
-            System.out.println("user guard erzeugt:" + guardName);
-            return new DocumentGuardStuff(documentGuardService, guardName);
+            DocumentKeyID documentKeyID = documentGuardService.createDocumentGuard(keyStoreAccess);
+            System.out.println("documentKeyID:" + documentKeyID);
+            return new DocumentGuardStuff(documentGuardService, documentKeyID);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
     }
 
     public DocumentGuard testLoadDocumentGuard(
-            KeyStoreAuth keyStoreAuth,
+            KeyStoreAccess keyStoreAccess,
             ExtendedKeystorePersistence keystorePersistence,
-            DocumentGuardLocation documentGuardLocation) {
+            DocumentKeyID documentKeyID) {
         try {
             DocumentGuardService documentGuardService = new DocumentGuardService(keystorePersistence, guardExtendedPersistence);
-            DocumentGuard documentGuard = documentGuardService.loadDocumentGuard(documentGuardLocation, keyStoreAuth);
+            DocumentGuard documentGuard = documentGuardService.loadDocumentGuard(keyStoreAccess, documentKeyID);
             System.out.println("key des Guards ist :" + documentGuard.getDocumentKey());
             System.out.println("LOAD DocumentKey:" + HexUtil.conventBytesToHexString(documentGuard.getDocumentKey().getSecretKey().getEncoded()));
             return documentGuard;
@@ -72,11 +69,12 @@ public class DocumentGuardServiceTest {
     }
 
     public static class DocumentGuardStuff {
-        public DocumentGuardService documentGuardService;
-        public DocumentGuardLocation documentGuardLocation;
-        public DocumentGuardStuff(DocumentGuardService documentGuardService, DocumentGuardLocation documentGuardLocation) {
+        public final DocumentGuardService documentGuardService;
+        public final DocumentKeyID documentKeyID;
+
+        public DocumentGuardStuff(DocumentGuardService documentGuardService, DocumentKeyID documentKeyID) {
             this.documentGuardService = documentGuardService;
-            this.documentGuardLocation = documentGuardLocation;
+            this.documentKeyID = documentKeyID;
         }
     }
 }

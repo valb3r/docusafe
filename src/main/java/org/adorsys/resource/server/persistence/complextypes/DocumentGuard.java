@@ -1,6 +1,7 @@
 package org.adorsys.resource.server.persistence.complextypes;
 
 import org.adorsys.resource.server.persistence.basetypes.DocumentKey;
+import org.adorsys.resource.server.persistence.basetypes.DocumentKeyID;
 
 /**
  * Created by peter on 23.12.17 at 18:33.
@@ -8,21 +9,20 @@ import org.adorsys.resource.server.persistence.basetypes.DocumentKey;
  * THe technical JWE-Implementation happens at the storage layer.
  */
 public class DocumentGuard {
-    DocumentGuardLocation documentGuardLocation;
-    DocumentKey documentKey;
+    private final DocumentKeyID documentKeyID;
+    private final DocumentKey documentKey;
 
-    public DocumentGuard(DocumentGuardLocation documentGuardLocation, DocumentKey documentKey) {
-		super();
-		this.documentGuardLocation = documentGuardLocation;
+	public DocumentGuard(DocumentKeyID documentKeyID, DocumentKey documentKey) {
+		this.documentKeyID = documentKeyID;
 		this.documentKey = documentKey;
 	}
-
-	public DocumentGuardLocation getDocumentGuardLocation() {
-        return documentGuardLocation;
-    }
 
 	public DocumentKey getDocumentKey() {
 		return documentKey;
 	}
-    
+
+	public DocumentKeyID getDocumentKeyID() {
+
+		return documentKeyID;
+	}
 }

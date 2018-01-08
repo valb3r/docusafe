@@ -43,10 +43,8 @@ public class AllServiceTest {
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
             new DocumentGuardServiceTest().testCreateDocumentGuard(
-                    keyStoreStuff.keyStoreAuth,
-                    keyStoreStuff.keystorePersistence,
-                    keyStoreStuff.keyStoreLocation,
-                    keyStoreStuff.keyStoreID);
+                    keyStoreStuff.keyStoreAccess,
+                    keyStoreStuff.keystorePersistence);
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
         }
@@ -58,14 +56,12 @@ public class AllServiceTest {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
             DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest();
             DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = documentGuardServiceTest.testCreateDocumentGuard(
-                    keyStoreStuff.keyStoreAuth,
-                    keyStoreStuff.keystorePersistence,
-                    keyStoreStuff.keyStoreLocation,
-                    keyStoreStuff.keyStoreID);
+                    keyStoreStuff.keyStoreAccess,
+                    keyStoreStuff.keystorePersistence);
             DocumentGuard documentGuard = documentGuardServiceTest.testLoadDocumentGuard(
-                    keyStoreStuff.keyStoreAuth,
+                    keyStoreStuff.keyStoreAccess,
                     keyStoreStuff.keystorePersistence,
-                    documentGuardStuff.documentGuardLocation);
+                    documentGuardStuff.documentKeyID);
 
             System.out.println("DocumentKey is " + HexUtil.conventBytesToHexString(documentGuard.getDocumentKey().getSecretKey().getEncoded()));
         } catch (Exception e) {
@@ -79,14 +75,12 @@ public class AllServiceTest {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
             DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest();
             DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = documentGuardServiceTest.testCreateDocumentGuard(
-                    keyStoreStuff.keyStoreAuth,
-                    keyStoreStuff.keystorePersistence,
-                    keyStoreStuff.keyStoreLocation,
-                    keyStoreStuff.keyStoreID);
+                    keyStoreStuff.keyStoreAccess,
+                    keyStoreStuff.keystorePersistence);
             new DocumentPersistenceServiceTest().testPersistDocument(
                     documentGuardStuff.documentGuardService,
-                    keyStoreStuff.keyStoreAuth,
-                    documentGuardStuff.documentGuardLocation);
+                    keyStoreStuff.keyStoreAccess,
+                    documentGuardStuff.documentKeyID);
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
         }
@@ -99,22 +93,19 @@ public class AllServiceTest {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
             DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest();
             DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = documentGuardServiceTest.testCreateDocumentGuard(
-                    keyStoreStuff.keyStoreAuth,
-                    keyStoreStuff.keystorePersistence,
-                    keyStoreStuff.keyStoreLocation,
-                    keyStoreStuff.keyStoreID);
+                    keyStoreStuff.keyStoreAccess,
+                    keyStoreStuff.keystorePersistence);
             DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest();
             DocumentPersistenceServiceTest.DocumentStuff documentStuff = documentPersistenceServiceTest.testPersistDocument(
                     documentGuardStuff.documentGuardService,
-                    keyStoreStuff.keyStoreAuth,
-                    documentGuardStuff.documentGuardLocation);
+                    keyStoreStuff.keyStoreAccess,
+                    documentGuardStuff.documentKeyID);
             documentPersistenceServiceTest.testLoadDocument(documentGuardStuff.documentGuardService,
-                    keyStoreStuff.keyStoreAuth,
-                    keyStoreStuff.keyStoreLocation,
+                    keyStoreStuff.keyStoreAccess,
                     documentStuff.documentLocation);
             System.out.println("DocumentLocation     :" + documentStuff.documentLocation);
-            System.out.println("DocumentGuardLocation:" + documentGuardStuff.documentGuardLocation);
-            System.out.println("KeyStoreLocation     :" + keyStoreStuff.keyStoreLocation);
+            System.out.println("DocumentKeyID        :" + documentGuardStuff.documentKeyID);
+            System.out.println("KeyStoreLocation     :" + keyStoreStuff.keyStoreAccess.getKeyStoreLocation());
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
         }

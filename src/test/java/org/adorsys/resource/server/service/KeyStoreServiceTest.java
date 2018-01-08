@@ -8,6 +8,7 @@ import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
 import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreBucketName;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;
+import org.adorsys.resource.server.persistence.complextypes.KeyStoreAccess;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreAuth;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreLocation;
 import org.junit.Assume;
@@ -56,23 +57,19 @@ public class KeyStoreServiceTest {
         KeyStoreAuth keyStoreAuth = new KeyStoreAuth(keypasswordstring, userpasswordstring);
         KeyStoreLocation keyStoreLocation = keyStoreService.createKeyStore(keyStoreID, keyStoreAuth, keyStoreBucketName);
         KeyStore userKeyStore = keyStoreService.loadKeystore(keyStoreLocation, keyStoreAuth.getUserpass());
-        return new KeyStoreStuff(userKeyStore, keystorePersistence, keyStoreID, keyStoreAuth, keyStoreLocation);
+        return new KeyStoreStuff(userKeyStore, keystorePersistence, keyStoreID, new KeyStoreAccess(keyStoreLocation, keyStoreAuth));
         // System.out.println(ShowKeyStore.toString(userKeyStore, keypasswordstring));
     }
 
     public static class KeyStoreStuff {
-        public KeyStore keyStore;
-        public ExtendedKeystorePersistence keystorePersistence;
-        public KeyStoreID keyStoreID;
-        public KeyStoreAuth keyStoreAuth;
-        public KeyStoreLocation keyStoreLocation;
+        public final KeyStore keyStore;
+        public final ExtendedKeystorePersistence keystorePersistence;
+        public final KeyStoreAccess keyStoreAccess;
 
-        public KeyStoreStuff(KeyStore keyStore, ExtendedKeystorePersistence keystorePersistence, KeyStoreID keyStoreID, KeyStoreAuth keyStoreAuth, KeyStoreLocation keyStoreLocation) {
+        public KeyStoreStuff(KeyStore keyStore, ExtendedKeystorePersistence keystorePersistence, KeyStoreID keyStoreID, KeyStoreAccess keyStoreAccess) {
             this.keyStore = keyStore;
             this.keystorePersistence = keystorePersistence;
-            this.keyStoreID = keyStoreID;
-            this.keyStoreAuth = keyStoreAuth;
-            this.keyStoreLocation = keyStoreLocation;
+            this.keyStoreAccess = keyStoreAccess;
         }
     }
 }
