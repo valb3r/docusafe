@@ -20,8 +20,8 @@ import org.adorsys.resource.server.persistence.basetypes.DocumentKeyID;
 import org.adorsys.resource.server.persistence.basetypes.GuardKey;
 import org.adorsys.resource.server.persistence.basetypes.GuardKeyID;
 import org.adorsys.resource.server.persistence.basetypes.KeyID;
-import org.adorsys.resource.server.persistence.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.resource.server.persistence.complextypes.DocumentGuardLocation;
+import org.adorsys.resource.server.persistence.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreAccess;
 import org.adorsys.resource.server.serializer.DocumentGuardSerializer;
 import org.adorsys.resource.server.serializer.DocumentGuardSerializer01;
@@ -46,27 +46,29 @@ public class DocumentGuardService {
         this.secretKeyGenerator = new SecretKeyGenerator("AES", 256);
     }
 
-    public DocumentKeyID createDocumentGuard(KeyStoreAccess keyStoreAccess) {
+    /**
+     * erzeugt eine DocumentKeyIDWithKey
+     */
+    public DocumentKeyIDWithKey createDocumentKeyIdWithKey() {
         try {
-            // KeyStore laden
-            KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStoreLocation(), keyStoreAccess.getKeyStoreAuth().getUserpass());
-            KeySource keySource = new KeyStoreBasedKeySourceImpl(userKeystore, keyStoreAccess.getKeyStoreAuth().getKeypass());
-
             // Eine zufällige DocumentKeyID erzeugen
             DocumentKeyID documentKeyID = new DocumentKeyID(RandomStringUtils.randomAlphanumeric(20));
 
             // Für die DocumentKeyID einen DocumentKey erzeugen
             SecretKeyData secretKeyData = secretKeyGenerator.generate(documentKeyID.getValue(), null);
             DocumentKey documentKey = new DocumentKey(secretKeyData.getSecretKey());
-
-            createDocumentGuard(keyStoreAccess, new DocumentKeyIDWithKey(documentKeyID, documentKey));
-            return documentKeyID;
+            return new DocumentKeyIDWithKey(documentKeyID, documentKey);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
     }
 
-    public void createDocumentGuard(KeyStoreAccess keyStoreAccess,DocumentKeyIDWithKey documentKeyIDWithKey) {
+    /**
+     * holt sich aus dem KeyStore einen beliebigen SecretKey, mit dem der übergebene DocumentKey veschlüsselt wird
+     * Dort, wo der KeyStore liegt wird dann ein DocumentGuard erzeugt, der den verschlüsselten DocumentKey enthält.
+     * Im Header des DocumentGuards steht die DocuemntKeyID.
+     */
+    public void createSymmetricDocumentGuard(KeyStoreAccess keyStoreAccess, DocumentKeyIDWithKey documentKeyIDWithKey) {
         try {
             // KeyStore laden
             KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStoreLocation(), keyStoreAccess.getKeyStoreAuth().getUserpass());
@@ -101,7 +103,7 @@ public class DocumentGuardService {
 
         try {
 
-        	KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStoreLocation(), keyStoreAccess.getKeyStoreAuth().getUserpass());
+            KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStoreLocation(), keyStoreAccess.getKeyStoreAuth().getUserpass());
 
             // load guard file
             KeySource keySource = new KeyStoreBasedKeySourceImpl(userKeystore, keyStoreAccess.getKeyStoreAuth().getKeypass());

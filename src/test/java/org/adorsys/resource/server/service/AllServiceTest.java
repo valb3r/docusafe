@@ -63,7 +63,7 @@ public class AllServiceTest {
             DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardServiceTest.testLoadDocumentGuard(
                     keyStoreStuff.keyStoreAccess,
                     keyStoreStuff.keystorePersistence,
-                    documentGuardStuff.documentKeyID);
+                    documentGuardStuff.documentKeyIDWithKey.getDocumentKeyID());
 
             System.out.println("DocumentKey is " + HexUtil.conventBytesToHexString(documentKeyIDWithKey.getDocumentKey().getSecretKey().getEncoded()));
         } catch (Exception e) {
@@ -82,7 +82,7 @@ public class AllServiceTest {
             DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardServiceTest.testLoadDocumentGuard(
                     keyStoreStuff.keyStoreAccess,
                     keyStoreStuff.keystorePersistence,
-                    documentGuardStuff.documentKeyID);
+                    documentGuardStuff.documentKeyIDWithKey.getDocumentKeyID());
             new DocumentPersistenceServiceTest().testPersistDocument(
                     documentGuardStuff.documentGuardService,
                     documentKeyIDWithKey);
@@ -103,7 +103,7 @@ public class AllServiceTest {
             DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardServiceTest.testLoadDocumentGuard(
                     keyStoreStuff.keyStoreAccess,
                     keyStoreStuff.keystorePersistence,
-                    documentGuardStuff.documentKeyID);
+                    documentGuardStuff.documentKeyIDWithKey.getDocumentKeyID());
             DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest();
             DocumentPersistenceServiceTest.DocumentStuff documentStuff = new DocumentPersistenceServiceTest().testPersistDocument(
                     documentGuardStuff.documentGuardService,
@@ -112,7 +112,7 @@ public class AllServiceTest {
                     keyStoreStuff.keyStoreAccess,
                     documentStuff.documentLocation);
             System.out.println("DocumentLocation     :" + documentStuff.documentLocation);
-            System.out.println("DocumentKeyID        :" + documentGuardStuff.documentKeyID);
+            System.out.println("DocumentKeyID        :" + documentKeyIDWithKey.getDocumentKeyID());
             System.out.println("KeyStoreLocation     :" + keyStoreStuff.keyStoreAccess.getKeyStoreLocation());
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
@@ -136,7 +136,7 @@ public class AllServiceTest {
             DocumentKeyIDWithKey documentKeyIDWithKey1 = documentGuardServiceTest.testLoadDocumentGuard(
                     keyStoreStuff1.keyStoreAccess,
                     keyStoreStuff1.keystorePersistence,
-                    documentGuardStuff1.documentKeyID);
+                    documentGuardStuff1.documentKeyIDWithKey.getDocumentKeyID());
 
             DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff2 = documentGuardServiceTest.testCreateDocumentGuardForDocumentKeyIDWithKey(
                     keyStoreStuff2.keyStoreAccess,
@@ -145,7 +145,7 @@ public class AllServiceTest {
             DocumentKeyIDWithKey documentKeyIDWithKey2 = documentGuardServiceTest.testLoadDocumentGuard(
                     keyStoreStuff2.keyStoreAccess,
                     keyStoreStuff2.keystorePersistence,
-                    documentGuardStuff2.documentKeyID);
+                    documentGuardStuff2.documentKeyIDWithKey.getDocumentKeyID());
 
             Assert.assertEquals("keys of different guards", documentKeyIDWithKey1.getDocumentKey(), documentKeyIDWithKey2.getDocumentKey());
             Assert.assertEquals("key ids of different guards", documentKeyIDWithKey1.getDocumentKeyID(), documentKeyIDWithKey2.getDocumentKeyID());
@@ -158,7 +158,7 @@ public class AllServiceTest {
                     keyStoreStuff1.keyStoreAccess,
                     documentStuff.documentLocation);
             System.out.println("DocumentLocation     :" + documentStuff.documentLocation);
-            System.out.println("DocumentKeyID        :" + documentGuardStuff1.documentKeyID);
+            System.out.println("DocumentKeyID        :" + documentKeyIDWithKey1.getDocumentKeyID());
             System.out.println("KeyStoreLocation1     :" + keyStoreStuff1.keyStoreAccess.getKeyStoreLocation());
             System.out.println("KeyStoreLocation2     :" + keyStoreStuff2.keyStoreAccess.getKeyStoreLocation());
 

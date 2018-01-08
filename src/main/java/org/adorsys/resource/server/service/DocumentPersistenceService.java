@@ -23,47 +23,50 @@ import org.adorsys.resource.server.persistence.complextypes.KeyStoreAccess;
  * @author fpo
  */
 public class DocumentPersistenceService {
-	
+
     private ExtendedObjectPersistence objectPersistence;
     private DocumentGuardService documentGuardService;
-	private ContainerPersistence containerPersistence;
+    private ContainerPersistence containerPersistence;
 
-    public DocumentPersistenceService(ContainerPersistence containerPersistence, ExtendedObjectPersistence objectPersistence,DocumentGuardService documentGuardService) {
-		super();
-		this.containerPersistence = containerPersistence;
-		this.objectPersistence = objectPersistence;
-		this.documentGuardService = documentGuardService;
-	}
+    public DocumentPersistenceService(ContainerPersistence containerPersistence, ExtendedObjectPersistence objectPersistence, DocumentGuardService documentGuardService) {
+        super();
+        this.containerPersistence = containerPersistence;
+        this.objectPersistence = objectPersistence;
+        this.documentGuardService = documentGuardService;
+    }
 
-	/**
-	 */
-	public DocumentLocation persistDocument(
-			DocumentKeyIDWithKey documentKeyIDWithKey,
-			DocumentBucketName documentBucketName,
-			DocumentID documentID,
-			DocumentContent documentContent) {
+    /**
+     * Verschlüsselt den DocumentContent mit dem (symmetrischen) DocumentKey. Erzeugt ein Document,
+     * dass den verschlüsselten DocumentContent enthält. Im Header dieses Documents steht die DocumentKeyID.
+     * Das Document liegt in einem Bucket mit dem Namen documentBucketName.
+     */
+    public DocumentLocation persistDocument(
+            DocumentKeyIDWithKey documentKeyIDWithKey,
+            DocumentBucketName documentBucketName,
+            DocumentID documentID,
+            DocumentContent documentContent) {
 
-		try {
+        try {
 
-			// Create object handle
-			ObjectHandle location = new ObjectHandle(documentBucketName.getValue(), documentID.getValue());
+            // Create object handle
+            ObjectHandle location = new ObjectHandle(documentBucketName.getValue(), documentID.getValue());
 
-			// Store object.
-			ContentMetaInfo metaInfo = null;
-			EncryptionParams encParams = null;
+            // Store object.
+            ContentMetaInfo metaInfo = null;
+            EncryptionParams encParams = null;
 
-			KeySource keySource = new DocumentKeyIDWithKeyBasedSourceImpl(documentKeyIDWithKey);
-			// Create container if non existent
-			if(!containerPersistence.containerExists(location.getContainer())){
-				containerPersistence.creteContainer(location.getContainer());
-			}
-			KeyID keyID = new KeyID(documentKeyIDWithKey.getDocumentKeyID().getValue());
-			objectPersistence.storeObject(documentContent.getValue(), metaInfo, location, keySource, keyID , encParams);
-			return new DocumentLocation(documentID, documentBucketName);
-		} catch (Exception e){
-			throw BaseExceptionHandler.handle(e);
-		}
-	}
+            KeySource keySource = new DocumentKeyIDWithKeyBasedSourceImpl(documentKeyIDWithKey);
+            // Create container if non existent
+            if (!containerPersistence.containerExists(location.getContainer())) {
+                containerPersistence.creteContainer(location.getContainer());
+            }
+            KeyID keyID = new KeyID(documentKeyIDWithKey.getDocumentKeyID().getValue());
+            objectPersistence.storeObject(documentContent.getValue(), metaInfo, location, keySource, keyID, encParams);
+            return new DocumentLocation(documentID, documentBucketName);
+        } catch (Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
+    }
 
 /*
     public DocumentLocation persistDocument(
@@ -97,18 +100,17 @@ public class DocumentPersistenceService {
 */
 
     /**
-     * 
+     *
      */
     public DocumentContent loadDocument(
-    		KeyStoreAccess keyStoreAccess,
-			DocumentLocation documentLocation){
-    	
-    	try {
-	        KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess);
-			return new DocumentContent(objectPersistence.loadObject(documentLocation.getLocationHandle(), keySource).getData());
-    	} catch (Exception e){
-    		throw BaseExceptionHandler.handle(e);
-    	}
-    }
+            KeyStoreAccess keyStoreAccess,
+            DocumentLocation documentLocation) {
 
+        try {
+            KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess);
+            return new DocumentContent(objectPersistence.loadObject(documentLocation.getLocationHandle(), keySource).getData());
+        } catch (Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
+    }
 }

@@ -44,9 +44,9 @@ public class DocumentGuardServiceTest {
             }
 
             DocumentGuardService documentGuardService = new DocumentGuardService(keystorePersistence, guardExtendedPersistence);
-            documentGuardService.createDocumentGuard(keyStoreAccess, documentKeyIDWithKey);
+            documentGuardService.createSymmetricDocumentGuard(keyStoreAccess, documentKeyIDWithKey);
             System.out.println("documentKeyID:" + documentKeyIDWithKey.getDocumentKeyID());
-            return new DocumentGuardStuff(documentGuardService, documentKeyIDWithKey.getDocumentKeyID());
+            return new DocumentGuardStuff(documentGuardService, documentKeyIDWithKey);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
@@ -62,9 +62,9 @@ public class DocumentGuardServiceTest {
             }
 
             DocumentGuardService documentGuardService = new DocumentGuardService(keystorePersistence, guardExtendedPersistence);
-            DocumentKeyID documentKeyID = documentGuardService.createDocumentGuard(keyStoreAccess);
-            System.out.println("documentKeyID:" + documentKeyID);
-            return new DocumentGuardStuff(documentGuardService, documentKeyID);
+            DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardService.createDocumentKeyIdWithKey();
+            documentGuardService.createSymmetricDocumentGuard(keyStoreAccess, documentKeyIDWithKey);
+            return new DocumentGuardStuff(documentGuardService, documentKeyIDWithKey);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
@@ -88,11 +88,11 @@ public class DocumentGuardServiceTest {
 
     public static class DocumentGuardStuff {
         public final DocumentGuardService documentGuardService;
-        public final DocumentKeyID documentKeyID;
+        public final DocumentKeyIDWithKey documentKeyIDWithKey;
 
-        public DocumentGuardStuff(DocumentGuardService documentGuardService, DocumentKeyID documentKeyID) {
+        public DocumentGuardStuff(DocumentGuardService documentGuardService, DocumentKeyIDWithKey documentKeyIDWithKey) {
             this.documentGuardService = documentGuardService;
-            this.documentKeyID = documentKeyID;
+            this.documentKeyIDWithKey = documentKeyIDWithKey;
         }
     }
 }

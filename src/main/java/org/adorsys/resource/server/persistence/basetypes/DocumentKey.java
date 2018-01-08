@@ -8,6 +8,7 @@ import javax.crypto.SecretKey;
  * Created by peter on 29.12.2017 at 13:55:33.
  * 
  * @fpo: we do not need to serialize this class.
+ * Ein DocumentKey ist immer symmetrisch
  */
 public class DocumentKey {
 	
