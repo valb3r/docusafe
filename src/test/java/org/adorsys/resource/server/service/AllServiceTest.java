@@ -1,6 +1,7 @@
 package org.adorsys.resource.server.service;
 
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
+import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;
 import org.adorsys.resource.server.persistence.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.resource.server.utils.HexUtil;
@@ -118,12 +119,15 @@ public class AllServiceTest {
         }
     }
 
-
     @Test
     public void testCreate_oneDocument_twoKeyStores_twoGuards_LoadDocument() {
+        String container1 = "key-store-container-1";
+        String container2 = "key-store-container-2";
         try {
-            KeyStoreServiceTest.KeyStoreStuff keyStoreStuff1 = new KeyStoreServiceTest().createKeyStore("a", "b", new KeyStoreID("first"));
-            KeyStoreServiceTest.KeyStoreStuff keyStoreStuff2 = new KeyStoreServiceTest().createKeyStore("c", "d", new KeyStoreID("second"));
+            ExtendedKeystorePersistence keystorePersistence1 = KeyStoreServiceTest.createKeyStorePersistenceForContainer(container1);
+            ExtendedKeystorePersistence keystorePersistence2 = KeyStoreServiceTest.createKeyStorePersistenceForContainer(container2);
+            KeyStoreServiceTest.KeyStoreStuff keyStoreStuff1 = new KeyStoreServiceTest().createKeyStore(keystorePersistence1, container1, "a", "b", new KeyStoreID("first"));
+            KeyStoreServiceTest.KeyStoreStuff keyStoreStuff2 = new KeyStoreServiceTest().createKeyStore(keystorePersistence2, container2, "c", "d", new KeyStoreID("second"));
 
             DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest();
             DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff1 = documentGuardServiceTest.testCreateDocumentGuard(
@@ -157,8 +161,12 @@ public class AllServiceTest {
             System.out.println("DocumentKeyID        :" + documentGuardStuff1.documentKeyID);
             System.out.println("KeyStoreLocation1     :" + keyStoreStuff1.keyStoreAccess.getKeyStoreLocation());
             System.out.println("KeyStoreLocation2     :" + keyStoreStuff2.keyStoreAccess.getKeyStoreLocation());
+
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
+        } finally {
+            KeyStoreServiceTest.removeContainer(container2);
+            KeyStoreServiceTest.removeContainer(container1);
         }
     }
 

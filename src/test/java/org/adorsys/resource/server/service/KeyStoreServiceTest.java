@@ -1,17 +1,15 @@
 package org.adorsys.resource.server.service;
 
 import org.adorsys.encobject.service.BlobStoreConnection;
-import org.adorsys.encobject.service.ContainerExistsException;
 import org.adorsys.encobject.service.ContainerPersistence;
-import org.adorsys.encobject.service.UnknownContainerException;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
+import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreBucketName;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreAccess;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreAuth;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreLocation;
-import org.junit.Assume;
 
 import java.security.KeyStore;
 
@@ -21,37 +19,25 @@ import java.security.KeyStore;
 public class KeyStoreServiceTest {
 
     private static String keystoreContainer = "keystore-container-" + KeyStoreServiceTest.class.getSimpleName();
-    private static TestFsBlobStoreFactory storeContextFactory;
     private static ExtendedKeystorePersistence keystorePersistence;
-    private static ContainerPersistence containerPersistence;
 
     public static void beforeTest() {
-        storeContextFactory = new TestFsBlobStoreFactory();
-        keystorePersistence = new ExtendedKeystorePersistence(storeContextFactory);
-        containerPersistence = new ContainerPersistence(new BlobStoreConnection(storeContextFactory));
-
-        try {
-            containerPersistence.creteContainer(keystoreContainer);
-        } catch (ContainerExistsException e) {
-            Assume.assumeNoException(e);
-        }
-
+        keystorePersistence = createKeyStorePersistenceForContainer(keystoreContainer);
     }
 
     public static void afterTest() {
-        try {
-            if (containerPersistence != null && containerPersistence.containerExists(keystoreContainer))
-                containerPersistence.deleteContainer(keystoreContainer);
-        } catch (UnknownContainerException e) {
-            Assume.assumeNoException(e);
-        }
+        removeContainer(keystoreContainer);
     }
 
     public KeyStoreStuff createKeyStore() {
-        return createKeyStore("userpassword", "keypassword", new KeyStoreID("key-store-id-123"));
+        return createKeyStore(keystorePersistence, keystoreContainer, "userpassword", "keypassword", new KeyStoreID("key-store-id-123"));
     }
 
-        public KeyStoreStuff createKeyStore(String keyPassword, String userPassword, KeyStoreID keyStoreID) {
+    public KeyStoreStuff createKeyStore(String keyPassword, String userPassword, KeyStoreID keyStoreID) {
+        return createKeyStore(keystorePersistence, keystoreContainer, keyPassword, userPassword, keyStoreID);
+    }
+
+    public KeyStoreStuff createKeyStore(ExtendedKeystorePersistence keystorePersistence, String keystoreContainer, String keyPassword, String userPassword, KeyStoreID keyStoreID) {
         KeyStoreBucketName keyStoreBucketName = new KeyStoreBucketName(keystoreContainer);
 
         KeyStoreService keyStoreService = new KeyStoreService(keystorePersistence);
@@ -73,4 +59,27 @@ public class KeyStoreServiceTest {
             this.keyStoreAccess = keyStoreAccess;
         }
     }
+
+    public static ExtendedKeystorePersistence createKeyStorePersistenceForContainer(String container) {
+        try {
+            TestFsBlobStoreFactory storeContextFactory = new TestFsBlobStoreFactory();
+            ExtendedKeystorePersistence keystorePersistence = new ExtendedKeystorePersistence(storeContextFactory);
+            ContainerPersistence containerPersistence = new ContainerPersistence(new BlobStoreConnection(storeContextFactory));
+            containerPersistence.creteContainer(container);
+            return keystorePersistence;
+        } catch (Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
+    }
+
+    public static void removeContainer(String container) {
+        try {
+            TestFsBlobStoreFactory storeContextFactory = new TestFsBlobStoreFactory();
+            ContainerPersistence containerPersistence = new ContainerPersistence(new BlobStoreConnection(storeContextFactory));
+            containerPersistence.deleteContainer(container);
+        } catch (Exception e) {
+            // ignore this
+        }
+    }
+
 }

@@ -1,9 +1,9 @@
 package org.adorsys.resource.server.service;
 
 import org.adorsys.encobject.service.BlobStoreConnection;
-import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
+import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
 import org.adorsys.resource.server.persistence.basetypes.DocumentBucketName;
 import org.adorsys.resource.server.persistence.basetypes.DocumentContent;
@@ -13,13 +13,16 @@ import org.adorsys.resource.server.persistence.complextypes.DocumentLocation;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreAccess;
 import org.junit.Assert;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Created by peter on 02.01.18.
  */
 public class DocumentPersistenceServiceTest {
-    private static BlobStoreContextFactory documentContextFactory;
     private static ExtendedObjectPersistence documentExtendedPersistence;
     private static ContainerPersistence containerPersistence;
+    private static Set<DocumentBucketName> createdBuckets;
 
     private DocumentBucketName documentBucketName = new DocumentBucketName("document-bucket");
     private DocumentID documentID = new DocumentID("document-id-123");
@@ -27,14 +30,20 @@ public class DocumentPersistenceServiceTest {
 
 
     public static void beforeClass() {
-        documentContextFactory = new TestFsBlobStoreFactory();
-        BlobStoreConnection blobStoreConnection = new BlobStoreConnection(documentContextFactory);
+        BlobStoreConnection blobStoreConnection = new BlobStoreConnection(new TestFsBlobStoreFactory());
         documentExtendedPersistence = new ExtendedObjectPersistence(blobStoreConnection);
         containerPersistence = new ContainerPersistence(blobStoreConnection);
+        createdBuckets = new HashSet<>();
     }
 
     public static void afterClass() {
-
+        try {
+            for (DocumentBucketName bucket : createdBuckets) {
+                containerPersistence.deleteContainer(bucket.getValue());
+            }
+        } catch(Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
     }
 
     public DocumentStuff testPersistDocument(DocumentGuardService documentGuardService,
@@ -45,6 +54,7 @@ public class DocumentPersistenceServiceTest {
                 documentBucketName,
                 documentID,
                 documentContent);
+        createdBuckets.add(documentBucketName);
         return new DocumentStuff(documentLocation);
     }
 
