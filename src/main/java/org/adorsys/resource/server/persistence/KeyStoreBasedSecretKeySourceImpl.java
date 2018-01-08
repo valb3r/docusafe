@@ -12,12 +12,12 @@ import org.adorsys.jkeygen.keystore.PasswordCallbackUtils;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.basetypes.KeyID;
 
-public class KeyStoreBasedKeySourceImpl implements KeySource{
+public class KeyStoreBasedSecretKeySourceImpl implements KeySource{
 
 	private KeyStore keyStore;
 	private CallbackHandler keyPassHandler;
 	
-	public KeyStoreBasedKeySourceImpl(KeyStore keyStore, CallbackHandler keyPassHandler) {
+	public KeyStoreBasedSecretKeySourceImpl(KeyStore keyStore, CallbackHandler keyPassHandler) {
 		super();
 		this.keyStore = keyStore;
 		this.keyPassHandler = keyPassHandler;
