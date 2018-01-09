@@ -33,17 +33,16 @@ import org.adorsys.resource.server.persistence.complextypes.KeyStoreAccess;
 import org.adorsys.resource.server.serializer.DocumentGuardSerializer;
 import org.adorsys.resource.server.serializer.DocumentGuardSerializer01;
 import org.adorsys.resource.server.serializer.DocumentGuardSerializerRegistery;
-import org.apache.commons.lang3.RandomStringUtils;
 
 import java.security.KeyStore;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class DocumentGuardService {
 
     private ExtendedKeystorePersistence keystorePersistence;
-    private SecretKeyGenerator secretKeyGenerator;
     private ExtendedObjectPersistence objectPersistence;
 
     private DocumentGuardSerializerRegistery serializerRegistry = DocumentGuardSerializerRegistery.getInstance();
@@ -51,7 +50,6 @@ public class DocumentGuardService {
     public DocumentGuardService(ExtendedKeystorePersistence keystorePersistence, ExtendedObjectPersistence objectPersistence) {
         this.keystorePersistence = keystorePersistence;
         this.objectPersistence = objectPersistence;
-        this.secretKeyGenerator = new SecretKeyGenerator("AES", 256);
     }
 
     /**
@@ -60,9 +58,10 @@ public class DocumentGuardService {
     public DocumentKeyIDWithKey createDocumentKeyIdWithKey() {
         try {
             // Eine zufällige DocumentKeyID erzeugen
-            DocumentKeyID documentKeyID = new DocumentKeyID(RandomStringUtils.randomAlphanumeric(20));
+            DocumentKeyID documentKeyID = new DocumentKeyID("DK" + UUID.randomUUID().toString());
 
             // Für die DocumentKeyID einen DocumentKey erzeugen
+            SecretKeyGenerator secretKeyGenerator = new SecretKeyGenerator("AES", 256);
             SecretKeyData secretKeyData = secretKeyGenerator.generate(documentKeyID.getValue(), null);
             DocumentKey documentKey = new DocumentKey(secretKeyData.getSecretKey());
             return new DocumentKeyIDWithKey(documentKeyID, documentKey);

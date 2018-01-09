@@ -51,6 +51,17 @@ public class KeyStoreGenerator {
     public KeyStore generate() {
         try {
             KeystoreBuilder keystoreBuilder = new KeystoreBuilder().withStoreType(keyStoreType);
+            PasswordCallbackHandler dummyKeyHandler = new PasswordCallbackHandler("".toCharArray());
+
+            for (int i = 0; i < numberOfEncKeyPairs; i++) {
+                KeyPairData signatureKeyPair = encKeyPairGenerator.generateEncryptionKey(
+                        serverKeyPairAliasPrefix + RandomStringUtils.randomAlphanumeric(5).toUpperCase(),
+                        dummyKeyHandler
+                );
+
+                keystoreBuilder = keystoreBuilder.withKeyEntry(signatureKeyPair);
+            }
+
             for (int i = 0; i < numberOfSignKeyPairs; i++) {
                 KeyPairData signatureKeyPair = signKeyPairGenerator.generateSignatureKey(
                         serverKeyPairAliasPrefix + UUID.randomUUID().toString(),
@@ -59,14 +70,7 @@ public class KeyStoreGenerator {
 
                 keystoreBuilder = keystoreBuilder.withKeyEntry(signatureKeyPair);
             }
-            for (int i = 0; i < numberOfEncKeyPairs; i++) {
-                KeyPairData signatureKeyPair = encKeyPairGenerator.generateEncryptionKey(
-                        serverKeyPairAliasPrefix + RandomStringUtils.randomAlphanumeric(5).toUpperCase(),
-                        readKeyHandler
-                );
 
-                keystoreBuilder = keystoreBuilder.withKeyEntry(signatureKeyPair);
-            }
             for (int i = 0; i < numberOfSecretKeys; i++) {
                 SecretKeyData secretKeyData = secretKeyGenerator.generate(
                         serverKeyPairAliasPrefix + RandomStringUtils.randomAlphanumeric(5).toUpperCase(),

@@ -25,7 +25,12 @@ public class ShowKeyStore {
             Map<String, Integer> classToInstances = new HashMap<>();
             while (aliases.hasMoreElements()) {
                 String alias = aliases.nextElement();
-                Key key = userKeyStore.getKey(alias, readKeyPassword.getValue().toCharArray());
+                Key key;
+                try {
+                    key = userKeyStore.getKey(alias, readKeyPassword.getValue().toCharArray());
+                } catch (Exception e) {
+                        key = userKeyStore.getKey(alias, "".toCharArray());
+                }
                 sb.append("alias : " + alias + " -> " + key.toString());
                 sb.append("class      " + key.getClass().getSimpleName());
                 sb.append("\n");

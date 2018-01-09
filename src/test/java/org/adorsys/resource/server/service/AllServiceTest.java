@@ -35,7 +35,7 @@ public class AllServiceTest {
 
     }
 
-    @Test
+    // @Test
     public void testCreateKeyStore() {
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
@@ -45,7 +45,7 @@ public class AllServiceTest {
         }
     }
 
-    @Test
+    // @Test
     public void testCreateKeyStoreAndDocumentGuard() {
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
@@ -57,7 +57,7 @@ public class AllServiceTest {
         }
     }
 
-    @Test
+    // @Test
     public void testCreateKeyStoreAndDocumentGuardAndLoadDocumentGuard() {
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
@@ -76,7 +76,7 @@ public class AllServiceTest {
         }
     }
 
-    @Test
+    // @Test
     public void testCreateDocument() {
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
@@ -96,7 +96,7 @@ public class AllServiceTest {
         }
     }
 
-    @Test
+    // @Test
     public void testCreateAndLoadDocument() {
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
@@ -123,7 +123,7 @@ public class AllServiceTest {
         }
     }
 
-    // @Test
+    @Test
     public void testCreate_oneDocument_twoKeyStores_twoGuards_LoadDocument() {
         String container1 = "key-store-container-1";
         String container2 = "key-store-container-2";
