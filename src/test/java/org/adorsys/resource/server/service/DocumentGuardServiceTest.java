@@ -11,9 +11,6 @@ import org.adorsys.resource.server.persistence.basetypes.DocumentKeyID;
 import org.adorsys.resource.server.persistence.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreAccess;
 import org.adorsys.resource.server.utils.HexUtil;
-import org.junit.Assert;
-
-import java.security.KeyStore;
 
 /**
  * Created by peter on 02.01.18.
@@ -34,17 +31,10 @@ public class DocumentGuardServiceTest {
 
     }
 
-    public DocumentGuardStuff testCreateDocumentGuardForDocumentKeyIDWithKey(KeyStoreAccess keyStoreAccess, DocumentKeyIDWithKey documentKeyIDWithKey, ExtendedKeystorePersistence keystorePersistence) {
+    public DocumentGuardStuff testCreateAsymmetricDocumentGuardForDocumentKeyIDWithKey(KeyStoreAccess keyStoreAccess, DocumentKeyIDWithKey documentKeyIDWithKey, ExtendedKeystorePersistence keystorePersistence) {
         try {
-            KeyStoreService keyStoreService = new KeyStoreService(keystorePersistence);
-
-            {
-                KeyStore userKeyStore = keyStoreService.loadKeystore(keyStoreAccess.getKeyStoreLocation(), keyStoreAccess.getKeyStoreAuth().getUserpass());
-                Assert.assertEquals("Number of entries of KeyStore is 15", 15, userKeyStore.size());
-            }
-
             DocumentGuardService documentGuardService = new DocumentGuardService(keystorePersistence, guardExtendedPersistence);
-            documentGuardService.createSymmetricDocumentGuard(keyStoreAccess, documentKeyIDWithKey);
+            documentGuardService.createAsymmetricDocumentGuard(keyStoreAccess, documentKeyIDWithKey);
             System.out.println("documentKeyID:" + documentKeyIDWithKey.getDocumentKeyID());
             return new DocumentGuardStuff(documentGuardService, documentKeyIDWithKey);
         } catch (Exception e) {
@@ -52,15 +42,8 @@ public class DocumentGuardServiceTest {
         }
     }
 
-    public DocumentGuardStuff testCreateDocumentGuard(KeyStoreAccess keyStoreAccess, ExtendedKeystorePersistence keystorePersistence) {
+    public DocumentGuardStuff testCreateSymmetricDocumentGuard(KeyStoreAccess keyStoreAccess, ExtendedKeystorePersistence keystorePersistence) {
         try {
-            KeyStoreService keyStoreService = new KeyStoreService(keystorePersistence);
-
-            {
-                KeyStore userKeyStore = keyStoreService.loadKeystore(keyStoreAccess.getKeyStoreLocation(), keyStoreAccess.getKeyStoreAuth().getUserpass());
-                Assert.assertEquals("Number of entries of KeyStore is 15", 15, userKeyStore.size());
-            }
-
             DocumentGuardService documentGuardService = new DocumentGuardService(keystorePersistence, guardExtendedPersistence);
             DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardService.createDocumentKeyIdWithKey();
             documentGuardService.createSymmetricDocumentGuard(keyStoreAccess, documentKeyIDWithKey);

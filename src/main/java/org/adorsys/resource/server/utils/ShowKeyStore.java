@@ -1,5 +1,6 @@
 package org.adorsys.resource.server.utils;
 
+import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -48,9 +49,7 @@ public class ShowKeyStore {
             return sb.toString();
 
         } catch (Exception e) {
-            // ToDO Hallo Francis, ich würde wirklich liebend gerne hier einen ExceptionHandler
-            // einbauen, für mich gehören Exceptions ja nicht in die Signatur....
-            throw new RuntimeException(e);
+            throw BaseExceptionHandler.handle(e);
         }
     }
 }

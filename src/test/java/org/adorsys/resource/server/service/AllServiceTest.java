@@ -4,7 +4,9 @@ import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;
 import org.adorsys.resource.server.persistence.complextypes.DocumentKeyIDWithKey;
+import org.adorsys.resource.server.persistence.complextypes.KeyStoreAccess;
 import org.adorsys.resource.server.utils.HexUtil;
+import org.adorsys.resource.server.utils.ShowKeyStore;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -44,7 +46,7 @@ public class AllServiceTest {
     public void testCreateKeyStoreAndDocumentGuard() {
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
-            new DocumentGuardServiceTest().testCreateDocumentGuard(
+            new DocumentGuardServiceTest().testCreateSymmetricDocumentGuard(
                     keyStoreStuff.keyStoreAccess,
                     keyStoreStuff.keystorePersistence);
         } catch (Exception e) {
@@ -57,7 +59,7 @@ public class AllServiceTest {
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
             DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest();
-            DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = documentGuardServiceTest.testCreateDocumentGuard(
+            DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = documentGuardServiceTest.testCreateSymmetricDocumentGuard(
                     keyStoreStuff.keyStoreAccess,
                     keyStoreStuff.keystorePersistence);
             DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardServiceTest.testLoadDocumentGuard(
@@ -76,7 +78,7 @@ public class AllServiceTest {
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
             DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest();
-            DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = documentGuardServiceTest.testCreateDocumentGuard(
+            DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = documentGuardServiceTest.testCreateSymmetricDocumentGuard(
                     keyStoreStuff.keyStoreAccess,
                     keyStoreStuff.keystorePersistence);
             DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardServiceTest.testLoadDocumentGuard(
@@ -91,13 +93,12 @@ public class AllServiceTest {
         }
     }
 
-
     @Test
     public void testCreateAndLoadDocument() {
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
             DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest();
-            DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = documentGuardServiceTest.testCreateDocumentGuard(
+            DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = documentGuardServiceTest.testCreateSymmetricDocumentGuard(
                     keyStoreStuff.keyStoreAccess,
                     keyStoreStuff.keystorePersistence);
             DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardServiceTest.testLoadDocumentGuard(
@@ -119,46 +120,51 @@ public class AllServiceTest {
         }
     }
 
-    @Test
+    // @Test
     public void testCreate_oneDocument_twoKeyStores_twoGuards_LoadDocument() {
         String container1 = "key-store-container-1";
         String container2 = "key-store-container-2";
         try {
             ExtendedKeystorePersistence keystorePersistence1 = KeyStoreServiceTest.createKeyStorePersistenceForContainer(container1);
             ExtendedKeystorePersistence keystorePersistence2 = KeyStoreServiceTest.createKeyStorePersistenceForContainer(container2);
-            KeyStoreServiceTest.KeyStoreStuff keyStoreStuff1 = new KeyStoreServiceTest().createKeyStore(keystorePersistence1, container1, "a", "b", new KeyStoreID("first"));
-            KeyStoreServiceTest.KeyStoreStuff keyStoreStuff2 = new KeyStoreServiceTest().createKeyStore(keystorePersistence2, container2, "c", "d", new KeyStoreID("second"));
+            KeyStoreServiceTest.KeyStoreStuff keyStoreStuff1 = new KeyStoreServiceTest().createKeyStore(keystorePersistence1, container1, "a", "b", new KeyStoreID("first"), 0, 0, 1);
+            System.out.println(ShowKeyStore.toString(keyStoreStuff1.keyStore, keyStoreStuff1.keyStoreAccess.getKeyStoreAuth().getKeypassString()));
+
+            KeyStoreServiceTest.KeyStoreStuff keyStoreStuff2 = new KeyStoreServiceTest().createKeyStore(keystorePersistence2, container2, "c", "d", new KeyStoreID("second"), 1, 0, 0);
+            System.out.println(ShowKeyStore.toString(keyStoreStuff2.keyStore, keyStoreStuff2.keyStoreAccess.getKeyStoreAuth().getKeypassString()));
 
             DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest();
-            DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff1 = documentGuardServiceTest.testCreateDocumentGuard(
+            DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff1 = documentGuardServiceTest.testCreateSymmetricDocumentGuard(
                     keyStoreStuff1.keyStoreAccess,
                     keyStoreStuff1.keystorePersistence);
-            DocumentKeyIDWithKey documentKeyIDWithKey1 = documentGuardServiceTest.testLoadDocumentGuard(
-                    keyStoreStuff1.keyStoreAccess,
-                    keyStoreStuff1.keystorePersistence,
-                    documentGuardStuff1.documentKeyIDWithKey.getDocumentKeyID());
 
-            DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff2 = documentGuardServiceTest.testCreateDocumentGuardForDocumentKeyIDWithKey(
-                    keyStoreStuff2.keyStoreAccess,
-                    documentKeyIDWithKey1,
+            DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardStuff1.documentKeyIDWithKey;
+
+            KeyStoreAccess keystore2Access = keyStoreStuff2.keyStoreAccess;
+            keystore2Access.getKeyStoreAuth().setEmptyKeyPass();
+            DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff2 = documentGuardServiceTest.testCreateAsymmetricDocumentGuardForDocumentKeyIDWithKey(
+                    keystore2Access,
+                    documentKeyIDWithKey,
                     keyStoreStuff2.keystorePersistence);
-            DocumentKeyIDWithKey documentKeyIDWithKey2 = documentGuardServiceTest.testLoadDocumentGuard(
-                    keyStoreStuff2.keyStoreAccess,
-                    keyStoreStuff2.keystorePersistence,
-                    documentGuardStuff2.documentKeyIDWithKey.getDocumentKeyID());
-
-            Assert.assertEquals("keys of different guards", documentKeyIDWithKey1.getDocumentKey(), documentKeyIDWithKey2.getDocumentKey());
-            Assert.assertEquals("key ids of different guards", documentKeyIDWithKey1.getDocumentKeyID(), documentKeyIDWithKey2.getDocumentKeyID());
 
             DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest();
             DocumentPersistenceServiceTest.DocumentStuff documentStuff = documentPersistenceServiceTest.testPersistDocument(
                     documentGuardStuff1.documentGuardService,
-                    documentKeyIDWithKey1);
+                    documentGuardStuff1.documentKeyIDWithKey);
+
+            // Load with symmetric key
             documentPersistenceServiceTest.testLoadDocument(documentGuardStuff1.documentGuardService,
                     keyStoreStuff1.keyStoreAccess,
                     documentStuff.documentLocation);
+
+
+            // Load with asymmetric key
+            documentPersistenceServiceTest.testLoadDocument(documentGuardStuff2.documentGuardService,
+                    keyStoreStuff2.keyStoreAccess,
+                    documentStuff.documentLocation);
+
             System.out.println("DocumentLocation     :" + documentStuff.documentLocation);
-            System.out.println("DocumentKeyID        :" + documentKeyIDWithKey1.getDocumentKeyID());
+            System.out.println("DocumentKeyID        :" + documentGuardStuff1.documentKeyIDWithKey.getDocumentKeyID());
             System.out.println("KeyStoreLocation1     :" + keyStoreStuff1.keyStoreAccess.getKeyStoreLocation());
             System.out.println("KeyStoreLocation2     :" + keyStoreStuff2.keyStoreAccess.getKeyStoreLocation());
 
@@ -169,5 +175,4 @@ public class AllServiceTest {
             KeyStoreServiceTest.removeContainer(container1);
         }
     }
-
 }

@@ -9,6 +9,7 @@ import org.adorsys.resource.server.persistence.basetypes.KeyStoreBucketName;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreAccess;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreAuth;
+import org.adorsys.resource.server.persistence.complextypes.KeyStoreCreationConfig;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreLocation;
 
 import java.security.KeyStore;
@@ -29,24 +30,37 @@ public class KeyStoreServiceTest {
         removeContainer(keystoreContainer);
     }
 
-    public KeyStoreStuff createKeyStore() {
-        return createKeyStore(keystorePersistence, keystoreContainer, "userpassword", "keypassword", new KeyStoreID("key-store-id-123"));
-    }
-
     public KeyStoreStuff createKeyStore(String keyPassword, String userPassword, KeyStoreID keyStoreID) {
-        return createKeyStore(keystorePersistence, keystoreContainer, keyPassword, userPassword, keyStoreID);
+        return createKeyStore(keystorePersistence, keystoreContainer, keyPassword, userPassword, keyStoreID, null, null, null);
     }
 
-    public KeyStoreStuff createKeyStore(ExtendedKeystorePersistence keystorePersistence, String keystoreContainer, String keyPassword, String userPassword, KeyStoreID keyStoreID) {
+    public KeyStoreStuff createKeyStore() {
+        return createKeyStore(keystorePersistence, keystoreContainer, "userpassword", "keypassword", new KeyStoreID("key-store-id-123"), null, null, null);
+    }
+
+    public KeyStoreStuff createKeyStore(ExtendedKeystorePersistence keystorePersistence, String keystoreContainer, String keyPassword, String userPassword, KeyStoreID keyStoreID,
+                                        Integer encKeyNumber, Integer signKeyNumber, Integer secretKeyNumber) {
+        KeyStoreCreationConfig config = null;
+        if (encKeyNumber != null) {
+            config = new KeyStoreCreationConfig(encKeyNumber, signKeyNumber, secretKeyNumber, keyStoreID);
+        }
+
         KeyStoreBucketName keyStoreBucketName = new KeyStoreBucketName(keystoreContainer);
 
         KeyStoreService keyStoreService = new KeyStoreService(keystorePersistence);
         KeyStoreAuth keyStoreAuth = new KeyStoreAuth(keyPassword, userPassword);
-        KeyStoreLocation keyStoreLocation = keyStoreService.createKeyStore(keyStoreID, keyStoreAuth, keyStoreBucketName);
-        KeyStore userKeyStore = keyStoreService.loadKeystore(keyStoreLocation, keyStoreAuth.getUserpass());
-        return new KeyStoreStuff(userKeyStore, keystorePersistence, keyStoreID, new KeyStoreAccess(keyStoreLocation, keyStoreAuth));
+        KeyStoreLocation keyStoreLocation;
+        if (config != null) {
+            keyStoreLocation = keyStoreService.createKeyStore(keyStoreID, keyStoreAuth, keyStoreBucketName, config);
+        }
+        else {
+            keyStoreLocation = keyStoreService.createKeyStore(keyStoreID, keyStoreAuth, keyStoreBucketName);
+        }
+        KeyStore keyStore = keyStoreService.loadKeystore(keyStoreLocation, keyStoreAuth.getUserpass());
         // System.out.println(ShowKeyStore.toString(userKeyStore, keypasswordstring));
+        return new KeyStoreStuff(keyStore, keystorePersistence, keyStoreID, new KeyStoreAccess(keyStoreLocation, keyStoreAuth));
     }
+
 
     public static class KeyStoreStuff {
         public final KeyStore keyStore;

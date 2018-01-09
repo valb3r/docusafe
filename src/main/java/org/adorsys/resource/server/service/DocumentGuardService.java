@@ -2,11 +2,10 @@ package org.adorsys.resource.server.service;
 
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKMatcher;
+import com.nimbusds.jose.jwk.JWKMatcher.Builder;
 import com.nimbusds.jose.jwk.JWKSelector;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.KeyUse;
-import com.nimbusds.jose.jwk.JWKMatcher.Builder;
-
 import de.adorsys.resource.server.keyservice.SecretKeyGenerator;
 import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.domain.ObjectHandle;
@@ -15,6 +14,7 @@ import org.adorsys.jjwk.keystore.JwkExport;
 import org.adorsys.jjwk.serverkey.KeyAndJwk;
 import org.adorsys.jjwk.serverkey.ServerKeyMap;
 import org.adorsys.jkeygen.keystore.SecretKeyData;
+import org.adorsys.resource.server.exceptions.BaseException;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
@@ -72,7 +72,7 @@ public class DocumentGuardService {
     }
 
     /**
-     * holt sich aus dem KeyStore einen beliebigen SecretKey, mit dem der übergebene DocumentKey veschlüsselt wird
+     * holt sich aus dem KeyStore einen beliebigen SecretKey, mit dem der übergebene DocumentKey symmetrisch veschlüsselt wird
      * Dort, wo der KeyStore liegt wird dann ein DocumentGuard erzeugt, der den verschlüsselten DocumentKey enthält.
      * Im Header des DocumentGuards steht die DocuemntKeyID.
      */
@@ -106,7 +106,7 @@ public class DocumentGuardService {
 
 
     /**
-     * holt sich aus dem KeyStore einen beliebigen SecretKey, mit dem der übergebene DocumentKey veschlüsselt wird
+     * holt sich aus dem KeyStore einen beliebigen PublicKey, mit dem der übergebene DocumentKey asymmetrisch veschlüsselt wird
      * Dort, wo der KeyStore liegt wird dann ein DocumentGuard erzeugt, der den verschlüsselten DocumentKey enthält.
      * Im Header des DocumentGuards steht die DocuemntKeyID.
      */
@@ -114,19 +114,21 @@ public class DocumentGuardService {
         try {
             // KeyStore laden, user pass is sstore password.
             KeyStore userKeystore = keystorePersistence.loadKeystore(receiverKeyStoreAccess.getKeyStoreLocation(), receiverKeyStoreAccess.getKeyStoreAuth().getUserpass());
-            
-            
-            JWKSet exportKeys = JwkExport.exportKeys(userKeystore, null);
+
+            /**
+             * JWKSet exportKeys = JwkExport.exportKeys(userKeystore, null); // Geht nicht mit null Parameter
+             */
+            JWKSet exportKeys = JWKSet.load(userKeystore, null);
+            System.out.println("exportKeys # " + exportKeys.getKeys().size());
             List<JWK> encKeys = selectEncKeys(exportKeys);
+            if (encKeys.isEmpty()) {
+                throw new BaseException("did not find any public keys in keystore with id: " + receiverKeyStoreAccess.getKeyStoreLocation().getKeyStoreID());
+            }
             JWK randomKey = JwkExport.randomKey(encKeys);
             String randomEncKeyId = randomKey.getKeyID();
-            
-            KeySource keySource = new KeyStoreBasedPublicKeySourceImpl(exportKeys);
 
-            // Willkürlich einen SecretKey aus dem KeyStore nehmen für die Verschlüsselung des Guards
-//            JWKSet jwkSet = JwkExport.exportKeys(userKeystore, receiverKeyStoreAccess.getKeyStoreAuth().getKeypass());
-//            ServerKeyMap serverKeyMap = new ServerKeyMap(jwkSet);
-//            KeyAndJwk randomSecretKey = serverKeyMap.randomSecretKey();
+
+            KeySource keySource = new KeyStoreBasedPublicKeySourceImpl(exportKeys);
             GuardKeyID guardKeyID = new GuardKeyID(randomEncKeyId);
 
             // Zielpfad für den DocumentKeyIDWithKey bestimmen
@@ -144,12 +146,13 @@ public class DocumentGuardService {
             throw BaseExceptionHandler.handle(e);
         }
     }
-    
-	public static List<JWK> selectEncKeys(JWKSet exportKeys) {
-		JWKMatcher signKeys = (new Builder()).keyUse(KeyUse.ENCRYPTION).build();
-		return (new JWKSelector(signKeys)).select(exportKeys);
-	}
-    
+
+    public static List<JWK> selectEncKeys(JWKSet exportKeys) {
+        JWKMatcher signKeys = (new Builder()).keyUse(KeyUse.ENCRYPTION).build();
+        return (new JWKSelector(signKeys)).select(exportKeys);
+    }
+
+
     /**
      * Loading the secret key from the guard.
      */
