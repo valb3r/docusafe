@@ -7,6 +7,8 @@ import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreBucketName;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;
+import org.adorsys.resource.server.persistence.basetypes.ReadKeyPassword;
+import org.adorsys.resource.server.persistence.basetypes.ReadStorePassword;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreAccess;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreAuth;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreCreationConfig;
@@ -30,15 +32,15 @@ public class KeyStoreServiceTest {
         removeContainer(keystoreContainer);
     }
 
-    public KeyStoreStuff createKeyStore(String keyPassword, String userPassword, KeyStoreID keyStoreID) {
-        return createKeyStore(keystorePersistence, keystoreContainer, keyPassword, userPassword, keyStoreID, null, null, null);
+    public KeyStoreStuff createKeyStore(ReadStorePassword readStorePassword, ReadKeyPassword readKeyPassword, KeyStoreID keyStoreID) {
+        return createKeyStore(keystorePersistence, keystoreContainer, readStorePassword, readKeyPassword, keyStoreID, null, null, null);
     }
 
     public KeyStoreStuff createKeyStore() {
-        return createKeyStore(keystorePersistence, keystoreContainer, "userpassword", "keypassword", new KeyStoreID("key-store-id-123"), null, null, null);
+        return createKeyStore(keystorePersistence, keystoreContainer, new ReadStorePassword("storePassword"), new ReadKeyPassword("keypassword"), new KeyStoreID("key-store-id-123"), null, null, null);
     }
 
-    public KeyStoreStuff createKeyStore(ExtendedKeystorePersistence keystorePersistence, String keystoreContainer, String keyPassword, String userPassword, KeyStoreID keyStoreID,
+    public KeyStoreStuff createKeyStore(ExtendedKeystorePersistence keystorePersistence, String keystoreContainer, ReadStorePassword readStorePassword, ReadKeyPassword readKeyPassword, KeyStoreID keyStoreID,
                                         Integer encKeyNumber, Integer signKeyNumber, Integer secretKeyNumber) {
         KeyStoreCreationConfig config = null;
         if (encKeyNumber != null) {
@@ -48,15 +50,9 @@ public class KeyStoreServiceTest {
         KeyStoreBucketName keyStoreBucketName = new KeyStoreBucketName(keystoreContainer);
 
         KeyStoreService keyStoreService = new KeyStoreService(keystorePersistence);
-        KeyStoreAuth keyStoreAuth = new KeyStoreAuth(keyPassword, userPassword);
-        KeyStoreLocation keyStoreLocation;
-        if (config != null) {
-            keyStoreLocation = keyStoreService.createKeyStore(keyStoreID, keyStoreAuth, keyStoreBucketName, config);
-        }
-        else {
-            keyStoreLocation = keyStoreService.createKeyStore(keyStoreID, keyStoreAuth, keyStoreBucketName);
-        }
-        KeyStore keyStore = keyStoreService.loadKeystore(keyStoreLocation, keyStoreAuth.getUserpass());
+        KeyStoreAuth keyStoreAuth = new KeyStoreAuth(readStorePassword, readKeyPassword);
+        KeyStoreLocation keyStoreLocation = keyStoreService.createKeyStore(keyStoreID, keyStoreAuth, keyStoreBucketName, config);
+        KeyStore keyStore = keyStoreService.loadKeystore(keyStoreLocation, keyStoreAuth.getReadStoreHandler());
         // System.out.println(ShowKeyStore.toString(userKeyStore, keypasswordstring));
         return new KeyStoreStuff(keyStore, keystorePersistence, keyStoreID, new KeyStoreAccess(keyStoreLocation, keyStoreAuth));
     }

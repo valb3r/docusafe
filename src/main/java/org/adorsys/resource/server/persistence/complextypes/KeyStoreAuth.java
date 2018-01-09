@@ -2,6 +2,8 @@ package org.adorsys.resource.server.persistence.complextypes;
 
 import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
 import org.adorsys.resource.server.exceptions.BaseException;
+import org.adorsys.resource.server.persistence.basetypes.ReadKeyPassword;
+import org.adorsys.resource.server.persistence.basetypes.ReadStorePassword;
 
 import javax.security.auth.callback.CallbackHandler;
 
@@ -9,38 +11,53 @@ import javax.security.auth.callback.CallbackHandler;
  * Created by peter on 05.01.18.
  */
 public class KeyStoreAuth {
-    private final CallbackHandler userpass;
-    private CallbackHandler keypass;
-    private final String userpassstring;
-    private final String keypassstring;
-    public KeyStoreAuth(String userPasswordForKeyStore, String keyPasswordForKeyStore) {
-        userpass = new PasswordCallbackHandler(userPasswordForKeyStore.toCharArray());
-        keypass = new PasswordCallbackHandler(keyPasswordForKeyStore.toCharArray());
-        userpassstring = userPasswordForKeyStore;
-        keypassstring = keyPasswordForKeyStore;
+    private CallbackHandler readStoreHandler;
+    private CallbackHandler readKeyHandler;
+    private ReadStorePassword readStorePassword;
+    private ReadKeyPassword readKeyPassword;
+
+    public KeyStoreAuth(ReadStorePassword readStorePassword, ReadKeyPassword readKeyPassword) {
+        this.readStorePassword = readStorePassword;
+        this.readKeyPassword = readKeyPassword;
+        this.readStoreHandler = this.readStorePassword != null ? new PasswordCallbackHandler(readStorePassword.getValue().toCharArray()) : null;
+        this.readKeyHandler = this.readKeyPassword != null ? new PasswordCallbackHandler(readKeyPassword.getValue().toCharArray()) : null;
     }
 
-    public CallbackHandler getUserpass() {
-        return userpass;
-    }
-
-    public CallbackHandler getKeypass() {
-        if (keypass == null) {
-            throw new BaseException("Access to KeyPass not allowed");
+    public CallbackHandler getReadStoreHandler() {
+        if (readStoreHandler == null) {
+            throw new BaseException("Access to READ STORE HANDLER not allowed");
         }
-        return keypass;
+        return readStoreHandler;
     }
 
-    public String getUserpassString() {
-        return userpassstring;
+    public CallbackHandler getReadKeyHandler() {
+        if (readKeyHandler == null) {
+            throw new BaseException("Access to READ KEY HANDLER not allowed");
+        }
+        return readKeyHandler;
     }
 
-    public String getKeypassString() {
-        return keypassstring;
+    public ReadStorePassword getReadStorePassword() {
+        if (readStorePassword == null) {
+            throw new BaseException("Access to READ STORE PASSWORD not allowed");
+        }
+        return readStorePassword;
     }
 
-    // ToDo delete this test method
-    public void setEmptyKeyPass() {
-        keypass = null;
+    public ReadKeyPassword getReadKeyPassword() {
+        if (readKeyPassword == null) {
+            throw new BaseException("Access to READ KEY PASSWORD not allowed");
+        }
+        return readKeyPassword;
+    }
+
+    public void deleteReadKeyPassword() {
+        readKeyPassword = null;
+        readKeyHandler = null;
+    }
+
+    public void deleteReadStorePassword() {
+        readStorePassword = null;
+        readStoreHandler = null;
     }
 }

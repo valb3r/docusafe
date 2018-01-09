@@ -79,11 +79,11 @@ public class DocumentGuardService {
     public void createSymmetricDocumentGuard(KeyStoreAccess keyStoreAccess, DocumentKeyIDWithKey documentKeyIDWithKey) {
         try {
             // KeyStore laden
-            KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStoreLocation(), keyStoreAccess.getKeyStoreAuth().getUserpass());
-            KeySource keySource = new KeyStoreBasedSecretKeySourceImpl(userKeystore, keyStoreAccess.getKeyStoreAuth().getKeypass());
+            KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStoreLocation(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
+            KeySource keySource = new KeyStoreBasedSecretKeySourceImpl(userKeystore, keyStoreAccess.getKeyStoreAuth().getReadKeyHandler());
 
             // Willkürlich einen SecretKey aus dem KeyStore nehmen für die Verschlüsselung des Guards
-            JWKSet jwkSet = JwkExport.exportKeys(userKeystore, keyStoreAccess.getKeyStoreAuth().getKeypass());
+            JWKSet jwkSet = JwkExport.exportKeys(userKeystore, keyStoreAccess.getKeyStoreAuth().getReadKeyHandler());
             ServerKeyMap serverKeyMap = new ServerKeyMap(jwkSet);
             KeyAndJwk randomSecretKey = serverKeyMap.randomSecretKey();
             GuardKeyID guardKeyID = new GuardKeyID(randomSecretKey.jwk.getKeyID());
@@ -112,8 +112,7 @@ public class DocumentGuardService {
      */
     public void createAsymmetricDocumentGuard(KeyStoreAccess receiverKeyStoreAccess, DocumentKeyIDWithKey documentKeyIDWithKey) {
         try {
-            // KeyStore laden, user pass is sstore password.
-            KeyStore userKeystore = keystorePersistence.loadKeystore(receiverKeyStoreAccess.getKeyStoreLocation(), receiverKeyStoreAccess.getKeyStoreAuth().getUserpass());
+            KeyStore userKeystore = keystorePersistence.loadKeystore(receiverKeyStoreAccess.getKeyStoreLocation(), receiverKeyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
 
             /**
              * JWKSet exportKeys = JwkExport.exportKeys(userKeystore, null); // Geht nicht mit null Parameter
@@ -160,10 +159,10 @@ public class DocumentGuardService {
 
         try {
 
-            KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStoreLocation(), keyStoreAccess.getKeyStoreAuth().getUserpass());
+            KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStoreLocation(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
 
             // load guard file
-            KeySource keySource = new KeyStoreBasedSecretKeySourceImpl(userKeystore, keyStoreAccess.getKeyStoreAuth().getKeypass());
+            KeySource keySource = new KeyStoreBasedSecretKeySourceImpl(userKeystore, keyStoreAccess.getKeyStoreAuth().getReadKeyHandler());
             PersistentObjectWrapper wrapper = objectPersistence.loadObject(DocumentGuardLocation.getLocationHandle(keyStoreAccess.getKeyStoreLocation(), documentKeyID), keySource);
 
             ContentMetaInfo metaIno = wrapper.getMetaIno();

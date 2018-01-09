@@ -1,6 +1,7 @@
 package org.adorsys.resource.server.utils;
 
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
+import org.adorsys.resource.server.persistence.basetypes.ReadKeyPassword;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -15,7 +16,7 @@ import java.util.Map;
  */
 public class ShowKeyStore {
 
-    public static String toString(KeyStore userKeyStore, String password) {
+    public static String toString(KeyStore userKeyStore, ReadKeyPassword readKeyPassword) {
         StringBuilder sb = new StringBuilder();
         try {
             sb.append("Number of Entries in KeyStore is:" + userKeyStore.size());
@@ -24,7 +25,7 @@ public class ShowKeyStore {
             Map<String, Integer> classToInstances = new HashMap<>();
             while (aliases.hasMoreElements()) {
                 String alias = aliases.nextElement();
-                Key key = userKeyStore.getKey(alias, password.toCharArray());
+                Key key = userKeyStore.getKey(alias, readKeyPassword.getValue().toCharArray());
                 sb.append("alias : " + alias + " -> " + key.toString());
                 sb.append("class      " + key.getClass().getSimpleName());
                 sb.append("\n");

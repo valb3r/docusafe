@@ -28,7 +28,7 @@ public class KeyStoreService {
     public KeyStoreLocation createKeyStore(KeyStoreID keyStoreID,
                                            KeyStoreAuth keyStoreAuth,
                                            KeyStoreBucketName keystoreBucketName) {
-        return createKeyStore(keyStoreID, keyStoreAuth, keystoreBucketName, new KeyStoreCreationConfig(5,5,5, keyStoreID));
+        return createKeyStore(keyStoreID, keyStoreAuth, keystoreBucketName, null);
     }
     public KeyStoreLocation createKeyStore(KeyStoreID keyStoreID,
                                            KeyStoreAuth keyStoreAuth,
@@ -36,10 +36,13 @@ public class KeyStoreService {
                                            KeyStoreCreationConfig config) {
 
         try {
+            if (config == null ) {
+                config = new KeyStoreCreationConfig(5,5,5, keyStoreID);
+            }
             String keyStoreType = null;
             String serverKeyPairAliasPrefix = keyStoreID.getValue();
             String keyStorePassword = keyStoreID.getValue();
-            char[] password = PasswordCallbackUtils.getPassword(keyStoreAuth.getKeypass(), keyStorePassword);
+            char[] password = PasswordCallbackUtils.getPassword(keyStoreAuth.getReadKeyHandler(), keyStorePassword);
             KeyStoreGenerator keyStoreGenerator = new KeyStoreGenerator(
                     config.getEncKeyPairGenerator(),
                     config.getSignKeyPairGenerator(),
@@ -53,7 +56,7 @@ public class KeyStoreService {
             KeyStore userKeyStore = keyStoreGenerator.generate();
 
             KeyStoreLocation keyStoreLocation = new KeyStoreLocation(keystoreBucketName, keyStoreID, new KeyStoreType(userKeyStore.getType()));
-			keystorePersistence.saveKeyStore(userKeyStore, keyStoreAuth.getUserpass(), keyStoreLocation);
+			keystorePersistence.saveKeyStore(userKeyStore, keyStoreAuth.getReadStoreHandler(), keyStoreLocation);
 			return keyStoreLocation;
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
