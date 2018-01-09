@@ -99,7 +99,6 @@ public class ExtendedObjectPersistence {
 	public PersistentObjectWrapper loadObject(ObjectHandle location, KeySource keySource) {
 		
 		try {
-			
 			if (location == null)
 				throw new IllegalArgumentException("Object handle must be provided.");
 			
@@ -119,6 +118,7 @@ public class ExtendedObjectPersistence {
 			System.out.println("Decrypter =====> " + keyID + " -> " + key.getClass().getName());
 
 			JWEDecrypter decrypter = decrypterFactory.createJWEDecrypter(jweObject.getHeader(), key);
+			System.out.println(BaseExceptionHandler.ThrowableToString(0, new RuntimeException( "STACK-ONLY"), false));
 
 			jweObject.decrypt(decrypter);
 

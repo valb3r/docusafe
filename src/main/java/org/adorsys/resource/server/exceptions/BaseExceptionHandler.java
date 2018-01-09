@@ -50,7 +50,6 @@ public class BaseExceptionHandler {
     }
 
     static public String ThrowableToString(int layer, Throwable t, boolean debug) {
-        debug = true;
         String tab = "";
         for (int i = 0; i < layer; i++) {
             tab = tab + "\t";

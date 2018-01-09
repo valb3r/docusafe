@@ -203,7 +203,7 @@ public class AllServiceTest {
                 // Load with asymmetric key
                 DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest();
                 documentPersistenceServiceTest.testLoadDocument(documentGuardStuffForEncKey.documentGuardService,
-                        keyStoreStuffForKeyStoreWithEncKey.keyStoreAccess,
+                        keystoreAccessForKeyStoreWithEncKey,
                         documentLocation);
                 System.out.println("Document erfolgreich mit DocumentGuard für EncKey gelesen");
 
