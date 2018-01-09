@@ -32,23 +32,17 @@ public class KeyStoreServiceTest {
         removeContainer(keystoreContainer);
     }
 
-    public KeyStoreStuff createKeyStore(ReadStorePassword readStorePassword, ReadKeyPassword readKeyPassword, KeyStoreID keyStoreID) {
-        return createKeyStore(keystorePersistence, keystoreContainer, readStorePassword, readKeyPassword, keyStoreID, null, null, null);
-    }
-
     public KeyStoreStuff createKeyStore() {
-        return createKeyStore(keystorePersistence, keystoreContainer, new ReadStorePassword("storePassword"), new ReadKeyPassword("keypassword"), new KeyStoreID("key-store-id-123"), null, null, null);
+        return createKeyStore(keystorePersistence, keystoreContainer, new ReadStorePassword("storePassword"), new ReadKeyPassword("keypassword"), new KeyStoreID("key-store-id-123"), null);
     }
 
-    public KeyStoreStuff createKeyStore(ExtendedKeystorePersistence keystorePersistence, String keystoreContainer, ReadStorePassword readStorePassword, ReadKeyPassword readKeyPassword, KeyStoreID keyStoreID,
-                                        Integer encKeyNumber, Integer signKeyNumber, Integer secretKeyNumber) {
-        KeyStoreCreationConfig config = null;
-        if (encKeyNumber != null) {
-            config = new KeyStoreCreationConfig(encKeyNumber, signKeyNumber, secretKeyNumber, keyStoreID);
-        }
-
+    public KeyStoreStuff createKeyStore(ExtendedKeystorePersistence keystorePersistence,
+                                        String keystoreContainer,
+                                        ReadStorePassword readStorePassword,
+                                        ReadKeyPassword readKeyPassword,
+                                        KeyStoreID keyStoreID,
+                                        KeyStoreCreationConfig config) {
         KeyStoreBucketName keyStoreBucketName = new KeyStoreBucketName(keystoreContainer);
-
         KeyStoreService keyStoreService = new KeyStoreService(keystorePersistence);
         KeyStoreAuth keyStoreAuth = new KeyStoreAuth(readStorePassword, readKeyPassword);
         KeyStoreLocation keyStoreLocation = keyStoreService.createKeyStore(keyStoreID, keyStoreAuth, keyStoreBucketName, config);

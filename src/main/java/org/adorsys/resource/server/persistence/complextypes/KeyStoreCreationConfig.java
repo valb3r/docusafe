@@ -8,34 +8,32 @@ import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;
  * Created by peter on 09.01.18.
  */
 public class KeyStoreCreationConfig {
-    private final KeyPairGenerator encKeyPairGenerator;
-    private final KeyPairGenerator signKeyPairGenerator;
-    private final SecretKeyGenerator secretKeyGenerator;
-
     private final Integer encKeyNumber;
     private final Integer signKeyNumber;
     private final Integer secretKeyNumber;
 
-    public KeyStoreCreationConfig(Integer encKeyPairNumber, Integer signKeyNumber, Integer secretKeyNumber, KeyStoreID keyStoreID) {
-        this.encKeyNumber = encKeyPairNumber;
+    /**
+     * Weitere Konstruktoren ggf. wenn Algorithmen angepasst werden sollen
+     * @param encKeyNumber
+     * @param signKeyNumber
+     * @param secretKeyNumber
+     */
+    public KeyStoreCreationConfig(Integer encKeyNumber, Integer signKeyNumber, Integer secretKeyNumber) {
+        this.encKeyNumber = encKeyNumber;
         this.signKeyNumber = signKeyNumber;
         this.secretKeyNumber = secretKeyNumber;
-
-        secretKeyGenerator = new SecretKeyGenerator("AES", 256);
-        encKeyPairGenerator = new KeyPairGenerator("RSA", 2048, "SHA256withRSA", "enc-" + keyStoreID.getValue());
-        signKeyPairGenerator = new KeyPairGenerator("RSA", 2048, "SHA256withRSA", "sign-" + keyStoreID.getValue());
     }
 
-    public KeyPairGenerator getEncKeyPairGenerator() {
-        return encKeyPairGenerator;
+    public KeyPairGenerator getEncKeyPairGenerator(KeyStoreID keyStoreID) {
+        return new KeyPairGenerator("RSA", 2048, "SHA256withRSA", "enc-" + keyStoreID.getValue());
     }
 
-    public KeyPairGenerator getSignKeyPairGenerator() {
-        return signKeyPairGenerator;
+    public KeyPairGenerator getSignKeyPairGenerator(KeyStoreID keyStoreID) {
+        return new KeyPairGenerator("RSA", 2048, "SHA256withRSA", "sign-" + keyStoreID.getValue());
     }
 
-    public SecretKeyGenerator getSecretKeyGenerator() {
-        return secretKeyGenerator;
+    public SecretKeyGenerator getSecretKeyGenerator(KeyStoreID keyStoreID) {
+        return new SecretKeyGenerator("AES", 256);
     }
 
     public Integer getEncKeyNumber() {

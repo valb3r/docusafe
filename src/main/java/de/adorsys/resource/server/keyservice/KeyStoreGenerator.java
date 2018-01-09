@@ -1,53 +1,51 @@
 package de.adorsys.resource.server.keyservice;
 
-import java.security.KeyStore;
-import java.util.UUID;
-
-import javax.security.auth.callback.CallbackHandler;
-
 import org.adorsys.jkeygen.keystore.KeyPairData;
 import org.adorsys.jkeygen.keystore.KeystoreBuilder;
 import org.adorsys.jkeygen.keystore.SecretKeyData;
 import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
+import org.adorsys.resource.server.persistence.basetypes.ReadKeyPassword;
 import org.apache.commons.lang3.RandomStringUtils;
+
+import javax.security.auth.callback.CallbackHandler;
+import java.security.KeyStore;
+import java.util.UUID;
 
 public class KeyStoreGenerator {
 
     private final KeyPairGenerator encKeyPairGenerator;
+    private final Integer numberOfEncKeyPairs;
     private final KeyPairGenerator signKeyPairGenerator;
+    private final Integer numberOfSignKeyPairs;
     private final SecretKeyGenerator secretKeyGenerator;
+    private final Integer numberOfSecretKeys;
 
     private final String keyStoreType;
     private final String serverKeyPairAliasPrefix;
-    private final Integer numberOfSignKeyPairs;
-    private final Integer numberOfEncKeyPairs;
-    private final Integer numberOfSecretKeys;
-
-    private final CallbackHandler keyPassHandler;
+    private final CallbackHandler readKeyHandler;
 
     public KeyStoreGenerator(
             KeyPairGenerator encKeyPairGenerator,
+            Integer numberOfEncKeyPairs,
             KeyPairGenerator signKeyPairGenerator,
+            Integer numberOfSignKeyPairs,
             SecretKeyGenerator secretKeyGenerator,
+            Integer numberOfSecretKeys,
             String keyStoreType,
             String serverKeyPairAliasPrefix,
-            Integer numberOfSignKeyPairs,
-            Integer numberOfEncKeyPairs,
-            Integer numberOfSecretKeys,
-            String keyStorePassword
+            ReadKeyPassword readKeyPassword
     ) {
         this.encKeyPairGenerator = encKeyPairGenerator;
+        this.numberOfEncKeyPairs = numberOfEncKeyPairs;
         this.signKeyPairGenerator = signKeyPairGenerator;
+        this.numberOfSignKeyPairs = numberOfSignKeyPairs;
         this.secretKeyGenerator = secretKeyGenerator;
+        this.numberOfSecretKeys = numberOfSecretKeys;
 
         this.keyStoreType = keyStoreType;
         this.serverKeyPairAliasPrefix = serverKeyPairAliasPrefix;
 
-        this.numberOfSignKeyPairs = numberOfSignKeyPairs;
-        this.numberOfEncKeyPairs = numberOfEncKeyPairs;
-        this.numberOfSecretKeys = numberOfSecretKeys;
-
-        keyPassHandler = new PasswordCallbackHandler(keyStorePassword.toCharArray());
+        readKeyHandler = new PasswordCallbackHandler(readKeyPassword.getValue().toCharArray());
     }
     
     public KeyStore generate() {
@@ -56,7 +54,7 @@ public class KeyStoreGenerator {
             for (int i = 0; i < numberOfSignKeyPairs; i++) {
                 KeyPairData signatureKeyPair = signKeyPairGenerator.generateSignatureKey(
                         serverKeyPairAliasPrefix + UUID.randomUUID().toString(),
-                        keyPassHandler
+                        readKeyHandler
                 );
 
                 keystoreBuilder = keystoreBuilder.withKeyEntry(signatureKeyPair);
@@ -64,7 +62,7 @@ public class KeyStoreGenerator {
             for (int i = 0; i < numberOfEncKeyPairs; i++) {
                 KeyPairData signatureKeyPair = encKeyPairGenerator.generateEncryptionKey(
                         serverKeyPairAliasPrefix + RandomStringUtils.randomAlphanumeric(5).toUpperCase(),
-                        keyPassHandler
+                        readKeyHandler
                 );
 
                 keystoreBuilder = keystoreBuilder.withKeyEntry(signatureKeyPair);
@@ -72,7 +70,7 @@ public class KeyStoreGenerator {
             for (int i = 0; i < numberOfSecretKeys; i++) {
                 SecretKeyData secretKeyData = secretKeyGenerator.generate(
                         serverKeyPairAliasPrefix + RandomStringUtils.randomAlphanumeric(5).toUpperCase(),
-                        keyPassHandler
+                        readKeyHandler
                 );
 
                 keystoreBuilder = keystoreBuilder.withKeyEntry(secretKeyData);

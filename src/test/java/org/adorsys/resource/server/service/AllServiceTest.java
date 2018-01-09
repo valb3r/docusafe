@@ -7,6 +7,7 @@ import org.adorsys.resource.server.persistence.basetypes.ReadKeyPassword;
 import org.adorsys.resource.server.persistence.basetypes.ReadStorePassword;
 import org.adorsys.resource.server.persistence.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreAccess;
+import org.adorsys.resource.server.persistence.complextypes.KeyStoreCreationConfig;
 import org.adorsys.resource.server.utils.HexUtil;
 import org.adorsys.resource.server.utils.ShowKeyStore;
 import org.junit.AfterClass;
@@ -129,10 +130,20 @@ public class AllServiceTest {
         try {
             ExtendedKeystorePersistence keystorePersistence1 = KeyStoreServiceTest.createKeyStorePersistenceForContainer(container1);
             ExtendedKeystorePersistence keystorePersistence2 = KeyStoreServiceTest.createKeyStorePersistenceForContainer(container2);
-            KeyStoreServiceTest.KeyStoreStuff keyStoreStuff1 = new KeyStoreServiceTest().createKeyStore(keystorePersistence1, container1, new ReadStorePassword("a"), new ReadKeyPassword("b"), new KeyStoreID("first"), 0, 0, 1);
+            KeyStoreServiceTest.KeyStoreStuff keyStoreStuff1 = new KeyStoreServiceTest().createKeyStore(keystorePersistence1,
+                    container1,
+                    new ReadStorePassword("a"),
+                    new ReadKeyPassword("b"),
+                    new KeyStoreID("first"),
+                    new KeyStoreCreationConfig(0, 0, 1));
             System.out.println(ShowKeyStore.toString(keyStoreStuff1.keyStore, keyStoreStuff1.keyStoreAccess.getKeyStoreAuth().getReadKeyPassword()));
 
-            KeyStoreServiceTest.KeyStoreStuff keyStoreStuff2 = new KeyStoreServiceTest().createKeyStore(keystorePersistence2, container2, new ReadStorePassword("c"), new ReadKeyPassword("d"), new KeyStoreID("second"), 1, 0, 0);
+            KeyStoreServiceTest.KeyStoreStuff keyStoreStuff2 = new KeyStoreServiceTest().createKeyStore(keystorePersistence2,
+                    container2,
+                    new ReadStorePassword("c"),
+                    new ReadKeyPassword("d"),
+                    new KeyStoreID("second"),
+                    new KeyStoreCreationConfig(1, 0, 0));
             System.out.println(ShowKeyStore.toString(keyStoreStuff2.keyStore, keyStoreStuff2.keyStoreAccess.getKeyStoreAuth().getReadKeyPassword()));
 
             DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest();

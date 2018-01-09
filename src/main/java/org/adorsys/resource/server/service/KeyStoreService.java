@@ -2,7 +2,6 @@ package org.adorsys.resource.server.service;
 
 import de.adorsys.resource.server.keyservice.KeyStoreGenerator;
 import de.adorsys.resource.server.keyservice.SecretKeyGenerator;
-import org.adorsys.jkeygen.keystore.PasswordCallbackUtils;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreBucketName;
@@ -25,11 +24,14 @@ public class KeyStoreService {
         this.keystorePersistence = keystorePersistence;
     }
 
-    public KeyStoreLocation createKeyStore(KeyStoreID keyStoreID,
-                                           KeyStoreAuth keyStoreAuth,
-                                           KeyStoreBucketName keystoreBucketName) {
-        return createKeyStore(keyStoreID, keyStoreAuth, keystoreBucketName, null);
-    }
+    /**
+     *
+     * @param keyStoreID
+     * @param keyStoreAuth
+     * @param keystoreBucketName
+     * @param config may be null
+     * @return
+     */
     public KeyStoreLocation createKeyStore(KeyStoreID keyStoreID,
                                            KeyStoreAuth keyStoreAuth,
                                            KeyStoreBucketName keystoreBucketName,
@@ -37,22 +39,20 @@ public class KeyStoreService {
 
         try {
             if (config == null ) {
-                config = new KeyStoreCreationConfig(5,5,5, keyStoreID);
+                config = new KeyStoreCreationConfig(5,5,5);
             }
             String keyStoreType = null;
             String serverKeyPairAliasPrefix = keyStoreID.getValue();
-            String keyStorePassword = keyStoreID.getValue();
-            char[] password = PasswordCallbackUtils.getPassword(keyStoreAuth.getReadKeyHandler(), keyStorePassword);
             KeyStoreGenerator keyStoreGenerator = new KeyStoreGenerator(
-                    config.getEncKeyPairGenerator(),
-                    config.getSignKeyPairGenerator(),
-                    config.getSecretKeyGenerator(),
+                    config.getEncKeyPairGenerator(keyStoreID),
+                    config.getEncKeyNumber(),
+                    config.getSignKeyPairGenerator(keyStoreID),
+                    config.getSignKeyNumber(),
+                    config.getSecretKeyGenerator(keyStoreID),
+                    config.getSecretKeyNumber(),
                     keyStoreType,
                     serverKeyPairAliasPrefix,
-                    config.getSignKeyNumber(),
-                    config.getEncKeyNumber(),
-                    config.getSecretKeyNumber(),
-                    new String(password));
+                    keyStoreAuth.getReadKeyPassword());
             KeyStore userKeyStore = keyStoreGenerator.generate();
 
             KeyStoreLocation keyStoreLocation = new KeyStoreLocation(keystoreBucketName, keyStoreID, new KeyStoreType(userKeyStore.getType()));
