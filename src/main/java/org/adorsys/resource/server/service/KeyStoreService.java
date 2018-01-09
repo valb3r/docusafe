@@ -44,12 +44,8 @@ public class KeyStoreService {
             String keyStoreType = null;
             String serverKeyPairAliasPrefix = keyStoreID.getValue();
             KeyStoreGenerator keyStoreGenerator = new KeyStoreGenerator(
-                    config.getEncKeyPairGenerator(keyStoreID),
-                    config.getEncKeyNumber(),
-                    config.getSignKeyPairGenerator(keyStoreID),
-                    config.getSignKeyNumber(),
-                    config.getSecretKeyGenerator(keyStoreID),
-                    config.getSecretKeyNumber(),
+                    config,
+                    keyStoreID,
                     keyStoreType,
                     serverKeyPairAliasPrefix,
                     keyStoreAuth.getReadKeyPassword());

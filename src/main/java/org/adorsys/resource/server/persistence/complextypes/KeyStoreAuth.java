@@ -36,14 +36,6 @@ public class KeyStoreAuth {
         return new PasswordCallbackHandler(readKeyPassword.getValue().toCharArray());
     }
 
-    public ReadStorePassword getReadStorePassword() {
-        if (readStorePassword == null) {
-            throw new BaseException("Access to READ STORE PASSWORD not allowed");
-        }
-
-        return readStorePassword;
-    }
-
     public ReadKeyPassword getReadKeyPassword() {
         if (readKeyPassword == null) {
             throw new BaseException("Access to READ KEY PASSWORD not allowed");
@@ -51,11 +43,7 @@ public class KeyStoreAuth {
         return readKeyPassword;
     }
 
-    public void deleteReadKeyPassword() {
-        readKeyPassword = null;
-    }
-
-    public void deleteReadStorePassword() {
-        readStorePassword = null;
+    public void setReadKeyPassword(ReadKeyPassword readKeyPassword) {
+        this.readKeyPassword = readKeyPassword;
     }
 }

@@ -35,7 +35,7 @@ public class AllServiceTest {
 
     }
 
-    // @Test
+    @Test
     public void testCreateKeyStore() {
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
@@ -45,7 +45,7 @@ public class AllServiceTest {
         }
     }
 
-    // @Test
+    @Test
     public void testCreateKeyStoreAndDocumentGuard() {
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
@@ -57,7 +57,7 @@ public class AllServiceTest {
         }
     }
 
-    // @Test
+    @Test
     public void testCreateKeyStoreAndDocumentGuardAndLoadDocumentGuard() {
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
@@ -76,7 +76,7 @@ public class AllServiceTest {
         }
     }
 
-    // @Test
+    @Test
     public void testCreateDocument() {
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
@@ -96,7 +96,7 @@ public class AllServiceTest {
         }
     }
 
-    // @Test
+    @Test
     public void testCreateAndLoadDocument() {
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest().createKeyStore();
@@ -154,7 +154,8 @@ public class AllServiceTest {
             DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardStuff1.documentKeyIDWithKey;
 
             KeyStoreAccess keystore2Access = keyStoreStuff2.keyStoreAccess;
-            keystore2Access.getKeyStoreAuth().deleteReadKeyPassword();
+            ReadKeyPassword readKeyPassword = keystore2Access.getKeyStoreAuth().getReadKeyPassword();
+            keystore2Access.getKeyStoreAuth().setReadKeyPassword(null);
             DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff2 = documentGuardServiceTest.testCreateAsymmetricDocumentGuardForDocumentKeyIDWithKey(
                     keystore2Access,
                     documentKeyIDWithKey,
@@ -164,6 +165,8 @@ public class AllServiceTest {
             DocumentPersistenceServiceTest.DocumentStuff documentStuff = documentPersistenceServiceTest.testPersistDocument(
                     documentGuardStuff1.documentGuardService,
                     documentGuardStuff1.documentKeyIDWithKey);
+
+            keystore2Access.getKeyStoreAuth().setReadKeyPassword(new ReadKeyPassword(""));
 
             // Load with symmetric key
             documentPersistenceServiceTest.testLoadDocument(documentGuardStuff1.documentGuardService,

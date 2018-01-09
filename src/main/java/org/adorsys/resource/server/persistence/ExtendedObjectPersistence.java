@@ -1,7 +1,12 @@
 package org.adorsys.resource.server.persistence;
 
-import java.security.Key;
-
+import com.nimbusds.jose.JWEDecrypter;
+import com.nimbusds.jose.JWEEncrypter;
+import com.nimbusds.jose.JWEHeader;
+import com.nimbusds.jose.JWEHeader.Builder;
+import com.nimbusds.jose.JWEObject;
+import com.nimbusds.jose.Payload;
+import com.nimbusds.jose.crypto.factories.DefaultJWEDecrypterFactory;
 import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.params.EncParamSelector;
@@ -12,13 +17,7 @@ import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.basetypes.KeyID;
 import org.apache.commons.io.IOUtils;
 
-import com.nimbusds.jose.JWEDecrypter;
-import com.nimbusds.jose.JWEEncrypter;
-import com.nimbusds.jose.JWEHeader;
-import com.nimbusds.jose.JWEHeader.Builder;
-import com.nimbusds.jose.JWEObject;
-import com.nimbusds.jose.Payload;
-import com.nimbusds.jose.crypto.factories.DefaultJWEDecrypterFactory;
+import java.security.Key;
 
 /**
  * This class jwe encrypt and store bytes, loads and jwe decrypt bytes. For this purpose, this class always add a ".jwe" to the file name. 
@@ -68,6 +67,9 @@ public class ExtendedObjectPersistence {
 			// Encryption params is optional. If not provided, we select an
 			// encryption param based on the key selected.
 			if (encParams == null) encParams = EncParamSelector.selectEncryptionParams(key);
+			// System.out.println("----------------------");
+			// System.out.println("EncAlgo:" + encParams.getEncAlgo());
+			// System.out.println("EncMethod:" + encParams.getEncMethod());
 	
 			Builder headerBuilder = new JWEHeader.Builder(encParams.getEncAlgo(), encParams.getEncMethod()).keyID(keyID.getValue());
 			ContentMetaInfoUtils.metaInfo2Header(metaInfo, headerBuilder);

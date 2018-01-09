@@ -1,5 +1,7 @@
 package org.adorsys.resource.server.service;
 
+import com.nimbusds.jose.EncryptionMethod;
+import com.nimbusds.jose.JWEAlgorithm;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKMatcher;
 import com.nimbusds.jose.jwk.JWKMatcher.Builder;
@@ -131,7 +133,9 @@ public class DocumentGuardService {
 
             // Zielpfad für den DocumentKeyIDWithKey bestimmen
             ObjectHandle documentGuardHandle = DocumentGuardLocation.getLocationHandle(receiverKeyStoreAccess.getKeyStoreLocation(), documentKeyIDWithKey.getDocumentKeyID());
-            EncryptionParams encParams = null;
+            EncryptionParams encParams = new EncryptionParams();
+            encParams.setEncAlgo(JWEAlgorithm.RSA1_5);
+            encParams.setEncMethod(EncryptionMethod.A256GCM);
 
             // Den DocumentKey serialisieren, in der MetaInfo die SerializerID vermerken
             ContentMetaInfo metaInfo = new ContentMetaInfo();
