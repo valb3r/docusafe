@@ -9,10 +9,10 @@ import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.factories.DefaultJWEDecrypterFactory;
 import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.domain.ObjectHandle;
-import org.adorsys.encobject.params.EncParamSelector;
 import org.adorsys.encobject.params.EncryptionParams;
 import org.adorsys.encobject.service.StoreConnection;
 import org.adorsys.jjwk.selector.JWEEncryptedSelector;
+import org.adorsys.resource.server.exceptions.BaseException;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.basetypes.KeyID;
 import org.apache.commons.io.IOUtils;
@@ -66,7 +66,7 @@ public class ExtendedObjectPersistence {
 	
 			// Encryption params is optional. If not provided, we select an
 			// encryption param based on the key selected.
-			if (encParams == null) encParams = EncParamSelector.selectEncryptionParams(key);
+			if (encParams == null) encParams = ExtendedEncParamSelector.selectEncryptionParams(key);
 			// System.out.println("----------------------");
 			// System.out.println("EncAlgo:" + encParams.getEncAlgo());
 			// System.out.println("EncMethod:" + encParams.getEncMethod());
@@ -112,6 +112,11 @@ public class ExtendedObjectPersistence {
 
 			KeyID keyID = new KeyID(jweObject.getHeader().getKeyID());
 			Key key = keySource.readKey(keyID);
+
+			if (key == null) {
+				throw new BaseException("can not read key with keyID " + keyID + " from keySource of class " + keySource.getClass().getName());
+			}
+			System.out.println("Decrypter =====> " + keyID + " -> " + key.getClass().getName());
 
 			JWEDecrypter decrypter = decrypterFactory.createJWEDecrypter(jweObject.getHeader(), key);
 

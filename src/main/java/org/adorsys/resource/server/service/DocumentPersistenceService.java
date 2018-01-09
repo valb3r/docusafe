@@ -56,6 +56,7 @@ public class DocumentPersistenceService {
             EncryptionParams encParams = null;
 
             KeySource keySource = new DocumentKeyIDWithKeyBasedSourceImpl(documentKeyIDWithKey);
+            System.out.println("Document wird verschlüsselt mit " + documentKeyIDWithKey);
             // Create container if non existent
             if (!containerPersistence.containerExists(location.getContainer())) {
                 containerPersistence.creteContainer(location.getContainer());
@@ -67,37 +68,6 @@ public class DocumentPersistenceService {
             throw BaseExceptionHandler.handle(e);
         }
     }
-
-/*
-    public DocumentLocation persistDocument(
-    							KeyStoreAccess keyStoreAccess,
-                                DocumentKeyID documentKeyID,
-                                DocumentBucketName documentBucketName,
-                                DocumentID documentID,
-                                DocumentContent documentContent) {
-    	
-    	try {
-
-	        // Create object handle
-	        ObjectHandle location = new ObjectHandle(documentBucketName.getValue(), documentID.getValue());
-	
-	        // Store object.
-	        ContentMetaInfo metaInfo = null;
-	        EncryptionParams encParams = null;
-
-	        KeyID keyID = new KeyID(documentKeyID.getValue());
-			KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess);
-			// Create container if non existent
-			if(!containerPersistence.containerExists(location.getContainer())){
-				containerPersistence.creteContainer(location.getContainer());
-			}
-			objectPersistence.storeObject(documentContent.getValue(), metaInfo, location, keySource, keyID , encParams);
-			return new DocumentLocation(documentID, documentBucketName);
-    	} catch (Exception e){
-    		throw BaseExceptionHandler.handle(e);
-    	}
-    }
-*/
 
     /**
      *

@@ -49,7 +49,7 @@ public class KeyStoreGenerator {
                 for (int i = 0; i < numberOfEncKeyPairs; i++) {
                     KeyPairData signatureKeyPair = encKeyPairGenerator.generateEncryptionKey(
                             serverKeyPairAliasPrefix + RandomStringUtils.randomAlphanumeric(5).toUpperCase(),
-                            dummyKeyHandler
+                            readKeyHandler
                     );
 
                     keystoreBuilder = keystoreBuilder.withKeyEntry(signatureKeyPair);
