@@ -51,22 +51,9 @@ public class HexUtil {
                                                  int length) {
 
         StringBuffer sBuf = new StringBuffer();
-        // System.err.println("converBytesToHexString");
         for (int i = offset; i < length; i++) {
-
-            /*
-             * System.err.println("data[" + i + "] = " + data[i]);
-             * System.err.println(hexChar[(data[i] >> 4) & 0xf]);
-             * System.err.println(hexChar[data[i] & 0xf]);
-             */
             sBuf.append(hexChar[(data[i] >> 4) & 0xf]);
             sBuf.append(hexChar[data[i] & 0xf]);
-            /*
-             * sBuf.append(hexChar[(data[i] >> 4) & 0xf]);
-             * sBuf.append(hexChar[data[i]& 0xf]);
-             */
-            // sBuf.append(Integer.toHexString(data[i]));
-
         }
         return sBuf.toString();
 

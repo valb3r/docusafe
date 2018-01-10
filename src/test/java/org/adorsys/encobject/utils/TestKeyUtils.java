@@ -15,8 +15,8 @@ public class TestKeyUtils {
 	        Field field = Class.forName("javax.crypto.JceSecurity").getDeclaredField("isRestricted");
 	        field.setAccessible(true);
 	        field.set(null, Boolean.FALSE);
-	    } catch (ClassNotFoundException | NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
-	        // ex.printStackTrace(System.err);
+	    } catch (Exception e) {
+	        // It is fine, to ignore and suppress any Exception here
 	    }
 	    finally {
 			LOGGER.warn("WARNING: Encoding Policy has been switched off for test");
