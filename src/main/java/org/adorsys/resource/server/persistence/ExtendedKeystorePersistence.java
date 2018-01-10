@@ -3,8 +3,8 @@ package org.adorsys.resource.server.persistence;
 import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.jkeygen.keystore.KeyStoreService;
-import org.adorsys.resource.server.exceptions.BaseException;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
+import org.adorsys.resource.server.exceptions.ExtendedPersistenceException;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreType;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreLocation;
 
@@ -29,7 +29,7 @@ public class ExtendedKeystorePersistence {
 		try {
 			// Match store type aggainst file extension
 			if(!keyStoreLocation.getKeyStoreType().equals(new KeyStoreType(keystore.getType())))
-					throw new BaseException("Invalid store type - expected : " + keystore.getType() + " but is: " + keyStoreLocation.getKeyStoreType().getValue());
+					throw new ExtendedPersistenceException("Invalid store type - expected : " + keystore.getType() + " but is: " + keyStoreLocation.getKeyStoreType().getValue());
 			
 			// write keystore to byte array.
 			byte[] bs = KeyStoreService.toByteArray(keystore, keyStoreLocation.getLocationHandle().getName(), storePassHandler);

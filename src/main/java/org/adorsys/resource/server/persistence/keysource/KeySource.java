@@ -1,4 +1,4 @@
-package org.adorsys.resource.server.persistence;
+package org.adorsys.resource.server.persistence.keysource;
 
 import java.security.Key;
 

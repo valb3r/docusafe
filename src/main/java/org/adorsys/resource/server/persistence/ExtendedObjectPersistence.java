@@ -12,9 +12,10 @@ import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.params.EncryptionParams;
 import org.adorsys.encobject.service.StoreConnection;
 import org.adorsys.jjwk.selector.JWEEncryptedSelector;
-import org.adorsys.resource.server.exceptions.BaseException;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
+import org.adorsys.resource.server.exceptions.ExtendedPersistenceException;
 import org.adorsys.resource.server.persistence.basetypes.KeyID;
+import org.adorsys.resource.server.persistence.keysource.KeySource;
 import org.apache.commons.io.IOUtils;
 
 import java.security.Key;
@@ -54,10 +55,10 @@ public class ExtendedObjectPersistence {
 	 * @param encParams
 	 */
 	public void storeObject(byte[] data, ContentMetaInfo metaInfo, ObjectHandle location, KeySource keySource, KeyID keyID,
-			EncryptionParams encParams) {
+							EncryptionParams encParams) {
 		
 		try {
-	
+
 			// We accept empty meta info
 			if (metaInfo == null)metaInfo=new ContentMetaInfo();
 	
@@ -67,10 +68,7 @@ public class ExtendedObjectPersistence {
 			// Encryption params is optional. If not provided, we select an
 			// encryption param based on the key selected.
 			if (encParams == null) encParams = ExtendedEncParamSelector.selectEncryptionParams(key);
-			// System.out.println("----------------------");
-			// System.out.println("EncAlgo:" + encParams.getEncAlgo());
-			// System.out.println("EncMethod:" + encParams.getEncMethod());
-	
+
 			Builder headerBuilder = new JWEHeader.Builder(encParams.getEncAlgo(), encParams.getEncMethod()).keyID(keyID.getValue());
 			ContentMetaInfoUtils.metaInfo2Header(metaInfo, headerBuilder);
 	
@@ -100,7 +98,7 @@ public class ExtendedObjectPersistence {
 		
 		try {
 			if (location == null)
-				throw new IllegalArgumentException("Object handle must be provided.");
+				throw new ExtendedPersistenceException("Location for Object must not be null.");
 			
 			location = addExtension(location);
 	
@@ -113,9 +111,8 @@ public class ExtendedObjectPersistence {
 			Key key = keySource.readKey(keyID);
 
 			if (key == null) {
-				throw new BaseException("can not read key with keyID " + keyID + " from keySource of class " + keySource.getClass().getName());
+				throw new ExtendedPersistenceException("can not read key with keyID " + keyID + " from keySource of class " + keySource.getClass().getName());
 			}
-			System.out.println("Decrypter =====> " + keyID + " -> " + key.getClass().getName());
 
 			JWEDecrypter decrypter = decrypterFactory.createJWEDecrypter(jweObject.getHeader(), key);
 			jweObject.decrypt(decrypter);

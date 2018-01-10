@@ -4,6 +4,7 @@ import org.adorsys.jkeygen.keystore.KeyPairData;
 import org.adorsys.jkeygen.keystore.KeystoreBuilder;
 import org.adorsys.jkeygen.keystore.SecretKeyData;
 import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
+import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;
 import org.adorsys.resource.server.persistence.basetypes.ReadKeyPassword;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreCreationConfig;
@@ -52,6 +53,7 @@ public class KeyStoreGenerator {
                 }
             }
             {
+                // TODO warum hier einen UUID Key und in den anderen nur 5 stelliger string
                 KeyPairGenerator signKeyPairGenerator = config.getSignKeyPairGenerator(keyStoreID);
                 int numberOfSignKeyPairs = config.getSignKeyNumber();
                 for (int i = 0; i < numberOfSignKeyPairs; i++) {
@@ -77,7 +79,7 @@ public class KeyStoreGenerator {
             }
             return keystoreBuilder.build();
         } catch (Exception e) {
-            throw new IllegalStateException(e);
+            throw BaseExceptionHandler.handle(e);
         }
     }
 }

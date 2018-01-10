@@ -1,5 +1,7 @@
 package org.adorsys.resource.server.serializer;
 
+import org.adorsys.resource.server.exceptions.SerializationException;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,7 +20,8 @@ public class DocumentGuardSerializerRegistery {
 	}
 	
 	public DocumentGuardSerializer getSerializer(String serializerId){
-		if(!serializers.containsKey(serializerId)) throw new IllegalStateException("No Serializer with id : " + serializerId + " registered.");
+		if(!serializers.containsKey(serializerId))
+			throw new SerializationException("No Serializer with id : " + serializerId + " registered.");
 		return serializers.get(serializerId);
 	}
 	

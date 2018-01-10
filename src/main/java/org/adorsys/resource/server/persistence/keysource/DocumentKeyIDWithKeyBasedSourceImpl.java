@@ -1,6 +1,6 @@
-package org.adorsys.resource.server.persistence;
+package org.adorsys.resource.server.persistence.keysource;
 
-import org.adorsys.resource.server.exceptions.BaseException;
+import org.adorsys.resource.server.exceptions.KeySourceException;
 import org.adorsys.resource.server.persistence.basetypes.KeyID;
 import org.adorsys.resource.server.persistence.complextypes.DocumentKeyIDWithKey;
 
@@ -19,7 +19,7 @@ public class DocumentKeyIDWithKeyBasedSourceImpl implements KeySource {
     @Override
     public Key readKey(KeyID keyID) {
         if (keyID.equals(documentKeyIDWithKey.getDocumentKeyID())) {
-            throw new BaseException("expected key id " + documentKeyIDWithKey.getDocumentKeyID() + " but got key id "+ keyID);
+            throw new KeySourceException("expected key id " + documentKeyIDWithKey.getDocumentKeyID() + " but got key id "+ keyID);
         }
         return documentKeyIDWithKey.getDocumentKey().getSecretKey();
     }

@@ -1,4 +1,4 @@
-package org.adorsys.resource.server.persistence;
+package org.adorsys.resource.server.persistence.keysource;
 
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.basetypes.DocumentKeyID;

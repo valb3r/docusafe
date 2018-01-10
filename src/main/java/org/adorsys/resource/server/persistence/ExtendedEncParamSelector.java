@@ -3,7 +3,7 @@ package org.adorsys.resource.server.persistence;
 import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JWEAlgorithm;
 import org.adorsys.encobject.params.EncryptionParams;
-import org.adorsys.jjwk.selector.UnsupportedEncAlgorithmException;
+import org.adorsys.resource.server.exceptions.ExtendedEncParamException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.security.Key;
@@ -16,7 +16,7 @@ import java.security.Key;
  *
  */
 public class ExtendedEncParamSelector {
-	public static EncryptionParams selectEncryptionParams(Key key) throws UnsupportedEncAlgorithmException {
+	public static EncryptionParams selectEncryptionParams(Key key) {
 		String algorithm = key.getAlgorithm();
 		// TODO fix hack
 		if(StringUtils.equalsAnyIgnoreCase("NONE", algorithm)){
@@ -28,7 +28,7 @@ public class ExtendedEncParamSelector {
 		if(StringUtils.equalsAnyIgnoreCase("RSA", algorithm)){
 			return new EncryptionParams.Builder().setEncAlgo(JWEAlgorithm.RSA_OAEP_256).setEncMethod(EncryptionMethod.A128GCM).build();
 		}
-		// Todo EC
-		throw new UnsupportedEncAlgorithmException(algorithm);
+		// TODO EC
+		throw new ExtendedEncParamException("UnsupportedEncAlgorithmException from key:" + algorithm);
 	}
 }

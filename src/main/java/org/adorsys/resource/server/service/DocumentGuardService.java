@@ -18,13 +18,14 @@ import org.adorsys.jjwk.serverkey.KeyAndJwk;
 import org.adorsys.jjwk.serverkey.ServerKeyMap;
 import org.adorsys.jkeygen.keystore.SecretKeyData;
 import org.adorsys.jkeygen.utils.V3CertificateUtils;
-import org.adorsys.resource.server.exceptions.BaseException;
+import org.adorsys.resource.server.exceptions.AsymmetricEncryptionException;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
+import org.adorsys.resource.server.exceptions.SymmetricEncryptionException;
 import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
-import org.adorsys.resource.server.persistence.KeySource;
-import org.adorsys.resource.server.persistence.KeyStoreBasedPublicKeySourceImpl;
-import org.adorsys.resource.server.persistence.KeyStoreBasedSecretKeySourceImpl;
+import org.adorsys.resource.server.persistence.keysource.KeySource;
+import org.adorsys.resource.server.persistence.keysource.KeyStoreBasedPublicKeySourceImpl;
+import org.adorsys.resource.server.persistence.keysource.KeyStoreBasedSecretKeySourceImpl;
 import org.adorsys.resource.server.persistence.PersistentObjectWrapper;
 import org.adorsys.resource.server.persistence.basetypes.DocumentKey;
 import org.adorsys.resource.server.persistence.basetypes.DocumentKeyID;
@@ -94,6 +95,9 @@ public class DocumentGuardService {
 
             // Willkürlich einen SecretKey aus dem KeyStore nehmen für die Verschlüsselung des Guards
             JWKSet jwkSet = JwkExport.exportKeys(userKeystore, keyStoreAccess.getKeyStoreAuth().getReadKeyHandler());
+            if (jwkSet.getKeys().isEmpty()) {
+                throw new SymmetricEncryptionException("did not find any secret keys in keystore with id: " + keyStoreAccess.getKeyStoreLocation().getKeyStoreID());
+            }
             ServerKeyMap serverKeyMap = new ServerKeyMap(jwkSet);
             KeyAndJwk randomSecretKey = serverKeyMap.randomSecretKey();
             GuardKeyID guardKeyID = new GuardKeyID(randomSecretKey.jwk.getKeyID());
@@ -129,7 +133,7 @@ public class DocumentGuardService {
             System.out.println("exportKeys # " + exportKeys.getKeys().size());
             List<JWK> encKeys = selectEncKeys(exportKeys);
             if (encKeys.isEmpty()) {
-                throw new BaseException("did not find any public keys in keystore with id: " + receiverKeyStoreAccess.getKeyStoreLocation().getKeyStoreID());
+                throw new AsymmetricEncryptionException("did not find any public keys in keystore with id: " + receiverKeyStoreAccess.getKeyStoreLocation().getKeyStoreID());
             }
             JWK randomKey = JwkExport.randomKey(encKeys);
             GuardKeyID guardKeyID = new GuardKeyID(randomKey.getKeyID());
