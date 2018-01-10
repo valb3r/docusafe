@@ -9,7 +9,7 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.PasswordLookup;
 import com.nimbusds.jose.jwk.RSAKey;
-import de.adorsys.resource.server.keyservice.SecretKeyGenerator;
+import org.adorsys.resource.server.keyservice.SecretKeyGenerator;
 import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.params.EncryptionParams;

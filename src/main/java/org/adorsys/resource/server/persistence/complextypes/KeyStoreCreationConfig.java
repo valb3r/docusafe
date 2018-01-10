@@ -1,7 +1,7 @@
 package org.adorsys.resource.server.persistence.complextypes;
 
-import de.adorsys.resource.server.keyservice.KeyPairGenerator;
-import de.adorsys.resource.server.keyservice.SecretKeyGenerator;
+import org.adorsys.resource.server.keyservice.KeyPairGenerator;
+import org.adorsys.resource.server.keyservice.SecretKeyGenerator;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;
 
 /**

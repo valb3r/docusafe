@@ -1,8 +1,8 @@
 package org.adorsys.resource.server.service;
 
-import de.adorsys.resource.server.keyservice.KeyStoreGenerator;
-import de.adorsys.resource.server.keyservice.SecretKeyGenerator;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
+import org.adorsys.resource.server.keyservice.KeyStoreGenerator;
+import org.adorsys.resource.server.keyservice.SecretKeyGenerator;
 import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreBucketName;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;

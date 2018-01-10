@@ -1,4 +1,4 @@
-package de.adorsys.resource.server.keyservice;
+package org.adorsys.resource.server.keyservice;
 
 import org.adorsys.jkeygen.keystore.KeyPairData;
 import org.adorsys.jkeygen.keystore.KeystoreBuilder;

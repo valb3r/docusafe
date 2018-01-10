@@ -1,10 +1,10 @@
-package de.adorsys.resource.server.keyservice;
-
-import javax.crypto.SecretKey;
-import javax.security.auth.callback.CallbackHandler;
+package org.adorsys.resource.server.keyservice;
 
 import org.adorsys.jkeygen.keystore.SecretKeyData;
 import org.adorsys.jkeygen.secretkey.SecretKeyBuilder;
+
+import javax.crypto.SecretKey;
+import javax.security.auth.callback.CallbackHandler;
 
 public class SecretKeyGenerator {
 

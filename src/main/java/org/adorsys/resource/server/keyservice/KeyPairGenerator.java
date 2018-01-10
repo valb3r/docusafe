@@ -1,8 +1,4 @@
-package de.adorsys.resource.server.keyservice;
-
-import java.security.KeyPair;
-
-import javax.security.auth.callback.CallbackHandler;
+package org.adorsys.resource.server.keyservice;
 
 import org.adorsys.jjwk.serverkey.SingleKeyUsageSelfSignedCertBuilder;
 import org.adorsys.jkeygen.keypair.KeyPairBuilder;
@@ -12,6 +8,9 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.KeyUsage;
+
+import javax.security.auth.callback.CallbackHandler;
+import java.security.KeyPair;
 
 public class KeyPairGenerator {
 
