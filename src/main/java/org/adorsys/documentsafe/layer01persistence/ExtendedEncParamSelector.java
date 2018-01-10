@@ -2,7 +2,7 @@ package org.adorsys.documentsafe.layer01persistence;
 
 import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JWEAlgorithm;
-import org.adorsys.documentsafe.layer00common.exceptions.ExtendedEncParamException;
+import org.adorsys.documentsafe.layer01persistence.exceptions.ExtendedEncParamException;
 import org.adorsys.encobject.params.EncryptionParams;
 import org.apache.commons.lang3.StringUtils;
 

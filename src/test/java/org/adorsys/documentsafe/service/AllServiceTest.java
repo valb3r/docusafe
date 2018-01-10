@@ -1,16 +1,16 @@
 package org.adorsys.documentsafe.service;
 
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
-import org.adorsys.documentsafe.layer00common.basetypes.ReadKeyPassword;
-import org.adorsys.documentsafe.layer00common.basetypes.ReadStorePassword;
-import org.adorsys.documentsafe.layer00common.complextypes.DocumentKeyIDWithKey;
-import org.adorsys.documentsafe.layer00common.complextypes.KeyStoreAccess;
+import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
+import org.adorsys.documentsafe.layer02service.types.ReadStorePassword;
+import org.adorsys.documentsafe.layer02service.complextypes.DocumentKeyIDWithKey;
+import org.adorsys.documentsafe.layer02service.complextypes.KeyStoreAccess;
 import org.adorsys.documentsafe.layer02service.generators.KeyStoreCreationConfig;
 import org.adorsys.documentsafe.layer00common.utils.HexUtil;
 import org.adorsys.encobject.utils.TestKeyUtils;
 import org.adorsys.documentsafe.layer01persistence.ExtendedKeystorePersistence;
-import org.adorsys.documentsafe.layer00common.basetypes.KeyStoreID;
-import org.adorsys.documentsafe.layer00common.complextypes.DocumentLocation;
+import org.adorsys.documentsafe.layer01persistence.complextypes.KeyStoreID;
+import org.adorsys.documentsafe.layer02service.complextypes.DocumentLocation;
 import org.adorsys.documentsafe.layer02service.utils.ShowKeyStore;
 import org.junit.AfterClass;
 import org.junit.Assert;

@@ -5,8 +5,8 @@ import com.nimbusds.jose.jwk.AssymetricJWK;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
-import org.adorsys.documentsafe.layer00common.exceptions.KeySourceException;
-import org.adorsys.documentsafe.layer00common.basetypes.KeyID;
+import org.adorsys.documentsafe.layer02service.exceptions.KeySourceException;
+import org.adorsys.documentsafe.layer01persistence.complextypes.KeyID;
 import org.adorsys.documentsafe.layer01persistence.keysource.KeySource;
 import org.adorsys.jjwk.keystore.JwkExport;
 

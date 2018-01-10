@@ -1,12 +1,12 @@
 package org.adorsys.documentsafe.layer01persistence;
 
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
-import org.adorsys.documentsafe.layer00common.basetypes.KeyStoreType;
-import org.adorsys.documentsafe.layer00common.complextypes.KeyStoreLocation;
+import org.adorsys.documentsafe.layer01persistence.complextypes.KeyStoreType;
+import org.adorsys.documentsafe.layer01persistence.complextypes.KeyStoreLocation;
 import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.jkeygen.keystore.KeyStoreService;
-import org.adorsys.documentsafe.layer00common.exceptions.ExtendedPersistenceException;
+import org.adorsys.documentsafe.layer01persistence.exceptions.ExtendedPersistenceException;
 
 import javax.security.auth.callback.CallbackHandler;
 import java.security.KeyStore;

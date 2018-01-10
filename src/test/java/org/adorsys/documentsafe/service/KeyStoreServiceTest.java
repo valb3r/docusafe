@@ -2,18 +2,18 @@ package org.adorsys.documentsafe.service;
 
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer02service.KeyStoreService;
-import org.adorsys.documentsafe.layer00common.basetypes.ReadKeyPassword;
-import org.adorsys.documentsafe.layer00common.complextypes.KeyStoreAccess;
+import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
+import org.adorsys.documentsafe.layer02service.complextypes.KeyStoreAccess;
 import org.adorsys.documentsafe.layer02service.generators.KeyStoreCreationConfig;
 import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
 import org.adorsys.documentsafe.layer01persistence.ExtendedKeystorePersistence;
-import org.adorsys.documentsafe.layer00common.basetypes.KeyStoreBucketName;
-import org.adorsys.documentsafe.layer00common.basetypes.KeyStoreID;
-import org.adorsys.documentsafe.layer00common.basetypes.ReadStorePassword;
-import org.adorsys.documentsafe.layer00common.complextypes.KeyStoreAuth;
-import org.adorsys.documentsafe.layer00common.complextypes.KeyStoreLocation;
+import org.adorsys.documentsafe.layer01persistence.complextypes.KeyStoreBucketName;
+import org.adorsys.documentsafe.layer01persistence.complextypes.KeyStoreID;
+import org.adorsys.documentsafe.layer02service.types.ReadStorePassword;
+import org.adorsys.documentsafe.layer02service.complextypes.KeyStoreAuth;
+import org.adorsys.documentsafe.layer01persistence.complextypes.KeyStoreLocation;
 
 import java.security.KeyStore;
 

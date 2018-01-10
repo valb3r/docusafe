@@ -1,11 +1,11 @@
 package org.adorsys.documentsafe.layer02service.keysource;
 
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
-import org.adorsys.documentsafe.layer00common.basetypes.DocumentKeyID;
-import org.adorsys.documentsafe.layer00common.basetypes.KeyID;
-import org.adorsys.documentsafe.layer00common.complextypes.DocumentKeyIDWithKey;
-import org.adorsys.documentsafe.layer00common.complextypes.KeyStoreAccess;
-import org.adorsys.documentsafe.layer00common.complextypes.KeyStoreLocation;
+import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
+import org.adorsys.documentsafe.layer01persistence.complextypes.KeyID;
+import org.adorsys.documentsafe.layer02service.complextypes.DocumentKeyIDWithKey;
+import org.adorsys.documentsafe.layer02service.complextypes.KeyStoreAccess;
+import org.adorsys.documentsafe.layer01persistence.complextypes.KeyStoreLocation;
 import org.adorsys.documentsafe.layer02service.DocumentGuardService;
 import org.adorsys.documentsafe.layer01persistence.keysource.KeySource;
 

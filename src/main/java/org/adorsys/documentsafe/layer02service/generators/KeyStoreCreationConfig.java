@@ -1,8 +1,6 @@
 package org.adorsys.documentsafe.layer02service.generators;
 
-import org.adorsys.documentsafe.layer02service.generators.KeyPairGenerator;
-import org.adorsys.documentsafe.layer02service.generators.SecretKeyGenerator;
-import org.adorsys.documentsafe.layer00common.basetypes.KeyStoreID;
+import org.adorsys.documentsafe.layer01persistence.complextypes.KeyStoreID;
 
 /**
  * Created by peter on 09.01.18.

@@ -1,18 +1,18 @@
 package org.adorsys.documentsafe.layer02service;
 
-import org.adorsys.documentsafe.layer00common.basetypes.DocumentID;
-import org.adorsys.documentsafe.layer00common.complextypes.KeyStoreAccess;
+import org.adorsys.documentsafe.layer02service.types.DocumentID;
+import org.adorsys.documentsafe.layer02service.complextypes.KeyStoreAccess;
 import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.params.EncryptionParams;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer01persistence.ExtendedObjectPersistence;
-import org.adorsys.documentsafe.layer00common.basetypes.DocumentBucketName;
-import org.adorsys.documentsafe.layer00common.basetypes.DocumentContent;
-import org.adorsys.documentsafe.layer00common.basetypes.KeyID;
-import org.adorsys.documentsafe.layer00common.complextypes.DocumentKeyIDWithKey;
-import org.adorsys.documentsafe.layer00common.complextypes.DocumentLocation;
+import org.adorsys.documentsafe.layer02service.types.DocumentBucketName;
+import org.adorsys.documentsafe.layer02service.types.DocumentContent;
+import org.adorsys.documentsafe.layer01persistence.complextypes.KeyID;
+import org.adorsys.documentsafe.layer02service.complextypes.DocumentKeyIDWithKey;
+import org.adorsys.documentsafe.layer02service.complextypes.DocumentLocation;
 import org.adorsys.documentsafe.layer02service.keysource.DocumentGuardBasedKeySourceImpl;
 import org.adorsys.documentsafe.layer02service.keysource.DocumentKeyIDWithKeyBasedSourceImpl;
 import org.adorsys.documentsafe.layer01persistence.keysource.KeySource;

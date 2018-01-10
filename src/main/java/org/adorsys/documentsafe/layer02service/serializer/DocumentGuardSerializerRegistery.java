@@ -1,6 +1,6 @@
 package org.adorsys.documentsafe.layer02service.serializer;
 
-import org.adorsys.documentsafe.layer00common.exceptions.SerializationException;
+import org.adorsys.documentsafe.layer02service.exceptions.SerializationException;
 
 import java.util.HashMap;
 import java.util.Map;

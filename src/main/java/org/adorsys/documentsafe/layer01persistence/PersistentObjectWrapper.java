@@ -2,7 +2,7 @@ package org.adorsys.documentsafe.layer01persistence;
 
 import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.domain.ObjectHandle;
-import org.adorsys.documentsafe.layer00common.basetypes.KeyID;
+import org.adorsys.documentsafe.layer01persistence.complextypes.KeyID;
 
 /**
  * Describes the structure of a persisten object.
