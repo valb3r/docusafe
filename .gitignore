@@ -1,8 +1,8 @@
 .project
-.idea
+.idea/
 .classpath
 .settings/
 .DS_Store
-target/
+/target/
 rr-documentsafe.log
 *.iml
