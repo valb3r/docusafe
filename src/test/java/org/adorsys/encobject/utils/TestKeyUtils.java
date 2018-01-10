@@ -12,7 +12,10 @@ public class TestKeyUtils {
 	        field.setAccessible(true);
 	        field.set(null, Boolean.FALSE);
 	    } catch (ClassNotFoundException | NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
-	        ex.printStackTrace(System.err);
-	    }		
+	        // ex.printStackTrace(System.err);
+	    }
+	    finally {
+			System.err.println("WARNING: Encoding Policy has been switched off for test");
+		}
 	}
 }

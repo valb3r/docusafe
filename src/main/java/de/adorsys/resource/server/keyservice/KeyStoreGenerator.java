@@ -27,11 +27,7 @@ public class KeyStoreGenerator {
             String serverKeyPairAliasPrefix,
             ReadKeyPassword readKeyPassword
     ) {
-        if (config == null) {
-            this.config = new KeyStoreCreationConfig(5, 5, 5);
-        } else {
-            this.config = config;
-        }
+        this.config = config;
         this.keyStoreID = keyStoreID;
         this.keyStoreType = keyStoreType;
         this.serverKeyPairAliasPrefix = serverKeyPairAliasPrefix;
