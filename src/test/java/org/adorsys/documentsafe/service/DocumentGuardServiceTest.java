@@ -2,8 +2,8 @@ package org.adorsys.documentsafe.service;
 
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer02service.DocumentGuardService;
-import org.adorsys.documentsafe.layer02service.complextypes.DocumentKeyIDWithKey;
-import org.adorsys.documentsafe.layer02service.complextypes.KeyStoreAccess;
+import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
+import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
 import org.adorsys.documentsafe.layer00common.utils.HexUtil;
 import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.BlobStoreContextFactory;

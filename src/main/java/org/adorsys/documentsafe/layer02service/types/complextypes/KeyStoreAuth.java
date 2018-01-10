@@ -1,4 +1,4 @@
-package org.adorsys.documentsafe.layer02service.complextypes;
+package org.adorsys.documentsafe.layer02service.types.complextypes;
 
 import org.adorsys.documentsafe.layer02service.exceptions.KeyStoreAuthException;
 import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;

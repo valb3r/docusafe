@@ -1,8 +1,8 @@
 package org.adorsys.documentsafe.layer01persistence;
 
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
-import org.adorsys.documentsafe.layer01persistence.complextypes.KeyStoreType;
-import org.adorsys.documentsafe.layer01persistence.complextypes.KeyStoreLocation;
+import org.adorsys.documentsafe.layer01persistence.types.KeyStoreType;
+import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreLocation;
 import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.jkeygen.keystore.KeyStoreService;

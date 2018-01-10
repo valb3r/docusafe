@@ -1,4 +1,4 @@
-package org.adorsys.documentsafe.layer01persistence.complextypes;
+package org.adorsys.documentsafe.layer01persistence.types;
 
 import org.adorsys.documentsafe.layer00common.basetypes.BaseTypeString;
 

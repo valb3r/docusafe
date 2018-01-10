@@ -1,6 +1,6 @@
 package org.adorsys.documentsafe.layer02service.generators;
 
-import org.adorsys.documentsafe.layer01persistence.complextypes.KeyStoreID;
+import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
 
 /**
  * Created by peter on 09.01.18.

@@ -9,7 +9,7 @@ import java.security.UnrecoverableKeyException;
 import javax.security.auth.callback.CallbackHandler;
 
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
-import org.adorsys.documentsafe.layer01persistence.complextypes.KeyID;
+import org.adorsys.documentsafe.layer01persistence.types.KeyID;
 import org.adorsys.documentsafe.layer01persistence.keysource.KeySource;
 import org.adorsys.jkeygen.keystore.PasswordCallbackUtils;
 

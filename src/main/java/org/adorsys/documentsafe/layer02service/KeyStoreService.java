@@ -3,13 +3,13 @@ package org.adorsys.documentsafe.layer02service;
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer02service.generators.KeyStoreGenerator;
 import org.adorsys.documentsafe.layer02service.generators.SecretKeyGenerator;
-import org.adorsys.documentsafe.layer01persistence.complextypes.KeyStoreBucketName;
-import org.adorsys.documentsafe.layer01persistence.complextypes.KeyStoreType;
+import org.adorsys.documentsafe.layer01persistence.types.KeyStoreBucketName;
+import org.adorsys.documentsafe.layer01persistence.types.KeyStoreType;
 import org.adorsys.documentsafe.layer02service.generators.KeyStoreCreationConfig;
-import org.adorsys.documentsafe.layer01persistence.complextypes.KeyStoreLocation;
+import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreLocation;
 import org.adorsys.documentsafe.layer01persistence.ExtendedKeystorePersistence;
-import org.adorsys.documentsafe.layer01persistence.complextypes.KeyStoreID;
-import org.adorsys.documentsafe.layer02service.complextypes.KeyStoreAuth;
+import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
+import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAuth;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

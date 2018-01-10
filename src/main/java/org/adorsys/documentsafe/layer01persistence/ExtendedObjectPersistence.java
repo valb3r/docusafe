@@ -9,7 +9,7 @@ import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.factories.DefaultJWEDecrypterFactory;
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer01persistence.exceptions.ExtendedPersistenceException;
-import org.adorsys.documentsafe.layer01persistence.complextypes.KeyID;
+import org.adorsys.documentsafe.layer01persistence.types.KeyID;
 import org.adorsys.documentsafe.layer01persistence.keysource.KeySource;
 import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.domain.ObjectHandle;

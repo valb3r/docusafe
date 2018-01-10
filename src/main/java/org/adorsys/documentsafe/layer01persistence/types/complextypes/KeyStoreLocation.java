@@ -1,6 +1,9 @@
-package org.adorsys.documentsafe.layer01persistence.complextypes;
+package org.adorsys.documentsafe.layer01persistence.types.complextypes;
 
 import org.adorsys.documentsafe.layer01persistence.LocationInterface;
+import org.adorsys.documentsafe.layer01persistence.types.KeyStoreBucketName;
+import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
+import org.adorsys.documentsafe.layer01persistence.types.KeyStoreType;
 import org.adorsys.encobject.domain.ObjectHandle;
 
 /**
