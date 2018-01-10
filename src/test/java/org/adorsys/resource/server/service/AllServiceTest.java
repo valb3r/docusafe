@@ -1,5 +1,7 @@
 package org.adorsys.resource.server.service;
 
+import java.lang.reflect.Field;
+
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
 import org.adorsys.resource.server.persistence.basetypes.KeyStoreID;
@@ -22,10 +24,17 @@ import org.junit.Test;
 public class AllServiceTest {
     @BeforeClass
     public static void before() {
+		try {
+	        Field field = Class.forName("javax.crypto.JceSecurity").getDeclaredField("isRestricted");
+	        field.setAccessible(true);
+	        field.set(null, java.lang.Boolean.FALSE);
+	    } catch (ClassNotFoundException | NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
+	        ex.printStackTrace(System.err);
+	    }		
+    	
         KeyStoreServiceTest.beforeTest();
         DocumentGuardServiceTest.beforeClass();
         DocumentPersistenceServiceTest.beforeClass();
-
     }
 
     @AfterClass

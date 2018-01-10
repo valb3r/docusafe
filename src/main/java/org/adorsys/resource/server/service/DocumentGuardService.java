@@ -180,12 +180,18 @@ public class DocumentGuardService {
                         List<X509Certificate> convertedCert = V3CertificateUtils.convert(certs);
                         RSAKey rsaJWK = RSAKey.parse(convertedCert.get(0));
 
+                        // Let keyID=alias
+                        // Converting from a certificate, the id is set as the thumbprint of the certificate.
+                		rsaJWK = new RSAKey.Builder(rsaJWK).keyID(keyAlias).keyStore(keyStore).build();
                         jwks.add(rsaJWK);
 
                     } else if (cert.getPublicKey() instanceof ECPublicKey) {
                         List<X509Certificate> convertedCert = V3CertificateUtils.convert(certs);
                         ECKey ecJWK = ECKey.parse(convertedCert.get(0));
 
+                        // Let keyID=alias
+                        // Converting from a certificate, the id is set as the thumbprint of the certificate.
+                        ecJWK = new ECKey.Builder(ecJWK).keyID(keyAlias).keyStore(keyStore).build();
                         jwks.add(ecJWK);
                     } else {
                         continue;
