@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>de.adorsys.resource</groupId>
+    <groupId>org.adorsys.documentsafe</groupId>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -13,7 +13,7 @@
     </properties>
 
 
-    <artifactId>server</artifactId>
+    <artifactId>documentsafe</artifactId>
 
     <dependencies>
         <!-- logging -->
@@ -44,8 +44,6 @@
 			<artifactId>jkeyutils</artifactId>
 			<version>0.7.0</version>
 		</dependency>
-
-
 
         <dependency>
             <groupId>junit</groupId>
