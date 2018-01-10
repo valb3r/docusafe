@@ -11,11 +11,14 @@ import org.adorsys.resource.server.persistence.basetypes.DocumentKeyID;
 import org.adorsys.resource.server.persistence.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreAccess;
 import org.adorsys.resource.server.utils.HexUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by peter on 02.01.18.
  */
 public class DocumentGuardServiceTest {
+    private final static Logger LOGGER = LoggerFactory.getLogger(DocumentGuardServiceTest.class);
 
     private static BlobStoreContextFactory guardContextFactory;
     private static ContainerPersistence guardContainerPersistence;
@@ -35,7 +38,7 @@ public class DocumentGuardServiceTest {
         try {
             DocumentGuardService documentGuardService = new DocumentGuardService(keystorePersistence, guardExtendedPersistence);
             documentGuardService.createAsymmetricDocumentGuard(keyStoreAccess, documentKeyIDWithKey);
-            System.out.println("documentKeyID:" + documentKeyIDWithKey.getDocumentKeyID());
+            LOGGER.info("documentKeyID:" + documentKeyIDWithKey.getDocumentKeyID());
             return new DocumentGuardStuff(documentGuardService, documentKeyIDWithKey);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
@@ -60,8 +63,8 @@ public class DocumentGuardServiceTest {
         try {
             DocumentGuardService documentGuardService = new DocumentGuardService(keystorePersistence, guardExtendedPersistence);
             DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardService.loadDocumentKeyIDWithKeyFromDocumentGuard(keyStoreAccess, documentKeyID);
-            System.out.println("key des Guards ist :" + documentKeyIDWithKey.getDocumentKey());
-            System.out.println("LOAD DocumentKey:" + HexUtil.conventBytesToHexString(documentKeyIDWithKey.getDocumentKey().getSecretKey().getEncoded()));
+            LOGGER.info("key des Guards ist :" + documentKeyIDWithKey.getDocumentKey());
+            LOGGER.info("LOAD DocumentKey:" + HexUtil.conventBytesToHexString(documentKeyIDWithKey.getDocumentKey().getSecretKey().getEncoded()));
             return documentKeyIDWithKey;
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);

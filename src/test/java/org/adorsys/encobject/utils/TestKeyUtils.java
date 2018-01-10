@@ -1,8 +1,12 @@
 package org.adorsys.encobject.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Field;
 
 public class TestKeyUtils {
+	private final static Logger LOGGER = LoggerFactory.getLogger(TestKeyUtils.class);
 	
 	public static void turnOffEncPolicy(){
 		// Warning: do not do this for productive code. Download and install the jce unlimited strength policy file
@@ -15,7 +19,7 @@ public class TestKeyUtils {
 	        // ex.printStackTrace(System.err);
 	    }
 	    finally {
-			System.err.println("WARNING: Encoding Policy has been switched off for test");
+			LOGGER.warn("WARNING: Encoding Policy has been switched off for test");
 		}
 	}
 }

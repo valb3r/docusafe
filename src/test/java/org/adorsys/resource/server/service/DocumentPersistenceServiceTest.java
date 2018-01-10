@@ -12,6 +12,8 @@ import org.adorsys.resource.server.persistence.complextypes.DocumentKeyIDWithKey
 import org.adorsys.resource.server.persistence.complextypes.DocumentLocation;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreAccess;
 import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -20,6 +22,8 @@ import java.util.Set;
  * Created by peter on 02.01.18.
  */
 public class DocumentPersistenceServiceTest {
+    private final static Logger LOGGER = LoggerFactory.getLogger(DocumentPersistenceServiceTest.class);
+    
     private static ExtendedObjectPersistence documentExtendedPersistence;
     private static ContainerPersistence containerPersistence;
     private static Set<DocumentBucketName> createdBuckets;
@@ -66,7 +70,7 @@ public class DocumentPersistenceServiceTest {
                 keyStoreAccess,
                 documentLocation);
         Assert.assertEquals("Content of Document", this.documentContent.toString(), readContent.toString());
-        System.out.println("Gelesenes Document enthält:" + readContent + " bzw " + new String(readContent.getValue()));
+        LOGGER.info("Gelesenes Document enthält:" + readContent + " bzw " + new String(readContent.getValue()));
     }
 
     public static class DocumentStuff {

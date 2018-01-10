@@ -16,13 +16,18 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by peter on 04.01.18.
  */
 public class AllServiceTest {
+    private final static Logger LOGGER = LoggerFactory.getLogger(AllServiceTest.class);
+    
     @BeforeClass
     public static void before() {
+
         TestKeyUtils.turnOffEncPolicy();
         KeyStoreServiceTest.beforeTest();
         DocumentGuardServiceTest.beforeClass();
@@ -72,7 +77,7 @@ public class AllServiceTest {
                     keyStoreStuff.keystorePersistence,
                     documentGuardStuff.documentKeyIDWithKey.getDocumentKeyID());
 
-            System.out.println("DocumentKey is " + HexUtil.conventBytesToHexString(documentKeyIDWithKey.getDocumentKey().getSecretKey().getEncoded()));
+            LOGGER.info("DocumentKey is " + HexUtil.conventBytesToHexString(documentKeyIDWithKey.getDocumentKey().getSecretKey().getEncoded()));
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
         }
@@ -117,9 +122,9 @@ public class AllServiceTest {
             documentPersistenceServiceTest.testLoadDocument(documentGuardStuff.documentGuardService,
                     keyStoreStuff.keyStoreAccess,
                     documentStuff.documentLocation);
-            System.out.println("DocumentLocation     :" + documentStuff.documentLocation);
-            System.out.println("DocumentKeyID        :" + documentKeyIDWithKey.getDocumentKeyID());
-            System.out.println("KeyStoreLocation     :" + keyStoreStuff.keyStoreAccess.getKeyStoreLocation());
+            LOGGER.info("DocumentLocation     :" + documentStuff.documentLocation);
+            LOGGER.info("DocumentKeyID        :" + documentKeyIDWithKey.getDocumentKeyID());
+            LOGGER.info("KeyStoreLocation     :" + keyStoreStuff.keyStoreAccess.getKeyStoreLocation());
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
         }
@@ -142,28 +147,28 @@ public class AllServiceTest {
                         new ReadKeyPassword("b"),
                         new KeyStoreID("first"),
                         new KeyStoreCreationConfig(0, 0, 1));
-                System.out.println(ShowKeyStore.toString(keyStoreStuffForKeyStoreWithSecretKey.keyStore, keyStoreStuffForKeyStoreWithSecretKey.keyStoreAccess.getKeyStoreAuth().getReadKeyPassword()));
-                System.out.println("Ersten KeyStore mit SecretKey erfolgreich angelegt");
+                LOGGER.info(ShowKeyStore.toString(keyStoreStuffForKeyStoreWithSecretKey.keyStore, keyStoreStuffForKeyStoreWithSecretKey.keyStoreAccess.getKeyStoreAuth().getReadKeyPassword()));
+                LOGGER.info("Ersten KeyStore mit SecretKey erfolgreich angelegt");
 
                 // Erzeugen des ersten DocumentGuards mit dem dem KeyStore, der den Secret Key enthält
                 DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest();
                 DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuffForSecretKey = documentGuardServiceTest.testCreateSymmetricDocumentGuard(
                         keyStoreStuffForKeyStoreWithSecretKey.keyStoreAccess,
                         keyStoreStuffForKeyStoreWithSecretKey.keystorePersistence);
-                System.out.println("Ersten DocumentGuard mit secretKey verschlüsselt");
+                LOGGER.info("Ersten DocumentGuard mit secretKey verschlüsselt");
 
                 // Erzeugen des Documents mit dem DocumentGuard, der mit dem secretKey verschlüsselt ist
                 DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest();
                 DocumentPersistenceServiceTest.DocumentStuff documentStuff = documentPersistenceServiceTest.testPersistDocument(
                         documentGuardStuffForSecretKey.documentGuardService,
                         documentGuardStuffForSecretKey.documentKeyIDWithKey);
-                System.out.println("Document mit Schlüssel aus DocumentGuard verschlüsselt");
+                LOGGER.info("Document mit Schlüssel aus DocumentGuard verschlüsselt");
 
                 // Laden des Documents mit dem KeyStore mit secretKey
                 documentPersistenceServiceTest.testLoadDocument(documentGuardStuffForSecretKey.documentGuardService,
                         keyStoreStuffForKeyStoreWithSecretKey.keyStoreAccess,
                         documentStuff.documentLocation);
-                System.out.println("Document mit DocumentGuard erfolgreich gelesen");
+                LOGGER.info("Document mit DocumentGuard erfolgreich gelesen");
 
                 // Etrahieren der DocumentID und der DocumentKeyID
                 documentKeyIDWithKey = documentGuardStuffForSecretKey.documentKeyIDWithKey;
@@ -181,8 +186,8 @@ public class AllServiceTest {
                         new ReadKeyPassword("d"),
                         new KeyStoreID("second"),
                         new KeyStoreCreationConfig(1, 0, 0));
-                System.out.println(ShowKeyStore.toString(keyStoreStuffForKeyStoreWithEncKey.keyStore, keyStoreStuffForKeyStoreWithEncKey.keyStoreAccess.getKeyStoreAuth().getReadKeyPassword()));
-                System.out.println("Zweiten KeyStore mit EncKey erfolgreich angelegt");
+                LOGGER.info(ShowKeyStore.toString(keyStoreStuffForKeyStoreWithEncKey.keyStore, keyStoreStuffForKeyStoreWithEncKey.keyStoreAccess.getKeyStoreAuth().getReadKeyPassword()));
+                LOGGER.info("Zweiten KeyStore mit EncKey erfolgreich angelegt");
 
                 // vorher sicherheitshalber Löschen des Kennworts zum Lesen der Keys
                 KeyStoreAccess keystoreAccessForKeyStoreWithEncKey = keyStoreStuffForKeyStoreWithEncKey.keyStoreAccess;
@@ -195,7 +200,7 @@ public class AllServiceTest {
                         keystoreAccessForKeyStoreWithEncKey,
                         documentKeyIDWithKey,
                         keyStoreStuffForKeyStoreWithEncKey.keystorePersistence);
-                System.out.println("Zweiten DocumentGuard mit EncKey ohne Wissen über das Kennwort des Keys angelegt");
+                LOGGER.info("Zweiten DocumentGuard mit EncKey ohne Wissen über das Kennwort des Keys angelegt");
 
                 // Jetzt Laden des Documents mit dem KeyStore, der mit dem EncKey verschlüsselt ist
                 // Dazu muss der PrivateKey gelesen werden. Dazu muss das Kennwort zum Lesen der Keys wieder gesetzt sein
@@ -206,7 +211,7 @@ public class AllServiceTest {
                 documentPersistenceServiceTest.testLoadDocument(documentGuardStuffForEncKey.documentGuardService,
                         keystoreAccessForKeyStoreWithEncKey,
                         documentLocation);
-                System.out.println("Document erfolgreich mit DocumentGuard für EncKey gelesen");
+                LOGGER.info("Document erfolgreich mit DocumentGuard für EncKey gelesen");
 
             }
         } catch (Exception e) {

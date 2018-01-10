@@ -1,5 +1,7 @@
 .project
 .idea
-/target/
 .classpath
 .settings/
+.DS_Store
+/target/
+rr-documentsafe.log

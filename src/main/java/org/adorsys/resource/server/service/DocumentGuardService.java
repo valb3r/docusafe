@@ -23,9 +23,6 @@ import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
 import org.adorsys.resource.server.exceptions.SymmetricEncryptionException;
 import org.adorsys.resource.server.persistence.ExtendedKeystorePersistence;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
-import org.adorsys.resource.server.persistence.keysource.KeySource;
-import org.adorsys.resource.server.persistence.keysource.KeyStoreBasedPublicKeySourceImpl;
-import org.adorsys.resource.server.persistence.keysource.KeyStoreBasedSecretKeySourceImpl;
 import org.adorsys.resource.server.persistence.PersistentObjectWrapper;
 import org.adorsys.resource.server.persistence.basetypes.DocumentKey;
 import org.adorsys.resource.server.persistence.basetypes.DocumentKeyID;
@@ -35,9 +32,14 @@ import org.adorsys.resource.server.persistence.basetypes.KeyID;
 import org.adorsys.resource.server.persistence.complextypes.DocumentGuardLocation;
 import org.adorsys.resource.server.persistence.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreAccess;
+import org.adorsys.resource.server.persistence.keysource.KeySource;
+import org.adorsys.resource.server.persistence.keysource.KeyStoreBasedPublicKeySourceImpl;
+import org.adorsys.resource.server.persistence.keysource.KeyStoreBasedSecretKeySourceImpl;
 import org.adorsys.resource.server.serializer.DocumentGuardSerializer;
 import org.adorsys.resource.server.serializer.DocumentGuardSerializer01;
 import org.adorsys.resource.server.serializer.DocumentGuardSerializerRegistery;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -53,6 +55,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class DocumentGuardService {
+    private final static Logger LOGGER = LoggerFactory.getLogger(DocumentGuardService.class);
 
     private ExtendedKeystorePersistence keystorePersistence;
     private ExtendedObjectPersistence objectPersistence;
@@ -67,7 +70,7 @@ public class DocumentGuardService {
     /**
      * erzeugt eine DocumentKeyIDWithKey
      */
-    public DocumentKeyIDWithKey createDocumentKeyIdWithKey() {
+    public static DocumentKeyIDWithKey createDocumentKeyIdWithKey() {
         try {
             // Eine zufällige DocumentKeyID erzeugen
             DocumentKeyID documentKeyID = new DocumentKeyID("DK" + UUID.randomUUID().toString());
@@ -89,6 +92,7 @@ public class DocumentGuardService {
      */
     public void createSymmetricDocumentGuard(KeyStoreAccess keyStoreAccess, DocumentKeyIDWithKey documentKeyIDWithKey) {
         try {
+            LOGGER.info("start create symmetric encrypted document guard for " + documentKeyIDWithKey + " @ " + keyStoreAccess.getKeyStoreLocation());
             // KeyStore laden
             KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStoreLocation(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
             KeySource keySource = new KeyStoreBasedSecretKeySourceImpl(userKeystore, keyStoreAccess.getKeyStoreAuth().getReadKeyHandler());
@@ -101,7 +105,7 @@ public class DocumentGuardService {
             ServerKeyMap serverKeyMap = new ServerKeyMap(jwkSet);
             KeyAndJwk randomSecretKey = serverKeyMap.randomSecretKey();
             GuardKeyID guardKeyID = new GuardKeyID(randomSecretKey.jwk.getKeyID());
-            System.out.println("Guard created with symmetric KeyID :" + guardKeyID);
+            LOGGER.debug("Guard created with symmetric KeyID :" + guardKeyID);
 
             // Zielpfad für den DocumentKeyIDWithKey bestimmen
             ObjectHandle documentGuardHandle = DocumentGuardLocation.getLocationHandle(keyStoreAccess.getKeyStoreLocation(), documentKeyIDWithKey.getDocumentKeyID());
@@ -114,6 +118,7 @@ public class DocumentGuardService {
             GuardKey guardKey = new GuardKey(serializerRegistry.defaultSerializer().serializeSecretKey(documentKeyIDWithKey.getDocumentKey()));
 
             objectPersistence.storeObject(guardKey.getValue(), metaInfo, documentGuardHandle, keySource, new KeyID(guardKeyID.getValue()), encParams);
+            LOGGER.info("finished create symmetric encrypted document guard for " + documentKeyIDWithKey + " @ " + keyStoreAccess.getKeyStoreLocation());
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
@@ -127,17 +132,18 @@ public class DocumentGuardService {
      */
     public void createAsymmetricDocumentGuard(KeyStoreAccess receiverKeyStoreAccess, DocumentKeyIDWithKey documentKeyIDWithKey) {
         try {
+            LOGGER.info("start create asymmetric encrypted document guard for " + documentKeyIDWithKey + " @ " + receiverKeyStoreAccess.getKeyStoreLocation());
             KeyStore userKeystore = keystorePersistence.loadKeystore(receiverKeyStoreAccess.getKeyStoreLocation(), receiverKeyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
 
             JWKSet exportKeys = load(userKeystore, null);
-            System.out.println("exportKeys # " + exportKeys.getKeys().size());
+            LOGGER.debug("number of public keys found:" + exportKeys.getKeys().size());
             List<JWK> encKeys = selectEncKeys(exportKeys);
             if (encKeys.isEmpty()) {
                 throw new AsymmetricEncryptionException("did not find any public keys in keystore with id: " + receiverKeyStoreAccess.getKeyStoreLocation().getKeyStoreID());
             }
             JWK randomKey = JwkExport.randomKey(encKeys);
             GuardKeyID guardKeyID = new GuardKeyID(randomKey.getKeyID());
-            System.out.println("Guard created with asymmetric KeyID :" + guardKeyID);
+            LOGGER.debug("Guard created with asymmetric KeyID :" + guardKeyID);
 
             KeySource keySource = new KeyStoreBasedPublicKeySourceImpl(exportKeys);
 
@@ -152,68 +158,18 @@ public class DocumentGuardService {
             GuardKey guardKey = new GuardKey(serializerRegistry.defaultSerializer().serializeSecretKey(documentKeyIDWithKey.getDocumentKey()));
 
             objectPersistence.storeObject(guardKey.getValue(), metaInfo, documentGuardHandle, keySource, new KeyID(guardKeyID.getValue()), encParams);
+            LOGGER.info("finished create asymmetric encrypted document guard for " + documentKeyIDWithKey + " @ " + receiverKeyStoreAccess.getKeyStoreLocation());
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
     }
 
-    public static List<JWK> selectEncKeys(JWKSet exportKeys) {
-        JWKMatcher signKeys = (new Builder()).keyUse(KeyUse.ENCRYPTION).build();
-        return (new JWKSelector(signKeys)).select(exportKeys);
-    }
-
-        private JWKSet load(final KeyStore keyStore, final PasswordLookup pwLookup)
-		throws KeyStoreException {
-            try {
-
-                List<JWK> jwks = new LinkedList<>();
-
-                // Load RSA and EC keys
-                for (Enumeration<String> keyAliases = keyStore.aliases(); keyAliases.hasMoreElements(); ) {
-
-                    final String keyAlias = keyAliases.nextElement();
-                    final char[] keyPassword = pwLookup == null ? "".toCharArray() : pwLookup.lookupPassword(keyAlias);
-
-                    Certificate cert = keyStore.getCertificate(keyAlias);
-                    if (cert == null) {
-                        continue; // skip
-                    }
-
-                    Certificate[] certs = new Certificate[]{cert};
-                    if (cert.getPublicKey() instanceof RSAPublicKey) {
-                        List<X509Certificate> convertedCert = V3CertificateUtils.convert(certs);
-                        RSAKey rsaJWK = RSAKey.parse(convertedCert.get(0));
-
-                        // Let keyID=alias
-                        // Converting from a certificate, the id is set as the thumbprint of the certificate.
-                		rsaJWK = new RSAKey.Builder(rsaJWK).keyID(keyAlias).keyStore(keyStore).build();
-                        jwks.add(rsaJWK);
-
-                    } else if (cert.getPublicKey() instanceof ECPublicKey) {
-                        List<X509Certificate> convertedCert = V3CertificateUtils.convert(certs);
-                        ECKey ecJWK = ECKey.parse(convertedCert.get(0));
-
-                        // Let keyID=alias
-                        // Converting from a certificate, the id is set as the thumbprint of the certificate.
-                        ecJWK = new ECKey.Builder(ecJWK).keyID(keyAlias).keyStore(keyStore).build();
-                        jwks.add(ecJWK);
-                    } else {
-                        continue;
-                    }
-                }
-                return new JWKSet(jwks);
-            } catch (Exception e) {
-                throw BaseExceptionHandler.handle(e);
-            }
-        }
-
-
     /**
      * Loading the secret key from the guard.
      */
     public DocumentKeyIDWithKey loadDocumentKeyIDWithKeyFromDocumentGuard(KeyStoreAccess keyStoreAccess, DocumentKeyID documentKeyID) {
-
         try {
+            LOGGER.info("start load " + documentKeyID + " from document guard @ " + keyStoreAccess.getKeyStoreLocation());
 
             KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStoreLocation(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
 
@@ -228,9 +184,62 @@ public class DocumentGuardService {
             DocumentGuardSerializer serializer = serializerRegistry.getSerializer(serializerId);
             DocumentKey documentKey = serializer.deserializeSecretKey(wrapper.getData());
 
+            LOGGER.info("finished load " + documentKeyID + " from document guard @ " + keyStoreAccess.getKeyStoreLocation());
             return new DocumentKeyIDWithKey(documentKeyID, documentKey);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
     }
+
+
+    private static List<JWK> selectEncKeys(JWKSet exportKeys) {
+        JWKMatcher signKeys = (new Builder()).keyUse(KeyUse.ENCRYPTION).build();
+        return (new JWKSelector(signKeys)).select(exportKeys);
+    }
+
+    private JWKSet load(final KeyStore keyStore, final PasswordLookup pwLookup)
+            throws KeyStoreException {
+        try {
+
+            List<JWK> jwks = new LinkedList<>();
+
+            // Load RSA and EC keys
+            for (Enumeration<String> keyAliases = keyStore.aliases(); keyAliases.hasMoreElements(); ) {
+
+                final String keyAlias = keyAliases.nextElement();
+                final char[] keyPassword = pwLookup == null ? "".toCharArray() : pwLookup.lookupPassword(keyAlias);
+
+                Certificate cert = keyStore.getCertificate(keyAlias);
+                if (cert == null) {
+                    continue; // skip
+                }
+
+                Certificate[] certs = new Certificate[]{cert};
+                if (cert.getPublicKey() instanceof RSAPublicKey) {
+                    List<X509Certificate> convertedCert = V3CertificateUtils.convert(certs);
+                    RSAKey rsaJWK = RSAKey.parse(convertedCert.get(0));
+
+                    // Let keyID=alias
+                    // Converting from a certificate, the id is set as the thumbprint of the certificate.
+                    rsaJWK = new RSAKey.Builder(rsaJWK).keyID(keyAlias).keyStore(keyStore).build();
+                    jwks.add(rsaJWK);
+
+                } else if (cert.getPublicKey() instanceof ECPublicKey) {
+                    List<X509Certificate> convertedCert = V3CertificateUtils.convert(certs);
+                    ECKey ecJWK = ECKey.parse(convertedCert.get(0));
+
+                    // Let keyID=alias
+                    // Converting from a certificate, the id is set as the thumbprint of the certificate.
+                    ecJWK = new ECKey.Builder(ecJWK).keyID(keyAlias).keyStore(keyStore).build();
+                    jwks.add(ecJWK);
+                } else {
+                    continue;
+                }
+            }
+            return new JWKSet(jwks);
+        } catch (Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
+    }
+
 }

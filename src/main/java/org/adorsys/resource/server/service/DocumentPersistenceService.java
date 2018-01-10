@@ -5,10 +5,7 @@ import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.params.EncryptionParams;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.resource.server.exceptions.BaseExceptionHandler;
-import org.adorsys.resource.server.persistence.keysource.DocumentGuardBasedKeySourceImpl;
-import org.adorsys.resource.server.persistence.keysource.DocumentKeyIDWithKeyBasedSourceImpl;
 import org.adorsys.resource.server.persistence.ExtendedObjectPersistence;
-import org.adorsys.resource.server.persistence.keysource.KeySource;
 import org.adorsys.resource.server.persistence.basetypes.DocumentBucketName;
 import org.adorsys.resource.server.persistence.basetypes.DocumentContent;
 import org.adorsys.resource.server.persistence.basetypes.DocumentID;
@@ -16,6 +13,11 @@ import org.adorsys.resource.server.persistence.basetypes.KeyID;
 import org.adorsys.resource.server.persistence.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.resource.server.persistence.complextypes.DocumentLocation;
 import org.adorsys.resource.server.persistence.complextypes.KeyStoreAccess;
+import org.adorsys.resource.server.persistence.keysource.DocumentGuardBasedKeySourceImpl;
+import org.adorsys.resource.server.persistence.keysource.DocumentKeyIDWithKeyBasedSourceImpl;
+import org.adorsys.resource.server.persistence.keysource.KeySource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Sample use of the encobject api to implement our protocol.
@@ -23,6 +25,7 @@ import org.adorsys.resource.server.persistence.complextypes.KeyStoreAccess;
  * @author fpo
  */
 public class DocumentPersistenceService {
+    private final static Logger LOGGER = LoggerFactory.getLogger(DocumentPersistenceService.class);
 
     private ExtendedObjectPersistence objectPersistence;
     private DocumentGuardService documentGuardService;
@@ -47,6 +50,7 @@ public class DocumentPersistenceService {
             DocumentContent documentContent) {
 
         try {
+            LOGGER.info("start persist document with " + documentID);
 
             // Create object handle
             ObjectHandle location = new ObjectHandle(documentBucketName.getValue(), documentID.getValue());
@@ -56,14 +60,16 @@ public class DocumentPersistenceService {
             EncryptionParams encParams = null;
 
             KeySource keySource = new DocumentKeyIDWithKeyBasedSourceImpl(documentKeyIDWithKey);
-            System.out.println("Document wird verschlüsselt mit " + documentKeyIDWithKey);
+            LOGGER.debug("Document wird verschlüsselt mit " + documentKeyIDWithKey);
             // Create container if non existent
             if (!containerPersistence.containerExists(location.getContainer())) {
                 containerPersistence.creteContainer(location.getContainer());
             }
             KeyID keyID = new KeyID(documentKeyIDWithKey.getDocumentKeyID().getValue());
             objectPersistence.storeObject(documentContent.getValue(), metaInfo, location, keySource, keyID, encParams);
-            return new DocumentLocation(documentID, documentBucketName);
+            DocumentLocation documentLocation = new DocumentLocation(documentID, documentBucketName);
+            LOGGER.info("finsihed persist document with " + documentID + " @ " + documentLocation);
+            return documentLocation;
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
@@ -77,8 +83,11 @@ public class DocumentPersistenceService {
             DocumentLocation documentLocation) {
 
         try {
+            LOGGER.info("start load document @ " + documentLocation);
             KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess);
-            return new DocumentContent(objectPersistence.loadObject(documentLocation.getLocationHandle(), keySource).getData());
+            DocumentContent documentContent = new DocumentContent(objectPersistence.loadObject(documentLocation.getLocationHandle(), keySource).getData());
+            LOGGER.info("start load document @ " + documentLocation);
+            return documentContent;
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
