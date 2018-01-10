@@ -1,16 +1,17 @@
 package org.adorsys.documentsafe.service;
 
-import org.adorsys.documentsafe.exceptions.BaseExceptionHandler;
-import org.adorsys.documentsafe.persistence.complextypes.DocumentKeyIDWithKey;
-import org.adorsys.documentsafe.persistence.complextypes.KeyStoreAccess;
-import org.adorsys.documentsafe.utils.HexUtil;
+import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
+import org.adorsys.documentsafe.layer02service.DocumentGuardService;
+import org.adorsys.documentsafe.layer00common.complextypes.DocumentKeyIDWithKey;
+import org.adorsys.documentsafe.layer00common.complextypes.KeyStoreAccess;
+import org.adorsys.documentsafe.layer00common.utils.HexUtil;
 import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
-import org.adorsys.documentsafe.persistence.ExtendedKeystorePersistence;
-import org.adorsys.documentsafe.persistence.ExtendedObjectPersistence;
-import org.adorsys.documentsafe.persistence.basetypes.DocumentKeyID;
+import org.adorsys.documentsafe.layer01persistence.ExtendedKeystorePersistence;
+import org.adorsys.documentsafe.layer01persistence.ExtendedObjectPersistence;
+import org.adorsys.documentsafe.layer00common.basetypes.DocumentKeyID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
