@@ -48,7 +48,7 @@ public class DocumentPersistenceServiceTest {
                 containerPersistence.deleteContainer(bucket.getValue());
             }
         } catch(Exception e) {
-            throw BaseExceptionHandler.handle(e);
+            // throw BaseExceptionHandler.handle(e);
         }
     }
 
