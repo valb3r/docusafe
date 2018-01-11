@@ -1,7 +1,8 @@
 package org.adorsys.documentsafe.service;
 
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
-import org.adorsys.documentsafe.layer02service.KeyStoreService;
+import org.adorsys.documentsafe.layer02service.InterfaceKeyStoreService;
+import org.adorsys.documentsafe.layer02service.impl.KeyStoreService;
 import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
 import org.adorsys.documentsafe.layer02service.generators.KeyStoreCreationConfig;
@@ -44,7 +45,7 @@ public class KeyStoreServiceTest {
                                         KeyStoreID keyStoreID,
                                         KeyStoreCreationConfig config) {
         KeyStoreBucketName keyStoreBucketName = new KeyStoreBucketName(keystoreContainer);
-        KeyStoreService keyStoreService = new KeyStoreService(keystorePersistence);
+        InterfaceKeyStoreService keyStoreService = new KeyStoreService(keystorePersistence);
         KeyStoreAuth keyStoreAuth = new KeyStoreAuth(readStorePassword, readKeyPassword);
         KeyStoreLocation keyStoreLocation = keyStoreService.createKeyStore(keyStoreID, keyStoreAuth, keyStoreBucketName, config);
         KeyStore keyStore = keyStoreService.loadKeystore(keyStoreLocation, keyStoreAuth.getReadStoreHandler());

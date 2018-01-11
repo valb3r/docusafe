@@ -1,6 +1,7 @@
-package org.adorsys.documentsafe.layer02service;
+package org.adorsys.documentsafe.layer02service.impl;
 
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
+import org.adorsys.documentsafe.layer02service.InterfaceKeyStoreService;
 import org.adorsys.documentsafe.layer02service.generators.KeyStoreGenerator;
 import org.adorsys.documentsafe.layer02service.generators.SecretKeyGenerator;
 import org.adorsys.documentsafe.layer01persistence.types.KeyStoreBucketName;
@@ -16,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import javax.security.auth.callback.CallbackHandler;
 import java.security.KeyStore;
 
-public class KeyStoreService {
+public class KeyStoreService implements InterfaceKeyStoreService {
     private final static Logger LOGGER = LoggerFactory.getLogger(KeyStoreService.class);
 
     private ExtendedKeystorePersistence keystorePersistence;
@@ -35,6 +36,7 @@ public class KeyStoreService {
      * @param config may be null
      * @return
      */
+    @Override
     public KeyStoreLocation createKeyStore(KeyStoreID keyStoreID,
                                            KeyStoreAuth keyStoreAuth,
                                            KeyStoreBucketName keystoreBucketName,
@@ -63,6 +65,7 @@ public class KeyStoreService {
         }
     }
     
+    @Override
     public KeyStore loadKeystore(KeyStoreLocation keyStoreLocation, CallbackHandler userKeystoreHandler){
         LOGGER.info("start load keystore @ " + keyStoreLocation);
         KeyStore keyStore = keystorePersistence.loadKeystore(keyStoreLocation, userKeystoreHandler);

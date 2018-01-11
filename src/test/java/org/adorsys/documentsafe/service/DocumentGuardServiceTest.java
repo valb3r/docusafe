@@ -1,7 +1,8 @@
 package org.adorsys.documentsafe.service;
 
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
-import org.adorsys.documentsafe.layer02service.DocumentGuardService;
+import org.adorsys.documentsafe.layer02service.impl.DocumentGuardService;
+import org.adorsys.documentsafe.layer02service.InterfaceDocumentGuardService;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
 import org.adorsys.documentsafe.layer00common.utils.HexUtil;
@@ -37,7 +38,7 @@ public class DocumentGuardServiceTest {
 
     public DocumentGuardStuff testCreateAsymmetricDocumentGuardForDocumentKeyIDWithKey(KeyStoreAccess keyStoreAccess, DocumentKeyIDWithKey documentKeyIDWithKey, ExtendedKeystorePersistence keystorePersistence) {
         try {
-            DocumentGuardService documentGuardService = new DocumentGuardService(keystorePersistence, guardExtendedPersistence);
+            InterfaceDocumentGuardService documentGuardService = new DocumentGuardService(keystorePersistence, guardExtendedPersistence);
             documentGuardService.createAsymmetricDocumentGuard(keyStoreAccess, documentKeyIDWithKey);
             LOGGER.info("documentKeyID:" + documentKeyIDWithKey.getDocumentKeyID());
             return new DocumentGuardStuff(documentGuardService, documentKeyIDWithKey);
@@ -48,7 +49,7 @@ public class DocumentGuardServiceTest {
 
     public DocumentGuardStuff testCreateSymmetricDocumentGuard(KeyStoreAccess keyStoreAccess, ExtendedKeystorePersistence keystorePersistence) {
         try {
-            DocumentGuardService documentGuardService = new DocumentGuardService(keystorePersistence, guardExtendedPersistence);
+            InterfaceDocumentGuardService documentGuardService = new DocumentGuardService(keystorePersistence, guardExtendedPersistence);
             DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardService.createDocumentKeyIdWithKey();
             documentGuardService.createSymmetricDocumentGuard(keyStoreAccess, documentKeyIDWithKey);
             return new DocumentGuardStuff(documentGuardService, documentKeyIDWithKey);
@@ -62,7 +63,7 @@ public class DocumentGuardServiceTest {
             ExtendedKeystorePersistence keystorePersistence,
             DocumentKeyID documentKeyID) {
         try {
-            DocumentGuardService documentGuardService = new DocumentGuardService(keystorePersistence, guardExtendedPersistence);
+            InterfaceDocumentGuardService documentGuardService = new DocumentGuardService(keystorePersistence, guardExtendedPersistence);
             DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardService.loadDocumentKeyIDWithKeyFromDocumentGuard(keyStoreAccess, documentKeyID);
             LOGGER.info("key des Guards ist :" + documentKeyIDWithKey.getDocumentKey());
             LOGGER.info("LOAD DocumentKey:" + HexUtil.conventBytesToHexString(documentKeyIDWithKey.getDocumentKey().getSecretKey().getEncoded()));
@@ -74,10 +75,10 @@ public class DocumentGuardServiceTest {
     }
 
     public static class DocumentGuardStuff {
-        public final DocumentGuardService documentGuardService;
+        public final InterfaceDocumentGuardService documentGuardService;
         public final DocumentKeyIDWithKey documentKeyIDWithKey;
 
-        public DocumentGuardStuff(DocumentGuardService documentGuardService, DocumentKeyIDWithKey documentKeyIDWithKey) {
+        public DocumentGuardStuff(InterfaceDocumentGuardService documentGuardService, DocumentKeyIDWithKey documentKeyIDWithKey) {
             this.documentGuardService = documentGuardService;
             this.documentKeyIDWithKey = documentKeyIDWithKey;
         }

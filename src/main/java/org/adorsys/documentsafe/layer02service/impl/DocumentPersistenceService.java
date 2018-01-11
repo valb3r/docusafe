@@ -1,5 +1,7 @@
-package org.adorsys.documentsafe.layer02service;
+package org.adorsys.documentsafe.layer02service.impl;
 
+import org.adorsys.documentsafe.layer02service.InterfaceDocumentGuardService;
+import org.adorsys.documentsafe.layer02service.InterfaceDocumentPersistenceService;
 import org.adorsys.documentsafe.layer02service.types.DocumentID;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
 import org.adorsys.encobject.domain.ContentMetaInfo;
@@ -24,14 +26,14 @@ import org.slf4j.LoggerFactory;
  *
  * @author fpo
  */
-public class DocumentPersistenceService {
+public class DocumentPersistenceService implements InterfaceDocumentPersistenceService {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentPersistenceService.class);
 
     private ExtendedObjectPersistence objectPersistence;
-    private DocumentGuardService documentGuardService;
+    private InterfaceDocumentGuardService documentGuardService;
     private ContainerPersistence containerPersistence;
 
-    public DocumentPersistenceService(ContainerPersistence containerPersistence, ExtendedObjectPersistence objectPersistence, DocumentGuardService documentGuardService) {
+    public DocumentPersistenceService(ContainerPersistence containerPersistence, ExtendedObjectPersistence objectPersistence, InterfaceDocumentGuardService documentGuardService) {
         super();
         this.containerPersistence = containerPersistence;
         this.objectPersistence = objectPersistence;
@@ -43,6 +45,7 @@ public class DocumentPersistenceService {
      * dass den verschlüsselten DocumentContent enthält. Im Header dieses Documents steht die DocumentKeyID.
      * Das Document liegt in einem Bucket mit dem Namen documentBucketName.
      */
+    @Override
     public DocumentLocation persistDocument(
             DocumentKeyIDWithKey documentKeyIDWithKey,
             DocumentBucketName documentBucketName,
@@ -78,6 +81,7 @@ public class DocumentPersistenceService {
     /**
      *
      */
+    @Override
     public DocumentContent loadDocument(
             KeyStoreAccess keyStoreAccess,
             DocumentLocation documentLocation) {

@@ -1,8 +1,8 @@
 package org.adorsys.documentsafe.service;
 
-import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
-import org.adorsys.documentsafe.layer02service.DocumentGuardService;
-import org.adorsys.documentsafe.layer02service.DocumentPersistenceService;
+import org.adorsys.documentsafe.layer02service.impl.DocumentPersistenceService;
+import org.adorsys.documentsafe.layer02service.InterfaceDocumentGuardService;
+import org.adorsys.documentsafe.layer02service.InterfaceDocumentPersistenceService;
 import org.adorsys.documentsafe.layer02service.types.DocumentBucketName;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.DocumentID;
@@ -52,9 +52,9 @@ public class DocumentPersistenceServiceTest {
         }
     }
 
-    public DocumentStuff testPersistDocument(DocumentGuardService documentGuardService,
+    public DocumentStuff testPersistDocument(InterfaceDocumentGuardService documentGuardService,
                                              DocumentKeyIDWithKey documentKeyIDWithKey) {
-        DocumentPersistenceService documentPersistenceService = new DocumentPersistenceService(containerPersistence, documentExtendedPersistence, documentGuardService);
+        InterfaceDocumentPersistenceService documentPersistenceService = new DocumentPersistenceService(containerPersistence, documentExtendedPersistence, documentGuardService);
         DocumentLocation documentLocation = documentPersistenceService.persistDocument(
                 documentKeyIDWithKey,
                 documentBucketName,
@@ -64,10 +64,10 @@ public class DocumentPersistenceServiceTest {
         return new DocumentStuff(documentLocation);
     }
 
-    public void testLoadDocument(DocumentGuardService documentGuardService,
+    public void testLoadDocument(InterfaceDocumentGuardService documentGuardService,
                                  KeyStoreAccess keyStoreAccess,
                                  DocumentLocation documentLocation) {
-        DocumentPersistenceService documentPersistenceService = new DocumentPersistenceService(containerPersistence, documentExtendedPersistence, documentGuardService);
+        InterfaceDocumentPersistenceService documentPersistenceService = new DocumentPersistenceService(containerPersistence, documentExtendedPersistence, documentGuardService);
         DocumentContent readContent = documentPersistenceService.loadDocument(
                 keyStoreAccess,
                 documentLocation);

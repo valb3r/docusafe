@@ -1,4 +1,4 @@
-package org.adorsys.documentsafe.layer02service;
+package org.adorsys.documentsafe.layer02service.impl;
 
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.JWK;
@@ -9,6 +9,7 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.PasswordLookup;
 import com.nimbusds.jose.jwk.RSAKey;
+import org.adorsys.documentsafe.layer02service.InterfaceDocumentGuardService;
 import org.adorsys.documentsafe.layer02service.exceptions.AsymmetricEncryptionException;
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer02service.generators.SecretKeyGenerator;
@@ -54,7 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class DocumentGuardService {
+public class DocumentGuardService implements InterfaceDocumentGuardService {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentGuardService.class);
 
     private ExtendedKeystorePersistence keystorePersistence;
@@ -70,7 +71,8 @@ public class DocumentGuardService {
     /**
      * erzeugt eine DocumentKeyIDWithKey
      */
-    public static DocumentKeyIDWithKey createDocumentKeyIdWithKey() {
+    @Override
+    public DocumentKeyIDWithKey createDocumentKeyIdWithKey() {
         try {
             // Eine zufällige DocumentKeyID erzeugen
             DocumentKeyID documentKeyID = new DocumentKeyID("DK" + UUID.randomUUID().toString());
@@ -90,6 +92,7 @@ public class DocumentGuardService {
      * Dort, wo der KeyStore liegt wird dann ein DocumentGuard erzeugt, der den verschlüsselten DocumentKey enthält.
      * Im Header des DocumentGuards steht die DocuemntKeyID.
      */
+    @Override
     public void createSymmetricDocumentGuard(KeyStoreAccess keyStoreAccess, DocumentKeyIDWithKey documentKeyIDWithKey) {
         try {
             LOGGER.info("start create symmetric encrypted document guard for " + documentKeyIDWithKey + " @ " + keyStoreAccess.getKeyStoreLocation());
@@ -130,6 +133,7 @@ public class DocumentGuardService {
      * Dort, wo der KeyStore liegt wird dann ein DocumentGuard erzeugt, der den verschlüsselten DocumentKey enthält.
      * Im Header des DocumentGuards steht die DocuemntKeyID.
      */
+    @Override
     public void createAsymmetricDocumentGuard(KeyStoreAccess receiverKeyStoreAccess, DocumentKeyIDWithKey documentKeyIDWithKey) {
         try {
             LOGGER.info("start create asymmetric encrypted document guard for " + documentKeyIDWithKey + " @ " + receiverKeyStoreAccess.getKeyStoreLocation());
@@ -167,6 +171,7 @@ public class DocumentGuardService {
     /**
      * Loading the secret key from the guard.
      */
+    @Override
     public DocumentKeyIDWithKey loadDocumentKeyIDWithKeyFromDocumentGuard(KeyStoreAccess keyStoreAccess, DocumentKeyID documentKeyID) {
         try {
             LOGGER.info("start load " + documentKeyID + " from document guard @ " + keyStoreAccess.getKeyStoreLocation());

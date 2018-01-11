@@ -1,24 +1,24 @@
 package org.adorsys.documentsafe.layer02service.keysource;
 
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
+import org.adorsys.documentsafe.layer02service.InterfaceDocumentGuardService;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 import org.adorsys.documentsafe.layer01persistence.types.KeyID;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreLocation;
-import org.adorsys.documentsafe.layer02service.DocumentGuardService;
 import org.adorsys.documentsafe.layer01persistence.keysource.KeySource;
 
 import java.security.Key;
 
 public class DocumentGuardBasedKeySourceImpl implements KeySource {
 
-    private DocumentGuardService documentGuardService;
+    private InterfaceDocumentGuardService documentGuardService;
 
 	private KeyStoreAccess keyStoreAccess;
 	private KeyStoreLocation keyStoreLocation;
 
-	public DocumentGuardBasedKeySourceImpl(DocumentGuardService documentGuardService, KeyStoreAccess keyStoreAccess) {
+	public DocumentGuardBasedKeySourceImpl(InterfaceDocumentGuardService documentGuardService, KeyStoreAccess keyStoreAccess) {
 		super();
 		this.documentGuardService = documentGuardService;
         this.keyStoreAccess = keyStoreAccess;
