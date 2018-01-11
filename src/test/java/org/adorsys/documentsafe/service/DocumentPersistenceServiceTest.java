@@ -1,8 +1,9 @@
 package org.adorsys.documentsafe.service;
 
-import org.adorsys.documentsafe.layer02service.impl.DocumentPersistenceService;
+import org.adorsys.documentsafe.layer01persistence.ExtendedObjectPersistence;
 import org.adorsys.documentsafe.layer02service.InterfaceDocumentGuardService;
 import org.adorsys.documentsafe.layer02service.InterfaceDocumentPersistenceService;
+import org.adorsys.documentsafe.layer02service.impl.DocumentPersistenceService;
 import org.adorsys.documentsafe.layer02service.types.DocumentBucketName;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.DocumentID;
@@ -12,8 +13,6 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess
 import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
-import org.adorsys.documentsafe.layer01persistence.ExtendedObjectPersistence;
-import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +31,6 @@ public class DocumentPersistenceServiceTest {
 
     private DocumentBucketName documentBucketName = new DocumentBucketName("document-bucket");
     private DocumentID documentID = new DocumentID("document-id-123");
-    private DocumentContent documentContent = new DocumentContent("Der Inhalt ist ein Affe".getBytes());
 
 
     public static void beforeClass() {
@@ -53,7 +51,8 @@ public class DocumentPersistenceServiceTest {
     }
 
     public DocumentStuff testPersistDocument(InterfaceDocumentGuardService documentGuardService,
-                                             DocumentKeyIDWithKey documentKeyIDWithKey) {
+                                             DocumentKeyIDWithKey documentKeyIDWithKey,
+                                             DocumentContent documentContent) {
         InterfaceDocumentPersistenceService documentPersistenceService = new DocumentPersistenceService(containerPersistence, documentExtendedPersistence, documentGuardService);
         DocumentLocation documentLocation = documentPersistenceService.persistDocument(
                 documentKeyIDWithKey,
@@ -64,15 +63,15 @@ public class DocumentPersistenceServiceTest {
         return new DocumentStuff(documentLocation);
     }
 
-    public void testLoadDocument(InterfaceDocumentGuardService documentGuardService,
+    public DocumentContent testLoadDocument(InterfaceDocumentGuardService documentGuardService,
                                  KeyStoreAccess keyStoreAccess,
                                  DocumentLocation documentLocation) {
         InterfaceDocumentPersistenceService documentPersistenceService = new DocumentPersistenceService(containerPersistence, documentExtendedPersistence, documentGuardService);
         DocumentContent readContent = documentPersistenceService.loadDocument(
                 keyStoreAccess,
                 documentLocation);
-        Assert.assertEquals("Content of Document", this.documentContent.toString(), readContent.toString());
         LOGGER.info("Gelesenes Document enthält:" + readContent + " bzw " + new String(readContent.getValue()));
+        return readContent;
     }
 
     public static class DocumentStuff {
