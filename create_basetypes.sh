@@ -55,8 +55,8 @@ then
 fi
 
 
-BASETYPES_PACKAGE=org.adorsys.resource.server.basetypes
-ADAPTER_PACKAGE=org.adorsys.resource.server.basetypes.adapter
+BASETYPES_PACKAGE=org.adorsys.documentsafe.layer03rest.basetypes
+ADAPTER_PACKAGE=org.adorsys.documentsafe.layer03rest.adapter
 CONVERTER_PACKAGE=org.adorsys.resource.server.basetypes.converter
 
 BASETYPES_DIR=$(echo $BASETYPES_PACKAGE | sed -e s#\\.#/#g)
@@ -137,7 +137,7 @@ public class CLASSNAMEDBConverter implements AttributeConverter<CLASSNAME, BASET
 }
 EOF)
 
-echo "$classtext"     | sed s/CLASSNAME/$classname/g | sed s/BASETYPE/$type/g | sed s/BASETYP2/$type2/g | sed s/COPYDATE/"$timestamp"/g > src/main/java/$BASETYPES_DIR/$classname.java
+# echo "$classtext"     | sed s/CLASSNAME/$classname/g | sed s/BASETYPE/$type/g | sed s/BASETYP2/$type2/g | sed s/COPYDATE/"$timestamp"/g > src/main/java/$BASETYPES_DIR/$classname.java
 
 echo "$adaptertext"   | sed s/CLASSNAME/$classname/g | sed s/BASETYPE/$type/g | sed s/BASETYP2/$type2/g | sed s/COPYDATE/"$timestamp"/g > src/main/java/$ADAPTER_DIR/${classname}RestAdapter.java
 
