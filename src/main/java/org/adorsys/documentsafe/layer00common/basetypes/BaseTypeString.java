@@ -1,11 +1,12 @@
 package org.adorsys.documentsafe.layer00common.basetypes;
 
 import java.io.Serializable;
+import java.lang.reflect.Type;
 
 /**
  * Created by peter on 20.02.17.
  */
-public class BaseTypeString  implements Serializable {
+public class BaseTypeString  implements Serializable, Type {
 	
 	private static final long serialVersionUID = 3569239558130703592L;
 	private String value;

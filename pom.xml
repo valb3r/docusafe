@@ -46,6 +46,19 @@
             <version>2.3.1</version>
         </dependency>
 
+        <!-- XStreamMarshaller -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-oxm</artifactId>
+            <version>4.3.13.RELEASE</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.servicemix.bundles</groupId>
+            <artifactId>org.apache.servicemix.bundles.xstream-java8</artifactId>
+            <version>1.4.10_1</version>
+        </dependency>
+
         <!-- logging -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
