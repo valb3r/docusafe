@@ -10,9 +10,12 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess
 public interface InterfaceDocumentGuardService {
     DocumentKeyIDWithKey createDocumentKeyIdWithKey();
 
-    void createSymmetricDocumentGuard(KeyStoreAccess keyStoreAccess, DocumentKeyIDWithKey documentKeyIDWithKey);
+    void createSymmetricDocumentGuard(KeyStoreAccess keyStoreAccess,
+                                      DocumentKeyIDWithKey documentKeyIDWithKey);
 
-    void createAsymmetricDocumentGuard(KeyStoreAccess receiverKeyStoreAccess, DocumentKeyIDWithKey documentKeyIDWithKey);
+    void createAsymmetricDocumentGuard(KeyStoreAccess receiverKeyStoreAccess,
+                                       DocumentKeyIDWithKey documentKeyIDWithKey);
 
-    DocumentKeyIDWithKey loadDocumentKeyIDWithKeyFromDocumentGuard(KeyStoreAccess keyStoreAccess, DocumentKeyID documentKeyID);
+    DocumentKeyIDWithKey loadDocumentKeyIDWithKeyFromDocumentGuard(KeyStoreAccess keyStoreAccess,
+                                                                   DocumentKeyID documentKeyID);
 }

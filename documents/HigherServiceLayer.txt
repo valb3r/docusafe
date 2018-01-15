@@ -1,0 +1,69 @@
+In dieser Struktur hat der Benutzer <userID1> für den Benutzer <userID2> den Bucket
+Bucket1/Bucket1_1 und Bucket1/Bucket1_1_1 mit Schreibberechtung freigegeben. D.h. alle Documente in diesem Bucket können
+von Benutzer2 gelesen und geschrieben oder gelöscht werden.
+Das Verzeichnis Bucket1/Bucket1_2 ist nur mit Leseberechtigung für UserID2 freigegeben.
+
+cloud/<userID1>/Bucket1/DocumentID1
+                       /DocumentID2
+                       /Bucket1_1/Bucket1_1_1/DocumentID1
+                                             /DocumentID2
+                       /Bucket1_1/Bucket1_1_2/DocumentID1
+                                             /DocumentID2
+                                 /DocumentID1
+                                 /DocumentID2
+                                 /DocumentID3
+
+                                 /DocumentID2
+                                 /DocumentID3
+                       /Bucket1_2/DocumentID1
+                                 /DocumentID2
+                                 /DocumentID3
+               /Bucket2/DocumentID1
+               /Bucket3/DocumentID1
+               /DocumentID1
+               /DocumentID2
+
+              /KeyStoreBucket/<userID1>.keyStore
+                             /BucketGuard.W.<UserID1>
+                             /BucketGuard.W.<UserID1>/Bucket1
+                             /BucketGuard.W.<UserID1>/Bucket1/Bucket1_1
+                             /BucketGuard.W.<UserID1>/Bucket1/Bucket1_1_1
+                             /BucketGuard.W.<UserID1>/Bucket1/Bucket1_1_2
+                             /BucketGuard.W.<UserID1>/Bucket1/Bucket1_2
+                             /BucketGuard.W.<UserID1>/Bucket2
+                             /BucketGuard.W.<UserID1>/Bucket3
+              /Grants/<userID2>/BucketGuard.W.Bucket1/Bucket1_1
+                               /BucketGuard.W.Bucket1/Bucket1_1_1
+                               /BucketGuard.R.Bucket1/Bucket1_2
+
+
+     /<userID2>/DocumentID1
+              /KeyStoreBucket/<userID2>.keyStore
+                             /BucketGuard.W.<UserID2>
+                             /BucketGuard.W.<UserID1>/Bucket1/Bucket1_1
+                             /BucketGuard.W.<UserID1>/Bucket1/Bucket1_1_1
+                             /BucketGuard.R.<UserID1>/Bucket1/Bucket1_2
+
+Für den Benutzer userID2 stellt sich seine Ansicht von Document aber nun wie folgt dar:
+
+DocumentID1
+<userID1>/Bucket1/Bucket1_1/Bucket1_1_1/DocumentID1
+                                       /DocumentID2
+                           /DocumentID1
+                           /DocumentID2
+                           /DocumentID3
+          Bucket1/Bucket1_2/DocumentID1
+                           /DocumentID2
+                           /DocumentID3
+
+
+
+
+
+
+
+
+
+
+Eine DoucmentLocation besteht nach wie vor aus dem DocumentBucketName und der DocumentID.
+Der DocumentBucketName ist aber nicht auf eine Ebene beschränkt sondern enthält einen Pfad.

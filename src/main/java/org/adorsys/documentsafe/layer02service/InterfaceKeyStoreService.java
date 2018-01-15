@@ -18,5 +18,6 @@ public interface InterfaceKeyStoreService {
                                     KeyStoreBucketName keystoreBucketName,
                                     KeyStoreCreationConfig config);
 
-    KeyStore loadKeystore(KeyStoreLocation keyStoreLocation, CallbackHandler userKeystoreHandler);
+    KeyStore loadKeystore(KeyStoreLocation keyStoreLocation,
+                          CallbackHandler userKeystoreHandler);
 }
