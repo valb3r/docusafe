@@ -7,11 +7,8 @@ import org.adorsys.documentsafe.layer02service.types.DocumentID;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentLocation;
 import org.adorsys.documentsafe.layer03rest.adapter.DocumentBucketNameJsonAdapter;
-import org.adorsys.documentsafe.layer03rest.adapter.DocumentBucketNameXmlAdapter;
 import org.adorsys.documentsafe.layer03rest.adapter.DocumentIDJsonAdapter;
-import org.adorsys.documentsafe.layer03rest.adapter.DocumentIDXmlAdapter;
 import org.adorsys.documentsafe.layer03rest.adapter.DocumentKeyIDJsonAdapter;
-import org.adorsys.documentsafe.layer03rest.adapter.DocumentKeyIDXmlAdapter;
 import org.adorsys.documentsafe.layer03rest.types.VersionInformation;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -62,26 +59,24 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
     }
 
     public Jaxb2Marshaller jaxbMarshaller() {
-
-        Jaxb2Marshaller jaxbMarshaller = new Jaxb2Marshaller();
-
-        jaxbMarshaller.setAdapters(
-                new DocumentKeyIDXmlAdapter(),
-                new DocumentIDXmlAdapter(),
-                new DocumentBucketNameXmlAdapter());
-
         Map<String, Object> props = new HashMap<>();
         props.put(Marshaller.JAXB_ENCODING, "UTF-8");
         props.put(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+        Jaxb2Marshaller jaxbMarshaller = new Jaxb2Marshaller();
         jaxbMarshaller.setMarshallerProperties(props);
         jaxbMarshaller.setClassesToBeBound(
                 VersionInformation.class,
                 DocumentBucketName.class,
                 DocumentLocation.class,
                 DocumentKeyID.class);
+        /**
+         * jaxbMarshaller.setAdapters funktioniert nicht bzw. ist nur für
+         * Adapter gedacht, die einen Parameter im Konstruktor haben.
+         * Dann muss die Annotation benutzt werden UND hier die Methode
+         * setAdapter
+         */
 
         return jaxbMarshaller;
-
     }
 
 }

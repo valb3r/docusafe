@@ -1,4 +1,4 @@
-package org.adorsys.documentsafe.layer03rest.adapter;
+package org.adorsys.documentsafe.layer02service.types.xmladapter;
 
 import org.adorsys.documentsafe.layer02service.types.DocumentBucketName;
 
