@@ -1,5 +1,5 @@
 In dieser Struktur hat der Benutzer <userID1> für den Benutzer <userID2> den Bucket
-Bucket1/Bucket1_1 und Bucket1/Bucket1_1_1 mit Schreibberechtung freigegeben. D.h. alle Documente in diesem Bucket können
+Bucket1/Bucket1_1 und Bucket1/Bucket1_1/Bucket1_1_1 mit Schreibberechtung freigegeben. D.h. alle Documente in diesem Bucket können
 von Benutzer2 gelesen und geschrieben oder gelöscht werden.
 Das Verzeichnis Bucket1/Bucket1_2 ist nur mit Leseberechtigung für UserID2 freigegeben.
 
@@ -10,9 +10,6 @@ cloud/<userID1>/Bucket1/DocumentID1
                        /Bucket1_1/Bucket1_1_2/DocumentID1
                                              /DocumentID2
                                  /DocumentID1
-                                 /DocumentID2
-                                 /DocumentID3
-
                                  /DocumentID2
                                  /DocumentID3
                        /Bucket1_2/DocumentID1
