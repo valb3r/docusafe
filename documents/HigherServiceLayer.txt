@@ -33,15 +33,15 @@ cloud/<userID1>/Bucket1/DocumentID1
                              /BucketGuard.W.<UserID1>/Bucket2
                              /BucketGuard.W.<UserID1>/Bucket3
               /Grants/<userID2>/BucketGuard.W.Bucket1/Bucket1_1
-                               /BucketGuard.W.Bucket1/Bucket1_1_1
-                               /BucketGuard.R.Bucket1/Bucket1_2
+                      <userID2>/BucketGuard.W.Bucket1/Bucket1_1/Bucket1_1_1
+                      <userID2>/BucketGuard.R.Bucket1/Bucket1_2
 
 
      /<userID2>/DocumentID1
               /KeyStoreBucket/<userID2>.keyStore
                              /BucketGuard.W.<UserID2>
                              /BucketGuard.W.<UserID1>/Bucket1/Bucket1_1
-                             /BucketGuard.W.<UserID1>/Bucket1/Bucket1_1_1
+                             /BucketGuard.W.<UserID1>/Bucket1/Bucket1_1/Bucket1_1_1
                              /BucketGuard.R.<UserID1>/Bucket1/Bucket1_2
 
 Für den Benutzer userID2 stellt sich seine Ansicht von Document aber nun wie folgt dar:
@@ -56,14 +56,8 @@ DocumentID1
                            /DocumentID2
                            /DocumentID3
 
-
-
-
-
-
-
-
-
-
+Unterhalb der Verzeichnisse KeyStoreBucket und Grants gibt es keine Unterverzeichnisse.
+Die Namen der Dateien enhalten die Pfade nur der Deutlichkeit halber. Die / müssen durch
+Separatoren ersetzt werden.
 Eine DoucmentLocation besteht nach wie vor aus dem DocumentBucketName und der DocumentID.
 Der DocumentBucketName ist aber nicht auf eine Ebene beschränkt sondern enthält einen Pfad.
