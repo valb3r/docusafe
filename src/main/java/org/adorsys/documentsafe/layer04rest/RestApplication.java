@@ -1,4 +1,4 @@
-package org.adorsys.documentsafe.layer03rest;
+package org.adorsys.documentsafe.layer04rest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

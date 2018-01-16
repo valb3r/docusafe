@@ -4,7 +4,7 @@ import org.adorsys.documentsafe.layer01persistence.ExtendedObjectPersistence;
 import org.adorsys.documentsafe.layer02service.InterfaceDocumentGuardService;
 import org.adorsys.documentsafe.layer02service.InterfaceDocumentPersistenceService;
 import org.adorsys.documentsafe.layer02service.impl.DocumentPersistenceService;
-import org.adorsys.documentsafe.layer02service.types.DocumentBucketName;
+import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.DocumentID;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
@@ -27,9 +27,9 @@ public class DocumentPersistenceServiceTest {
     
     private static ExtendedObjectPersistence documentExtendedPersistence;
     private static ContainerPersistence containerPersistence;
-    private static Set<DocumentBucketName> createdBuckets;
+    private static Set<DocumentBucketPath> createdBuckets;
 
-    private DocumentBucketName documentBucketName = new DocumentBucketName("document-bucket");
+    private DocumentBucketPath documentBucketPath = new DocumentBucketPath("document-bucket");
     private DocumentID documentID = new DocumentID("document-id-123");
 
 
@@ -42,8 +42,8 @@ public class DocumentPersistenceServiceTest {
 
     public static void afterClass() {
         try {
-            for (DocumentBucketName bucket : createdBuckets) {
-                containerPersistence.deleteContainer(bucket.getValue());
+            for (DocumentBucketPath bucket : createdBuckets) {
+                containerPersistence.deleteContainer(bucket.getObjectHandlePath());
             }
         } catch(Exception e) {
             // throw BaseExceptionHandler.handle(e);
@@ -56,10 +56,10 @@ public class DocumentPersistenceServiceTest {
         InterfaceDocumentPersistenceService documentPersistenceService = new DocumentPersistenceService(containerPersistence, documentExtendedPersistence, documentGuardService);
         DocumentLocation documentLocation = documentPersistenceService.persistDocument(
                 documentKeyIDWithKey,
-                documentBucketName,
+                documentBucketPath,
                 documentID,
                 documentContent);
-        createdBuckets.add(documentBucketName);
+        createdBuckets.add(documentBucketPath);
         return new DocumentStuff(documentLocation);
     }
 

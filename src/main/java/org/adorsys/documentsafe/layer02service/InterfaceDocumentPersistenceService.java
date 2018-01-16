@@ -1,6 +1,6 @@
 package org.adorsys.documentsafe.layer02service;
 
-import org.adorsys.documentsafe.layer02service.types.DocumentBucketName;
+import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.DocumentID;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
@@ -13,7 +13,7 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess
 public interface InterfaceDocumentPersistenceService {
     DocumentLocation persistDocument(
             DocumentKeyIDWithKey documentKeyIDWithKey,
-            DocumentBucketName documentBucketName,
+            DocumentBucketPath documentBucketPath,
             DocumentID documentID,
             DocumentContent documentContent);
 

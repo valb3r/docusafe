@@ -1,4 +1,4 @@
-package org.adorsys.documentsafe.layer03rest.adapter;
+package org.adorsys.documentsafe.layer04rest.adapter;
 
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;

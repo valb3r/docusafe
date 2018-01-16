@@ -1,6 +1,6 @@
-package org.adorsys.documentsafe.layer03rest.types;
+package org.adorsys.documentsafe.layer04rest.types;
 
-import org.adorsys.documentsafe.layer02service.types.DocumentBucketName;
+import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
 import org.adorsys.documentsafe.layer02service.types.DocumentID;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentLocation;
@@ -25,7 +25,7 @@ public class VersionInformation {
     public VersionInformation(String info, DocumentKeyID documentKeyID) {
         this.info = info;
         this.documentKeyID = documentKeyID;
-        this.documentLocation = new DocumentLocation(new DocumentID("id"), new DocumentBucketName("bucket"));
+        this.documentLocation = new DocumentLocation(new DocumentID("id"), new DocumentBucketPath("bucket/1/2/3"));
 
     }
 

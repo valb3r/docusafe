@@ -1,16 +1,13 @@
-package org.adorsys.documentsafe.layer03rest.restapi;
+package org.adorsys.documentsafe.layer04rest.restapi;
 
-import org.adorsys.documentsafe.layer02service.types.DocumentKey;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
-import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
-import org.adorsys.documentsafe.layer03rest.types.VersionInformation;
+import org.adorsys.documentsafe.layer04rest.types.VersionInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.crypto.SecretKey;
 import javax.ws.rs.core.MediaType;
 
 /**

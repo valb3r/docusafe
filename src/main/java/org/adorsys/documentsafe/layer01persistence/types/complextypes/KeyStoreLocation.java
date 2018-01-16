@@ -1,7 +1,6 @@
 package org.adorsys.documentsafe.layer01persistence.types.complextypes;
 
 import org.adorsys.documentsafe.layer01persistence.LocationInterface;
-import org.adorsys.documentsafe.layer01persistence.types.KeyStoreBucketName;
 import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
 import org.adorsys.documentsafe.layer01persistence.types.KeyStoreType;
 import org.adorsys.encobject.domain.ObjectHandle;
@@ -13,18 +12,18 @@ public class KeyStoreLocation implements LocationInterface {
 	
 	public static final String FILE_EXTENSION_SEPARATOR = ".";
 
-	private final KeyStoreBucketName keyStoreBucketName;
+	private final KeyStoreBucketPath keyStoreBucketPath;
 	private final KeyStoreID keyStoreID;
 	private final KeyStoreType keyStoreType;
 
-	public KeyStoreLocation(KeyStoreBucketName keyStoreBucketName, KeyStoreID keyStoreID, KeyStoreType keyStoreType) {
-		this.keyStoreBucketName = keyStoreBucketName;
+	public KeyStoreLocation(KeyStoreBucketPath keyStoreBucketPath, KeyStoreID keyStoreID, KeyStoreType keyStoreType) {
+		this.keyStoreBucketPath = keyStoreBucketPath;
 		this.keyStoreID = keyStoreID;
 		this.keyStoreType = keyStoreType;
 	}
 	
-	public KeyStoreBucketName getKeyStoreBucketName() {
-		return keyStoreBucketName;
+	public KeyStoreBucketPath getKeyStoreBucketPath() {
+		return keyStoreBucketPath;
 	}
 
 	public KeyStoreID getKeyStoreID() {
@@ -37,14 +36,14 @@ public class KeyStoreLocation implements LocationInterface {
 
 	public ObjectHandle getLocationHandle(){
 		return new ObjectHandle(
-				getKeyStoreBucketName().getValue(),
+				getKeyStoreBucketPath().getObjectHandlePath(),
 				keyStoreID.getValue() + FILE_EXTENSION_SEPARATOR + keyStoreType.getValue());
 	}
 
 	@Override
 	public String toString() {
 		return "KeyStoreLocation{" +
-				"keyStoreBucketName=" + keyStoreBucketName +
+				"keyStoreBucketPath=" + keyStoreBucketPath +
 				", keyStoreID=" + keyStoreID +
 				", keyStoreType=" + keyStoreType +
 				'}';

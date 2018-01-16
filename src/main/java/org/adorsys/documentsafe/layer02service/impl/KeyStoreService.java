@@ -1,10 +1,10 @@
 package org.adorsys.documentsafe.layer02service.impl;
 
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
+import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreBucketPath;
 import org.adorsys.documentsafe.layer02service.InterfaceKeyStoreService;
 import org.adorsys.documentsafe.layer02service.generators.KeyStoreGenerator;
 import org.adorsys.documentsafe.layer02service.generators.SecretKeyGenerator;
-import org.adorsys.documentsafe.layer01persistence.types.KeyStoreBucketName;
 import org.adorsys.documentsafe.layer01persistence.types.KeyStoreType;
 import org.adorsys.documentsafe.layer02service.generators.KeyStoreCreationConfig;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreLocation;
@@ -32,14 +32,14 @@ public class KeyStoreService implements InterfaceKeyStoreService {
      *
      * @param keyStoreID
      * @param keyStoreAuth
-     * @param keystoreBucketName
+     * @param keystoreBucketPath
      * @param config may be null
      * @return
      */
     @Override
     public KeyStoreLocation createKeyStore(KeyStoreID keyStoreID,
                                            KeyStoreAuth keyStoreAuth,
-                                           KeyStoreBucketName keystoreBucketName,
+                                           KeyStoreBucketPath keystoreBucketPath,
                                            KeyStoreCreationConfig config) {
         try {
             LOGGER.info("start create keystore " + keyStoreID);
@@ -56,7 +56,7 @@ public class KeyStoreService implements InterfaceKeyStoreService {
                     keyStoreAuth.getReadKeyPassword());
             KeyStore userKeyStore = keyStoreGenerator.generate();
 
-            KeyStoreLocation keyStoreLocation = new KeyStoreLocation(keystoreBucketName, keyStoreID, new KeyStoreType(userKeyStore.getType()));
+            KeyStoreLocation keyStoreLocation = new KeyStoreLocation(keystoreBucketPath, keyStoreID, new KeyStoreType(userKeyStore.getType()));
 			keystorePersistence.saveKeyStore(userKeyStore, keyStoreAuth.getReadStoreHandler(), keyStoreLocation);
             LOGGER.info("finished create keystore " + keyStoreID + " @ " + keyStoreLocation);
 			return keyStoreLocation;

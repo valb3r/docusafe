@@ -4,7 +4,9 @@ import org.adorsys.documentsafe.layer00common.exceptions.BaseException;
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer00common.utils.HexUtil;
 import org.adorsys.documentsafe.layer01persistence.ExtendedKeystorePersistence;
+import org.adorsys.documentsafe.layer01persistence.types.BucketName;
 import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
+import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
 import org.adorsys.documentsafe.layer02service.generators.KeyStoreCreationConfig;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
@@ -13,6 +15,9 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDW
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentLocation;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
 import org.adorsys.documentsafe.layer02service.utils.ShowKeyStore;
+import org.adorsys.encobject.service.BlobStoreConnection;
+import org.adorsys.encobject.service.ContainerPersistence;
+import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
 import org.adorsys.encobject.utils.TestKeyUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -42,6 +47,23 @@ public class AllServiceTest {
         DocumentGuardServiceTest.afterClass();
         KeyStoreServiceTest.afterTest();
 
+    }
+
+    // @Test
+    public void testCreateBucketPath() {
+        try {
+            try {
+                BucketPath bp = new BucketPath().set(new BucketName("1")).sub(new BucketName("2")).sub(new BucketName("3"));
+                TestFsBlobStoreFactory storeContextFactory = new TestFsBlobStoreFactory();
+                ExtendedKeystorePersistence keystorePersistence = new ExtendedKeystorePersistence(storeContextFactory);
+                ContainerPersistence containerPersistence = new ContainerPersistence(new BlobStoreConnection(storeContextFactory));
+                containerPersistence.creteContainer(bp.getObjectHandlePath());
+            } catch (Exception e) {
+                throw BaseExceptionHandler.handle(e);
+            }
+        } catch (Exception e) {
+            BaseExceptionHandler.handle(e);
+        }
     }
 
     @Test

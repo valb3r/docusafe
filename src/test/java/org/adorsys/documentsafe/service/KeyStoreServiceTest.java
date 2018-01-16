@@ -10,7 +10,7 @@ import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
 import org.adorsys.documentsafe.layer01persistence.ExtendedKeystorePersistence;
-import org.adorsys.documentsafe.layer01persistence.types.KeyStoreBucketName;
+import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreBucketPath;
 import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
 import org.adorsys.documentsafe.layer02service.types.ReadStorePassword;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAuth;
@@ -44,10 +44,10 @@ public class KeyStoreServiceTest {
                                         ReadKeyPassword readKeyPassword,
                                         KeyStoreID keyStoreID,
                                         KeyStoreCreationConfig config) {
-        KeyStoreBucketName keyStoreBucketName = new KeyStoreBucketName(keystoreContainer);
+        KeyStoreBucketPath keyStoreBucketPath = new KeyStoreBucketPath(keystoreContainer);
         InterfaceKeyStoreService keyStoreService = new KeyStoreService(keystorePersistence);
         KeyStoreAuth keyStoreAuth = new KeyStoreAuth(readStorePassword, readKeyPassword);
-        KeyStoreLocation keyStoreLocation = keyStoreService.createKeyStore(keyStoreID, keyStoreAuth, keyStoreBucketName, config);
+        KeyStoreLocation keyStoreLocation = keyStoreService.createKeyStore(keyStoreID, keyStoreAuth, keyStoreBucketPath, config);
         KeyStore keyStore = keyStoreService.loadKeystore(keyStoreLocation, keyStoreAuth.getReadStoreHandler());
         return new KeyStoreStuff(keyStore, keystorePersistence, keyStoreID, new KeyStoreAccess(keyStoreLocation, keyStoreAuth));
     }

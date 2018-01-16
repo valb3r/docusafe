@@ -10,7 +10,7 @@ import org.adorsys.encobject.params.EncryptionParams;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer01persistence.ExtendedObjectPersistence;
-import org.adorsys.documentsafe.layer02service.types.DocumentBucketName;
+import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer01persistence.types.KeyID;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
@@ -43,12 +43,12 @@ public class DocumentPersistenceService implements InterfaceDocumentPersistenceS
     /**
      * Verschlüsselt den DocumentContent mit dem (symmetrischen) DocumentKey. Erzeugt ein Document,
      * dass den verschlüsselten DocumentContent enthält. Im Header dieses Documents steht die DocumentKeyID.
-     * Das Document liegt in einem Bucket mit dem Namen documentBucketName.
+     * Das Document liegt in einem Bucket mit dem Namen documentBucketPath.
      */
     @Override
     public DocumentLocation persistDocument(
             DocumentKeyIDWithKey documentKeyIDWithKey,
-            DocumentBucketName documentBucketName,
+            DocumentBucketPath documentBucketPath,
             DocumentID documentID,
             DocumentContent documentContent) {
 
@@ -56,7 +56,7 @@ public class DocumentPersistenceService implements InterfaceDocumentPersistenceS
             LOGGER.info("start persist document with " + documentID);
 
             // Create object handle
-            ObjectHandle location = new ObjectHandle(documentBucketName.getValue(), documentID.getValue());
+            ObjectHandle location = new ObjectHandle(documentBucketPath.getObjectHandlePath(), documentID.getValue());
 
             // Store object.
             ContentMetaInfo metaInfo = null;
@@ -70,7 +70,7 @@ public class DocumentPersistenceService implements InterfaceDocumentPersistenceS
             }
             KeyID keyID = new KeyID(documentKeyIDWithKey.getDocumentKeyID().getValue());
             objectPersistence.storeObject(documentContent.getValue(), metaInfo, location, keySource, keyID, encParams);
-            DocumentLocation documentLocation = new DocumentLocation(documentID, documentBucketName);
+            DocumentLocation documentLocation = new DocumentLocation(documentID, documentBucketPath);
             LOGGER.info("finsihed persist document with " + documentID + " @ " + documentLocation);
             return documentLocation;
         } catch (Exception e) {

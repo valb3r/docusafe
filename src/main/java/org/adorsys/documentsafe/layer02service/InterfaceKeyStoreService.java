@@ -1,6 +1,6 @@
 package org.adorsys.documentsafe.layer02service;
 
-import org.adorsys.documentsafe.layer01persistence.types.KeyStoreBucketName;
+import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreBucketPath;
 import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreLocation;
 import org.adorsys.documentsafe.layer02service.generators.KeyStoreCreationConfig;
@@ -15,7 +15,7 @@ import java.security.KeyStore;
 public interface InterfaceKeyStoreService {
     KeyStoreLocation createKeyStore(KeyStoreID keyStoreID,
                                     KeyStoreAuth keyStoreAuth,
-                                    KeyStoreBucketName keystoreBucketName,
+                                    KeyStoreBucketPath keystoreBucketPath,
                                     KeyStoreCreationConfig config);
 
     KeyStore loadKeystore(KeyStoreLocation keyStoreLocation,
