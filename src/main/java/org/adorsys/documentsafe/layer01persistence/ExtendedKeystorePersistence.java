@@ -22,7 +22,7 @@ public class ExtendedKeystorePersistence {
 	private BlobStoreConnection blobStoreConnection;
 
 	public ExtendedKeystorePersistence(BlobStoreContextFactory blobStoreContextFactory) {
-		this.blobStoreConnection = new BlobStoreConnection(blobStoreContextFactory);
+		this.blobStoreConnection = new ExtendedBlobStoreConnection(blobStoreContextFactory);
 	}
 
 	public void saveKeyStore(KeyStore keystore, CallbackHandler storePassHandler, KeyStoreLocation keyStoreLocation) {

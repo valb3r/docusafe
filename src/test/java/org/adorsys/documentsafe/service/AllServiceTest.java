@@ -3,6 +3,7 @@ package org.adorsys.documentsafe.service;
 import org.adorsys.documentsafe.layer00common.exceptions.BaseException;
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer00common.utils.HexUtil;
+import org.adorsys.documentsafe.layer01persistence.ExtendedBlobStoreConnection;
 import org.adorsys.documentsafe.layer01persistence.ExtendedKeystorePersistence;
 import org.adorsys.documentsafe.layer01persistence.types.BucketName;
 import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
@@ -31,7 +32,7 @@ import org.slf4j.LoggerFactory;
  */
 public class AllServiceTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(AllServiceTest.class);
-    
+
     @BeforeClass
     public static void before() {
 
@@ -49,20 +50,18 @@ public class AllServiceTest {
 
     }
 
-    // @Test
+    @Test
     public void testCreateBucketPath() {
         try {
-            try {
-                BucketPath bp = new BucketPath().set(new BucketName("1")).sub(new BucketName("2")).sub(new BucketName("3"));
-                TestFsBlobStoreFactory storeContextFactory = new TestFsBlobStoreFactory();
-                ExtendedKeystorePersistence keystorePersistence = new ExtendedKeystorePersistence(storeContextFactory);
-                ContainerPersistence containerPersistence = new ContainerPersistence(new BlobStoreConnection(storeContextFactory));
-                containerPersistence.creteContainer(bp.getObjectHandlePath());
-            } catch (Exception e) {
-                throw BaseExceptionHandler.handle(e);
-            }
+            BucketPath bp = new BucketPath().set(new BucketName("1")).sub(new BucketName("2")).sub(new BucketName("3"));
+            TestFsBlobStoreFactory storeContextFactory = new TestFsBlobStoreFactory();
+            ExtendedKeystorePersistence keystorePersistence = new ExtendedKeystorePersistence(storeContextFactory);
+            ContainerPersistence containerPersistence = new ContainerPersistence(new ExtendedBlobStoreConnection(storeContextFactory));
+            containerPersistence.creteContainer(bp.getObjectHandlePath());
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
+        } finally {
+            KeyStoreServiceTest.removeContainer("1");
         }
     }
 
@@ -167,13 +166,12 @@ public class AllServiceTest {
      * Es wird ein KeyStore angelegt, der nur einen symmetrischen Key enthält.
      * Ein Document wird angelegt, es wird mit einem neuen DocumentKey verschlüsselt.
      * Dieser wird mit dem symmetrischen Key des KeyStores in einem DocumentGuard abgelegt.
-     *
+     * <p>
      * Dann wird ein zweiter KeyStore angelegt, der nur ein Private/Public-Keypain enthält.
      * Es wird ein DocumentGuard für den oben erzeugten DocumentKey erzeugt, aber nur
      * mit dem PublicKey. Es gibt keinen Zugriff auf ReadKeyPassword.
-     *
+     * <p>
      * Das Document wird nun mit dem Privaten Key gelesen.
-     *
      */
     @Test
     public void testCreate_oneDocument_twoKeyStores_twoGuards_LoadDocument() {
@@ -195,9 +193,8 @@ public class AllServiceTest {
     /**
      * wie der vorige Test, nur dass der SecretKey nicht gelesen werden können soll,
      * weil er nicht bekannt ist. Daher expected Excption
-     *
      */
-    @Test (expected = BaseException.class)
+    @Test(expected = BaseException.class)
     public void testCreate_oneDocument_twoKeyStores_twoGuards_LoadDocument_with_expected_failure() {
         String container1 = "key-store-container-for-secretkey";
         String container2 = "key-store-container-for-enckey";
@@ -230,7 +227,7 @@ public class AllServiceTest {
                     asymmetricStuff.documentGuardStuff.documentGuardService,
                     asymmetricStuff.documentGuardStuff.documentKeyIDWithKey,
                     newDocumentContent
-                    );
+            );
             LOGGER.info("Document erfolgreich ERNEUT geschrieben");
 
             // Load with asymmetric key
@@ -261,8 +258,7 @@ public class AllServiceTest {
         }
     }
 
-    private FullStuff createKeyStoreAndDocument(String container1, DocumentContent documentContent)
-    {
+    private FullStuff createKeyStoreAndDocument(String container1, DocumentContent documentContent) {
         // Erzeugen eines ersten KeyStores nur mit SecretKey
         ExtendedKeystorePersistence keyStoreWithSecretKeyOnly = KeyStoreServiceTest.createKeyStorePersistenceForContainer(container1);
         KeyStoreServiceTest.KeyStoreStuff keyStoreStuffForKeyStoreWithSecretKey = new KeyStoreServiceTest().createKeyStore(keyStoreWithSecretKeyOnly,
@@ -300,8 +296,7 @@ public class AllServiceTest {
         return new FullStuff(keyStoreStuffForKeyStoreWithSecretKey, documentGuardStuffForSecretKey, documentStuff);
     }
 
-    private FullStuff createPublicKeyStoreForKnownDocument(String container2, DocumentContent documentContent, DocumentLocation documentLocation, DocumentKeyIDWithKey documentKeyIDWithKey, boolean setReadKeyPassword)
-    {
+    private FullStuff createPublicKeyStoreForKnownDocument(String container2, DocumentContent documentContent, DocumentLocation documentLocation, DocumentKeyIDWithKey documentKeyIDWithKey, boolean setReadKeyPassword) {
         // Anlegen des zweiten KeyStores. Nur mit einen EncKey
         ExtendedKeystorePersistence keyStoreWithEncKeyOnly = KeyStoreServiceTest.createKeyStorePersistenceForContainer(container2);
         KeyStoreServiceTest.KeyStoreStuff keyStoreStuffForKeyStoreWithEncKey = new KeyStoreServiceTest().createKeyStore(keyStoreWithEncKeyOnly,

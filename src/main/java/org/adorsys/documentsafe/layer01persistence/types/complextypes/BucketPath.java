@@ -1,5 +1,6 @@
 package org.adorsys.documentsafe.layer01persistence.types.complextypes;
 
+import org.adorsys.documentsafe.layer01persistence.exceptions.BucketException;
 import org.adorsys.documentsafe.layer01persistence.types.BucketName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,24 @@ public class BucketPath {
         return buckets.stream().map(b -> b.getValue()).collect(Collectors.joining(BucketName.BUCKET_SEPARATOR));
     }
 
+    public BucketName getFirstBucket() {
+        return buckets.get(0);
+    }
+
+    public String getSubBuckets() {
+        if (getDepth() <= 1) {
+            throw new BucketException("Depth <= 1 for " + this.toString());
+        }
+        List<BucketName> remaining = new ArrayList<>();
+        remaining.addAll(buckets);
+        remaining.remove(0);
+        return remaining.stream().map(b -> b.getValue()).collect(Collectors.joining(BucketName.BUCKET_SEPARATOR));
+    }
+
+    public int getDepth() {
+        return buckets.size();
+    }
+
     private static List<BucketName> split(String fullBucketPath) {
         List<BucketName> list = new ArrayList<>();
         StringTokenizer st = new StringTokenizer(fullBucketPath, BucketName.BUCKET_SEPARATOR);
@@ -49,5 +68,12 @@ public class BucketPath {
             list.add(new BucketName(st.nextToken()));
         }
         return list;
+    }
+
+    @Override
+    public String toString() {
+        return "BucketPath{" +
+                "buckets=" + buckets +
+                '}';
     }
 }
