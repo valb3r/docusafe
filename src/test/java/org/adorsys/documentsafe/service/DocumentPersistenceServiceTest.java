@@ -1,5 +1,6 @@
 package org.adorsys.documentsafe.service;
 
+import org.adorsys.documentsafe.layer01persistence.ExtendedBlobStoreConnection;
 import org.adorsys.documentsafe.layer01persistence.ExtendedObjectPersistence;
 import org.adorsys.documentsafe.layer02service.InterfaceDocumentGuardService;
 import org.adorsys.documentsafe.layer02service.InterfaceDocumentPersistenceService;
@@ -34,7 +35,7 @@ public class DocumentPersistenceServiceTest {
 
 
     public static void beforeClass() {
-        BlobStoreConnection blobStoreConnection = new BlobStoreConnection(new TestFsBlobStoreFactory());
+        BlobStoreConnection blobStoreConnection = new ExtendedBlobStoreConnection(new TestFsBlobStoreFactory());
         documentExtendedPersistence = new ExtendedObjectPersistence(blobStoreConnection);
         containerPersistence = new ContainerPersistence(blobStoreConnection);
         createdBuckets = new HashSet<>();

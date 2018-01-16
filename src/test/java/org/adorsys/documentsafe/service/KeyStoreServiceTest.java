@@ -1,20 +1,20 @@
 package org.adorsys.documentsafe.service;
 
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
+import org.adorsys.documentsafe.layer01persistence.ExtendedBlobStoreConnection;
+import org.adorsys.documentsafe.layer01persistence.ExtendedKeystorePersistence;
+import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
+import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreBucketPath;
+import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreLocation;
 import org.adorsys.documentsafe.layer02service.InterfaceKeyStoreService;
+import org.adorsys.documentsafe.layer02service.generators.KeyStoreCreationConfig;
 import org.adorsys.documentsafe.layer02service.impl.KeyStoreService;
 import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
+import org.adorsys.documentsafe.layer02service.types.ReadStorePassword;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
-import org.adorsys.documentsafe.layer02service.generators.KeyStoreCreationConfig;
-import org.adorsys.encobject.service.BlobStoreConnection;
+import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAuth;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
-import org.adorsys.documentsafe.layer01persistence.ExtendedKeystorePersistence;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreBucketPath;
-import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
-import org.adorsys.documentsafe.layer02service.types.ReadStorePassword;
-import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAuth;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreLocation;
 
 import java.security.KeyStore;
 
@@ -69,7 +69,7 @@ public class KeyStoreServiceTest {
         try {
             TestFsBlobStoreFactory storeContextFactory = new TestFsBlobStoreFactory();
             ExtendedKeystorePersistence keystorePersistence = new ExtendedKeystorePersistence(storeContextFactory);
-            ContainerPersistence containerPersistence = new ContainerPersistence(new BlobStoreConnection(storeContextFactory));
+            ContainerPersistence containerPersistence = new ContainerPersistence(new ExtendedBlobStoreConnection(storeContextFactory));
             containerPersistence.creteContainer(container);
             return keystorePersistence;
         } catch (Exception e) {
@@ -80,7 +80,7 @@ public class KeyStoreServiceTest {
     public static void removeContainer(String container) {
         try {
             TestFsBlobStoreFactory storeContextFactory = new TestFsBlobStoreFactory();
-            ContainerPersistence containerPersistence = new ContainerPersistence(new BlobStoreConnection(storeContextFactory));
+            ContainerPersistence containerPersistence = new ContainerPersistence(new ExtendedBlobStoreConnection(storeContextFactory));
             containerPersistence.deleteContainer(container);
         } catch (Exception e) {
             // ignore this

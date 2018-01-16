@@ -49,12 +49,15 @@ public class BucketPath {
 
     public String getSubBuckets() {
         if (getDepth() <= 1) {
-            throw new BucketException("Depth <= 1 for " + this.toString());
+            return "";
         }
         List<BucketName> remaining = new ArrayList<>();
         remaining.addAll(buckets);
         remaining.remove(0);
-        return remaining.stream().map(b -> b.getValue()).collect(Collectors.joining(BucketName.BUCKET_SEPARATOR));
+        String path = remaining.stream().map(b -> b.getValue()).collect(Collectors.joining(BucketName.BUCKET_SEPARATOR));
+        path = path + "/";
+
+        return path;
     }
 
     public int getDepth() {

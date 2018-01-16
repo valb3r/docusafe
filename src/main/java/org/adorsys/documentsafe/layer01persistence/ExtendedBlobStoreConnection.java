@@ -1,6 +1,5 @@
 package org.adorsys.documentsafe.layer01persistence;
 
-import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
 import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.BlobStoreContextFactory;

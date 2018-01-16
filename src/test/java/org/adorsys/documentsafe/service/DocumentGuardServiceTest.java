@@ -1,6 +1,7 @@
 package org.adorsys.documentsafe.service;
 
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
+import org.adorsys.documentsafe.layer01persistence.ExtendedBlobStoreConnection;
 import org.adorsys.documentsafe.layer02service.impl.DocumentGuardService;
 import org.adorsys.documentsafe.layer02service.InterfaceDocumentGuardService;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
@@ -28,8 +29,8 @@ public class DocumentGuardServiceTest {
 
     public static void beforeClass() {
         guardContextFactory = new TestFsBlobStoreFactory();
-        guardContainerPersistence = new ContainerPersistence(new BlobStoreConnection(guardContextFactory));
-        guardExtendedPersistence = new ExtendedObjectPersistence(new BlobStoreConnection(guardContextFactory));
+        guardContainerPersistence = new ContainerPersistence(new ExtendedBlobStoreConnection(guardContextFactory));
+        guardExtendedPersistence = new ExtendedObjectPersistence(new ExtendedBlobStoreConnection(guardContextFactory));
 
     }
     public static void afterClass() {

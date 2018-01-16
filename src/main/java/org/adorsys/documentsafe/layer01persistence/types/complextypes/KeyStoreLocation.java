@@ -36,8 +36,8 @@ public class KeyStoreLocation implements LocationInterface {
 
 	public ObjectHandle getLocationHandle(){
 		return new ObjectHandle(
-				getKeyStoreBucketPath().getObjectHandlePath(),
-				keyStoreID.getValue() + FILE_EXTENSION_SEPARATOR + keyStoreType.getValue());
+				getKeyStoreBucketPath().getFirstBucket().getValue(),
+				getKeyStoreBucketPath().getSubBuckets() + keyStoreID.getValue() + FILE_EXTENSION_SEPARATOR + keyStoreType.getValue());
 	}
 
 	@Override

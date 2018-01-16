@@ -175,8 +175,8 @@ public class AllServiceTest {
      */
     @Test
     public void testCreate_oneDocument_twoKeyStores_twoGuards_LoadDocument() {
-        String container1 = "key-store-container-for-secretkey";
-        String container2 = "key-store-container-for-enckey";
+        String container1 = "user1/key-store-container-for-secretkey";
+        String container2 = "user2/key-store-container-for-enckey";
         DocumentContent documentContent = new DocumentContent("Ein Affe im Zoo ist nie allein".getBytes());
 
         try {
@@ -185,8 +185,8 @@ public class AllServiceTest {
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
         } finally {
-            KeyStoreServiceTest.removeContainer(container2);
-            KeyStoreServiceTest.removeContainer(container1);
+ //           KeyStoreServiceTest.removeContainer(container2);
+ //           KeyStoreServiceTest.removeContainer(container1);
         }
     }
 
