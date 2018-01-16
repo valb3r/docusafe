@@ -54,4 +54,21 @@ public class ExtendedBlobStoreConnection extends BlobStoreConnection {
             this.factory.dispose(blobStoreContext);
         }
     }
+
+    @Override
+    public boolean containerExists(String container) {
+        BlobStoreContext blobStoreContext = this.factory.alocate();
+
+        boolean bucketExists = false;
+        try {
+            BlobStore blobStore = blobStoreContext.getBlobStore();
+            BucketPath bp = new BucketPath(container);
+            bucketExists = blobStore.containerExists(bp.getFirstBucket().getValue());
+        } finally {
+            this.factory.dispose(blobStoreContext);
+        }
+
+        return bucketExists;
+    }
+
 }

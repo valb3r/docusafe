@@ -20,7 +20,7 @@ public class DocumentLocation implements LocationInterface {
     }
 
     public ObjectHandle getLocationHandle() {
-        return new ObjectHandle(documentBucketPath.getObjectHandlePath(), documentID.getValue());
+        return new ObjectHandle(documentBucketPath.getFirstBucket().getValue(), documentBucketPath.getSubBuckets() + documentID.getValue());
     }
 
     @Override

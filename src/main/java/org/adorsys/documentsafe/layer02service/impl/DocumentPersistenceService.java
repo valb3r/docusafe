@@ -56,7 +56,7 @@ public class DocumentPersistenceService implements InterfaceDocumentPersistenceS
             LOGGER.info("start persist document with " + documentID);
 
             // Create object handle
-            ObjectHandle location = new ObjectHandle(documentBucketPath.getObjectHandlePath(), documentID.getValue());
+            ObjectHandle location = new ObjectHandle(documentBucketPath.getFirstBucket().getValue(), documentBucketPath.getSubBuckets() + documentID.getValue());
 
             // Store object.
             ContentMetaInfo metaInfo = null;

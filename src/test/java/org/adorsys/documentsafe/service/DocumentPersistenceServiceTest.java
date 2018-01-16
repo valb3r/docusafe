@@ -30,7 +30,6 @@ public class DocumentPersistenceServiceTest {
     private static ContainerPersistence containerPersistence;
     private static Set<DocumentBucketPath> createdBuckets;
 
-    private DocumentBucketPath documentBucketPath = new DocumentBucketPath("document-bucket");
     private DocumentID documentID = new DocumentID("document-id-123");
 
 
@@ -52,6 +51,7 @@ public class DocumentPersistenceServiceTest {
     }
 
     public DocumentStuff testPersistDocument(InterfaceDocumentGuardService documentGuardService,
+                                             DocumentBucketPath documentBucketPath,
                                              DocumentKeyIDWithKey documentKeyIDWithKey,
                                              DocumentContent documentContent) {
         InterfaceDocumentPersistenceService documentPersistenceService = new DocumentPersistenceService(containerPersistence, documentExtendedPersistence, documentGuardService);
