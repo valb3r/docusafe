@@ -200,9 +200,9 @@ public class AllServiceTest {
      */
     @Test(expected = BaseException.class)
     public void testCreate_oneDocument_twoKeyStores_twoGuards_LoadDocument_with_expected_failure() {
-        String container1 = "key-store-container-for-secretkey";
-        String container2 = "key-store-container-for-enckey";
-        DocumentBucketPath documentBucketPath = new DocumentBucketPath("documentBucketPath4");
+        String container1 = "user/8/key-store-container-for-secretkey";
+        String container2 = "user/9/key-store-container-for-enckey";
+        DocumentBucketPath documentBucketPath = new DocumentBucketPath("documentBucketPath/4");
 
         DocumentContent documentContent = new DocumentContent("Ein Affe im Zoo ist nie allein".getBytes());
 
@@ -219,8 +219,8 @@ public class AllServiceTest {
 
     @Test
     public void testCreate_oneDocument_twoKeyStores_twoGuards_ChangeDocument() {
-        String container1 = "key-store-container-for-secretkey";
-        String container2 = "key-store-container-for-enckey";
+        String container1 = "user1/key-store-container-for-secretkey";
+        String container2 = "user2/key-store-container-for-enckey";
         DocumentBucketPath documentBucketPath = new DocumentBucketPath("documentBucketPath5/1/2/3");
 
         DocumentContent documentContent = new DocumentContent("Ein Affe im Zoo ist nie allein".getBytes());
