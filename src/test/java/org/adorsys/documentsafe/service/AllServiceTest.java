@@ -318,6 +318,10 @@ public class AllServiceTest {
             }
         }
 
+        LOGGER.info("einfaches listing");
+        bucketServiceTest.listBucket(documentBucketPathList.get(0), false);
+        LOGGER.info("JETZT RECURSIV");
+        bucketServiceTest.listBucket(documentBucketPathList.get(0), true);
         BucketServiceTest.afterClass();
     }
 

@@ -8,6 +8,9 @@ import org.adorsys.encobject.service.ContainerExistsException;
 import org.adorsys.encobject.service.UnknownContainerException;
 import org.jclouds.blobstore.BlobStore;
 import org.jclouds.blobstore.BlobStoreContext;
+import org.jclouds.blobstore.domain.PageSet;
+import org.jclouds.blobstore.domain.StorageMetadata;
+import org.jclouds.blobstore.options.ListContainerOptions;
 import org.jclouds.domain.Location;
 
 /**
@@ -35,6 +38,7 @@ public class ExtendedBlobStoreConnection extends BlobStoreConnection {
             }
             if (bp.getDepth() > 1) {
                 blobStoreContext.getBlobStore().createContainerInLocation((Location) null, bp.getFirstBucket().getValue());
+                // TODO nicht schön
                 blobStoreContext.getBlobStore().createDirectory(bp.getFirstBucket().getValue(), bp.getSubBuckets());
             } else {
                 blobStoreContext.getBlobStore().createContainerInLocation((Location) null, container);
@@ -81,6 +85,20 @@ public class ExtendedBlobStoreConnection extends BlobStoreConnection {
         try {
             BlobStore blobStore = blobStoreContext.getBlobStore();
             return blobStore.blobExists(location.getContainer(), location.getName());
+        } finally {
+            this.factory.dispose(blobStoreContext);
+        }
+    }
+
+    public PageSet<? extends StorageMetadata> list(String container, boolean recusive) {
+        BlobStoreContext blobStoreContext = this.factory.alocate();
+        try {
+            BlobStore blobStore = blobStoreContext.getBlobStore();
+            ListContainerOptions listContainerOptions = new ListContainerOptions();
+            if (recusive) {
+                listContainerOptions.recursive();
+            }
+            return blobStore.list(container, listContainerOptions);
         } finally {
             this.factory.dispose(blobStoreContext);
         }

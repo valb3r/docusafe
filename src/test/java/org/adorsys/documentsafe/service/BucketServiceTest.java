@@ -4,7 +4,6 @@ import org.adorsys.documentsafe.layer01persistence.ExtendedBlobStoreConnection;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
 import org.adorsys.documentsafe.layer02service.BucketService;
 import org.adorsys.documentsafe.layer02service.impl.BucketServiceImpl;
-import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
 
 /**
@@ -14,8 +13,7 @@ public class BucketServiceTest {
     private static BucketService bucketService;
     public static void beforeClass() {
         TestFsBlobStoreFactory storeContextFactory = new TestFsBlobStoreFactory();
-        ContainerPersistence containerPersistence = new ContainerPersistence(new ExtendedBlobStoreConnection(storeContextFactory));
-        bucketService = new BucketServiceImpl(containerPersistence);
+        bucketService = new BucketServiceImpl(new ExtendedBlobStoreConnection(storeContextFactory));
     }
 
     public static void afterClass() {
@@ -23,6 +21,10 @@ public class BucketServiceTest {
 
     public void createBucket(BucketPath bucketPath) {
         bucketService.createBucket(bucketPath);
+    }
+
+    public void listBucket(BucketPath bucketPath, boolean recursive) {
+        bucketService.readDocumentBucket(bucketPath, recursive);
     }
 
 }
