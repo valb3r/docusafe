@@ -4,11 +4,10 @@ package org.adorsys.documentsafe.layer00common.exceptions;
  * Created by peter on 23.12.17 at 18:11.
  */
 public class BaseExceptionHandler {
-    private final static String EXCEPTION_PREFIX = "org.adorsys.documentsafe.layer00common.exceptions";
     private final static String FILTER_PREFIX = "org.adorsys";
 
     static public BaseException handle (Throwable t) {
-        if (t.getClass().getName().startsWith(EXCEPTION_PREFIX)) {
+        if (t instanceof BaseException) {
             throw (RuntimeException) t;
         }
         throw new BaseException(t);

@@ -9,6 +9,7 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.PasswordLookup;
 import com.nimbusds.jose.jwk.RSAKey;
+import org.adorsys.documentsafe.layer01persistence.types.OverwriteFlag;
 import org.adorsys.documentsafe.layer02service.InterfaceDocumentGuardService;
 import org.adorsys.documentsafe.layer02service.exceptions.AsymmetricEncryptionException;
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
@@ -120,7 +121,7 @@ public class DocumentGuardService implements InterfaceDocumentGuardService {
             metaInfo.getAddInfos().put(serializerRegistry.SERIALIZER_HEADER_KEY, DocumentGuardSerializer01.SERIALIZER_ID);
             GuardKey guardKey = new GuardKey(serializerRegistry.defaultSerializer().serializeSecretKey(documentKeyIDWithKey.getDocumentKey()));
 
-            objectPersistence.storeObject(guardKey.getValue(), metaInfo, documentGuardHandle, keySource, new KeyID(guardKeyID.getValue()), encParams);
+            objectPersistence.storeObject(guardKey.getValue(), metaInfo, documentGuardHandle, keySource, new KeyID(guardKeyID.getValue()), encParams, OverwriteFlag.FALSE);
             LOGGER.info("finished create symmetric encrypted document guard for " + documentKeyIDWithKey + " @ " + keyStoreAccess.getKeyStoreLocation());
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
@@ -161,7 +162,7 @@ public class DocumentGuardService implements InterfaceDocumentGuardService {
             metaInfo.getAddInfos().put(serializerRegistry.SERIALIZER_HEADER_KEY, DocumentGuardSerializer01.SERIALIZER_ID);
             GuardKey guardKey = new GuardKey(serializerRegistry.defaultSerializer().serializeSecretKey(documentKeyIDWithKey.getDocumentKey()));
 
-            objectPersistence.storeObject(guardKey.getValue(), metaInfo, documentGuardHandle, keySource, new KeyID(guardKeyID.getValue()), encParams);
+            objectPersistence.storeObject(guardKey.getValue(), metaInfo, documentGuardHandle, keySource, new KeyID(guardKeyID.getValue()), encParams, OverwriteFlag.FALSE);
             LOGGER.info("finished create asymmetric encrypted document guard for " + documentKeyIDWithKey + " @ " + receiverKeyStoreAccess.getKeyStoreLocation());
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);

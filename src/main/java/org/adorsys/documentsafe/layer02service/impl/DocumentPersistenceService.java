@@ -1,5 +1,6 @@
 package org.adorsys.documentsafe.layer02service.impl;
 
+import org.adorsys.documentsafe.layer01persistence.types.OverwriteFlag;
 import org.adorsys.documentsafe.layer02service.InterfaceDocumentGuardService;
 import org.adorsys.documentsafe.layer02service.InterfaceDocumentPersistenceService;
 import org.adorsys.documentsafe.layer02service.types.DocumentID;
@@ -50,7 +51,8 @@ public class DocumentPersistenceService implements InterfaceDocumentPersistenceS
             DocumentKeyIDWithKey documentKeyIDWithKey,
             DocumentBucketPath documentBucketPath,
             DocumentID documentID,
-            DocumentContent documentContent) {
+            DocumentContent documentContent,
+            OverwriteFlag overwriteFlag) {
 
         try {
             LOGGER.info("start persist document with " + documentID);
@@ -69,9 +71,9 @@ public class DocumentPersistenceService implements InterfaceDocumentPersistenceS
                 containerPersistence.creteContainer(location.getContainer());
             }
             KeyID keyID = new KeyID(documentKeyIDWithKey.getDocumentKeyID().getValue());
-            objectPersistence.storeObject(documentContent.getValue(), metaInfo, location, keySource, keyID, encParams);
+            objectPersistence.storeObject(documentContent.getValue(), metaInfo, location, keySource, keyID, encParams, overwriteFlag);
             DocumentLocation documentLocation = new DocumentLocation(documentID, documentBucketPath);
-            LOGGER.info("finsihed persist document with " + documentID + " @ " + documentLocation);
+            LOGGER.info("finished persist document with " + documentID + " @ " + documentLocation);
             return documentLocation;
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
@@ -90,7 +92,7 @@ public class DocumentPersistenceService implements InterfaceDocumentPersistenceS
             LOGGER.info("start load document @ " + documentLocation);
             KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess);
             DocumentContent documentContent = new DocumentContent(objectPersistence.loadObject(documentLocation.getLocationHandle(), keySource).getData());
-            LOGGER.info("start load document @ " + documentLocation);
+            LOGGER.info("finished load document @ " + documentLocation);
             return documentContent;
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);

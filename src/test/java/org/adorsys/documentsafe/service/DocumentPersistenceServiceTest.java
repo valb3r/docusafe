@@ -2,6 +2,7 @@ package org.adorsys.documentsafe.service;
 
 import org.adorsys.documentsafe.layer01persistence.ExtendedBlobStoreConnection;
 import org.adorsys.documentsafe.layer01persistence.ExtendedObjectPersistence;
+import org.adorsys.documentsafe.layer01persistence.types.OverwriteFlag;
 import org.adorsys.documentsafe.layer02service.InterfaceDocumentGuardService;
 import org.adorsys.documentsafe.layer02service.InterfaceDocumentPersistenceService;
 import org.adorsys.documentsafe.layer02service.impl.DocumentPersistenceService;
@@ -54,14 +55,23 @@ public class DocumentPersistenceServiceTest {
                                              DocumentBucketPath documentBucketPath,
                                              DocumentKeyIDWithKey documentKeyIDWithKey,
                                              DocumentContent documentContent) {
+        return testPersistDocument(documentGuardService, documentBucketPath, documentKeyIDWithKey, documentID, documentContent, OverwriteFlag.FALSE);
+    }
+    public DocumentStuff testPersistDocument(InterfaceDocumentGuardService documentGuardService,
+                                             DocumentBucketPath documentBucketPath,
+                                             DocumentKeyIDWithKey documentKeyIDWithKey,
+                                             DocumentID documentID,
+                                             DocumentContent documentContent,
+                                             OverwriteFlag overwriteFlag) {
         InterfaceDocumentPersistenceService documentPersistenceService = new DocumentPersistenceService(containerPersistence, documentExtendedPersistence, documentGuardService);
         DocumentLocation documentLocation = documentPersistenceService.persistDocument(
                 documentKeyIDWithKey,
                 documentBucketPath,
                 documentID,
-                documentContent);
+                documentContent,
+                overwriteFlag);
         createdBuckets.add(documentBucketPath);
-        return new DocumentStuff(documentLocation);
+        return new DocumentStuff(documentID, documentLocation);
     }
 
     public DocumentContent testLoadDocument(InterfaceDocumentGuardService documentGuardService,
@@ -76,10 +86,14 @@ public class DocumentPersistenceServiceTest {
     }
 
     public static class DocumentStuff {
-        public DocumentLocation documentLocation;
+        public final DocumentID documentID;
 
-        public DocumentStuff(DocumentLocation documentLocation) {
+        public DocumentStuff(DocumentID documentID, DocumentLocation documentLocation) {
+            this.documentID = documentID;
             this.documentLocation = documentLocation;
         }
+
+        public final DocumentLocation documentLocation;
+
     }
 }

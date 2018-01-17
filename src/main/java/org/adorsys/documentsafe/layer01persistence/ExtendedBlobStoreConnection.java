@@ -1,6 +1,7 @@
 package org.adorsys.documentsafe.layer01persistence;
 
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
+import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.ContainerExistsException;
@@ -69,6 +70,20 @@ public class ExtendedBlobStoreConnection extends BlobStoreConnection {
         }
 
         return bucketExists;
+    }
+
+    /**
+     * Achtung, gehört nicht zum derzeitigen Interface
+     * @return
+     */
+    public boolean blobExists(ObjectHandle location) {
+        BlobStoreContext blobStoreContext = this.factory.alocate();
+        try {
+            BlobStore blobStore = blobStoreContext.getBlobStore();
+            return blobStore.blobExists(location.getContainer(), location.getName());
+        } finally {
+            this.factory.dispose(blobStoreContext);
+        }
     }
 
 }

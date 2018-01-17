@@ -5,11 +5,14 @@ import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer00common.utils.HexUtil;
 import org.adorsys.documentsafe.layer01persistence.ExtendedBlobStoreConnection;
 import org.adorsys.documentsafe.layer01persistence.ExtendedKeystorePersistence;
+import org.adorsys.documentsafe.layer01persistence.exceptions.FileExistsException;
 import org.adorsys.documentsafe.layer01persistence.types.BucketName;
 import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
+import org.adorsys.documentsafe.layer01persistence.types.OverwriteFlag;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
 import org.adorsys.documentsafe.layer02service.generators.KeyStoreCreationConfig;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
+import org.adorsys.documentsafe.layer02service.types.DocumentID;
 import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
 import org.adorsys.documentsafe.layer02service.types.ReadStorePassword;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
@@ -21,12 +24,15 @@ import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
 import org.adorsys.encobject.utils.TestKeyUtils;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by peter on 04.01.18.
@@ -34,8 +40,8 @@ import org.slf4j.LoggerFactory;
 public class AllServiceTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(AllServiceTest.class);
 
-    @BeforeClass
-    public static void before() {
+    @Before
+    public void before() {
 
         TestKeyUtils.turnOffEncPolicy();
         KeyStoreServiceTest.beforeTest();
@@ -43,8 +49,8 @@ public class AllServiceTest {
         DocumentPersistenceServiceTest.beforeClass();
     }
 
-    @AfterClass
-    public static void after() {
+    @After
+    public void after() {
         DocumentPersistenceServiceTest.afterClass();
         DocumentGuardServiceTest.afterClass();
         KeyStoreServiceTest.afterTest();
@@ -235,7 +241,9 @@ public class AllServiceTest {
                     asymmetricStuff.documentGuardStuff.documentGuardService,
                     documentBucketPath,
                     asymmetricStuff.documentGuardStuff.documentKeyIDWithKey,
-                    newDocumentContent
+                    symmetricStuff.documentStuff.documentID,
+                    newDocumentContent,
+                    OverwriteFlag.TRUE
             );
             LOGGER.info("Document erfolgreich ERNEUT geschrieben");
 
@@ -253,6 +261,64 @@ public class AllServiceTest {
             KeyStoreServiceTest.removeContainer(container2);
             KeyStoreServiceTest.removeContainer(container1);
         }
+    }
+
+    @Test(expected = FileExistsException.class)
+    public void testCreateDocumentTwice() {
+        DocumentBucketPath documentBucketPath = new DocumentBucketPath("user1/bucket/folder1");
+        DocumentContent documentContent = new DocumentContent("Affe".getBytes());
+
+        DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest();
+        DocumentKeyIDWithKey keyIDWithKey = documentGuardServiceTest.createKeyIDWithKey();
+
+        DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest();
+        DocumentID documentID = new DocumentID("AffenDocument-1");
+        documentPersistenceServiceTest.testPersistDocument(null, documentBucketPath, keyIDWithKey, documentID, documentContent, OverwriteFlag.FALSE);
+        documentPersistenceServiceTest.testPersistDocument(null, documentBucketPath, keyIDWithKey, documentID, documentContent, OverwriteFlag.FALSE);
+    }
+
+    @Test
+    public void testCreateDocumentTwiceButOverwrite() {
+        DocumentBucketPath documentBucketPath = new DocumentBucketPath("user1/bucket/folder1");
+        DocumentContent documentContent = new DocumentContent("Affe".getBytes());
+
+        DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest();
+        DocumentKeyIDWithKey keyIDWithKey = documentGuardServiceTest.createKeyIDWithKey();
+
+        DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest();
+        DocumentID documentID = new DocumentID("AffenDocument-1");
+        documentPersistenceServiceTest.testPersistDocument(null, documentBucketPath, keyIDWithKey, documentID, documentContent, OverwriteFlag.FALSE);
+        documentPersistenceServiceTest.testPersistDocument(null, documentBucketPath, keyIDWithKey, documentID, documentContent, OverwriteFlag.TRUE);
+
+    }
+
+    @Test
+    public void testBucketService1() {
+        BucketServiceTest.beforeClass();
+
+        List<DocumentBucketPath> documentBucketPathList = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            documentBucketPathList.add(new DocumentBucketPath("user1/bucket/folder1/" + i));
+        }
+        DocumentContent documentContent = new DocumentContent("Affe".getBytes());
+
+        BucketServiceTest bucketServiceTest = new BucketServiceTest();
+        bucketServiceTest.createBucket(documentBucketPathList.get(0));
+
+        BlobStoreConnection blobStoreConnection = new ExtendedBlobStoreConnection(new TestFsBlobStoreFactory());
+
+        DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest();
+        DocumentKeyIDWithKey keyIDWithKey = documentGuardServiceTest.createKeyIDWithKey();
+
+        DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest();
+        for (int i = 0; i < documentBucketPathList.size(); i++) {
+            for (int j = 0; j < 5; j++) {
+                DocumentID documentID = new DocumentID("AffenDocument" + j);
+                documentPersistenceServiceTest.testPersistDocument(null, documentBucketPathList.get(i), keyIDWithKey, documentID, documentContent, OverwriteFlag.FALSE);
+            }
+        }
+
+        BucketServiceTest.afterClass();
     }
 
     private static class FullStuff {

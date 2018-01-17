@@ -7,10 +7,14 @@ import com.nimbusds.jose.JWEHeader.Builder;
 import com.nimbusds.jose.JWEObject;
 import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.factories.DefaultJWEDecrypterFactory;
+import org.adorsys.documentsafe.layer00common.exceptions.BaseException;
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer01persistence.exceptions.ExtendedPersistenceException;
-import org.adorsys.documentsafe.layer01persistence.types.KeyID;
+import org.adorsys.documentsafe.layer01persistence.exceptions.FileExistsException;
 import org.adorsys.documentsafe.layer01persistence.keysource.KeySource;
+import org.adorsys.documentsafe.layer01persistence.types.KeyID;
+import org.adorsys.documentsafe.layer01persistence.types.OverwriteFlag;
+import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
 import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.params.EncryptionParams;
@@ -55,7 +59,7 @@ public class ExtendedObjectPersistence {
 	 * @param encParams
 	 */
 	public void storeObject(byte[] data, ContentMetaInfo metaInfo, ObjectHandle location, KeySource keySource, KeyID keyID,
-                            EncryptionParams encParams) {
+							EncryptionParams encParams, OverwriteFlag overwrite) {
 		
 		try {
 
@@ -84,7 +88,22 @@ public class ExtendedObjectPersistence {
 	
 			byte[] bytesToStore = jweEncryptedObject.getBytes("UTF-8");
 
-			blobStoreConnection.putBlob(addExtension(location), bytesToStore);
+			ObjectHandle extendedLocation = addExtension(location);
+			if (overwrite == OverwriteFlag.FALSE) {
+				if (blobStoreConnection instanceof ExtendedBlobStoreConnection) {
+					ExtendedBlobStoreConnection extendedBlobStoreConnection = (ExtendedBlobStoreConnection) blobStoreConnection;
+					BucketPath bp = new BucketPath(location.getContainer());
+					String filename = location.getName();
+
+					boolean blobExists = extendedBlobStoreConnection.blobExists(extendedLocation);
+					if (blobExists) {
+						throw new FileExistsException("File " + extendedLocation.getContainer() + " " + extendedLocation.getName() + " already exists");
+					}
+				} else {
+					throw new BaseException("dont know how to check for existing file");
+				}
+			}
+			blobStoreConnection.putBlob(extendedLocation, bytesToStore);
 		} catch (Exception e){
 			BaseExceptionHandler.handle(e);
 		}

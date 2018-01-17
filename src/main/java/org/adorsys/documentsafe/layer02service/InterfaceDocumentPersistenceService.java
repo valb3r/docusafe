@@ -1,5 +1,6 @@
 package org.adorsys.documentsafe.layer02service;
 
+import org.adorsys.documentsafe.layer01persistence.types.OverwriteFlag;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.DocumentID;
@@ -15,7 +16,8 @@ public interface InterfaceDocumentPersistenceService {
             DocumentKeyIDWithKey documentKeyIDWithKey,
             DocumentBucketPath documentBucketPath,
             DocumentID documentID,
-            DocumentContent documentContent);
+            DocumentContent documentContent,
+            OverwriteFlag overwriteFlag);
 
     DocumentContent loadDocument(
             KeyStoreAccess keyStoreAccess,
