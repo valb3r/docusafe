@@ -7,7 +7,7 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess
 /**
  * Created by peter on 11.01.18.
  */
-public interface InterfaceDocumentGuardService {
+public interface DocumentGuardService {
     DocumentKeyIDWithKey createDocumentKeyIdWithKey();
 
     void createSymmetricDocumentGuard(KeyStoreAccess keyStoreAccess,

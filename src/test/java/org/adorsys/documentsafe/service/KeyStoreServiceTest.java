@@ -6,9 +6,9 @@ import org.adorsys.documentsafe.layer01persistence.ExtendedKeystorePersistence;
 import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreBucketPath;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreLocation;
-import org.adorsys.documentsafe.layer02service.InterfaceKeyStoreService;
+import org.adorsys.documentsafe.layer02service.KeyStoreService;
 import org.adorsys.documentsafe.layer02service.generators.KeyStoreCreationConfig;
-import org.adorsys.documentsafe.layer02service.impl.KeyStoreService;
+import org.adorsys.documentsafe.layer02service.impl.KeyStoreServiceImpl;
 import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
 import org.adorsys.documentsafe.layer02service.types.ReadStorePassword;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
@@ -45,7 +45,7 @@ public class KeyStoreServiceTest {
                                         KeyStoreID keyStoreID,
                                         KeyStoreCreationConfig config) {
         KeyStoreBucketPath keyStoreBucketPath = new KeyStoreBucketPath(keystoreContainer);
-        InterfaceKeyStoreService keyStoreService = new KeyStoreService(keystorePersistence);
+        KeyStoreService keyStoreService = new KeyStoreServiceImpl(keystorePersistence);
         KeyStoreAuth keyStoreAuth = new KeyStoreAuth(readStorePassword, readKeyPassword);
         KeyStoreLocation keyStoreLocation = keyStoreService.createKeyStore(keyStoreID, keyStoreAuth, keyStoreBucketPath, config);
         KeyStore keyStore = keyStoreService.loadKeystore(keyStoreLocation, keyStoreAuth.getReadStoreHandler());

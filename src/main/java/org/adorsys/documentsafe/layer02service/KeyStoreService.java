@@ -12,7 +12,7 @@ import java.security.KeyStore;
 /**
  * Created by peter on 11.01.18.
  */
-public interface InterfaceKeyStoreService {
+public interface KeyStoreService {
     KeyStoreLocation createKeyStore(KeyStoreID keyStoreID,
                                     KeyStoreAuth keyStoreAuth,
                                     KeyStoreBucketPath keystoreBucketPath,

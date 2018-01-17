@@ -1,8 +1,8 @@
 package org.adorsys.documentsafe.layer02service.impl;
 
 import org.adorsys.documentsafe.layer01persistence.types.OverwriteFlag;
-import org.adorsys.documentsafe.layer02service.InterfaceDocumentGuardService;
-import org.adorsys.documentsafe.layer02service.InterfaceDocumentPersistenceService;
+import org.adorsys.documentsafe.layer02service.DocumentGuardService;
+import org.adorsys.documentsafe.layer02service.DocumentPersistenceService;
 import org.adorsys.documentsafe.layer02service.types.DocumentID;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
 import org.adorsys.encobject.domain.ContentMetaInfo;
@@ -27,14 +27,14 @@ import org.slf4j.LoggerFactory;
  *
  * @author fpo
  */
-public class DocumentPersistenceService implements InterfaceDocumentPersistenceService {
-    private final static Logger LOGGER = LoggerFactory.getLogger(DocumentPersistenceService.class);
+public class DocumentPersistenceServiceImpl implements DocumentPersistenceService {
+    private final static Logger LOGGER = LoggerFactory.getLogger(DocumentPersistenceServiceImpl.class);
 
     private ExtendedObjectPersistence objectPersistence;
-    private InterfaceDocumentGuardService documentGuardService;
+    private DocumentGuardService documentGuardService;
     private ContainerPersistence containerPersistence;
 
-    public DocumentPersistenceService(ContainerPersistence containerPersistence, ExtendedObjectPersistence objectPersistence, InterfaceDocumentGuardService documentGuardService) {
+    public DocumentPersistenceServiceImpl(ContainerPersistence containerPersistence, ExtendedObjectPersistence objectPersistence, DocumentGuardService documentGuardService) {
         super();
         this.containerPersistence = containerPersistence;
         this.objectPersistence = objectPersistence;

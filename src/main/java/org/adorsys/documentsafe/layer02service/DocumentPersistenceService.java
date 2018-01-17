@@ -11,7 +11,7 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess
 /**
  * Created by peter on 11.01.18.
  */
-public interface InterfaceDocumentPersistenceService {
+public interface DocumentPersistenceService {
     DocumentLocation persistDocument(
             DocumentKeyIDWithKey documentKeyIDWithKey,
             DocumentBucketPath documentBucketPath,

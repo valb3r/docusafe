@@ -3,9 +3,9 @@ package org.adorsys.documentsafe.service;
 import org.adorsys.documentsafe.layer01persistence.ExtendedBlobStoreConnection;
 import org.adorsys.documentsafe.layer01persistence.ExtendedObjectPersistence;
 import org.adorsys.documentsafe.layer01persistence.types.OverwriteFlag;
-import org.adorsys.documentsafe.layer02service.InterfaceDocumentGuardService;
-import org.adorsys.documentsafe.layer02service.InterfaceDocumentPersistenceService;
-import org.adorsys.documentsafe.layer02service.impl.DocumentPersistenceService;
+import org.adorsys.documentsafe.layer02service.DocumentGuardService;
+import org.adorsys.documentsafe.layer02service.DocumentPersistenceService;
+import org.adorsys.documentsafe.layer02service.impl.DocumentPersistenceServiceImpl;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.DocumentID;
@@ -51,19 +51,19 @@ public class DocumentPersistenceServiceTest {
         }
     }
 
-    public DocumentStuff testPersistDocument(InterfaceDocumentGuardService documentGuardService,
+    public DocumentStuff testPersistDocument(DocumentGuardService documentGuardService,
                                              DocumentBucketPath documentBucketPath,
                                              DocumentKeyIDWithKey documentKeyIDWithKey,
                                              DocumentContent documentContent) {
         return testPersistDocument(documentGuardService, documentBucketPath, documentKeyIDWithKey, documentID, documentContent, OverwriteFlag.FALSE);
     }
-    public DocumentStuff testPersistDocument(InterfaceDocumentGuardService documentGuardService,
+    public DocumentStuff testPersistDocument(DocumentGuardService documentGuardService,
                                              DocumentBucketPath documentBucketPath,
                                              DocumentKeyIDWithKey documentKeyIDWithKey,
                                              DocumentID documentID,
                                              DocumentContent documentContent,
                                              OverwriteFlag overwriteFlag) {
-        InterfaceDocumentPersistenceService documentPersistenceService = new DocumentPersistenceService(containerPersistence, documentExtendedPersistence, documentGuardService);
+        DocumentPersistenceService documentPersistenceService = new DocumentPersistenceServiceImpl(containerPersistence, documentExtendedPersistence, documentGuardService);
         DocumentLocation documentLocation = documentPersistenceService.persistDocument(
                 documentKeyIDWithKey,
                 documentBucketPath,
@@ -74,10 +74,10 @@ public class DocumentPersistenceServiceTest {
         return new DocumentStuff(documentID, documentLocation);
     }
 
-    public DocumentContent testLoadDocument(InterfaceDocumentGuardService documentGuardService,
+    public DocumentContent testLoadDocument(DocumentGuardService documentGuardService,
                                  KeyStoreAccess keyStoreAccess,
                                  DocumentLocation documentLocation) {
-        InterfaceDocumentPersistenceService documentPersistenceService = new DocumentPersistenceService(containerPersistence, documentExtendedPersistence, documentGuardService);
+        DocumentPersistenceService documentPersistenceService = new DocumentPersistenceServiceImpl(containerPersistence, documentExtendedPersistence, documentGuardService);
         DocumentContent readContent = documentPersistenceService.loadDocument(
                 keyStoreAccess,
                 documentLocation);

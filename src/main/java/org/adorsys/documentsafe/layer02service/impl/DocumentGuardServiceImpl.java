@@ -10,7 +10,7 @@ import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.PasswordLookup;
 import com.nimbusds.jose.jwk.RSAKey;
 import org.adorsys.documentsafe.layer01persistence.types.OverwriteFlag;
-import org.adorsys.documentsafe.layer02service.InterfaceDocumentGuardService;
+import org.adorsys.documentsafe.layer02service.DocumentGuardService;
 import org.adorsys.documentsafe.layer02service.exceptions.AsymmetricEncryptionException;
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer02service.generators.SecretKeyGenerator;
@@ -56,15 +56,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class DocumentGuardService implements InterfaceDocumentGuardService {
-    private final static Logger LOGGER = LoggerFactory.getLogger(DocumentGuardService.class);
+public class DocumentGuardServiceImpl implements DocumentGuardService {
+    private final static Logger LOGGER = LoggerFactory.getLogger(DocumentGuardServiceImpl.class);
 
     private ExtendedKeystorePersistence keystorePersistence;
     private ExtendedObjectPersistence objectPersistence;
 
     private DocumentGuardSerializerRegistery serializerRegistry = DocumentGuardSerializerRegistery.getInstance();
 
-    public DocumentGuardService(ExtendedKeystorePersistence keystorePersistence, ExtendedObjectPersistence objectPersistence) {
+    public DocumentGuardServiceImpl(ExtendedKeystorePersistence keystorePersistence, ExtendedObjectPersistence objectPersistence) {
         this.keystorePersistence = keystorePersistence;
         this.objectPersistence = objectPersistence;
     }
