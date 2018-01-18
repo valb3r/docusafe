@@ -15,6 +15,7 @@ import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.DocumentID;
 import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
 import org.adorsys.documentsafe.layer02service.types.ReadStorePassword;
+import org.adorsys.documentsafe.layer02service.types.complextypes.BucketContent;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentLocation;
@@ -25,6 +26,8 @@ import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
 import org.adorsys.encobject.utils.TestKeyUtils;
+import org.jclouds.blobstore.domain.PageSet;
+import org.jclouds.blobstore.domain.StorageMetadata;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -283,32 +286,29 @@ public class AllServiceTest {
 
     @Test
     public void testBucketService1() {
-        List<DocumentBucketPath> documentBucketPathList = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            documentBucketPathList.add(new DocumentBucketPath("user1/bucket/folder1/" + i));
-        }
-        DocumentContent documentContent = new DocumentContent("Affe".getBytes());
-
         BucketServiceTest bucketServiceTest = new BucketServiceTest(factory);
-        bucketServiceTest.createBucket(documentBucketPathList.get(0));
-
-        BlobStoreConnection blobStoreConnection = new ExtendedBlobStoreConnection(new TestFsBlobStoreFactory());
-
-        DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest(factory);
-        DocumentKeyIDWithKey keyIDWithKey = documentGuardServiceTest.createKeyIDWithKey();
-
-        DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest(factory);
-        for (int i = 0; i < documentBucketPathList.size(); i++) {
-            for (int j = 0; j < 5; j++) {
-                DocumentID documentID = new DocumentID("AffenDocument" + j);
-                documentPersistenceServiceTest.testPersistDocument(null, documentBucketPathList.get(i), keyIDWithKey, documentID, documentContent, OverwriteFlag.FALSE);
-            }
-        }
+        BucketPath rootPath = new BucketPath("user1");
+        bucketServiceTest.createFiles(factory, rootPath, 3,2);
 
         LOGGER.info("einfaches listing");
-        bucketServiceTest.listBucket(documentBucketPathList.get(0), false);
+        BucketContent bucketContent1 = bucketServiceTest.listBucket(rootPath, false);
+        LOGGER.info(bucketContent1.toString());
         LOGGER.info("JETZT RECURSIV");
-        bucketServiceTest.listBucket(documentBucketPathList.get(0), true);
+        BucketContent bucketContent2 = bucketServiceTest.listBucket(rootPath, true);
+        LOGGER.info(bucketContent2.toString());
+
+        PageSet<? extends StorageMetadata> content = bucketContent2.getContent();
+        for (StorageMetadata meta : content) {
+            LOGGER.info("name: " + meta.getName());
+            LOGGER.info("size: " + meta.getSize());
+            LOGGER.info("type: " + meta.getType());
+            LOGGER.info("etag: " + meta.getETag());
+            LOGGER.info("providerid: " + meta.getProviderId());
+            LOGGER.info("creation: " + meta.getCreationDate());
+            LOGGER.info("uri: " + meta.getUri());
+            LOGGER.info(" ");
+        }
+
     }
 
     private static class FullStuff {

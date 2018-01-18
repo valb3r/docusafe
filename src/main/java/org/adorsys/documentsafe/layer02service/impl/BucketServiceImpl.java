@@ -36,10 +36,6 @@ public class BucketServiceImpl implements BucketService {
 
     @Override
     public BucketContent readDocumentBucket(BucketPath bucketPath, boolean recursive) {
-        PageSet<? extends StorageMetadata> list = extendedBlobStoreConnection.list(bucketPath.getFirstBucket().getValue(), recursive);
-        for (StorageMetadata metaData : list) {
-            LOGGER.info(metaData.getName());
-        }
-        return null;
+        return new BucketContent(extendedBlobStoreConnection.list(bucketPath.getFirstBucket().getValue(), recursive));
     }
 }
