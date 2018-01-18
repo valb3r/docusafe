@@ -9,6 +9,7 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.PasswordLookup;
 import com.nimbusds.jose.jwk.RSAKey;
+import org.adorsys.documentsafe.layer01persistence.ExtendedBlobStoreConnection;
 import org.adorsys.documentsafe.layer01persistence.types.OverwriteFlag;
 import org.adorsys.documentsafe.layer02service.DocumentGuardService;
 import org.adorsys.documentsafe.layer02service.exceptions.AsymmetricEncryptionException;
@@ -19,6 +20,7 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess
 import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.params.EncryptionParams;
+import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.jjwk.keystore.JwkExport;
 import org.adorsys.jjwk.serverkey.KeyAndJwk;
 import org.adorsys.jjwk.serverkey.ServerKeyMap;
@@ -64,9 +66,9 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
 
     private DocumentGuardSerializerRegistery serializerRegistry = DocumentGuardSerializerRegistery.getInstance();
 
-    public DocumentGuardServiceImpl(ExtendedKeystorePersistence keystorePersistence, ExtendedObjectPersistence objectPersistence) {
-        this.keystorePersistence = keystorePersistence;
-        this.objectPersistence = objectPersistence;
+    public DocumentGuardServiceImpl(BlobStoreContextFactory factory) {
+        this.objectPersistence = new ExtendedObjectPersistence(new ExtendedBlobStoreConnection(factory));
+        this.keystorePersistence = new ExtendedKeystorePersistence(factory);
     }
 
     /**

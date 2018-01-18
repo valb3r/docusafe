@@ -21,24 +21,15 @@ import org.slf4j.LoggerFactory;
  */
 public class DocumentGuardServiceTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentGuardServiceTest.class);
+    private BlobStoreContextFactory factory;
 
-    private static BlobStoreContextFactory guardContextFactory;
-    private static ContainerPersistence guardContainerPersistence;
-    private static ExtendedObjectPersistence guardExtendedPersistence;
-
-    public static void beforeClass() {
-        guardContextFactory = new TestFsBlobStoreFactory();
-        guardContainerPersistence = new ContainerPersistence(new ExtendedBlobStoreConnection(guardContextFactory));
-        guardExtendedPersistence = new ExtendedObjectPersistence(new ExtendedBlobStoreConnection(guardContextFactory));
-
-    }
-    public static void afterClass() {
-
+    public DocumentGuardServiceTest(BlobStoreContextFactory factory) {
+        this.factory = factory;
     }
 
-    public DocumentGuardStuff testCreateAsymmetricDocumentGuardForDocumentKeyIDWithKey(KeyStoreAccess keyStoreAccess, DocumentKeyIDWithKey documentKeyIDWithKey, ExtendedKeystorePersistence keystorePersistence) {
+    public DocumentGuardStuff testCreateAsymmetricDocumentGuardForDocumentKeyIDWithKey(KeyStoreAccess keyStoreAccess, DocumentKeyIDWithKey documentKeyIDWithKey) {
         try {
-            DocumentGuardService documentGuardService = new DocumentGuardServiceImpl(keystorePersistence, guardExtendedPersistence);
+            DocumentGuardService documentGuardService = new DocumentGuardServiceImpl(factory);
             documentGuardService.createAsymmetricDocumentGuard(keyStoreAccess, documentKeyIDWithKey);
             LOGGER.info("documentKeyID:" + documentKeyIDWithKey.getDocumentKeyID());
             return new DocumentGuardStuff(documentGuardService, documentKeyIDWithKey);
@@ -47,9 +38,9 @@ public class DocumentGuardServiceTest {
         }
     }
 
-    public DocumentGuardStuff testCreateSymmetricDocumentGuard(KeyStoreAccess keyStoreAccess, ExtendedKeystorePersistence keystorePersistence) {
+    public DocumentGuardStuff testCreateSymmetricDocumentGuard(KeyStoreAccess keyStoreAccess) {
         try {
-            DocumentGuardService documentGuardService = new DocumentGuardServiceImpl(keystorePersistence, guardExtendedPersistence);
+            DocumentGuardService documentGuardService = new DocumentGuardServiceImpl(factory);
             DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardService.createDocumentKeyIdWithKey();
             documentGuardService.createSymmetricDocumentGuard(keyStoreAccess, documentKeyIDWithKey);
             return new DocumentGuardStuff(documentGuardService, documentKeyIDWithKey);
@@ -60,10 +51,9 @@ public class DocumentGuardServiceTest {
 
     public DocumentKeyIDWithKey testLoadDocumentGuard(
             KeyStoreAccess keyStoreAccess,
-            ExtendedKeystorePersistence keystorePersistence,
             DocumentKeyID documentKeyID) {
         try {
-            DocumentGuardService documentGuardService = new DocumentGuardServiceImpl(keystorePersistence, guardExtendedPersistence);
+            DocumentGuardService documentGuardService = new DocumentGuardServiceImpl(factory);
             DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardService.loadDocumentKeyIDWithKeyFromDocumentGuard(keyStoreAccess, documentKeyID);
             LOGGER.info("key des Guards ist :" + documentKeyIDWithKey.getDocumentKey());
             LOGGER.info("LOAD DocumentKey:" + HexUtil.conventBytesToHexString(documentKeyIDWithKey.getDocumentKey().getSecretKey().getEncoded()));
@@ -75,7 +65,7 @@ public class DocumentGuardServiceTest {
 
     public DocumentKeyIDWithKey createKeyIDWithKey() {
         ExtendedKeystorePersistence keystorePersistence = null;
-        DocumentGuardService documentGuardService = new DocumentGuardServiceImpl(keystorePersistence, guardExtendedPersistence);
+        DocumentGuardService documentGuardService = new DocumentGuardServiceImpl(factory);
         return documentGuardService.createDocumentKeyIdWithKey();
     }
 

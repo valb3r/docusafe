@@ -13,6 +13,7 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDW
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentLocation;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
 import org.adorsys.encobject.service.BlobStoreConnection;
+import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
 import org.slf4j.Logger;
@@ -26,29 +27,13 @@ import java.util.Set;
  */
 public class DocumentPersistenceServiceTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentPersistenceServiceTest.class);
-    
-    private static ExtendedObjectPersistence documentExtendedPersistence;
-    private static ContainerPersistence containerPersistence;
-    private static Set<DocumentBucketPath> createdBuckets;
 
+    private BlobStoreContextFactory factory;
+    private Set<DocumentBucketPath> createdBuckets = new HashSet<>();
     private DocumentID documentID = new DocumentID("document-id-123");
 
-
-    public static void beforeClass() {
-        BlobStoreConnection blobStoreConnection = new ExtendedBlobStoreConnection(new TestFsBlobStoreFactory());
-        documentExtendedPersistence = new ExtendedObjectPersistence(blobStoreConnection);
-        containerPersistence = new ContainerPersistence(blobStoreConnection);
-        createdBuckets = new HashSet<>();
-    }
-
-    public static void afterClass() {
-        try {
-            for (DocumentBucketPath bucket : createdBuckets) {
-                containerPersistence.deleteContainer(bucket.getObjectHandlePath());
-            }
-        } catch(Exception e) {
-            // throw BaseExceptionHandler.handle(e);
-        }
+    public DocumentPersistenceServiceTest(BlobStoreContextFactory factory) {
+        this.factory = factory;
     }
 
     public DocumentStuff testPersistDocument(DocumentGuardService documentGuardService,
@@ -63,7 +48,7 @@ public class DocumentPersistenceServiceTest {
                                              DocumentID documentID,
                                              DocumentContent documentContent,
                                              OverwriteFlag overwriteFlag) {
-        DocumentPersistenceService documentPersistenceService = new DocumentPersistenceServiceImpl(containerPersistence, documentExtendedPersistence, documentGuardService);
+        DocumentPersistenceService documentPersistenceService = new DocumentPersistenceServiceImpl(factory);
         DocumentLocation documentLocation = documentPersistenceService.persistDocument(
                 documentKeyIDWithKey,
                 documentBucketPath,
@@ -71,13 +56,14 @@ public class DocumentPersistenceServiceTest {
                 documentContent,
                 overwriteFlag);
         createdBuckets.add(documentBucketPath);
+        AllServiceTest.buckets.add(documentBucketPath);
         return new DocumentStuff(documentID, documentLocation);
     }
 
     public DocumentContent testLoadDocument(DocumentGuardService documentGuardService,
                                  KeyStoreAccess keyStoreAccess,
                                  DocumentLocation documentLocation) {
-        DocumentPersistenceService documentPersistenceService = new DocumentPersistenceServiceImpl(containerPersistence, documentExtendedPersistence, documentGuardService);
+        DocumentPersistenceService documentPersistenceService = new DocumentPersistenceServiceImpl(factory);
         DocumentContent readContent = documentPersistenceService.loadDocument(
                 keyStoreAccess,
                 documentLocation);

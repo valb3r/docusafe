@@ -1,6 +1,7 @@
 package org.adorsys.documentsafe.layer02service.impl;
 
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
+import org.adorsys.documentsafe.layer01persistence.ExtendedBlobStoreConnection;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreBucketPath;
 import org.adorsys.documentsafe.layer02service.KeyStoreService;
 import org.adorsys.documentsafe.layer02service.generators.KeyStoreGenerator;
@@ -11,6 +12,7 @@ import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreLo
 import org.adorsys.documentsafe.layer01persistence.ExtendedKeystorePersistence;
 import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAuth;
+import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,11 +23,10 @@ public class KeyStoreServiceImpl implements KeyStoreService {
     private final static Logger LOGGER = LoggerFactory.getLogger(KeyStoreServiceImpl.class);
 
     private ExtendedKeystorePersistence keystorePersistence;
-    SecretKeyGenerator secretKeyGenerator;
+//    SecretKeyGenerator secretKeyGenerator;
 
-    public KeyStoreServiceImpl(ExtendedKeystorePersistence keystorePersistence) {
-        super();
-        this.keystorePersistence = keystorePersistence;
+    public KeyStoreServiceImpl(BlobStoreContextFactory factory) {
+        this.keystorePersistence = new ExtendedKeystorePersistence(factory);
     }
 
     /**

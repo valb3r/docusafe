@@ -1,5 +1,6 @@
 package org.adorsys.documentsafe.layer02service.impl;
 
+import org.adorsys.documentsafe.layer01persistence.ExtendedBlobStoreConnection;
 import org.adorsys.documentsafe.layer01persistence.types.OverwriteFlag;
 import org.adorsys.documentsafe.layer02service.DocumentGuardService;
 import org.adorsys.documentsafe.layer02service.DocumentPersistenceService;
@@ -8,6 +9,7 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess
 import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.params.EncryptionParams;
+import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer01persistence.ExtendedObjectPersistence;
@@ -34,11 +36,10 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
     private DocumentGuardService documentGuardService;
     private ContainerPersistence containerPersistence;
 
-    public DocumentPersistenceServiceImpl(ContainerPersistence containerPersistence, ExtendedObjectPersistence objectPersistence, DocumentGuardService documentGuardService) {
-        super();
-        this.containerPersistence = containerPersistence;
-        this.objectPersistence = objectPersistence;
-        this.documentGuardService = documentGuardService;
+    public DocumentPersistenceServiceImpl(BlobStoreContextFactory factory) {
+        this.containerPersistence = new ContainerPersistence(new ExtendedBlobStoreConnection(factory));
+        this.objectPersistence = new ExtendedObjectPersistence(new ExtendedBlobStoreConnection(factory));
+        this.documentGuardService = new DocumentGuardServiceImpl(factory);
     }
 
     /**

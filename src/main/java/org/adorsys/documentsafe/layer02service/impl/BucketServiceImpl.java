@@ -5,6 +5,7 @@ import org.adorsys.documentsafe.layer01persistence.ExtendedBlobStoreConnection;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
 import org.adorsys.documentsafe.layer02service.BucketService;
 import org.adorsys.documentsafe.layer02service.types.complextypes.BucketContent;
+import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.jclouds.blobstore.domain.PageSet;
 import org.jclouds.blobstore.domain.StorageMetadata;
@@ -19,8 +20,8 @@ public class BucketServiceImpl implements BucketService {
     private ContainerPersistence containerPersistence;
     private ExtendedBlobStoreConnection extendedBlobStoreConnection;
 
-    public BucketServiceImpl(ExtendedBlobStoreConnection extendedBlobStoreConnection) {
-        this.extendedBlobStoreConnection = extendedBlobStoreConnection;
+    public BucketServiceImpl(BlobStoreContextFactory factory) {
+        this.extendedBlobStoreConnection = new ExtendedBlobStoreConnection(factory);
         this.containerPersistence = new ContainerPersistence(this.extendedBlobStoreConnection);
     }
 
