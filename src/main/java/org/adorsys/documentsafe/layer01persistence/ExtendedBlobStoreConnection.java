@@ -1,5 +1,6 @@
 package org.adorsys.documentsafe.layer01persistence;
 
+import org.adorsys.documentsafe.layer01persistence.types.BucketName;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
 import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.service.BlobStoreConnection;
@@ -12,11 +13,14 @@ import org.jclouds.blobstore.domain.PageSet;
 import org.jclouds.blobstore.domain.StorageMetadata;
 import org.jclouds.blobstore.options.ListContainerOptions;
 import org.jclouds.domain.Location;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by peter on 16.01.18.
  */
 public class ExtendedBlobStoreConnection extends BlobStoreConnection {
+    private final static Logger LOGGER = LoggerFactory.getLogger(ExtendedBlobStoreConnection.class);
     private final BlobStoreContextFactory factory;
 
     public ExtendedBlobStoreConnection(BlobStoreContextFactory blobStoreContextFactory) {
@@ -48,6 +52,7 @@ public class ExtendedBlobStoreConnection extends BlobStoreConnection {
         }
 
     }
+
     @Override
     public void deleteContainer(String container) throws UnknownContainerException {
         BlobStoreContext blobStoreContext = this.factory.alocate();
@@ -78,6 +83,7 @@ public class ExtendedBlobStoreConnection extends BlobStoreConnection {
 
     /**
      * Achtung, gehört nicht zum derzeitigen Interface
+     *
      * @return
      */
     public boolean blobExists(ObjectHandle location) {
@@ -90,7 +96,7 @@ public class ExtendedBlobStoreConnection extends BlobStoreConnection {
         }
     }
 
-    public PageSet<? extends StorageMetadata> list(String container, boolean recusive) {
+    public PageSet<? extends StorageMetadata> list(BucketPath bucketPath, boolean recusive) {
         BlobStoreContext blobStoreContext = this.factory.alocate();
         try {
             BlobStore blobStore = blobStoreContext.getBlobStore();
@@ -98,8 +104,18 @@ public class ExtendedBlobStoreConnection extends BlobStoreConnection {
             if (recusive) {
                 listContainerOptions.recursive();
             }
-            return blobStore.list(container, listContainerOptions);
-        } finally {
+            if (bucketPath.getDepth() > 1) {
+                String prefix = bucketPath.getSubBuckets();
+                LOGGER.info("set prefix to " + prefix);
+                listContainerOptions.prefix(prefix);
+                if (!recusive) {
+                    listContainerOptions.delimiter(BucketName.BUCKET_SEPARATOR);
+                }
+            }
+            return blobStore.list(bucketPath.getFirstBucket().getValue(), listContainerOptions);
+        } finally
+
+        {
             this.factory.dispose(blobStoreContext);
         }
     }

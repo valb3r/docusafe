@@ -290,13 +290,30 @@ public class AllServiceTest {
         BucketPath rootPath = new BucketPath("user1");
         bucketServiceTest.createFiles(factory, rootPath, 3,2);
 
-        LOGGER.info("einfaches listing");
         BucketContent bucketContent1 = bucketServiceTest.listBucket(rootPath, false);
-        LOGGER.info(bucketContent1.toString());
-        LOGGER.info("JETZT RECURSIV");
-        BucketContent bucketContent2 = bucketServiceTest.listBucket(rootPath, true);
-        LOGGER.info(bucketContent2.toString());
+        LOGGER.info("einfaches listing" + bucketContent1.toString());
+        Assert.assertEquals("nicht rekursiv erwartete Einträge", 6, bucketContent1.getContent().size());
 
+        BucketContent bucketContent2 = bucketServiceTest.listBucket(rootPath, true);
+        LOGGER.info("recursives listing " + bucketContent2.toString());
+        Assert.assertEquals("rekursiv erwartete Einträge", 24, bucketContent2.getContent().size());
+
+        BucketPath bp = new BucketPath(rootPath.getObjectHandlePath());
+        bp.sub(new BucketName("bucket"));
+        bp.sub(new BucketName("subbucket"));
+        BucketContent bucketContent3 = bucketServiceTest.listBucket(bp, false);
+        LOGGER.info("einfaches listing " + bucketContent3.toString());
+        Assert.assertEquals("rekursiv erwartete Einträge", 5, bucketContent3.getContent().size());
+
+        BucketContent bucketContent4 = bucketServiceTest.listBucket(bp, true);
+        LOGGER.info("recursives listing " + bucketContent4.toString());
+        Assert.assertEquals("rekursiv erwartete Einträge", 8, bucketContent4.getContent().size());
+
+        // showBucketContent(bucketContent2);
+
+    }
+
+    private void showBucketContent(BucketContent bucketContent2) {
         PageSet<? extends StorageMetadata> content = bucketContent2.getContent();
         for (StorageMetadata meta : content) {
             LOGGER.info("name: " + meta.getName());
@@ -308,7 +325,6 @@ public class AllServiceTest {
             LOGGER.info("uri: " + meta.getUri());
             LOGGER.info(" ");
         }
-
     }
 
     private static class FullStuff {

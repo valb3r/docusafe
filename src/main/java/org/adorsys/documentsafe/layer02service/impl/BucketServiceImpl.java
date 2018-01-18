@@ -36,6 +36,6 @@ public class BucketServiceImpl implements BucketService {
 
     @Override
     public BucketContent readDocumentBucket(BucketPath bucketPath, boolean recursive) {
-        return new BucketContent(extendedBlobStoreConnection.list(bucketPath.getFirstBucket().getValue(), recursive));
+        return new BucketContent(bucketPath, extendedBlobStoreConnection.list(bucketPath, recursive));
     }
 }

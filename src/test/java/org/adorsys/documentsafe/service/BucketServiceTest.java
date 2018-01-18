@@ -50,6 +50,8 @@ public class BucketServiceTest {
                 documentBucketPath.sub(new BucketName(foldernames[i]));
             }
 
+            bucketServiceTest.createBucket(new BucketPath(documentBucketPath.getObjectHandlePath()).sub(new BucketName("emtysubfolder")));
+
             for (int j = 0; j<subfiles; j++) {
                 DocumentID documentID = new DocumentID("AffenDocument" + j);
                 documentPersistenceServiceTest.testPersistDocument(null, documentBucketPath, keyIDWithKey, documentID, documentContent, OverwriteFlag.FALSE);
