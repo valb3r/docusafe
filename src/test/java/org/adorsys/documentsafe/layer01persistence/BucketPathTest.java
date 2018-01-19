@@ -1,4 +1,4 @@
-package org.adorsys.org.adorsys.documentsafe.layer01persistence;
+package org.adorsys.documentsafe.layer01persistence;
 
 import org.adorsys.documentsafe.layer01persistence.types.BucketName;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;

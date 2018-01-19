@@ -2,9 +2,13 @@ package org.adorsys.documentsafe.layer02service.impl;
 
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer01persistence.ExtendedBlobStoreConnection;
+import org.adorsys.documentsafe.layer01persistence.types.ListRecursiveFlag;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
 import org.adorsys.documentsafe.layer02service.BucketService;
+import org.adorsys.documentsafe.layer02service.types.PlainFileContent;
+import org.adorsys.documentsafe.layer02service.types.PlainFileName;
 import org.adorsys.documentsafe.layer02service.types.complextypes.BucketContent;
+import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.jclouds.blobstore.domain.PageSet;
@@ -35,7 +39,25 @@ public class BucketServiceImpl implements BucketService {
     }
 
     @Override
-    public BucketContent readDocumentBucket(BucketPath bucketPath, boolean recursive) {
-        return new BucketContent(bucketPath, extendedBlobStoreConnection.list(bucketPath, recursive));
+    public BucketContent readDocumentBucket(BucketPath bucketPath, ListRecursiveFlag listRecursiveFlag) {
+        return new BucketContent(bucketPath, extendedBlobStoreConnection.list(bucketPath, listRecursiveFlag));
     }
+
+    @Override
+    public boolean bucketExists(BucketPath bucketPath) {
+        return extendedBlobStoreConnection.containerExists(bucketPath.getFirstBucket().getValue());
+    }
+
+    @Override
+    public void createPlainFile(BucketPath bucketPath, PlainFileName plainFileName, PlainFileContent plainFileContent) {
+        try {
+            ObjectHandle objectHandle = new ObjectHandle();
+            objectHandle.setContainer(bucketPath.getFirstBucket().getValue());
+            objectHandle.setName(bucketPath.getSubBuckets() + plainFileName.getValue());
+            extendedBlobStoreConnection.putBlob(objectHandle, plainFileContent.getValue());
+        } catch (Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
+    }
+
 }

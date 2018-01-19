@@ -1,4 +1,4 @@
-package org.adorsys.documentsafe.layer02service.types;
+package org.adorsys.documentsafe.layer03business.types;
 
 import org.adorsys.documentsafe.layer00common.basetypes.BaseTypeString;
 

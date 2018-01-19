@@ -1,6 +1,7 @@
 package org.adorsys.documentsafe.layer01persistence;
 
 import org.adorsys.documentsafe.layer01persistence.types.BucketName;
+import org.adorsys.documentsafe.layer01persistence.types.ListRecursiveFlag;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
 import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.service.BlobStoreConnection;
@@ -96,19 +97,19 @@ public class ExtendedBlobStoreConnection extends BlobStoreConnection {
         }
     }
 
-    public PageSet<? extends StorageMetadata> list(BucketPath bucketPath, boolean recusive) {
+    public PageSet<? extends StorageMetadata> list(BucketPath bucketPath, ListRecursiveFlag listRecursiveFlag) {
         BlobStoreContext blobStoreContext = this.factory.alocate();
         try {
             BlobStore blobStore = blobStoreContext.getBlobStore();
             ListContainerOptions listContainerOptions = new ListContainerOptions();
-            if (recusive) {
+            if (listRecursiveFlag == ListRecursiveFlag.TRUE) {
                 listContainerOptions.recursive();
             }
             if (bucketPath.getDepth() > 1) {
                 String prefix = bucketPath.getSubBuckets();
                 LOGGER.info("set prefix to " + prefix);
                 listContainerOptions.prefix(prefix);
-                if (!recusive) {
+                if (listRecursiveFlag == ListRecursiveFlag.FALSE) {
                     listContainerOptions.delimiter(BucketName.BUCKET_SEPARATOR);
                 }
             }

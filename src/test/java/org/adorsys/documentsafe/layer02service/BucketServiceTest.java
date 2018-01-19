@@ -1,10 +1,10 @@
-package org.adorsys.documentsafe.service;
+package org.adorsys.documentsafe.layer02service;
 
 import org.adorsys.documentsafe.layer01persistence.ExtendedBlobStoreConnection;
 import org.adorsys.documentsafe.layer01persistence.types.BucketName;
+import org.adorsys.documentsafe.layer01persistence.types.ListRecursiveFlag;
 import org.adorsys.documentsafe.layer01persistence.types.OverwriteFlag;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
-import org.adorsys.documentsafe.layer02service.BucketService;
 import org.adorsys.documentsafe.layer02service.impl.BucketServiceImpl;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.DocumentID;
@@ -13,7 +13,7 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucket
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
-import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
+import org.adorsys.documentsafe.layer02service.utils.TestFsBlobStoreFactory;
 
 /**
  * Created by peter on 17.01.18 at 16:51.
@@ -29,15 +29,18 @@ public class BucketServiceTest {
         bucketService.createBucket(bucketPath);
     }
 
-    public BucketContent listBucket(BucketPath bucketPath, boolean recursive) {
-        return bucketService.readDocumentBucket(bucketPath, recursive);
+    public BucketContent listBucket(BucketPath bucketPath, ListRecursiveFlag listRecursiveFlag) {
+        return bucketService.readDocumentBucket(bucketPath, listRecursiveFlag);
+    }
+
+    public boolean bucketExists(BucketPath bucketPath) {
+        return bucketService.bucketExists(bucketPath);
     }
 
     public void createFiles(BlobStoreContextFactory factory, BucketPath rootPath, int subdirs, int subfiles) {
         String[] foldernames = {"bucket", "subbucket", "subsubbucket"};
 
         DocumentContent documentContent = new DocumentContent("Affe".getBytes());
-        BucketServiceTest bucketServiceTest = new BucketServiceTest(factory);
         BlobStoreConnection blobStoreConnection = new ExtendedBlobStoreConnection(new TestFsBlobStoreFactory());
         DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest(factory);
         DocumentKeyIDWithKey keyIDWithKey = documentGuardServiceTest.createKeyIDWithKey();
@@ -50,7 +53,7 @@ public class BucketServiceTest {
                 documentBucketPath.sub(new BucketName(foldernames[i]));
             }
 
-            bucketServiceTest.createBucket(new BucketPath(documentBucketPath.getObjectHandlePath()).sub(new BucketName("emtysubfolder")));
+            createBucket(new BucketPath(documentBucketPath.getObjectHandlePath()).sub(new BucketName("emtysubfolder")));
 
             for (int j = 0; j<subfiles; j++) {
                 DocumentID documentID = new DocumentID("AffenDocument" + j);
@@ -60,7 +63,7 @@ public class BucketServiceTest {
             documentBucketPath.sub(new BucketName(foldernames[folderIndex]));
             for (int i = 0; i<subdirs; i++) {
                 DocumentBucketPath newDocumentBucketPath = new DocumentBucketPath(documentBucketPath.getObjectHandlePath() + i);
-                bucketServiceTest.createBucket(newDocumentBucketPath);
+                createBucket(newDocumentBucketPath);
                 for (int j = 0; j<subfiles; j++) {
                     DocumentID documentID = new DocumentID("AffenDocument" + j);
                     documentPersistenceServiceTest.testPersistDocument(null, newDocumentBucketPath, keyIDWithKey, documentID, documentContent, OverwriteFlag.FALSE);

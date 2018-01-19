@@ -1,10 +1,6 @@
-package org.adorsys.documentsafe.service;
+package org.adorsys.documentsafe.layer02service;
 
-import org.adorsys.documentsafe.layer01persistence.ExtendedBlobStoreConnection;
-import org.adorsys.documentsafe.layer01persistence.ExtendedObjectPersistence;
 import org.adorsys.documentsafe.layer01persistence.types.OverwriteFlag;
-import org.adorsys.documentsafe.layer02service.DocumentGuardService;
-import org.adorsys.documentsafe.layer02service.DocumentPersistenceService;
 import org.adorsys.documentsafe.layer02service.impl.DocumentPersistenceServiceImpl;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
@@ -12,10 +8,7 @@ import org.adorsys.documentsafe.layer02service.types.DocumentID;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentLocation;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
-import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
-import org.adorsys.encobject.service.ContainerPersistence;
-import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

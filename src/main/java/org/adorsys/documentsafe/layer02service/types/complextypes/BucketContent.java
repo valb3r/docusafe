@@ -20,6 +20,10 @@ public class BucketContent {
         return content;
     }
 
+    public BucketPath getBucketPath() {
+        return bucketPath;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

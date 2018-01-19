@@ -1,13 +1,13 @@
-package org.adorsys.documentsafe.service;
+package org.adorsys.documentsafe.layer02service;
 
 import org.adorsys.documentsafe.layer00common.exceptions.BaseException;
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer00common.utils.HexUtil;
 import org.adorsys.documentsafe.layer01persistence.ExtendedBlobStoreConnection;
-import org.adorsys.documentsafe.layer01persistence.ExtendedKeystorePersistence;
 import org.adorsys.documentsafe.layer01persistence.exceptions.FileExistsException;
 import org.adorsys.documentsafe.layer01persistence.types.BucketName;
 import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
+import org.adorsys.documentsafe.layer01persistence.types.ListRecursiveFlag;
 import org.adorsys.documentsafe.layer01persistence.types.OverwriteFlag;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
 import org.adorsys.documentsafe.layer02service.generators.KeyStoreCreationConfig;
@@ -24,8 +24,8 @@ import org.adorsys.documentsafe.layer02service.utils.ShowKeyStore;
 import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.ContainerPersistence;
-import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
-import org.adorsys.encobject.utils.TestKeyUtils;
+import org.adorsys.documentsafe.layer02service.utils.TestFsBlobStoreFactory;
+import org.adorsys.documentsafe.layer02service.utils.TestKeyUtils;
 import org.jclouds.blobstore.domain.PageSet;
 import org.jclouds.blobstore.domain.StorageMetadata;
 import org.junit.After;
@@ -35,9 +35,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -290,26 +288,54 @@ public class AllServiceTest {
         BucketPath rootPath = new BucketPath("user1");
         bucketServiceTest.createFiles(factory, rootPath, 3,2);
 
-        BucketContent bucketContent1 = bucketServiceTest.listBucket(rootPath, false);
+        BucketContent bucketContent1 = bucketServiceTest.listBucket(rootPath, ListRecursiveFlag.FALSE);
         LOGGER.info("einfaches listing" + bucketContent1.toString());
         Assert.assertEquals("nicht rekursiv erwartete Einträge", 6, bucketContent1.getContent().size());
 
-        BucketContent bucketContent2 = bucketServiceTest.listBucket(rootPath, true);
+        BucketContent bucketContent2 = bucketServiceTest.listBucket(rootPath, ListRecursiveFlag.TRUE);
         LOGGER.info("recursives listing " + bucketContent2.toString());
         Assert.assertEquals("rekursiv erwartete Einträge", 24, bucketContent2.getContent().size());
 
         BucketPath bp = new BucketPath(rootPath.getObjectHandlePath());
         bp.sub(new BucketName("bucket"));
         bp.sub(new BucketName("subbucket"));
-        BucketContent bucketContent3 = bucketServiceTest.listBucket(bp, false);
+        BucketContent bucketContent3 = bucketServiceTest.listBucket(bp, ListRecursiveFlag.FALSE);
         LOGGER.info("einfaches listing " + bucketContent3.toString());
         Assert.assertEquals("rekursiv erwartete Einträge", 5, bucketContent3.getContent().size());
 
-        BucketContent bucketContent4 = bucketServiceTest.listBucket(bp, true);
+        BucketContent bucketContent4 = bucketServiceTest.listBucket(bp, ListRecursiveFlag.TRUE);
         LOGGER.info("recursives listing " + bucketContent4.toString());
         Assert.assertEquals("rekursiv erwartete Einträge", 8, bucketContent4.getContent().size());
 
         // showBucketContent(bucketContent2);
+
+    }
+
+    @Test
+    public void checkNonExistingBucket() {
+        BucketServiceTest bucketServiceTest = new BucketServiceTest(factory);
+        BucketPath rootPath = new BucketPath("user1");
+        boolean exists = bucketServiceTest.bucketExists(rootPath);
+        Assert.assertFalse("bucket must not exist", exists);
+    }
+
+    @Test
+    public void createBucketWithDot() {
+        BucketServiceTest bucketServiceTest = new BucketServiceTest(factory);
+
+        DocumentBucketPath documentBucketPath = new DocumentBucketPath("user1/.hidden");
+        DocumentContent documentContent = new DocumentContent("Affe".getBytes());
+        DocumentID documentID = new DocumentID("Affenfile.txt");
+
+        BlobStoreConnection blobStoreConnection = new ExtendedBlobStoreConnection(new TestFsBlobStoreFactory());
+        DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest(factory);
+        DocumentKeyIDWithKey keyIDWithKey = documentGuardServiceTest.createKeyIDWithKey();
+        DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest(factory);
+
+        documentPersistenceServiceTest.testPersistDocument(null, documentBucketPath, keyIDWithKey, documentID, documentContent, OverwriteFlag.FALSE);
+
+        BucketContent bucketContent = bucketServiceTest.listBucket(documentBucketPath, ListRecursiveFlag.FALSE.TRUE);
+        Assert.assertEquals("only one file expected", 1, bucketContent.getContent().size());
 
     }
 

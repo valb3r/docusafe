@@ -1,4 +1,4 @@
-package org.adorsys.encobject.utils;
+package org.adorsys.documentsafe.layer02service.utils;
 
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.jclouds.ContextBuilder;

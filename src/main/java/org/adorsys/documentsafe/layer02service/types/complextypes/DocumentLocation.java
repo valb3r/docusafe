@@ -23,6 +23,14 @@ public class DocumentLocation implements LocationInterface {
         return new ObjectHandle(documentBucketPath.getFirstBucket().getValue(), documentBucketPath.getSubBuckets() + documentID.getValue());
     }
 
+    public DocumentID getDocumentID() {
+        return documentID;
+    }
+
+    public DocumentBucketPath getDocumentBucketPath() {
+        return documentBucketPath;
+    }
+
     @Override
     public String toString() {
         return "DocumentLocation{" +
