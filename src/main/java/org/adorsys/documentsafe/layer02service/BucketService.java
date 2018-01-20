@@ -11,6 +11,7 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.BucketContent;
  */
 public interface BucketService {
     void createBucket(BucketPath bucketPath);
+    void destroyBucket(BucketPath bucketPath);
     BucketContent readDocumentBucket(BucketPath bucketPath, ListRecursiveFlag listRecursiveFlag);
     boolean bucketExists(BucketPath bucketPath);
     void createPlainFile(BucketPath bucketPath, PlainFileName plainFileName, PlainFileContent plainFileContent);

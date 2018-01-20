@@ -7,6 +7,8 @@ import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.jkeygen.keystore.KeyStoreService;
 import org.adorsys.documentsafe.layer01persistence.exceptions.ExtendedPersistenceException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.security.auth.callback.CallbackHandler;
 import java.security.KeyStore;
@@ -18,6 +20,7 @@ import java.security.KeyStore;
  *
  */
 public class ExtendedKeystorePersistence {
+	private final static Logger LOGGER = LoggerFactory.getLogger(ExtendedKeystorePersistence.class);
 
 	private BlobStoreConnection blobStoreConnection;
 
@@ -32,6 +35,7 @@ public class ExtendedKeystorePersistence {
 					throw new ExtendedPersistenceException("Invalid store type - expected : " + keystore.getType() + " but is: " + keyStoreLocation.getKeyStoreType().getValue());
 			
 			// write keystore to byte array.
+			LOGGER.debug("WRITE KEYSTORE WITH NAME " + keyStoreLocation + " and with type " + keystore.getType());
 			byte[] bs = KeyStoreService.toByteArray(keystore, keyStoreLocation.getLocationHandle().getName(), storePassHandler);
 			
 			// write byte array to blob store.
@@ -43,10 +47,12 @@ public class ExtendedKeystorePersistence {
 	
 	public KeyStore loadKeystore(KeyStoreLocation keyStoreLocation, CallbackHandler handler) {
 		try {
-			
+			LOGGER.debug("XXkeystorehandle container: " + keyStoreLocation.getLocationHandle().getContainer());
+			LOGGER.debug("XXkeystorehandle name: " + keyStoreLocation.getLocationHandle().getName());
+
 			// Read bytes
 			byte[] ksBytes = blobStoreConnection.getBlob(keyStoreLocation.getLocationHandle());
-			
+			LOGGER.debug("loaded keystore has size:" + ksBytes.length);
 			// Initialize key store
 			return KeyStoreService.loadKeyStore(ksBytes, keyStoreLocation.getLocationHandle().getName(), keyStoreLocation.getKeyStoreType().getValue(), handler);
 		} catch (Exception e) {

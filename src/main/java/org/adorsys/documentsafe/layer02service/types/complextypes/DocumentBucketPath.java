@@ -14,4 +14,7 @@ public class DocumentBucketPath extends BucketPath {
         super(value);
     }
 
+    public DocumentBucketPath(BucketPath bucketPath) {
+        super(bucketPath);
+    }
 }

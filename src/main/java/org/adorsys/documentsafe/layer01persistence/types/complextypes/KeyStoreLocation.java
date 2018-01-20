@@ -4,12 +4,14 @@ import org.adorsys.documentsafe.layer01persistence.LocationInterface;
 import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
 import org.adorsys.documentsafe.layer01persistence.types.KeyStoreType;
 import org.adorsys.encobject.domain.ObjectHandle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by peter on 29.12.2017 at 14:11:52.
  */
 public class KeyStoreLocation implements LocationInterface {
-	
+	private final static Logger LOGGER = LoggerFactory.getLogger(KeyStoreLocation.class);
 	public static final String FILE_EXTENSION_SEPARATOR = ".";
 
 	private final KeyStoreBucketPath keyStoreBucketPath;
@@ -35,9 +37,12 @@ public class KeyStoreLocation implements LocationInterface {
 	}
 
 	public ObjectHandle getLocationHandle(){
-		return new ObjectHandle(
+		ObjectHandle objectHandle = new ObjectHandle(
 				getKeyStoreBucketPath().getFirstBucket().getValue(),
 				getKeyStoreBucketPath().getSubBuckets() + keyStoreID.getValue() + FILE_EXTENSION_SEPARATOR + keyStoreType.getValue());
+//		LOGGER.debug("XXgetLocationHanlde container:" + objectHandle.getContainer());
+//		LOGGER.debug("XXgetLocationHanlde name     :" + objectHandle.getName());
+		return objectHandle;
 	}
 
 	@Override

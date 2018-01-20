@@ -1,31 +1,34 @@
 package org.adorsys.documentsafe.layer03business;
 
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
-import org.adorsys.documentsafe.layer01persistence.ExtendedBlobStoreConnection;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
-import org.adorsys.documentsafe.layer02service.types.DocumentID;
 import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
-import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
-import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentLocation;
 import org.adorsys.documentsafe.layer02service.utils.TestFsBlobStoreFactory;
 import org.adorsys.documentsafe.layer03business.impl.DocumentSafeServiceImpl;
+import org.adorsys.documentsafe.layer03business.types.DocumentFQN;
 import org.adorsys.documentsafe.layer03business.types.UserID;
 import org.adorsys.documentsafe.layer03business.types.complex.UserIDAuth;
-import org.adorsys.documentsafe.layer03business.utils.UserIDUtil;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
-import org.adorsys.encobject.service.ContainerPersistence;
+import org.junit.After;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by peter on 19.01.18 at 16:25.
  */
 public class TestBusiness {
+    private final static Logger LOGGER = LoggerFactory.getLogger(TestBusiness.class);
     private final static BlobStoreContextFactory factory = new TestFsBlobStoreFactory();
+    public static Set<UserIDAuth> users = new HashSet<>();
 
-    public void after(BucketPath bucket) {
+    @After
+    public void after() {
         try {
-            ContainerPersistence containerPersistence = new ContainerPersistence(new ExtendedBlobStoreConnection(factory));
-            containerPersistence.deleteContainer(bucket.getFirstBucket().getValue());
+            DocumentSafeService service = new DocumentSafeServiceImpl(factory);
+            users.forEach(userIDAuth -> service.destroyUser(userIDAuth));
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
@@ -34,18 +37,17 @@ public class TestBusiness {
     @Test
     public void testCreateUser() {
         DocumentSafeService service = new DocumentSafeServiceImpl(factory);
-        UserID userPeter = new UserID("UserPeter");
-        UserIDAuth userIDAuth = new UserIDAuth(userPeter, new ReadKeyPassword("peterkey"));
-        service.createUserID(userIDAuth);
-        after(UserIDUtil.getBucketPath(userPeter));
+        UserIDAuth userIDAuth = new UserIDAuth(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));
+        users.add(userIDAuth);
+        service.createUser(userIDAuth);
     }
 
-    // @Test
+    @Test
     public void loadCreateUser() {
         DocumentSafeService service = new DocumentSafeServiceImpl(factory);
         UserIDAuth userIDAuth = new UserIDAuth(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));
-        DocumentLocation documentLocation = new DocumentLocation(new DocumentID("README.txt"), new DocumentBucketPath(""));
-        service.readDocument(userIDAuth, documentLocation);
+        DocumentFQN documentFQN = new DocumentFQN("README.txt");
+        service.readDocument(userIDAuth, documentFQN);
     }
 
 }

@@ -29,6 +29,16 @@ public class BucketPath {
         buckets = split(path);
     }
 
+    public BucketPath(BucketPath bucketPath) {
+        buckets.addAll(bucketPath.buckets);
+    }
+
+    public BucketPath append(BucketPath bucketPath) {
+        BucketPath appendedBucketPath = new BucketPath(this);
+        appendedBucketPath.buckets.addAll(bucketPath.buckets);
+        return appendedBucketPath;
+    }
+
     public BucketPath set(BucketName bucketName) {
         buckets.clear();
         return sub(bucketName);
@@ -78,5 +88,22 @@ public class BucketPath {
         return "BucketPath{" +
                 "buckets=" + buckets +
                 '}';
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        BucketPath that = (BucketPath) o;
+
+        return buckets.equals(that.buckets);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return buckets.hashCode();
     }
 }

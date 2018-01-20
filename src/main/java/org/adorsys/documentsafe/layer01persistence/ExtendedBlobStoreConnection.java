@@ -1,5 +1,6 @@
 package org.adorsys.documentsafe.layer01persistence;
 
+import org.adorsys.documentsafe.layer00common.exceptions.BaseException;
 import org.adorsys.documentsafe.layer01persistence.types.BucketName;
 import org.adorsys.documentsafe.layer01persistence.types.ListRecursiveFlag;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
@@ -58,9 +59,13 @@ public class ExtendedBlobStoreConnection extends BlobStoreConnection {
     public void deleteContainer(String container) throws UnknownContainerException {
         BlobStoreContext blobStoreContext = this.factory.alocate();
         try {
+            BucketPath bucketPath = new BucketPath(container);
+            if (bucketPath.getDepth() > 1) {
+                throw new BaseException("NYI delete bucket with path " + bucketPath.toString());
+            }
             BucketPath bp = new BucketPath(container);
             BlobStore blobStore = blobStoreContext.getBlobStore();
-            blobStoreContext.getBlobStore().deleteContainer(bp.getFirstBucket().getValue());
+            blobStoreContext.getBlobStore().deleteContainer(bp.getObjectHandlePath());
         } finally {
             this.factory.dispose(blobStoreContext);
         }
@@ -73,8 +78,11 @@ public class ExtendedBlobStoreConnection extends BlobStoreConnection {
         boolean bucketExists = false;
         try {
             BlobStore blobStore = blobStoreContext.getBlobStore();
-            BucketPath bp = new BucketPath(container);
-            bucketExists = blobStore.containerExists(bp.getFirstBucket().getValue());
+            BucketPath bucketPath = new BucketPath(container);
+            if (bucketPath.getDepth() > 1) {
+                throw new BaseException("container exsits for bucket with path " + bucketPath.toString());
+            }
+            bucketExists = blobStore.containerExists(bucketPath.getObjectHandlePath());
         } finally {
             this.factory.dispose(blobStoreContext);
         }
@@ -113,6 +121,7 @@ public class ExtendedBlobStoreConnection extends BlobStoreConnection {
                     listContainerOptions.delimiter(BucketName.BUCKET_SEPARATOR);
                 }
             }
+
             return blobStore.list(bucketPath.getFirstBucket().getValue(), listContainerOptions);
         } finally
 

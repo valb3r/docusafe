@@ -39,13 +39,22 @@ public class BucketServiceImpl implements BucketService {
     }
 
     @Override
+    public void destroyBucket(BucketPath bucketPath) {
+        try {
+            containerPersistence.deleteContainer(bucketPath.getObjectHandlePath());
+        } catch (Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
+    }
+
+    @Override
     public BucketContent readDocumentBucket(BucketPath bucketPath, ListRecursiveFlag listRecursiveFlag) {
         return new BucketContent(bucketPath, extendedBlobStoreConnection.list(bucketPath, listRecursiveFlag));
     }
 
     @Override
     public boolean bucketExists(BucketPath bucketPath) {
-        return extendedBlobStoreConnection.containerExists(bucketPath.getFirstBucket().getValue());
+        return extendedBlobStoreConnection.containerExists(bucketPath.getObjectHandlePath());
     }
 
     @Override
