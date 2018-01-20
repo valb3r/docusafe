@@ -26,7 +26,7 @@ public class DocumentGuardServiceTest {
         try {
             DocumentGuardService documentGuardService = new DocumentGuardServiceImpl(factory);
             documentGuardService.createAsymmetricDocumentGuard(keyStoreAccess, documentKeyIDWithKey);
-            LOGGER.info("documentKeyID:" + documentKeyIDWithKey.getDocumentKeyID());
+            LOGGER.debug("documentKeyID:" + documentKeyIDWithKey.getDocumentKeyID());
             return new DocumentGuardStuff(documentGuardService, documentKeyIDWithKey);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
@@ -50,8 +50,8 @@ public class DocumentGuardServiceTest {
         try {
             DocumentGuardService documentGuardService = new DocumentGuardServiceImpl(factory);
             DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardService.loadDocumentKeyIDWithKeyFromDocumentGuard(keyStoreAccess, documentKeyID);
-            LOGGER.info("key des Guards ist :" + documentKeyIDWithKey.getDocumentKey());
-            LOGGER.info("LOAD DocumentKey:" + HexUtil.conventBytesToHexString(documentKeyIDWithKey.getDocumentKey().getSecretKey().getEncoded()));
+            LOGGER.debug("key des Guards ist :" + documentKeyIDWithKey.getDocumentKey());
+            LOGGER.debug("LOAD DocumentKey:" + HexUtil.conventBytesToHexString(documentKeyIDWithKey.getDocumentKey().getSecretKey().getEncoded()));
             return documentKeyIDWithKey;
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);

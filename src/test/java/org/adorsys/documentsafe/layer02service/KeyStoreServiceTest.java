@@ -13,6 +13,8 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAuth;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.ContainerPersistence;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.security.KeyStore;
 
@@ -20,6 +22,7 @@ import java.security.KeyStore;
  * Created by peter on 02.01.18.
  */
 public class KeyStoreServiceTest {
+    private final static Logger LOGGER = LoggerFactory.getLogger(KeyStoreServiceTest.class);
 
     private static String keystoreContainer = "keystore-container-" + KeyStoreServiceTest.class.getSimpleName();
     private BlobStoreContextFactory factory;
@@ -42,7 +45,13 @@ public class KeyStoreServiceTest {
             KeyStoreBucketPath keyStoreBucketPath = new KeyStoreBucketPath(keystoreContainer);
 
             ContainerPersistence containerPersistence = new ContainerPersistence(new ExtendedBlobStoreConnection(factory));
-            containerPersistence.creteContainer(keyStoreBucketPath.getObjectHandlePath());
+            try {
+                // sollte der container exsitieren, ignorieren wir die Exception, um zu
+                // sehen, ob sich ein keystore überschreiben lässt
+                containerPersistence.creteContainer(keyStoreBucketPath.getFirstBucket().getValue());
+            } catch (Exception e) {
+                LOGGER.error("Exception is ignored");
+            }
             AllServiceTest.buckets.add(keyStoreBucketPath);
 
             KeyStoreService keyStoreService = new KeyStoreServiceImpl(factory);

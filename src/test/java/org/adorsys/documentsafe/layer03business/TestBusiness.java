@@ -24,7 +24,7 @@ public class TestBusiness {
     private final static BlobStoreContextFactory factory = new TestFsBlobStoreFactory();
     public static Set<UserIDAuth> users = new HashSet<>();
 
-    @After
+    //@After
     public void after() {
         try {
             DocumentSafeService service = new DocumentSafeServiceImpl(factory);
@@ -42,7 +42,7 @@ public class TestBusiness {
         service.createUser(userIDAuth);
     }
 
-    @Test
+    // @Test
     public void loadCreateUser() {
         DocumentSafeService service = new DocumentSafeServiceImpl(factory);
         UserIDAuth userIDAuth = new UserIDAuth(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));

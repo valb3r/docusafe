@@ -46,4 +46,12 @@ public class KeyStoreAuth {
     public void setReadKeyPassword(ReadKeyPassword readKeyPassword) {
         this.readKeyPassword = readKeyPassword;
     }
+
+    @Override
+    public String toString() {
+        return "KeyStoreAuth{" +
+                "readStorePassword=" + readStorePassword +
+                ", readKeyPassword=" + readKeyPassword +
+                '}';
+    }
 }

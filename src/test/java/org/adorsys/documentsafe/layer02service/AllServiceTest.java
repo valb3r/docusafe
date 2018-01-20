@@ -10,6 +10,7 @@ import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
 import org.adorsys.documentsafe.layer01persistence.types.ListRecursiveFlag;
 import org.adorsys.documentsafe.layer01persistence.types.OverwriteFlag;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
+import org.adorsys.documentsafe.layer02service.exceptions.KeyStoreExistsException;
 import org.adorsys.documentsafe.layer02service.generators.KeyStoreCreationConfig;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.DocumentID;
@@ -57,7 +58,7 @@ public class AllServiceTest {
         try {
             ContainerPersistence containerPersistence = new ContainerPersistence(new ExtendedBlobStoreConnection(factory));
             for (BucketPath bucket : buckets) {
-                LOGGER.info("AFTER TEST: DELETE BUCKET " + bucket.getFirstBucket());
+                LOGGER.debug("AFTER TEST: DELETE BUCKET " + bucket.getFirstBucket());
                 containerPersistence.deleteContainer(bucket.getFirstBucket().getValue());
             }
         } catch (Exception e) {
@@ -88,6 +89,19 @@ public class AllServiceTest {
         }
     }
 
+    @Test(expected = KeyStoreExistsException.class)
+    public void testCreateKeyStoreTwice() {
+        try {
+            KeyStoreServiceTest keyStoreServiceTest = new KeyStoreServiceTest(factory);
+            KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = keyStoreServiceTest.createKeyStore();
+            Assert.assertEquals("Number of Entries", 15, keyStoreStuff.keyStore.size());
+            KeyStoreServiceTest.KeyStoreStuff keyStoreStuff2 = keyStoreServiceTest.createKeyStore();
+            Assert.assertEquals("Number of Entries", 15, keyStoreStuff2.keyStore.size());
+        } catch (Exception e) {
+            BaseExceptionHandler.handle(e);
+        }
+    }
+
     @Test
     public void testCreateKeyStoreAndDocumentGuard() {
         try {
@@ -110,7 +124,7 @@ public class AllServiceTest {
                     keyStoreStuff.keyStoreAccess,
                     documentGuardStuff.documentKeyIDWithKey.getDocumentKeyID());
 
-            LOGGER.info("DocumentKey is " + HexUtil.conventBytesToHexString(documentKeyIDWithKey.getDocumentKey().getSecretKey().getEncoded()));
+            LOGGER.debug("DocumentKey is " + HexUtil.conventBytesToHexString(documentKeyIDWithKey.getDocumentKey().getSecretKey().getEncoded()));
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
         }
@@ -161,9 +175,9 @@ public class AllServiceTest {
 
             Assert.assertEquals("Content of Document", readContent.toString(), documentContent.toString());
 
-            LOGGER.info("DocumentLocation     :" + documentStuff.documentLocation);
-            LOGGER.info("DocumentKeyID        :" + documentKeyIDWithKey.getDocumentKeyID());
-            LOGGER.info("KeyStoreLocation     :" + keyStoreStuff.keyStoreAccess.getKeyStoreLocation());
+            LOGGER.debug("DocumentLocation     :" + documentStuff.documentLocation);
+            LOGGER.debug("DocumentKeyID        :" + documentKeyIDWithKey.getDocumentKeyID());
+            LOGGER.debug("KeyStoreLocation     :" + keyStoreStuff.keyStoreAccess.getKeyStoreLocation());
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
         }
@@ -238,7 +252,7 @@ public class AllServiceTest {
                     newDocumentContent,
                     OverwriteFlag.TRUE
             );
-            LOGGER.info("Document erfolgreich ERNEUT geschrieben");
+            LOGGER.debug("Document erfolgreich ERNEUT geschrieben");
 
             // Load with asymmetric key
             DocumentContent newReadDocumentContent = documentPersistenceServiceTest.testLoadDocument(
@@ -246,7 +260,7 @@ public class AllServiceTest {
                     asymmetricStuff.keyStoreStuff.keyStoreAccess,
                     documentStuff.documentLocation);
             Assert.assertEquals("Content of Document", newDocumentContent.toString(), newReadDocumentContent.toString());
-            LOGGER.info("Document erfolgreich mit DocumentGuard für EncKey gelesen");
+            LOGGER.debug("Document erfolgreich mit DocumentGuard für EncKey gelesen");
 
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
@@ -289,23 +303,23 @@ public class AllServiceTest {
         bucketServiceTest.createFiles(factory, rootPath, 3,2);
 
         BucketContent bucketContent1 = bucketServiceTest.listBucket(rootPath, ListRecursiveFlag.FALSE);
-        LOGGER.info("einfaches listing" + bucketContent1.toString());
-        Assert.assertEquals("nicht rekursiv erwartete Einträge", 6, bucketContent1.getContent().size());
+        LOGGER.debug("einfaches listing" + bucketContent1.toString());
+        Assert.assertEquals("nicht rekursiv erwartete Einträge", 6, bucketContent1.getStrippedContent().size());
 
         BucketContent bucketContent2 = bucketServiceTest.listBucket(rootPath, ListRecursiveFlag.TRUE);
-        LOGGER.info("recursives listing " + bucketContent2.toString());
-        Assert.assertEquals("rekursiv erwartete Einträge", 24, bucketContent2.getContent().size());
+        LOGGER.debug("recursives listing " + bucketContent2.toString());
+        Assert.assertEquals("rekursiv erwartete Einträge", 24, bucketContent2.getStrippedContent().size());
 
         BucketPath bp = new BucketPath(rootPath.getObjectHandlePath());
         bp.sub(new BucketName("bucket"));
         bp.sub(new BucketName("subbucket"));
         BucketContent bucketContent3 = bucketServiceTest.listBucket(bp, ListRecursiveFlag.FALSE);
-        LOGGER.info("einfaches listing " + bucketContent3.toString());
-        Assert.assertEquals("rekursiv erwartete Einträge", 5, bucketContent3.getContent().size());
+        LOGGER.debug("einfaches listing " + bucketContent3.toString());
+        Assert.assertEquals("rekursiv erwartete Einträge", 5, bucketContent3.getStrippedContent().size());
 
         BucketContent bucketContent4 = bucketServiceTest.listBucket(bp, ListRecursiveFlag.TRUE);
-        LOGGER.info("recursives listing " + bucketContent4.toString());
-        Assert.assertEquals("rekursiv erwartete Einträge", 8, bucketContent4.getContent().size());
+        LOGGER.debug("recursives listing " + bucketContent4.toString());
+        Assert.assertEquals("rekursiv erwartete Einträge", 8, bucketContent4.getStrippedContent().size());
 
         // showBucketContent(bucketContent2);
 
@@ -335,21 +349,20 @@ public class AllServiceTest {
         documentPersistenceServiceTest.testPersistDocument(null, documentBucketPath, keyIDWithKey, documentID, documentContent, OverwriteFlag.FALSE);
 
         BucketContent bucketContent = bucketServiceTest.listBucket(documentBucketPath, ListRecursiveFlag.FALSE.TRUE);
-        Assert.assertEquals("only one file expected", 1, bucketContent.getContent().size());
+        Assert.assertEquals("only one file expected", 1, bucketContent.getStrippedContent().size());
 
     }
 
     private void showBucketContent(BucketContent bucketContent2) {
-        PageSet<? extends StorageMetadata> content = bucketContent2.getContent();
-        for (StorageMetadata meta : content) {
-            LOGGER.info("name: " + meta.getName());
-            LOGGER.info("size: " + meta.getSize());
-            LOGGER.info("type: " + meta.getType());
-            LOGGER.info("etag: " + meta.getETag());
-            LOGGER.info("providerid: " + meta.getProviderId());
-            LOGGER.info("creation: " + meta.getCreationDate());
-            LOGGER.info("uri: " + meta.getUri());
-            LOGGER.info(" ");
+        for (StorageMetadata meta : bucketContent2.getStrippedContent()) {
+            LOGGER.debug("name: " + meta.getName());
+            LOGGER.debug("size: " + meta.getSize());
+            LOGGER.debug("type: " + meta.getType());
+            LOGGER.debug("etag: " + meta.getETag());
+            LOGGER.debug("providerid: " + meta.getProviderId());
+            LOGGER.debug("creation: " + meta.getCreationDate());
+            LOGGER.debug("uri: " + meta.getUri());
+            LOGGER.debug(" ");
         }
     }
 
@@ -372,14 +385,14 @@ public class AllServiceTest {
                 new ReadKeyPassword("b"),
                 new KeyStoreID("first"),
                 new KeyStoreCreationConfig(0, 0, 1));
-        LOGGER.info(ShowKeyStore.toString(keyStoreStuffForKeyStoreWithSecretKey.keyStore, keyStoreStuffForKeyStoreWithSecretKey.keyStoreAccess.getKeyStoreAuth().getReadKeyPassword()));
-        LOGGER.info("Ersten KeyStore mit SecretKey erfolgreich angelegt");
+        LOGGER.debug(ShowKeyStore.toString(keyStoreStuffForKeyStoreWithSecretKey.keyStore, keyStoreStuffForKeyStoreWithSecretKey.keyStoreAccess.getKeyStoreAuth().getReadKeyPassword()));
+        LOGGER.debug("Ersten KeyStore mit SecretKey erfolgreich angelegt");
 
         // Erzeugen des ersten DocumentGuards mit dem dem KeyStore, der den Secret Key enthält
         DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest(factory);
         DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuffForSecretKey = documentGuardServiceTest.testCreateSymmetricDocumentGuard(
                 keyStoreStuffForKeyStoreWithSecretKey.keyStoreAccess);
-        LOGGER.info("Ersten DocumentGuard mit secretKey verschlüsselt");
+        LOGGER.debug("Ersten DocumentGuard mit secretKey verschlüsselt");
 
         // Erzeugen des Documents mit dem DocumentGuard, der mit dem secretKey verschlüsselt ist
         DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest(factory);
@@ -388,7 +401,7 @@ public class AllServiceTest {
                 documentBucketPath,
                 documentGuardStuffForSecretKey.documentKeyIDWithKey,
                 documentContent);
-        LOGGER.info("Document mit Schlüssel aus DocumentGuard verschlüsselt");
+        LOGGER.debug("Document mit Schlüssel aus DocumentGuard verschlüsselt");
 
         // Laden des Documents mit dem KeyStore mit secretKey
         DocumentContent readDocumentContent = documentPersistenceServiceTest.testLoadDocument(documentGuardStuffForSecretKey.documentGuardService,
@@ -396,7 +409,7 @@ public class AllServiceTest {
                 documentStuff.documentLocation);
         Assert.assertEquals("Content of Document", readDocumentContent.toString(), documentContent.toString());
 
-        LOGGER.info("Document mit DocumentGuard erfolgreich gelesen");
+        LOGGER.debug("Document mit DocumentGuard erfolgreich gelesen");
 
         return new FullStuff(keyStoreStuffForKeyStoreWithSecretKey, documentGuardStuffForSecretKey, documentStuff);
     }
@@ -408,8 +421,8 @@ public class AllServiceTest {
                 new ReadKeyPassword("d"),
                 new KeyStoreID("second"),
                 new KeyStoreCreationConfig(1, 0, 0));
-        LOGGER.info(ShowKeyStore.toString(keyStoreStuffForKeyStoreWithEncKey.keyStore, keyStoreStuffForKeyStoreWithEncKey.keyStoreAccess.getKeyStoreAuth().getReadKeyPassword()));
-        LOGGER.info("Zweiten KeyStore mit EncKey erfolgreich angelegt");
+        LOGGER.debug(ShowKeyStore.toString(keyStoreStuffForKeyStoreWithEncKey.keyStore, keyStoreStuffForKeyStoreWithEncKey.keyStoreAccess.getKeyStoreAuth().getReadKeyPassword()));
+        LOGGER.debug("Zweiten KeyStore mit EncKey erfolgreich angelegt");
 
         // vorher sicherheitshalber Löschen des Kennworts zum Lesen der Keys
         KeyStoreAccess keystoreAccessForKeyStoreWithEncKey = keyStoreStuffForKeyStoreWithEncKey.keyStoreAccess;
@@ -421,7 +434,7 @@ public class AllServiceTest {
         DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuffForEncKey = documentGuardServiceTest.testCreateAsymmetricDocumentGuardForDocumentKeyIDWithKey(
                 keystoreAccessForKeyStoreWithEncKey,
                 documentKeyIDWithKey);
-        LOGGER.info("Zweiten DocumentGuard mit EncKey ohne Wissen über das Kennwort des Keys angelegt");
+        LOGGER.debug("Zweiten DocumentGuard mit EncKey ohne Wissen über das Kennwort des Keys angelegt");
 
         if (setReadKeyPassword) {
             // Jetzt Laden des Documents mit dem KeyStore, der mit dem EncKey verschlüsselt ist
@@ -440,7 +453,7 @@ public class AllServiceTest {
                 keystoreAccessForKeyStoreWithEncKey,
                 documentLocation);
         Assert.assertEquals("Content of Document", readDocumentContent.toString(), documentContent.toString());
-        LOGGER.info("Document erfolgreich mit DocumentGuard für EncKey gelesen");
+        LOGGER.debug("Document erfolgreich mit DocumentGuard für EncKey gelesen");
 
         return new FullStuff(keyStoreStuffForKeyStoreWithEncKey, documentGuardStuffForEncKey, null);
 

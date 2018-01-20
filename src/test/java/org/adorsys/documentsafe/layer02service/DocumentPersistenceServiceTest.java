@@ -60,7 +60,7 @@ public class DocumentPersistenceServiceTest {
         DocumentContent readContent = documentPersistenceService.loadDocument(
                 keyStoreAccess,
                 documentLocation);
-        LOGGER.info("Gelesenes Document enthält:" + readContent + " bzw " + new String(readContent.getValue()));
+        LOGGER.debug("Gelesenes Document enthält:" + readContent + " bzw " + new String(readContent.getValue()));
         return readContent;
     }
 

@@ -23,7 +23,7 @@ public class RestApplication {
     private final static Logger LOGGER = LoggerFactory.getLogger(RestApplication.class);
 
     public static void main(String[] args) {
-        LOGGER.info("START REST");
+        LOGGER.debug("START REST");
         SpringApplication.run(RestApplication.class, args);
     }
 }

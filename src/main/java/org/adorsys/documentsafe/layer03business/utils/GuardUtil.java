@@ -27,11 +27,9 @@ public class GuardUtil {
 
     public static DocumentKeyID getDocumentKeyID(BucketContent bucketContent, BucketPath bucketPath) {
         String p1 = bucketPath.getObjectHandlePath();
-        String p3 = p1.replaceAll("/", "_");
-        String p4 = bucketContent.getBucketPath().getSubBuckets();
-        String prefix = p4 + p3;
+        String prefix = p1.replaceAll("/", "_");
         LOGGER.debug("prefix " + prefix);
-        for (StorageMetadata meta : bucketContent.getContent()) {
+        for (StorageMetadata meta : bucketContent.getStrippedContent()) {
             LOGGER.debug("meta getname " + meta.getName());
             if (meta.getName().startsWith(prefix)) {
                 String name = meta.getName();

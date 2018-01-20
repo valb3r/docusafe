@@ -23,7 +23,7 @@ public class InfoController {
             produces = {MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON}
     )
     public VersionInformation getInfo() {
-        LOGGER.info("et Info");
+        LOGGER.debug("et Info");
         return new VersionInformation("affe", new DocumentKeyID("123"));
     }
 }

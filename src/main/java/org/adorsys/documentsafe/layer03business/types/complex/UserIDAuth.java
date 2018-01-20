@@ -23,4 +23,12 @@ public class UserIDAuth {
 
         return userID;
     }
+
+    @Override
+    public String toString() {
+        return "UserIDAuth{" +
+                "userID=" + userID +
+                ", readKeyPassword=" + readKeyPassword +
+                '}';
+    }
 }

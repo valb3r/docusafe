@@ -22,4 +22,12 @@ public class KeyStoreAccess {
 
         return keyStoreLocation;
     }
+
+    @Override
+    public String toString() {
+        return "KeyStoreAccess{" +
+                "keyStoreLocation=" + keyStoreLocation +
+                ", keyStoreAuth=" + keyStoreAuth +
+                '}';
+    }
 }

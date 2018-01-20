@@ -76,10 +76,10 @@ public class UserIDUtil {
 
         KeyStoreType keyStoreType = null;
         BucketContent bucketContent = bucketService.readDocumentBucket(keyStoreBucketPath, ListRecursiveFlag.FALSE);
-        String prefix = bucketContent.getBucketPath().getSubBuckets() + KEY_STORE_TYPE;
+        String prefix = KEY_STORE_TYPE;
 
-        for (StorageMetadata meta : bucketContent.getContent()) {
-            LOGGER.info("found " + meta.getName());
+        for (StorageMetadata meta : bucketContent.getStrippedContent()) {
+            LOGGER.debug("found " + meta.getName());
             if (meta.getName().startsWith(prefix)) {
                 keyStoreType = new KeyStoreType(meta.getName().substring(prefix.length()));
             }

@@ -73,9 +73,9 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
             bucketService.createBucket(keyStoreBucketPath);
             KeyStoreLocation keyStoreLocation = keyStoreService.createKeyStore(keyStoreID, keyStoreAuth, keyStoreBucketPath, null);
             keyStoreAccess = new KeyStoreAccess(keyStoreLocation, keyStoreAuth);
-            LOGGER.info("for " + userIDAuth.getUserID() + " a new KeyStore has been created at " + keyStoreLocation);
+            LOGGER.info("for " + userIDAuth + " a new KeyStore with " + keyStoreAccess + " has been created at " + keyStoreLocation);
         }
-        {   // speichern einer leeren Datei, um sich den KeyStoreNamen zu merken
+        {   // speichern einer leeren Datei, um sich den KeyStoreTypen zu merken
             UserIDUtil.safeKeyStoreType(userIDAuth.getUserID(), keyStoreAccess.getKeyStoreLocation().getKeyStoreType(), bucketService);
         }
         UserHomeBucketPath userHomeBucketPath = UserIDUtil.getHomeBucketPath(userIDAuth.getUserID());
@@ -135,8 +135,7 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
             KeyStoreAuth keyStoreAuth = UserIDUtil.getKeyStoreAuth(userIDAuth);
             keyStoreAccess = new KeyStoreAccess(keyStoreLocation, keyStoreAuth);
         }
-        LOGGER.info("for " + userIDAuth.getUserID() + " the KeyStore will be loaded from " + keyStoreAccess.getKeyStoreLocation() );
-
+        LOGGER.info("for " + userIDAuth + " with " + keyStoreAccess + " the KeyStore will be loaded from " + keyStoreAccess.getKeyStoreLocation() );
 
         return documentPersistenceService.loadDocument(keyStoreAccess, documentLocation);
     }

@@ -115,7 +115,7 @@ public class ExtendedBlobStoreConnection extends BlobStoreConnection {
             }
             if (bucketPath.getDepth() > 1) {
                 String prefix = bucketPath.getSubBuckets();
-                LOGGER.info("set prefix to " + prefix);
+                LOGGER.debug("set prefix to " + prefix);
                 listContainerOptions.prefix(prefix);
                 if (listRecursiveFlag == ListRecursiveFlag.FALSE) {
                     listContainerOptions.delimiter(BucketName.BUCKET_SEPARATOR);
