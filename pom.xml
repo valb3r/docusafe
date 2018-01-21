@@ -56,11 +56,6 @@
             <version>2.3.1</version>
         </dependency>
         <!-- XStreamMarshaller -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-oxm</artifactId>
-            <version>4.3.13.RELEASE</version>
-        </dependency>
 
         <dependency>
             <groupId>org.apache.servicemix.bundles</groupId>

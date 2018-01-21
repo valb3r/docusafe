@@ -5,15 +5,10 @@ import org.adorsys.documentsafe.layer02service.types.DocumentID;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentLocation;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Created by peter on 10.01.18.
  */
-@XmlRootElement()
-@XmlAccessorType(XmlAccessType.FIELD)
 public class VersionInformation {
     private String info;
     private DocumentKeyID documentKeyID;
@@ -35,5 +30,14 @@ public class VersionInformation {
 
     public DocumentKeyID getDocumentKeyID() {
         return documentKeyID;
+    }
+
+    @Override
+    public String toString() {
+        return "VersionInformation{" +
+                "info='" + info + '\'' +
+                ", documentKeyID=" + documentKeyID +
+                ", documentLocation=" + documentLocation +
+                '}';
     }
 }

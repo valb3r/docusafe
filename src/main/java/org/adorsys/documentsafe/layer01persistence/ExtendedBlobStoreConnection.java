@@ -44,8 +44,6 @@ public class ExtendedBlobStoreConnection extends BlobStoreConnection {
             }
             if (bp.getDepth() > 1) {
                 blobStoreContext.getBlobStore().createContainerInLocation((Location) null, bp.getFirstBucket().getValue());
-                // TODO nicht schön
-                blobStoreContext.getBlobStore().createDirectory(bp.getFirstBucket().getValue(), bp.getSubBuckets());
             } else {
                 blobStoreContext.getBlobStore().createContainerInLocation((Location) null, container);
             }
