@@ -50,7 +50,7 @@ public class KeyStoreServiceImpl implements KeyStoreService {
                                            KeyStoreBucketPath keystoreBucketPath,
                                            KeyStoreCreationConfig config) {
         try {
-            LOGGER.debug("start create keystore " + keyStoreID);
+            LOGGER.info("start create keystore " + keyStoreID);
             {
                 BucketContent bucketContent = bucketService.readDocumentBucket(keystoreBucketPath, ListRecursiveFlag.FALSE);
                 for (StorageMetadata meta : bucketContent.getStrippedContent()) {
@@ -76,7 +76,7 @@ public class KeyStoreServiceImpl implements KeyStoreService {
 
             KeyStoreLocation keyStoreLocation = new KeyStoreLocation(keystoreBucketPath, keyStoreID, new KeyStoreType(userKeyStore.getType()));
 			keystorePersistence.saveKeyStore(userKeyStore, keyStoreAuth.getReadStoreHandler(), keyStoreLocation);
-            LOGGER.debug("finished create keystore " + keyStoreID + " @ " + keyStoreLocation);
+            LOGGER.info("finished create keystore " + keyStoreID + " @ " + keyStoreLocation);
 			return keyStoreLocation;
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
@@ -85,9 +85,9 @@ public class KeyStoreServiceImpl implements KeyStoreService {
     
     @Override
     public KeyStore loadKeystore(KeyStoreLocation keyStoreLocation, CallbackHandler userKeystoreHandler){
-        LOGGER.debug("start load keystore @ " + keyStoreLocation);
+        LOGGER.info("start load keystore @ " + keyStoreLocation);
         KeyStore keyStore = keystorePersistence.loadKeystore(keyStoreLocation, userKeystoreHandler);
-        LOGGER.debug("finished load keystore @ " + keyStoreLocation);
+        LOGGER.info("finished load keystore @ " + keyStoreLocation);
         return keyStore;
     }
 }

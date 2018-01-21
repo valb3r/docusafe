@@ -56,7 +56,7 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
             OverwriteFlag overwriteFlag) {
 
         try {
-            LOGGER.debug("start persist document with " + documentID);
+            LOGGER.info("start persist document with " + documentID);
 
             // Create object handle
             ObjectHandle location = new ObjectHandle(documentBucketPath.getFirstBucket().getValue(), documentBucketPath.getSubBuckets() + documentID.getValue());
@@ -74,7 +74,7 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
             KeyID keyID = new KeyID(documentKeyIDWithKey.getDocumentKeyID().getValue());
             objectPersistence.storeObject(documentContent.getValue(), metaInfo, location, keySource, keyID, encParams, overwriteFlag);
             DocumentLocation documentLocation = new DocumentLocation(documentID, documentBucketPath);
-            LOGGER.debug("finished persist document with " + documentID + " @ " + documentLocation);
+            LOGGER.info("finished persist document with " + documentID + " @ " + documentLocation);
             return documentLocation;
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
@@ -90,10 +90,10 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
             DocumentLocation documentLocation) {
 
         try {
-            LOGGER.debug("start load document @ " + documentLocation);
+            LOGGER.info("start load document @ " + documentLocation + " " + keyStoreAccess);
             KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess);
             DocumentContent documentContent = new DocumentContent(objectPersistence.loadObject(documentLocation.getLocationHandle(), keySource).getData());
-            LOGGER.debug("finished load document @ " + documentLocation);
+            LOGGER.info("finished load document @ " + documentLocation);
             return documentContent;
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);

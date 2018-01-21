@@ -1,6 +1,7 @@
 package org.adorsys.documentsafe.layer03business;
 
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
+import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
 import org.adorsys.documentsafe.layer02service.utils.TestFsBlobStoreFactory;
 import org.adorsys.documentsafe.layer03business.impl.DocumentSafeServiceImpl;
@@ -24,7 +25,7 @@ public class TestBusiness {
     private final static BlobStoreContextFactory factory = new TestFsBlobStoreFactory();
     public static Set<UserIDAuth> users = new HashSet<>();
 
-    //@After
+    @After
     public void after() {
         try {
             DocumentSafeService service = new DocumentSafeServiceImpl(factory);
@@ -42,12 +43,14 @@ public class TestBusiness {
         service.createUser(userIDAuth);
     }
 
-    // @Test
+    @Test
     public void loadCreateUser() {
         DocumentSafeService service = new DocumentSafeServiceImpl(factory);
         UserIDAuth userIDAuth = new UserIDAuth(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));
         DocumentFQN documentFQN = new DocumentFQN("README.txt");
-        service.readDocument(userIDAuth, documentFQN);
+        service.createUser(userIDAuth);
+        DocumentContent documentContent = service.readDocument(userIDAuth, documentFQN);
+        LOGGER.debug("retrieved document:" + new String(documentContent.getValue()));
     }
 
 }

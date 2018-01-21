@@ -98,7 +98,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
     @Override
     public void createSymmetricDocumentGuard(KeyStoreAccess keyStoreAccess, DocumentKeyIDWithKey documentKeyIDWithKey) {
         try {
-            LOGGER.debug("start create symmetric encrypted document guard for " + documentKeyIDWithKey + " @ " + keyStoreAccess.getKeyStoreLocation());
+            LOGGER.info("start create symmetric encrypted document guard for " + documentKeyIDWithKey + " @ " + keyStoreAccess.getKeyStoreLocation());
             // KeyStore laden
             KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStoreLocation(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
             KeySource keySource = new KeyStoreBasedSecretKeySourceImpl(userKeystore, keyStoreAccess.getKeyStoreAuth().getReadKeyHandler());
@@ -124,7 +124,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
             GuardKey guardKey = new GuardKey(serializerRegistry.defaultSerializer().serializeSecretKey(documentKeyIDWithKey.getDocumentKey()));
 
             objectPersistence.storeObject(guardKey.getValue(), metaInfo, documentGuardHandle, keySource, new KeyID(guardKeyID.getValue()), encParams, OverwriteFlag.FALSE);
-            LOGGER.debug("finished create symmetric encrypted document guard for " + documentKeyIDWithKey + " @ " + keyStoreAccess.getKeyStoreLocation());
+            LOGGER.info("finished create symmetric encrypted document guard for " + documentKeyIDWithKey + " @ " + keyStoreAccess.getKeyStoreLocation());
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
@@ -139,7 +139,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
     @Override
     public void createAsymmetricDocumentGuard(KeyStoreAccess receiverKeyStoreAccess, DocumentKeyIDWithKey documentKeyIDWithKey) {
         try {
-            LOGGER.debug("start create asymmetric encrypted document guard for " + documentKeyIDWithKey + " @ " + receiverKeyStoreAccess.getKeyStoreLocation());
+            LOGGER.info("start create asymmetric encrypted document guard for " + documentKeyIDWithKey + " @ " + receiverKeyStoreAccess.getKeyStoreLocation());
             KeyStore userKeystore = keystorePersistence.loadKeystore(receiverKeyStoreAccess.getKeyStoreLocation(), receiverKeyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
 
             JWKSet exportKeys = load(userKeystore, null);
@@ -165,7 +165,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
             GuardKey guardKey = new GuardKey(serializerRegistry.defaultSerializer().serializeSecretKey(documentKeyIDWithKey.getDocumentKey()));
 
             objectPersistence.storeObject(guardKey.getValue(), metaInfo, documentGuardHandle, keySource, new KeyID(guardKeyID.getValue()), encParams, OverwriteFlag.FALSE);
-            LOGGER.debug("finished create asymmetric encrypted document guard for " + documentKeyIDWithKey + " @ " + receiverKeyStoreAccess.getKeyStoreLocation());
+            LOGGER.info("finished create asymmetric encrypted document guard for " + documentKeyIDWithKey + " @ " + receiverKeyStoreAccess.getKeyStoreLocation());
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
@@ -177,7 +177,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
     @Override
     public DocumentKeyIDWithKey loadDocumentKeyIDWithKeyFromDocumentGuard(KeyStoreAccess keyStoreAccess, DocumentKeyID documentKeyID) {
         try {
-            LOGGER.debug("start load " + documentKeyID + " from document guard @ " + keyStoreAccess.getKeyStoreLocation());
+            LOGGER.info("start load " + documentKeyID + " from document guard @ " + keyStoreAccess.getKeyStoreLocation());
 
             KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStoreLocation(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
 
@@ -192,7 +192,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
             DocumentGuardSerializer serializer = serializerRegistry.getSerializer(serializerId);
             DocumentKey documentKey = serializer.deserializeSecretKey(wrapper.getData());
 
-            LOGGER.debug("finished load " + documentKeyID + " from document guard @ " + keyStoreAccess.getKeyStoreLocation());
+            LOGGER.info("finished load " + documentKeyID + " from document guard @ " + keyStoreAccess.getKeyStoreLocation());
             return new DocumentKeyIDWithKey(documentKeyID, documentKey);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);

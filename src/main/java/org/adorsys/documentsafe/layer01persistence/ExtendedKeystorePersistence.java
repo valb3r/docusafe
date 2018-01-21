@@ -47,9 +47,6 @@ public class ExtendedKeystorePersistence {
 	
 	public KeyStore loadKeystore(KeyStoreLocation keyStoreLocation, CallbackHandler handler) {
 		try {
-			LOGGER.debug("XXkeystorehandle container: " + keyStoreLocation.getLocationHandle().getContainer());
-			LOGGER.debug("XXkeystorehandle name: " + keyStoreLocation.getLocationHandle().getName());
-
 			// Read bytes
 			byte[] ksBytes = blobStoreConnection.getBlob(keyStoreLocation.getLocationHandle());
 			LOGGER.debug("loaded keystore has size:" + ksBytes.length);
