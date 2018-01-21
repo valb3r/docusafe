@@ -44,7 +44,7 @@ public class TestBusiness {
     }
 
     @Test
-    public void loadCreateUser() {
+    public void loadCDocument() {
         DocumentSafeService service = new DocumentSafeServiceImpl(factory);
         UserIDAuth userIDAuth = new UserIDAuth(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));
         DocumentFQN documentFQN = new DocumentFQN("README.txt");
