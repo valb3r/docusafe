@@ -29,8 +29,8 @@ public class DocumentKeyIDWithKey {
 	@Override
 	public String toString() {
 		return "DocumentKeyIDWithKey{" +
-				"documentKeyID=" + documentKeyID +
-				", documentKey=" + documentKey +
+				documentKeyID +
+				", " + documentKey +
 				'}';
 	}
 }

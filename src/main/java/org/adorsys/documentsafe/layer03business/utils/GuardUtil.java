@@ -39,9 +39,7 @@ public class GuardUtil {
         BucketContent bucketContent = bucketService.readDocumentBucket(keyStoreBucketPath, ListRecursiveFlag.TRUE);
 
         String prefix = bucketPath.getObjectHandlePath();
-        LOGGER.debug("prefix " + prefix);
         for (StorageMetadata meta : bucketContent.getStrippedContent()) {
-            LOGGER.debug("meta getname " + meta.getName());
             if (meta.getName().startsWith(prefix)) {
                 String name = meta.getName();
                 int i = name.indexOf(BUCKET_TO_KEY_DELIMITER);

@@ -74,7 +74,7 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
             KeyID keyID = new KeyID(documentKeyIDWithKey.getDocumentKeyID().getValue());
             objectPersistence.storeObject(documentContent.getValue(), metaInfo, location, keySource, keyID, encParams, overwriteFlag);
             DocumentLocation documentLocation = new DocumentLocation(documentID, documentBucketPath);
-            LOGGER.info("finished persist document with " + documentID + " @ " + documentLocation);
+            LOGGER.info("finished persist document with " + documentID + " at " + documentLocation);
             return documentLocation;
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
@@ -93,7 +93,7 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
             LOGGER.info("start load document @ " + documentLocation + " " + keyStoreAccess);
             KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess);
             DocumentContent documentContent = new DocumentContent(objectPersistence.loadObject(documentLocation.getLocationHandle(), keySource).getData());
-            LOGGER.info("finished load document @ " + documentLocation);
+            LOGGER.info("finished load document at " + documentLocation);
             return documentContent;
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);

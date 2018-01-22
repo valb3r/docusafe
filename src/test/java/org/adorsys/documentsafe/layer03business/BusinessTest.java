@@ -44,7 +44,7 @@ public class BusinessTest {
         try {
             DocumentSafeService service = new DocumentSafeServiceImpl(factory);
             users.forEach(userIDAuth -> {
-                LOGGER.info("AFTER TEST DESTROY " + userIDAuth.getUserID().getValue());
+                LOGGER.debug("AFTER TEST DESTROY " + userIDAuth.getUserID().getValue());
                 service.destroyUser(userIDAuth);
             });
         } catch (Exception e) {
@@ -54,7 +54,7 @@ public class BusinessTest {
 
     @Test
     public void testCreateUser() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         UserIDAuth userIDAuth = new UserIDAuth(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));
         users.add(userIDAuth);
         DocumentSafeService service = new DocumentSafeServiceImpl(factory);
@@ -63,7 +63,7 @@ public class BusinessTest {
 
     @Test
     public void loadCDocument() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         UserIDAuth userIDAuth = new UserIDAuth(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));
         users.add(userIDAuth);
         DocumentSafeService service = new DocumentSafeServiceImpl(factory);
@@ -75,7 +75,7 @@ public class BusinessTest {
 
     @Test
     public void storeDocumentInANewFolder() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         UserIDAuth userIDAuth = new UserIDAuth(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));
         users.add(userIDAuth);
         DocumentSafeService service = new DocumentSafeServiceImpl(factory);

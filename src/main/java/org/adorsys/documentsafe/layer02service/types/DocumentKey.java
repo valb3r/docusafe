@@ -1,5 +1,6 @@
 package org.adorsys.documentsafe.layer02service.types;
 
+import org.adorsys.documentsafe.layer00common.basetypes.BaseTypePasswordByteArray;
 import org.adorsys.documentsafe.layer00common.utils.HexUtil;
 
 import javax.crypto.SecretKey;
@@ -28,7 +29,7 @@ public class DocumentKey {
 	@Override
 	public String toString() {
 		return "DocumentKey{" +
-				HexUtil.conventBytesToHexString(secretKey.getEncoded()) +
+				BaseTypePasswordByteArray.hide(secretKey.getEncoded()) +
 				'}';
 	}
 

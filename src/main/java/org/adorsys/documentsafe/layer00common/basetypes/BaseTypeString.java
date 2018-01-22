@@ -6,12 +6,13 @@ import java.lang.reflect.Type;
 /**
  * Created by peter on 20.02.17.
  */
-public class BaseTypeString  implements Serializable, Type {
-	
-	private static final long serialVersionUID = 3569239558130703592L;
-	private String value;
+public class BaseTypeString implements Serializable, Type {
 
-    protected BaseTypeString() {}
+    private static final long serialVersionUID = 3569239558130703592L;
+    private String value;
+
+    protected BaseTypeString() {
+    }
 
     protected BaseTypeString(String value) {
         this.value = value;
@@ -23,9 +24,7 @@ public class BaseTypeString  implements Serializable, Type {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + "{" +
-                "value='" + value + '\'' +
-                '}';
+        return this.getClass().getSimpleName() + "{\'" + value + "\'}";
     }
 
     @Override

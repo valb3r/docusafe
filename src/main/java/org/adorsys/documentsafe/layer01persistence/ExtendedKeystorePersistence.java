@@ -35,7 +35,7 @@ public class ExtendedKeystorePersistence {
 					throw new ExtendedPersistenceException("Invalid store type - expected : " + keystore.getType() + " but is: " + keyStoreLocation.getKeyStoreType().getValue());
 			
 			// write keystore to byte array.
-			LOGGER.debug("WRITE KEYSTORE WITH NAME " + keyStoreLocation + " and with type " + keystore.getType());
+			LOGGER.debug("write keystore at " + keyStoreLocation + " and with type " + keystore.getType());
 			byte[] bs = KeyStoreService.toByteArray(keystore, keyStoreLocation.getLocationHandle().getName(), storePassHandler);
 			
 			// write byte array to blob store.

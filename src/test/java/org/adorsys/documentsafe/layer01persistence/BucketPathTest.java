@@ -14,7 +14,7 @@ public class BucketPathTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(BucketPathTest.class);
     @Test
     public void test1() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         BucketPath bp=new BucketPath("a/b/c/d");
         Assert.assertEquals("bucket", bp.getFirstBucket(), new BucketName("a"));
         Assert.assertEquals("sub bucket", bp.getSubBuckets(), "b/c/d/");
@@ -23,7 +23,7 @@ public class BucketPathTest {
 
     @Test
     public void test2() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         BucketPath bp=new BucketPath("a");
         Assert.assertEquals("bucket", bp.getFirstBucket(), new BucketName("a"));
         Assert.assertEquals("sub bucket", bp.getSubBuckets(), "");

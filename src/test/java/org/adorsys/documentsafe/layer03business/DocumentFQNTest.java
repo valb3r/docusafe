@@ -16,7 +16,7 @@ public class DocumentFQNTest {
 
     @Test
     public void test1() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         DocumentFQN documentFQN = new DocumentFQN("a/b/c.affe");
         Assert.assertEquals(new RelativeBucketPath("a/b"), documentFQN.getRelativeBucketPath());
         Assert.assertEquals(new DocumentID("c.affe"), documentFQN.getDocumentID());

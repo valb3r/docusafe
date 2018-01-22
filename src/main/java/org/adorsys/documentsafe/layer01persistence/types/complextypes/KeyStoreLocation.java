@@ -46,9 +46,9 @@ public class KeyStoreLocation implements LocationInterface {
 	@Override
 	public String toString() {
 		return "KeyStoreLocation{" +
-				"keyStoreBucketPath=" + keyStoreBucketPath +
-				", keyStoreID=" + keyStoreID +
-				", keyStoreType=" + keyStoreType +
+				keyStoreBucketPath +
+				", " + keyStoreID +
+				", " + keyStoreType +
 				'}';
 	}
 }

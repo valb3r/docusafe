@@ -74,21 +74,16 @@ public class UserIDUtil {
         KeyStoreBucketPath keyStoreBucketPath = getKeyStoreBucketPath(userID);
         KeyStoreID keyStoreID = getKeyStoreID(userID);
 
-        KeyStoreType keyStoreType = null;
         BucketContent bucketContent = bucketService.readDocumentBucket(keyStoreBucketPath, ListRecursiveFlag.FALSE);
         String prefix = KEY_STORE_TYPE;
 
         for (StorageMetadata meta : bucketContent.getStrippedContent()) {
-            LOGGER.debug("found " + meta.getName());
             if (meta.getName().startsWith(prefix)) {
-                keyStoreType = new KeyStoreType(meta.getName().substring(prefix.length()));
+                KeyStoreType keyStoreType = new KeyStoreType(meta.getName().substring(prefix.length()));
+                return new KeyStoreLocation(keyStoreBucketPath, keyStoreID, keyStoreType);
             }
         }
-        if (keyStoreType == null) {
-            throw new BaseException("Did not find stored keyStoreType in " + keyStoreBucketPath);
-        }
-
-        return new KeyStoreLocation(keyStoreBucketPath, keyStoreID, keyStoreType);
+        throw new BaseException("Did not find stored keyStoreType in " + keyStoreBucketPath);
     }
 
 }

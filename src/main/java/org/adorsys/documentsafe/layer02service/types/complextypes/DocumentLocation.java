@@ -31,8 +31,8 @@ public class DocumentLocation implements LocationInterface {
     @Override
     public String toString() {
         return "DocumentLocation{" +
-                "documentID=" + documentID +
-                ", documentBucketPath=" + documentBucketPath +
+                documentID +
+                ", " + documentBucketPath +
                 '}';
     }
 

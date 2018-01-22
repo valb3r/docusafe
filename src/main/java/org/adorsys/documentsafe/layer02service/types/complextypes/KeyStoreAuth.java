@@ -50,8 +50,8 @@ public class KeyStoreAuth {
     @Override
     public String toString() {
         return "KeyStoreAuth{" +
-                "readStorePassword=" + readStorePassword +
-                ", readKeyPassword=" + readKeyPassword +
+                readStorePassword +
+                ", " + readKeyPassword +
                 '}';
     }
 }

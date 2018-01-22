@@ -2,7 +2,6 @@ package org.adorsys.documentsafe.layer03business.impl;
 
 import org.adorsys.documentsafe.layer00common.exceptions.BaseException;
 import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
-import org.adorsys.documentsafe.layer01persistence.types.ListRecursiveFlag;
 import org.adorsys.documentsafe.layer01persistence.types.OverwriteFlag;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreBucketPath;
@@ -20,7 +19,6 @@ import org.adorsys.documentsafe.layer02service.types.DocumentID;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 import org.adorsys.documentsafe.layer02service.types.PlainFileContent;
 import org.adorsys.documentsafe.layer02service.types.PlainFileName;
-import org.adorsys.documentsafe.layer02service.types.complextypes.BucketContent;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentLocation;
@@ -30,12 +28,12 @@ import org.adorsys.documentsafe.layer03business.exceptions.UserIDAlreadyExistsEx
 import org.adorsys.documentsafe.layer03business.exceptions.UserIDDoesNotExistException;
 import org.adorsys.documentsafe.layer03business.types.DocumentFQN;
 import org.adorsys.documentsafe.layer03business.types.RelativeBucketPath;
-import org.adorsys.documentsafe.layer03business.types.UserRootBucketPath;
 import org.adorsys.documentsafe.layer03business.types.UserHomeBucketPath;
+import org.adorsys.documentsafe.layer03business.types.UserRootBucketPath;
 import org.adorsys.documentsafe.layer03business.types.complex.DSDocument;
+import org.adorsys.documentsafe.layer03business.types.complex.UserIDAuth;
 import org.adorsys.documentsafe.layer03business.utils.GuardUtil;
 import org.adorsys.documentsafe.layer03business.utils.UserIDUtil;
-import org.adorsys.documentsafe.layer03business.types.complex.UserIDAuth;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,7 +74,6 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
             bucketService.createBucket(keyStoreBucketPath);
             KeyStoreLocation keyStoreLocation = keyStoreService.createKeyStore(keyStoreID, keyStoreAuth, keyStoreBucketPath, null);
             keyStoreAccess = new KeyStoreAccess(keyStoreLocation, keyStoreAuth);
-            LOGGER.debug("for " + userIDAuth + " a new KeyStore with " + keyStoreAccess + " has been created at " + keyStoreLocation);
         }
         {   // speichern einer leeren Datei, um sich den KeyStoreTypen zu merken
             UserIDUtil.safeKeyStoreType(userIDAuth.getUserID(), keyStoreAccess.getKeyStoreLocation().getKeyStoreType(), bucketService);
