@@ -69,6 +69,7 @@ public class AllServiceTest {
 
     @Test
     public void testCreateBucketPath() {
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         try {
             BucketPath bp = new BucketPath().set(new BucketName("1")).sub(new BucketName("2")).sub(new BucketName("3"));
             ContainerPersistence containerPersistence = new ContainerPersistence(new ExtendedBlobStoreConnection(factory));
@@ -81,6 +82,7 @@ public class AllServiceTest {
 
     @Test
     public void testCreateKeyStore() {
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest(factory).createKeyStore();
             Assert.assertEquals("Number of Entries", 15, keyStoreStuff.keyStore.size());
@@ -91,6 +93,7 @@ public class AllServiceTest {
 
     @Test(expected = KeyStoreExistsException.class)
     public void testCreateKeyStoreTwice() {
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         try {
             KeyStoreServiceTest keyStoreServiceTest = new KeyStoreServiceTest(factory);
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = keyStoreServiceTest.createKeyStore();
@@ -104,6 +107,7 @@ public class AllServiceTest {
 
     @Test
     public void testCreateKeyStoreAndDocumentGuard() {
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest(factory).createKeyStore();
             new DocumentGuardServiceTest(factory).testCreateSymmetricDocumentGuard(
@@ -115,6 +119,7 @@ public class AllServiceTest {
 
     @Test
     public void testCreateKeyStoreAndDocumentGuardAndLoadDocumentGuard() {
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest(factory).createKeyStore();
             DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest(factory);
@@ -132,6 +137,7 @@ public class AllServiceTest {
 
     @Test
     public void testCreateDocument() {
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         try {
             DocumentContent documentContent = new DocumentContent("Ein Affe im Zoo ist nie allein".getBytes());
 
@@ -153,6 +159,7 @@ public class AllServiceTest {
 
     @Test
     public void testCreateAndLoadDocument() {
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         try {
             DocumentContent documentContent = new DocumentContent("Ein Affe im Zoo ist nie allein".getBytes());
 
@@ -197,6 +204,7 @@ public class AllServiceTest {
      */
     @Test
     public void testCreate_oneDocument_twoKeyStores_twoGuards_LoadDocument() {
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         String container1 = "user1/key-store-container-for-secretkey";
         String container2 = "user2/key-store-container-for-enckey";
         DocumentBucketPath documentBucketPath = new DocumentBucketPath("documentBucketPath3/subfolder/1/2/3");
@@ -216,6 +224,7 @@ public class AllServiceTest {
      */
     @Test(expected = BaseException.class)
     public void testCreate_oneDocument_twoKeyStores_twoGuards_LoadDocument_with_expected_failure() {
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         String container1 = "user1/.keystore/key-store-container-for-secretkey";
         String container2 = "user2/.keystore/key-store-container-for-enckey";
         DocumentBucketPath documentBucketPath = new DocumentBucketPath("documentBucketPath/4");
@@ -232,6 +241,7 @@ public class AllServiceTest {
 
     @Test
     public void testCreate_oneDocument_twoKeyStores_twoGuards_ChangeDocument() {
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         String container1 = "user1/key-store-container-for-secretkey";
         String container2 = "user2/key-store-container-for-enckey";
         DocumentBucketPath documentBucketPath = new DocumentBucketPath("documentBucketPath5/1/2/3");
@@ -269,6 +279,7 @@ public class AllServiceTest {
 
     @Test(expected = FileExistsException.class)
     public void testCreateDocumentTwice() {
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         DocumentBucketPath documentBucketPath = new DocumentBucketPath("user1/bucket/folder1");
         DocumentContent documentContent = new DocumentContent("Affe".getBytes());
 
@@ -283,6 +294,7 @@ public class AllServiceTest {
 
     @Test
     public void testCreateDocumentTwiceButOverwrite() {
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         DocumentBucketPath documentBucketPath = new DocumentBucketPath("user1/bucket/folder1");
         DocumentContent documentContent = new DocumentContent("Affe".getBytes());
 
@@ -298,6 +310,7 @@ public class AllServiceTest {
 
     @Test
     public void testBucketService1() {
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         BucketServiceTest bucketServiceTest = new BucketServiceTest(factory);
         BucketPath rootPath = new BucketPath("user1");
         bucketServiceTest.createFiles(factory, rootPath, 3,2);
@@ -327,6 +340,7 @@ public class AllServiceTest {
 
     @Test
     public void checkNonExistingBucket() {
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         BucketServiceTest bucketServiceTest = new BucketServiceTest(factory);
         BucketPath rootPath = new BucketPath("user1");
         boolean exists = bucketServiceTest.bucketExists(rootPath);
@@ -335,6 +349,7 @@ public class AllServiceTest {
 
     @Test
     public void createBucketWithDot() {
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         BucketServiceTest bucketServiceTest = new BucketServiceTest(factory);
 
         DocumentBucketPath documentBucketPath = new DocumentBucketPath("user1/.hidden");

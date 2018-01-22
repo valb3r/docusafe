@@ -81,7 +81,7 @@ public class BucketPath {
     @Override
     public String toString() {
         return "BucketPath{" +
-                "buckets=" + buckets +
+                "buckets=" + getObjectHandlePath() +
                 '}';
     }
 

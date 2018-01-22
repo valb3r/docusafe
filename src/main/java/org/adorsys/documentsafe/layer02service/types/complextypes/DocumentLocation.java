@@ -36,4 +36,22 @@ public class DocumentLocation implements LocationInterface {
                 '}';
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DocumentLocation that = (DocumentLocation) o;
+
+        if (documentID != null ? !documentID.equals(that.documentID) : that.documentID != null) return false;
+        return documentBucketPath != null ? documentBucketPath.equals(that.documentBucketPath) : that.documentBucketPath == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = documentID != null ? documentID.hashCode() : 0;
+        result = 31 * result + (documentBucketPath != null ? documentBucketPath.hashCode() : 0);
+        return result;
+    }
 }
