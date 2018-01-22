@@ -1,7 +1,6 @@
 package org.adorsys.documentsafe.layer03business.types.complex;
 
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
-import org.adorsys.documentsafe.layer03business.types.DocumentFQN;
 
 /**
  * Created by peter on 22.01.18 at 08:14.

@@ -1,9 +1,10 @@
-package org.adorsys.documentsafe.layer03business.types;
+package org.adorsys.documentsafe.layer03business.types.complex;
 
 import org.adorsys.documentsafe.layer00common.basetypes.BaseTypeString;
 import org.adorsys.documentsafe.layer00common.exceptions.BaseException;
 import org.adorsys.documentsafe.layer01persistence.types.BucketName;
 import org.adorsys.documentsafe.layer02service.types.DocumentID;
+import org.adorsys.documentsafe.layer03business.types.RelativeBucketPath;
 
 import java.util.ArrayList;
 import java.util.List;

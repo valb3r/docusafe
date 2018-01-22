@@ -1,7 +1,7 @@
 package org.adorsys.documentsafe.layer03business;
 
 import org.adorsys.documentsafe.layer02service.types.DocumentID;
-import org.adorsys.documentsafe.layer03business.types.DocumentFQN;
+import org.adorsys.documentsafe.layer03business.types.complex.DocumentFQN;
 import org.adorsys.documentsafe.layer03business.types.RelativeBucketPath;
 import org.junit.Assert;
 import org.junit.Test;

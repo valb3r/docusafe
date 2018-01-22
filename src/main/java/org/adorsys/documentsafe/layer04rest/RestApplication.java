@@ -13,7 +13,8 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 
 @SpringBootApplication
 /**
- * Die EnableAutoConfiguration(exclude jackson) Annotion ist sehr wichtig, denn sonst ziehen die TypeAdapter für Json nicht.
+ * Die EnableAutoConfiguration(exclude jackson) Annotion ist sehr wichtig, denn sonst
+ * ziehen die TypeAdapter für Json nicht.
  * Dann erscheint
  * "documentKeyID": {value": "123"} statt
  * "documentKeyID": "123"

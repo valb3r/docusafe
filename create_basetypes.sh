@@ -55,90 +55,37 @@ then
 fi
 
 
-BASETYPES_PACKAGE=org.adorsys.documentsafe.layer03rest.basetypes
-ADAPTER_PACKAGE=org.adorsys.documentsafe.layer03rest.adapter
-CONVERTER_PACKAGE=org.adorsys.resource.server.basetypes.converter
+BASETYPES_PACKAGE=org.adorsys.documentsafe.layer03business.types
+ADAPTER_PACKAGE=org.adorsys.documentsafe.layer04rest.adapter
 
 BASETYPES_DIR=$(echo $BASETYPES_PACKAGE | sed -e s#\\.#/#g)
 ADAPTER_DIR=$(echo $ADAPTER_PACKAGE | sed -e s#\\.#/#g)
-CONVERTER_DIR=$(echo $CONVERTER_PACKAGE | sed -e s#\\.#/#g)
 
 
 export timestamp=$(date "+%d.%m.%Y at %H:%M:%S")
 
-
-export classtext=$(cat << EOF
-package $BASETYPES_PACKAGE;
-
-import $ADAPTER_PACKAGE.CLASSNAMERestAdapter;
-
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-/**
- * Created by peter on COPYDATE.
- */
-@XmlJavaTypeAdapter(CLASSNAMERestAdapter.class)
-@XmlType
-public class CLASSNAME extends BaseTypeBASETYPE {
-    public CLASSNAME() {}
-
-    public CLASSNAME(BASETYP2 value) {
-        super(value);
-    }
-}
-EOF)
-
 export adaptertext=$(cat << EOF
 package $ADAPTER_PACKAGE;
 
+import com.google.gson.TypeAdapter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+import java.io.IOException;
 import $BASETYPES_PACKAGE.CLASSNAME;
-
-import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
  * Created by peter on COPYDATE.
  */
-public class CLASSNAMERestAdapter extends XmlAdapter<BASETYP2, CLASSNAME> {
+public class CLASSNAMEJsonAdapter extends TypeAdapter<CLASSNAME> {
     @Override
-    public CLASSNAME unmarshal(BASETYP2 value) {
-        return new CLASSNAME(value);
+    public void write(JsonWriter out, CLASSNAME value) throws IOException {
+        out.value(value.getValue());
     }
-
     @Override
-    public BASETYP2 marshal(CLASSNAME value) {
-        return (value != null) ? value.getValue() : null;
-    }
-}
-EOF)
-
-export convertertext=$(cat << EOF
-package $CONVERTER_PACKAGE;
-
-import $BASETYPES_PACKAGE.CLASSNAME;
-
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
-
-/**
- * Created by peter on COPYDATE.
- */
-@Converter(autoApply = true)
-public class CLASSNAMEDBConverter implements AttributeConverter<CLASSNAME, BASETYP2> {
-    @Override
-    public BASETYP2 convertToDatabaseColumn(CLASSNAME v) {
-        return v != null ? v.getValue() : null;
-    }
-
-    @Override
-    public CLASSNAME convertToEntityAttribute(BASETYP2 v) {
-        return v != null ? new CLASSNAME(v) : null;
+    public CLASSNAME read(JsonReader in) throws IOException {
+        return new CLASSNAME(in.nextString());
     }
 }
 EOF)
 
-# echo "$classtext"     | sed s/CLASSNAME/$classname/g | sed s/BASETYPE/$type/g | sed s/BASETYP2/$type2/g | sed s/COPYDATE/"$timestamp"/g > src/main/java/$BASETYPES_DIR/$classname.java
-
-echo "$adaptertext"   | sed s/CLASSNAME/$classname/g | sed s/BASETYPE/$type/g | sed s/BASETYP2/$type2/g | sed s/COPYDATE/"$timestamp"/g > src/main/java/$ADAPTER_DIR/${classname}RestAdapter.java
-
-# echo "$convertertext" | sed s/CLASSNAME/$classname/g | sed s/BASETYPE/$type/g | sed s/BASETYP2/$type2/g | sed s/COPYDATE/"$timestamp"/g > src/main/java/$CONVERTER_DIR/${classname}DBConverter.java
+echo "$adaptertext"   | sed s/CLASSNAME/$classname/g | sed s/BASETYPE/$type/g | sed s/BASETYP2/$type2/g | sed s/COPYDATE/"$timestamp"/g > src/main/java/$ADAPTER_DIR/${classname}JsonAdapter.java

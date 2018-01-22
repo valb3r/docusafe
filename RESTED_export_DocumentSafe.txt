@@ -1,0 +1,72 @@
+{
+  "log": {
+    "version": "1.2",
+    "creator": "RESTED REST Client",
+    "Comment": "An exported collection from RESTED",
+    "entries": [
+      {
+        "request": {
+          "method": "POST",
+          "url": "http://localhost:8080/document?documentFQN=README.txt",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ],
+          "postData": {
+            "mimeType": "",
+            "params": [],
+            "text": "{\"userID\":\"affe2\",\"readKeyPassword\":\"rkp\"}"
+          }
+        }
+      },
+      {
+        "request": {
+          "method": "PUT",
+          "url": "localhost:8080/internal/user",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "postData": {
+            "mimeType": "application/x-www-form-urlencoded",
+            "params": [
+              {
+                "name": "userIDAuth",
+                "value": "{\"userID\":\"affe2\",\"readKeyPassword\":\"rkp\"}"
+              }
+            ],
+            "text": "userIDAuth={\"userID\":\"affe2\",\"readKeyPassword\":\"rkp\"}"
+          }
+        }
+      },
+      {
+        "request": {
+          "method": "GET",
+          "url": "http://localhost:8080/info",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ],
+          "postData": {
+            "mimeType": "",
+            "params": []
+          }
+        }
+      }
+    ]
+  }
+}
