@@ -1,6 +1,7 @@
 package org.adorsys.documentsafe.layer03business;
 
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
+import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
 import org.adorsys.documentsafe.layer02service.utils.TestFsBlobStoreFactory;
 import org.adorsys.documentsafe.layer03business.impl.DocumentSafeServiceImpl;
@@ -31,7 +32,7 @@ public class BusinessTest {
         users.clear();
     }
 
-    @After
+    // @After
     public void after() {
         try {
             DocumentSafeService service = new DocumentSafeServiceImpl(factory);
@@ -62,6 +63,20 @@ public class BusinessTest {
         DocumentFQN documentFQN = new DocumentFQN("README.txt");
         service.createUser(userIDAuth);
         DSDocument dsDocument = service.readDocument(userIDAuth, documentFQN);
+        LOGGER.debug("retrieved document:" + new String(dsDocument.getDocumentContent().getValue()));
+    }
+
+    @Test
+    public void storeDocumentInANewFolder() {
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        UserIDAuth userIDAuth = new UserIDAuth(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));
+        users.add(userIDAuth);
+        DocumentSafeService service = new DocumentSafeServiceImpl(factory);
+        service.createUser(userIDAuth);
+        DocumentFQN documentFQN = new DocumentFQN("first/next/A new Document.txt");
+        DocumentContent documentContent = new DocumentContent("Einfach nur a bisserl Text".getBytes());
+        DSDocument dsDocument = new DSDocument(documentFQN, documentContent);
+        service.storeDocument(userIDAuth, dsDocument);
         LOGGER.debug("retrieved document:" + new String(dsDocument.getDocumentContent().getValue()));
     }
 

@@ -4,6 +4,7 @@ import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 import org.adorsys.documentsafe.layer02service.types.PlainFileName;
 import org.adorsys.documentsafe.layer02service.types.complextypes.BucketContent;
+import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.documentsafe.layer03business.exceptions.GuardException;
 import org.jclouds.blobstore.domain.StorageMetadata;
 import org.slf4j.Logger;
@@ -22,10 +23,17 @@ public class GuardUtil {
         String p1 = bucketPath.getObjectHandlePath();
         String p2 = documentKeyID.getValue();
         String p3 = p1.replaceAll("/", "_");
-        return new PlainFileName(p3 + BUCKET_TO_KEY_DELIMITER +p2);
+        return new PlainFileName(p3 + BUCKET_TO_KEY_DELIMITER + p2);
     }
 
-    public static DocumentKeyID getDocumentKeyID(BucketContent bucketContent, BucketPath bucketPath) {
+
+    /**
+     *
+     * @param bucketContent
+     * @param bucketPath
+     * @return null oder key
+     */
+    public static DocumentKeyID findDocumentKeyID(BucketContent bucketContent, BucketPath bucketPath) {
         String p1 = bucketPath.getObjectHandlePath();
         String prefix = p1.replaceAll("/", "_");
         LOGGER.debug("prefix " + prefix);
@@ -38,7 +46,21 @@ public class GuardUtil {
                 return new DocumentKeyID(key);
             }
         }
-        LOGGER.error(bucketContent.toString());
-        throw new GuardException("no guard found for bucket " + bucketPath);
+        return null;
     }
+
+    /**
+     *
+     * @param bucketContent
+     * @param bucketPath
+     * @return key
+     */
+    public static DocumentKeyID getDocumentKeyID(BucketContent bucketContent, BucketPath bucketPath) {
+        DocumentKeyID documentKeyID = findDocumentKeyID(bucketContent, bucketPath);
+        if (documentKeyID == null) {
+            throw new GuardException("no guard found for bucket " + bucketPath);
+        }
+        return documentKeyID;
+    }
+
 }
