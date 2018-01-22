@@ -39,7 +39,7 @@ public class BusinessTest {
         users.clear();
     }
 
-    // @After
+    @After
     public void after() {
         try {
             DocumentSafeService service = new DocumentSafeServiceImpl(factory);
