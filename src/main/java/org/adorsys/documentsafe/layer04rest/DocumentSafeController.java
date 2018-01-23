@@ -51,12 +51,29 @@ public class DocumentSafeController {
         service.createUser(userIDAuth);
     }
 
-    public void storeDocument(UserIDAuth userIDAuth, DSDocument dsDocument) {
-
+    @RequestMapping(
+            value = "/document",
+            method = {RequestMethod.PUT},
+            consumes = {MediaType.APPLICATION_JSON},
+            produces = {MediaType.APPLICATION_JSON}
+    )
+    public void storeDocument(@RequestHeader("userid") String userid,
+                              @RequestHeader("password") String password,
+                              @RequestBody DSDocument dsDocument) {
+        UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
+        service.storeDocument(userIDAuth, dsDocument);
     }
 
-    public void destroyUser(UserIDAuth userIDAuth) {
-
+    @RequestMapping(
+            value = "/internal/user",
+            method = {RequestMethod.DELETE},
+            consumes = {MediaType.APPLICATION_JSON},
+            produces = {MediaType.APPLICATION_JSON}
+    )
+    public void destroyUser(@RequestHeader("userid") String userid,
+                            @RequestHeader("password") String password) {
+        UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
+        service.destroyUser(userIDAuth);
     }
 
     @RequestMapping(
@@ -69,12 +86,13 @@ public class DocumentSafeController {
                                                  @RequestHeader("password") String password,
                                                  HttpServletRequest request
     ) {
+        UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
+
         final String path = request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();
         final String bestMatchingPattern = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();
         final String documentFQNStringWithQuotes = new AntPathMatcher().extractPathWithinPattern(bestMatchingPattern, path);
         final String documentFQNString = documentFQNStringWithQuotes.replaceAll("\"", "");
 
-        UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
         DocumentFQN documentFQN = new DocumentFQN(documentFQNString);
         LOGGER.debug("received:" + userIDAuth + " and " + documentFQN);
         return service.readDocument(userIDAuth, documentFQN);
