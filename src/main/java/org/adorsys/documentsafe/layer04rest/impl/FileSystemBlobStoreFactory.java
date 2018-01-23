@@ -1,4 +1,4 @@
-package org.adorsys.documentsafe.layer04rest.restapi;
+package org.adorsys.documentsafe.layer04rest.impl;
 
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.jclouds.ContextBuilder;

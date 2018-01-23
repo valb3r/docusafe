@@ -6,8 +6,8 @@
     "entries": [
       {
         "request": {
-          "method": "POST",
-          "url": "http://localhost:8080/document?documentFQN=README.txt",
+          "method": "GET",
+          "url": "http://localhost:8080/document/\"README.txt\"",
           "headers": [
             {
               "name": "Content-Type",
@@ -16,6 +16,14 @@
             {
               "name": "Accept",
               "value": "application/json"
+            },
+            {
+              "name": "userid",
+              "value": "affe2"
+            },
+            {
+              "name": "password",
+              "value": "rkp"
             }
           ],
           "postData": {

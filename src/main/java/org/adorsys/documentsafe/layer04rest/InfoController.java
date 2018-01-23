@@ -1,4 +1,4 @@
-package org.adorsys.documentsafe.layer04rest.restapi;
+package org.adorsys.documentsafe.layer04rest;
 
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 import org.adorsys.documentsafe.layer04rest.types.VersionInformation;
