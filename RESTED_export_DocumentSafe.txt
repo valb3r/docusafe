@@ -6,15 +6,11 @@
     "entries": [
       {
         "request": {
-          "method": "GET",
-          "url": "http://localhost:8080/document/\"anotherbucket/deeper/README.txt\"",
+          "method": "PUT",
+          "url": "localhost:8080/document",
           "headers": [
             {
               "name": "Content-Type",
-              "value": "application/json"
-            },
-            {
-              "name": "Accept",
               "value": "application/json"
             },
             {
@@ -24,6 +20,23 @@
             {
               "name": "password",
               "value": "rkp"
+            }
+          ],
+          "postData": {
+            "mimeType": "",
+            "params": [],
+            "text": "{\n  \"documentFQN\": {\n    \"relativeBucketPath\": \"deeper/and/deeper\",\n    \"documentID\": \"README.txt\"\n  },\n  \"documentContent\": {\n    \"value\": [\n1,2,3,4,5,6,7,8,9\n    ]\n  }\n}"
+          }
+        }
+      },
+      {
+        "request": {
+          "method": "PUT",
+          "url": "localhost:8080/internal/user",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
             }
           ],
           "postData": {
@@ -52,14 +65,38 @@
             }
           ],
           "postData": {
-            "mimeType": "application/x-www-form-urlencoded",
-            "params": [
-              {
-                "name": "userIDAuth",
-                "value": "{\"userID\":\"affe2\",\"readKeyPassword\":\"rkp\"}"
-              }
-            ],
-            "text": "userIDAuth={\"userID\":\"affe2\",\"readKeyPassword\":\"rkp\"}"
+            "mimeType": "",
+            "params": [],
+            "text": "{\n  \"source\": {\n    \"relativeBucketPath\": \"deeper/and/deeper\",\n    \"documentID\": \"README.txt\"\n  },\n  \"destination\": {\n    \"relativeBucketPath\": \"greenbucket\",\n    \"documentID\": \"README.txt\"\n  }\n}"
+          }
+        }
+      },
+      {
+        "request": {
+          "method": "GET",
+          "url": "http://localhost:8080/document/\"anotherbucket/deeper/README.txt\"",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "userid",
+              "value": "affe2"
+            },
+            {
+              "name": "password",
+              "value": "rkp"
+            }
+          ],
+          "postData": {
+            "mimeType": "",
+            "params": [],
+            "text": "{\"userID\":\"affe2\",\"readKeyPassword\":\"rkp\"}"
           }
         }
       },
@@ -123,36 +160,6 @@
       },
       {
         "request": {
-          "method": "PUT",
-          "url": "localhost:8080/document",
-          "headers": [
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            },
-            {
-              "name": "userid",
-              "value": "affe2"
-            },
-            {
-              "name": "password",
-              "value": "rkp"
-            }
-          ],
-          "postData": {
-            "mimeType": "application/x-www-form-urlencoded",
-            "params": [
-              {
-                "name": "userIDAuth",
-                "value": "{\"userID\":\"affe2\",\"readKeyPassword\":\"rkp\"}"
-              }
-            ],
-            "text": "userIDAuth={\"userID\":\"affe2\",\"readKeyPassword\":\"rkp\"}"
-          }
-        }
-      },
-      {
-        "request": {
           "method": "GET",
           "url": "http://localhost:8080/document/\"README.txt\"",
           "headers": [
@@ -182,28 +189,6 @@
       },
       {
         "request": {
-          "method": "PUT",
-          "url": "localhost:8080/internal/user",
-          "headers": [
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "postData": {
-            "mimeType": "application/x-www-form-urlencoded",
-            "params": [
-              {
-                "name": "userIDAuth",
-                "value": "{\"userID\":\"affe2\",\"readKeyPassword\":\"rkp\"}"
-              }
-            ],
-            "text": "userIDAuth={\"userID\":\"affe2\",\"readKeyPassword\":\"rkp\"}"
-          }
-        }
-      },
-      {
-        "request": {
           "method": "GET",
           "url": "http://localhost:8080/info",
           "headers": [
@@ -216,10 +201,7 @@
               "value": "application/json"
             }
           ],
-          "postData": {
-            "mimeType": "",
-            "params": []
-          }
+          "postData": {}
         }
       }
     ]
