@@ -20,22 +20,27 @@ import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 import org.adorsys.documentsafe.layer02service.types.PlainFileContent;
 import org.adorsys.documentsafe.layer02service.types.PlainFileName;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
+import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentContentWithContentMetaInfo;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentLocation;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAuth;
+import org.adorsys.documentsafe.layer03business.utils.ContentMetaInfoUtil;
 import org.adorsys.documentsafe.layer03business.exceptions.UserIDAlreadyExistsException;
 import org.adorsys.documentsafe.layer03business.exceptions.UserIDDoesNotExistException;
+import org.adorsys.documentsafe.layer03business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.documentsafe.layer03business.types.complex.DocumentFQN;
 import org.adorsys.documentsafe.layer03business.types.RelativeBucketPath;
 import org.adorsys.documentsafe.layer03business.types.UserHomeBucketPath;
 import org.adorsys.documentsafe.layer03business.types.UserRootBucketPath;
 import org.adorsys.documentsafe.layer03business.types.complex.DSDocument;
 import org.adorsys.documentsafe.layer03business.types.complex.DocumentLink;
+import org.adorsys.documentsafe.layer03business.types.complex.DocumentLinkAsDSDocument;
 import org.adorsys.documentsafe.layer03business.types.complex.UserIDAuth;
 import org.adorsys.documentsafe.layer03business.utils.GuardUtil;
 import org.adorsys.documentsafe.layer03business.utils.LinkUtil;
 import org.adorsys.documentsafe.layer03business.utils.UserIDUtil;
+import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,6 +101,7 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
     public void storeDocument(UserIDAuth userIDAuth, DSDocument dsDocument) {
         LOGGER.info("start storeDocument for " + userIDAuth + " " + dsDocument.getDocumentFQN());
 
+        ContentMetaInfo contentMetaInfo = ContentMetaInfoUtil.createContentMetaInfo(dsDocument);
         DocumentLocation documentLocation = getDocumentLocation(userIDAuth, dsDocument.getDocumentFQN());
         DocumentKeyIDWithKey documentKeyIDWithKey = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, documentLocation.getDocumentBucketPath());
         DocumentLocation documentLocationResult = documentPersistenceService.persistDocument(
@@ -103,7 +109,8 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
                 documentLocation.getDocumentBucketPath(),
                 documentLocation.getDocumentID(),
                 dsDocument.getDocumentContent(),
-                OverwriteFlag.FALSE);
+                OverwriteFlag.FALSE,
+                contentMetaInfo);
         if (!documentLocation.equals(documentLocationResult)) {
             throw new BaseException("programming error: expected " + documentLocation + " to be equal to " + documentLocationResult);
         }
@@ -133,9 +140,18 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
         LOGGER.info("start readDocument for " + userIDAuth + " " + documentFQN);
         DocumentLocation documentLocation = getDocumentLocation(userIDAuth, documentFQN);
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
-        DocumentContent documentContent = documentPersistenceService.loadDocument(keyStoreAccess, documentLocation);
+        DocumentContentWithContentMetaInfo documentContentWithContentMetaInfo = documentPersistenceService.loadDocument(keyStoreAccess, documentLocation);
+        DSDocumentMetaInfo dsDocumentMetaInfo = ContentMetaInfoUtil.createDSDocumentMetaInfo(documentContentWithContentMetaInfo.getContentMetaInfo());
+        if (ContentMetaInfoUtil.isLink(documentContentWithContentMetaInfo.getContentMetaInfo())) {
+            LOGGER.info("start load link " + documentFQN);
+            DocumentLink documentLink = LinkUtil.getDocumentLink(documentContentWithContentMetaInfo.getDocumentContent());
+            DocumentLocation sourceDocumentLocation = documentLink.getSourceDocumentLocation();
+            documentContentWithContentMetaInfo = documentPersistenceService.loadDocument(keyStoreAccess, sourceDocumentLocation);
+            dsDocumentMetaInfo = ContentMetaInfoUtil.createDSDocumentMetaInfo(documentContentWithContentMetaInfo.getContentMetaInfo());
+            LOGGER.info("finished load link " + documentFQN);
+        }
         LOGGER.info("finished readDocument for " + userIDAuth + " " + documentFQN);
-        return new DSDocument(documentFQN, documentContent);
+        return new DSDocument(documentFQN, documentContentWithContentMetaInfo.getDocumentContent(), dsDocumentMetaInfo);
     }
 
     @Override
@@ -151,7 +167,7 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
         DocumentKeyIDWithKey destinationDocumentKeyIDWithKey = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, destinationDocumentLocation.getDocumentBucketPath());
 
         DocumentLink documentLink = new DocumentLink(sourceDocumentLocation, destinationDocumentLocation);
-        DSDocument dsDocumentLink = LinkUtil.createDSDocument(documentLink, destinationDocumentFQN);
+        DocumentLinkAsDSDocument dsDocumentLink = LinkUtil.createDSDocument(documentLink, destinationDocumentFQN);
 
         storeDocument(userIDAuth, dsDocumentLink);
         LOGGER.info("finished linkDocument for " + userIDAuth + " " + sourceDocumentFQN + " -> " + destinationDocumentFQN);
@@ -177,7 +193,7 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
         String text = "Welcome to the DocumentStore";
         DocumentContent documentContent = new DocumentContent(text.getBytes());
         DocumentFQN documentFQN = new DocumentFQN("README.txt");
-        DSDocument dsDocument = new DSDocument(documentFQN, documentContent);
+        DSDocument dsDocument = new DSDocument(documentFQN, documentContent, null);
         return dsDocument;
     }
 

@@ -1,26 +1,28 @@
 package org.adorsys.documentsafe.layer02service.impl;
 
+import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer01persistence.ExtendedBlobStoreConnection;
+import org.adorsys.documentsafe.layer01persistence.ExtendedObjectPersistence;
+import org.adorsys.documentsafe.layer01persistence.PersistentObjectWrapper;
+import org.adorsys.documentsafe.layer01persistence.keysource.KeySource;
+import org.adorsys.documentsafe.layer01persistence.types.KeyID;
 import org.adorsys.documentsafe.layer01persistence.types.OverwriteFlag;
 import org.adorsys.documentsafe.layer02service.DocumentGuardService;
 import org.adorsys.documentsafe.layer02service.DocumentPersistenceService;
+import org.adorsys.documentsafe.layer02service.keysource.DocumentGuardBasedKeySourceImpl;
+import org.adorsys.documentsafe.layer02service.keysource.DocumentKeyIDWithKeyBasedSourceImpl;
+import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.DocumentID;
+import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
+import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentContentWithContentMetaInfo;
+import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
+import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentLocation;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
 import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.params.EncryptionParams;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.ContainerPersistence;
-import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
-import org.adorsys.documentsafe.layer01persistence.ExtendedObjectPersistence;
-import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
-import org.adorsys.documentsafe.layer02service.types.DocumentContent;
-import org.adorsys.documentsafe.layer01persistence.types.KeyID;
-import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
-import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentLocation;
-import org.adorsys.documentsafe.layer02service.keysource.DocumentGuardBasedKeySourceImpl;
-import org.adorsys.documentsafe.layer02service.keysource.DocumentKeyIDWithKeyBasedSourceImpl;
-import org.adorsys.documentsafe.layer01persistence.keysource.KeySource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +55,8 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
             DocumentBucketPath documentBucketPath,
             DocumentID documentID,
             DocumentContent documentContent,
-            OverwriteFlag overwriteFlag) {
+            OverwriteFlag overwriteFlag,
+            ContentMetaInfo contentMetaInfo) {
 
         try {
             LOGGER.info("start persist document with " + documentID);
@@ -62,7 +65,6 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
             ObjectHandle location = new ObjectHandle(documentBucketPath.getFirstBucket().getValue(), documentBucketPath.getSubBuckets() + documentID.getValue());
 
             // Store object.
-            ContentMetaInfo metaInfo = null;
             EncryptionParams encParams = null;
 
             KeySource keySource = new DocumentKeyIDWithKeyBasedSourceImpl(documentKeyIDWithKey);
@@ -72,7 +74,7 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
                 containerPersistence.creteContainer(location.getContainer());
             }
             KeyID keyID = new KeyID(documentKeyIDWithKey.getDocumentKeyID().getValue());
-            objectPersistence.storeObject(documentContent.getValue(), metaInfo, location, keySource, keyID, encParams, overwriteFlag);
+            objectPersistence.storeObject(documentContent.getValue(), contentMetaInfo, location, keySource, keyID, encParams, overwriteFlag);
             DocumentLocation documentLocation = new DocumentLocation(documentID, documentBucketPath);
             LOGGER.info("finished persist document with " + documentID + " at " + documentLocation);
             return documentLocation;
@@ -85,16 +87,19 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
      *
      */
     @Override
-    public DocumentContent loadDocument(
+    public DocumentContentWithContentMetaInfo loadDocument(
             KeyStoreAccess keyStoreAccess,
             DocumentLocation documentLocation) {
 
         try {
-            LOGGER.info("start load document @ " + documentLocation + " " + keyStoreAccess);
+            LOGGER.info("start load document at " + documentLocation + " " + keyStoreAccess);
             KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess);
-            DocumentContent documentContent = new DocumentContent(objectPersistence.loadObject(documentLocation.getLocationHandle(), keySource).getData());
+            PersistentObjectWrapper persistentObjectWrapper = objectPersistence.loadObject(documentLocation.getLocationHandle(), keySource);
+            DocumentContent documentContent = new DocumentContent(persistentObjectWrapper.getData());
+            ContentMetaInfo contentMetaInfo = persistentObjectWrapper.getMetaIno();
+            DocumentContentWithContentMetaInfo documentContentWithContentMetaInfo = new DocumentContentWithContentMetaInfo(documentContent, contentMetaInfo);
             LOGGER.info("finished load document at " + documentLocation);
-            return documentContent;
+            return documentContentWithContentMetaInfo;
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }

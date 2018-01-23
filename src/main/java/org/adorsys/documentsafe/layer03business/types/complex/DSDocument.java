@@ -9,11 +9,16 @@ import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 public class DSDocument {
     private DocumentFQN documentFQN;
     private DocumentContent documentContent;
-    // TODO add some Meta Info, but not as Map<String,String> but fixed fields
+    private DSDocumentMetaInfo dsDocumentMetaInfo;
 
-    public DSDocument(DocumentFQN documentFQN, DocumentContent documentContent) {
+    public DSDocument(DocumentFQN documentFQN, DocumentContent documentContent, DSDocumentMetaInfo dsDocumentMetaInfo) {
         this.documentFQN = documentFQN;
         this.documentContent = documentContent;
+        this.dsDocumentMetaInfo = dsDocumentMetaInfo;
+
+        if (this.dsDocumentMetaInfo == null) {
+            this.dsDocumentMetaInfo = new DSDocumentMetaInfo(new Long(documentContent.getValue().length));
+        }
     }
 
     public DocumentFQN getDocumentFQN() {
@@ -22,5 +27,9 @@ public class DSDocument {
 
     public DocumentContent getDocumentContent() {
         return documentContent;
+    }
+
+    public DSDocumentMetaInfo getDsDocumentMetaInfo() {
+        return dsDocumentMetaInfo;
     }
 }

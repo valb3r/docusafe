@@ -85,7 +85,7 @@ public class BusinessTest {
         service.createUser(userIDAuth);
         DocumentFQN documentFQN = new DocumentFQN("first/next/A new Document.txt");
         DocumentContent documentContent = new DocumentContent("Einfach nur a bisserl Text".getBytes());
-        DSDocument dsDocument1 = new DSDocument(documentFQN, documentContent);
+        DSDocument dsDocument1 = new DSDocument(documentFQN, documentContent, null);
 
         // check, there exists no guard yet
         UserHomeBucketPath homeBucketPath = UserIDUtil.getHomeBucketPath(userIDAuth.getUserID());
@@ -103,7 +103,7 @@ public class BusinessTest {
         Assert.assertNotNull(documentKeyID1);
 
         DocumentFQN document2FQN = new DocumentFQN("first/next/Another new Document.txt");
-        DSDocument dsDocument2 = new DSDocument(document2FQN, dsDocument1.getDocumentContent());
+        DSDocument dsDocument2 = new DSDocument(document2FQN, dsDocument1.getDocumentContent(), null);
         service.storeDocument(userIDAuth, dsDocument2);
         DSDocument dsDocument2Result = service.readDocument(userIDAuth, dsDocument2.getDocumentFQN());
         LOGGER.debug("retrieved document:" + new String(dsDocument2Result.getDocumentContent().getValue()));

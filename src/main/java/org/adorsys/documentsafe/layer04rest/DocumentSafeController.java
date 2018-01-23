@@ -9,6 +9,7 @@ import org.adorsys.documentsafe.layer03business.types.complex.DSDocument;
 import org.adorsys.documentsafe.layer03business.types.complex.UserIDAuth;
 import org.adorsys.documentsafe.layer04rest.impl.FileSystemBlobStoreFactory;
 import org.adorsys.documentsafe.layer04rest.impl.JwtTokenExtractor;
+import org.adorsys.documentsafe.layer04rest.types.CreateLinkTupel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.AntPathMatcher;
@@ -97,4 +98,18 @@ public class DocumentSafeController {
         LOGGER.debug("received:" + userIDAuth + " and " + documentFQN);
         return service.readDocument(userIDAuth, documentFQN);
     }
+
+    @RequestMapping(
+            value = "/document/link",
+            method = {RequestMethod.PUT},
+            consumes = {MediaType.APPLICATION_JSON},
+            produces = {MediaType.APPLICATION_JSON}
+    )
+    public void createLink(@RequestHeader("userid") String userid,
+                           @RequestHeader("password") String password,
+                           @RequestBody CreateLinkTupel createLinkTupel) {
+        UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
+        service.linkDocument(userIDAuth, createLinkTupel.getSource(), createLinkTupel.getDestination());
+    }
+
 }

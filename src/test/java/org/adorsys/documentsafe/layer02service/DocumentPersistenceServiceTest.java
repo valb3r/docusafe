@@ -5,6 +5,7 @@ import org.adorsys.documentsafe.layer02service.impl.DocumentPersistenceServiceIm
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.DocumentID;
+import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentContentWithContentMetaInfo;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentLocation;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
@@ -47,20 +48,21 @@ public class DocumentPersistenceServiceTest {
                 documentBucketPath,
                 documentID,
                 documentContent,
-                overwriteFlag);
+                overwriteFlag,
+                null);
         createdBuckets.add(documentBucketPath);
         AllServiceTest.buckets.add(documentBucketPath);
         return new DocumentStuff(documentID, documentLocation);
     }
 
-    public DocumentContent testLoadDocument(DocumentGuardService documentGuardService,
+    public DocumentContentWithContentMetaInfo testLoadDocument(DocumentGuardService documentGuardService,
                                  KeyStoreAccess keyStoreAccess,
                                  DocumentLocation documentLocation) {
         DocumentPersistenceService documentPersistenceService = new DocumentPersistenceServiceImpl(factory);
-        DocumentContent readContent = documentPersistenceService.loadDocument(
+        DocumentContentWithContentMetaInfo readContent = documentPersistenceService.loadDocument(
                 keyStoreAccess,
                 documentLocation);
-        LOGGER.debug("Gelesenes Document enthält:" + readContent + " bzw " + new String(readContent.getValue()));
+        LOGGER.debug("Gelesenes Document enthält:" + readContent + " bzw " + new String(readContent.getDocumentContent().getValue()));
         return readContent;
     }
 
