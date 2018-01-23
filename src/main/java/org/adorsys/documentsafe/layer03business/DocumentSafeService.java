@@ -12,4 +12,5 @@ public interface DocumentSafeService {
     void storeDocument(UserIDAuth userIDAuth, DSDocument dsDocument);
     void destroyUser(UserIDAuth userIDAuth);
     DSDocument readDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
+    void linkDocument(UserIDAuth userIDAuth, DocumentFQN sourceDocumentFQN, DocumentFQN destinationDocumentFQN);
 }

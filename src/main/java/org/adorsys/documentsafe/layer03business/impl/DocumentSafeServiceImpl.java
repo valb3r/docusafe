@@ -31,8 +31,10 @@ import org.adorsys.documentsafe.layer03business.types.RelativeBucketPath;
 import org.adorsys.documentsafe.layer03business.types.UserHomeBucketPath;
 import org.adorsys.documentsafe.layer03business.types.UserRootBucketPath;
 import org.adorsys.documentsafe.layer03business.types.complex.DSDocument;
+import org.adorsys.documentsafe.layer03business.types.complex.DocumentLink;
 import org.adorsys.documentsafe.layer03business.types.complex.UserIDAuth;
 import org.adorsys.documentsafe.layer03business.utils.GuardUtil;
+import org.adorsys.documentsafe.layer03business.utils.LinkUtil;
 import org.adorsys.documentsafe.layer03business.utils.UserIDUtil;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.slf4j.Logger;
@@ -119,7 +121,8 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
                 throw new UserIDDoesNotExistException(userIDAuth.getUserID().toString());
             }
         }
-        {   // check password is fine
+        {   // TODO check password is fine
+
         }
         bucketService.destroyBucket(userRootBucket);
         LOGGER.info("finished destroy user for " + userIDAuth);
@@ -133,6 +136,25 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
         DocumentContent documentContent = documentPersistenceService.loadDocument(keyStoreAccess, documentLocation);
         LOGGER.info("finished readDocument for " + userIDAuth + " " + documentFQN);
         return new DSDocument(documentFQN, documentContent);
+    }
+
+    @Override
+    public void linkDocument(UserIDAuth userIDAuth, DocumentFQN sourceDocumentFQN, DocumentFQN destinationDocumentFQN) {
+        LOGGER.info("start linkDocument for " + userIDAuth + " " + sourceDocumentFQN + " -> " + destinationDocumentFQN);
+
+        // Wir prüfen lediglich, ob es den source Bucket gibt und ob wir darauf Zugriff haben.
+        // Ob das Document selbset existiert, bleibt vorher ein Geheimnis
+        DocumentLocation sourceDocumentLocation = getDocumentLocation(userIDAuth, sourceDocumentFQN);
+        DocumentKeyIDWithKey sourceDocumentKeyIDWithKey = getDocumentKeyIDwithKeyForBucketPath(userIDAuth, sourceDocumentLocation.getDocumentBucketPath());
+
+        DocumentLocation destinationDocumentLocation = getDocumentLocation(userIDAuth, destinationDocumentFQN);
+        DocumentKeyIDWithKey destinationDocumentKeyIDWithKey = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, destinationDocumentLocation.getDocumentBucketPath());
+
+        DocumentLink documentLink = new DocumentLink(sourceDocumentLocation, destinationDocumentLocation);
+        DSDocument dsDocumentLink = LinkUtil.createDSDocument(documentLink, destinationDocumentFQN);
+
+        storeDocument(userIDAuth, dsDocumentLink);
+        LOGGER.info("finished linkDocument for " + userIDAuth + " " + sourceDocumentFQN + " -> " + destinationDocumentFQN);
     }
 
     private KeyStoreAccess getKeyStoreAccess(UserIDAuth userIDAuth) {
@@ -191,5 +213,13 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
         return documentKeyIDWithKey;
     }
 
+    private DocumentKeyIDWithKey getDocumentKeyIDwithKeyForBucketPath(UserIDAuth userIDAuth, BucketPath bucketPath) {
+        LOGGER.debug("get key for " + bucketPath);
+        KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
+        DocumentKeyID documentKeyID = GuardUtil.getDocumentKeyID(bucketService, userIDAuth.getUserID(), bucketPath);
+        DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardService.loadDocumentKeyIDWithKeyFromDocumentGuard(keyStoreAccess, documentKeyID);
+        LOGGER.debug("found " + documentKeyIDWithKey + " for " + bucketPath);
+        return documentKeyIDWithKey;
+    }
 
 }
