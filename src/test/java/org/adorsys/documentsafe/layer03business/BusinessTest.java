@@ -15,6 +15,7 @@ import org.adorsys.documentsafe.layer03business.types.complex.UserIDAuth;
 import org.adorsys.documentsafe.layer03business.utils.GuardUtil;
 import org.adorsys.documentsafe.layer03business.utils.UserIDUtil;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -22,6 +23,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.security.Security;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -35,6 +37,8 @@ public class BusinessTest {
 
     @Before
     public void before() {
+        LOGGER.info("add bouncy castle provider");
+        Security.addProvider(new BouncyCastleProvider());
         users.clear();
     }
 
@@ -61,7 +65,7 @@ public class BusinessTest {
     }
 
     @Test
-    public void loadCDocument() {
+    public void loadDSDocument() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         UserIDAuth userIDAuth = new UserIDAuth(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));
         users.add(userIDAuth);
@@ -73,7 +77,7 @@ public class BusinessTest {
     }
 
     @Test
-    public void storeDocumentInANewFolder() {
+    public void storeDSDocumentInANewFolder() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         UserIDAuth userIDAuth = new UserIDAuth(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));
         users.add(userIDAuth);
