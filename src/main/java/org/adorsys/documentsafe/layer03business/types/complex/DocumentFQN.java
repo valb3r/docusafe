@@ -19,11 +19,12 @@ import java.util.StringTokenizer;
  * <p>
  * DocumentFQN = RelativeBucketPath + DocumentID
  */
-public class DocumentFQN {
-    private RelativeBucketPath relativeBucketPath;
-    private DocumentID documentID;
+public class DocumentFQN extends BaseTypeString {
+    private final RelativeBucketPath relativeBucketPath;
+    private final DocumentID documentID;
     
     public DocumentFQN(String value) {
+        super(value);
         {   // extract relative BucketPath
             List<String> list = split(value);
             if (list.isEmpty()) {

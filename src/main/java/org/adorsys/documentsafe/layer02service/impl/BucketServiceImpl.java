@@ -69,4 +69,24 @@ public class BucketServiceImpl implements BucketService {
         }
     }
 
+    @Override
+    public PlainFileContent readPlainFile(BucketPath bucketPath, PlainFileName plainFileName) {
+        try {
+            ObjectHandle objectHandle = new ObjectHandle();
+            objectHandle.setContainer(bucketPath.getFirstBucket().getValue());
+            objectHandle.setName(bucketPath.getSubBuckets() + plainFileName.getValue());
+            return new PlainFileContent(extendedBlobStoreConnection.getBlob(objectHandle));
+        } catch (Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
+    }
+
+    @Override
+    public boolean existsFile(BucketPath bucketPath, PlainFileName plainFileName) {
+        ObjectHandle objectHandle = new ObjectHandle();
+        objectHandle.setContainer(bucketPath.getFirstBucket().getValue());
+        objectHandle.setName(bucketPath.getSubBuckets() + plainFileName.getValue());
+        return extendedBlobStoreConnection.blobExists(objectHandle);
+    }
+
 }

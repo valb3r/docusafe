@@ -209,10 +209,7 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
         LOGGER.debug("start create new guard for " + bucketPath.getObjectHandlePath());
         DocumentKeyIDWithKey documentKeyIdWithKey = documentGuardService.createDocumentKeyIdWithKey();
         documentGuardService.createSymmetricDocumentGuard(keyStoreAccess, documentKeyIdWithKey);
-        // Erzeugen einer leeren Datei, die die Zuordnung zwischen Guard und Bucket macht
-        PlainFileName plainFileName = GuardUtil.getHelperFilenameForGuardAndBucket(documentKeyIdWithKey.getDocumentKeyID(), bucketPath);
-        bucketService.createPlainFile(keyStoreAccess.getKeyStoreLocation().getKeyStoreBucketPath(),
-                plainFileName, new PlainFileContent("not encrypted".getBytes()));
+        GuardUtil.createBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStoreLocation().getKeyStoreBucketPath(), bucketPath, documentKeyIdWithKey.getDocumentKeyID());
         LOGGER.debug("finished create new guard for " + bucketPath.getObjectHandlePath());
         return documentKeyIdWithKey.getDocumentKeyID();
     }
@@ -220,7 +217,7 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
     private DocumentKeyIDWithKey getOrCreateDocumentKeyIDwithKeyForBucketPath(UserIDAuth userIDAuth, BucketPath bucketPath) {
         LOGGER.debug("search key for " + bucketPath);
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
-        DocumentKeyID documentKeyID = GuardUtil.findDocumentKeyID(bucketService, userIDAuth.getUserID(), bucketPath);
+        DocumentKeyID documentKeyID = GuardUtil.tryToReadBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStoreLocation().getKeyStoreBucketPath(), bucketPath);
         if (documentKeyID == null) {
             documentKeyID = createGuardForBucket(keyStoreAccess, bucketPath);
         }
@@ -232,7 +229,7 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
     private DocumentKeyIDWithKey getDocumentKeyIDwithKeyForBucketPath(UserIDAuth userIDAuth, BucketPath bucketPath) {
         LOGGER.debug("get key for " + bucketPath);
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
-        DocumentKeyID documentKeyID = GuardUtil.getDocumentKeyID(bucketService, userIDAuth.getUserID(), bucketPath);
+        DocumentKeyID documentKeyID = GuardUtil.readBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStoreLocation().getKeyStoreBucketPath(), bucketPath);
         DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardService.loadDocumentKeyIDWithKeyFromDocumentGuard(keyStoreAccess, documentKeyID);
         LOGGER.debug("found " + documentKeyIDWithKey + " for " + bucketPath);
         return documentKeyIDWithKey;

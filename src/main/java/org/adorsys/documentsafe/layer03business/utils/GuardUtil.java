@@ -1,10 +1,14 @@
 package org.adorsys.documentsafe.layer03business.utils;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.adorsys.documentsafe.layer01persistence.types.ListRecursiveFlag;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreBucketPath;
 import org.adorsys.documentsafe.layer02service.BucketService;
+import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
+import org.adorsys.documentsafe.layer02service.types.PlainFileContent;
 import org.adorsys.documentsafe.layer02service.types.PlainFileName;
 import org.adorsys.documentsafe.layer02service.types.complextypes.BucketContent;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
@@ -24,39 +28,31 @@ import java.util.StringTokenizer;
  */
 public class GuardUtil {
     private final static Logger LOGGER = LoggerFactory.getLogger(GuardUtil.class);
-    private final static String BUCKET_TO_KEY_DELIMITER = "->";
+    private final static String BUCKET_GUARD_KEY = ".bucketGuardKey";
 
-    public static PlainFileName getHelperFilenameForGuardAndBucket(DocumentKeyID documentKeyID, BucketPath bucketPath) {
-        return new PlainFileName(bucketPath.getObjectHandlePath() + BUCKET_TO_KEY_DELIMITER + documentKeyID.getValue());
+    public static void createBucketGuardKeyFile(BucketService bucketService, KeyStoreBucketPath keyStoreBucketPath, BucketPath bucketPath, DocumentKeyID documentKeyID) {
+        PlainFileName plainFileName = new PlainFileName(bucketPath.getObjectHandlePath() + BUCKET_GUARD_KEY);
+        Gson gson = new GsonBuilder().create();
+        String jsonString = gson.toJson(documentKeyID);
+        PlainFileContent plainFileContent = new PlainFileContent(jsonString.getBytes());
+        bucketService.createPlainFile(keyStoreBucketPath, plainFileName, plainFileContent);
     }
 
-
-    /**
-     * @return null oder key
-     */
-    public static DocumentKeyID findDocumentKeyID(BucketService bucketService, UserID userID, BucketPath bucketPath) {
-        KeyStoreBucketPath keyStoreBucketPath = UserIDUtil.getKeyStoreBucketPath(userID);
-        BucketContent bucketContent = bucketService.readDocumentBucket(keyStoreBucketPath, ListRecursiveFlag.TRUE);
-
-        String prefix = bucketPath.getObjectHandlePath();
-        for (StorageMetadata meta : bucketContent.getStrippedContent()) {
-            if (meta.getName().startsWith(prefix)) {
-                String name = meta.getName();
-                int i = name.indexOf(BUCKET_TO_KEY_DELIMITER);
-                String key = name.substring(i + BUCKET_TO_KEY_DELIMITER.length());
-                return new DocumentKeyID(key);
-            }
+    public static DocumentKeyID tryToReadBucketGuardKeyFile(BucketService bucketService, KeyStoreBucketPath keyStoreBucketPath, BucketPath bucketPath) {
+        PlainFileName plainFileName = new PlainFileName(bucketPath.getObjectHandlePath() + BUCKET_GUARD_KEY);
+        if (!bucketService.existsFile(keyStoreBucketPath, plainFileName)) {
+            return null;
         }
-        return null;
+        PlainFileContent plainFileContent = bucketService.readPlainFile(keyStoreBucketPath, plainFileName);
+        Gson gson = new GsonBuilder().create();
+        DocumentKeyID documentKeyID = gson.fromJson(new String(plainFileContent.getValue()), DocumentKeyID.class);
+        return documentKeyID;
     }
 
-    /**
-     * @return key
-     */
-    public static DocumentKeyID getDocumentKeyID(BucketService bucketService, UserID userID, BucketPath bucketPath) {
-        DocumentKeyID documentKeyID = findDocumentKeyID(bucketService, userID, bucketPath);
+    public static DocumentKeyID readBucketGuardKeyFile(BucketService bucketService, KeyStoreBucketPath keyStoreBucketPath, BucketPath bucketPath) {
+        DocumentKeyID documentKeyID = tryToReadBucketGuardKeyFile(bucketService, keyStoreBucketPath, bucketPath);
         if (documentKeyID == null) {
-            throw new GuardException("no guard found for bucket " + bucketPath);
+            throw new GuardException("No DocumentGuard found for Bucket" + bucketPath.getObjectHandlePath());
         }
         return documentKeyID;
     }

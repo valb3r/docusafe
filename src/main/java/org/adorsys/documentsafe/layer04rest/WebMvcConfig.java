@@ -9,8 +9,10 @@ import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
 import org.adorsys.documentsafe.layer03business.types.RelativeBucketPath;
 import org.adorsys.documentsafe.layer03business.types.UserID;
+import org.adorsys.documentsafe.layer03business.types.complex.DocumentFQN;
 import org.adorsys.documentsafe.layer04rest.adapter.BucketNameJsonAdapter;
 import org.adorsys.documentsafe.layer04rest.adapter.DocumentBucketPathJsonAdapter;
+import org.adorsys.documentsafe.layer04rest.adapter.DocumentFQNJsonAdapter;
 import org.adorsys.documentsafe.layer04rest.adapter.DocumentIDJsonAdapter;
 import org.adorsys.documentsafe.layer04rest.adapter.DocumentKeyIDJsonAdapter;
 import org.adorsys.documentsafe.layer04rest.adapter.ReadKeyPasswordJsonAdapter;
@@ -47,6 +49,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
                 .registerTypeAdapter(UserID.class, new UserIDJsonAdapter())
                 .registerTypeAdapter(ReadKeyPassword.class, new ReadKeyPasswordJsonAdapter())
                 .registerTypeAdapter(RelativeBucketPath.class, new RelativeBucketPathJsonAdapter())
+                .registerTypeAdapter(DocumentFQN.class, new DocumentFQNJsonAdapter())
                 .create();
 
         GsonHttpMessageConverter gsonConverter = new GsonHttpMessageConverter();
