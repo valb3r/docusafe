@@ -17,8 +17,6 @@ import org.adorsys.documentsafe.layer02service.impl.KeyStoreServiceImpl;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.DocumentID;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
-import org.adorsys.documentsafe.layer02service.types.PlainFileContent;
-import org.adorsys.documentsafe.layer02service.types.PlainFileName;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentContentWithContentMetaInfo;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
@@ -83,7 +81,7 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
             keyStoreAccess = new KeyStoreAccess(keyStoreLocation, keyStoreAuth);
         }
         {   // speichern einer leeren Datei, um sich den KeyStoreTypen zu merken
-            UserIDUtil.safeKeyStoreType(userIDAuth.getUserID(), keyStoreAccess.getKeyStoreLocation().getKeyStoreType(), bucketService);
+            UserIDUtil.saveKeyStoreTypeFile(bucketService, keyStoreAccess.getKeyStoreLocation().getKeyStoreBucketPath(), keyStoreAccess.getKeyStoreLocation().getKeyStoreType());
         }
         UserHomeBucketPath userHomeBucketPath = UserIDUtil.getHomeBucketPath(userIDAuth.getUserID());
         {   // create homeBucket
@@ -209,7 +207,7 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
         LOGGER.debug("start create new guard for " + bucketPath.getObjectHandlePath());
         DocumentKeyIDWithKey documentKeyIdWithKey = documentGuardService.createDocumentKeyIdWithKey();
         documentGuardService.createSymmetricDocumentGuard(keyStoreAccess, documentKeyIdWithKey);
-        GuardUtil.createBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStoreLocation().getKeyStoreBucketPath(), bucketPath, documentKeyIdWithKey.getDocumentKeyID());
+        GuardUtil.saveBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStoreLocation().getKeyStoreBucketPath(), bucketPath, documentKeyIdWithKey.getDocumentKeyID());
         LOGGER.debug("finished create new guard for " + bucketPath.getObjectHandlePath());
         return documentKeyIdWithKey.getDocumentKeyID();
     }
@@ -217,7 +215,7 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
     private DocumentKeyIDWithKey getOrCreateDocumentKeyIDwithKeyForBucketPath(UserIDAuth userIDAuth, BucketPath bucketPath) {
         LOGGER.debug("search key for " + bucketPath);
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
-        DocumentKeyID documentKeyID = GuardUtil.tryToReadBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStoreLocation().getKeyStoreBucketPath(), bucketPath);
+        DocumentKeyID documentKeyID = GuardUtil.tryToLoadBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStoreLocation().getKeyStoreBucketPath(), bucketPath);
         if (documentKeyID == null) {
             documentKeyID = createGuardForBucket(keyStoreAccess, bucketPath);
         }
@@ -229,7 +227,7 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
     private DocumentKeyIDWithKey getDocumentKeyIDwithKeyForBucketPath(UserIDAuth userIDAuth, BucketPath bucketPath) {
         LOGGER.debug("get key for " + bucketPath);
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
-        DocumentKeyID documentKeyID = GuardUtil.readBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStoreLocation().getKeyStoreBucketPath(), bucketPath);
+        DocumentKeyID documentKeyID = GuardUtil.loadBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStoreLocation().getKeyStoreBucketPath(), bucketPath);
         DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardService.loadDocumentKeyIDWithKeyFromDocumentGuard(keyStoreAccess, documentKeyID);
         LOGGER.debug("found " + documentKeyIDWithKey + " for " + bucketPath);
         return documentKeyIDWithKey;

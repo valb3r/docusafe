@@ -1,13 +1,17 @@
 package org.adorsys.documentsafe.layer03business.utils;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.adorsys.documentsafe.layer00common.exceptions.BaseException;
 import org.adorsys.documentsafe.layer01persistence.types.BucketName;
 import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
 import org.adorsys.documentsafe.layer01persistence.types.KeyStoreType;
 import org.adorsys.documentsafe.layer01persistence.types.ListRecursiveFlag;
+import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreBucketPath;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreLocation;
 import org.adorsys.documentsafe.layer02service.BucketService;
+import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 import org.adorsys.documentsafe.layer02service.types.PlainFileContent;
 import org.adorsys.documentsafe.layer02service.types.PlainFileName;
 import org.adorsys.documentsafe.layer02service.types.ReadStorePassword;
@@ -28,12 +32,12 @@ import java.util.stream.Stream;
  */
 public class UserIDUtil {
     private final static Logger LOGGER = LoggerFactory.getLogger(UserIDUtil.class);
-    public static final String KEY_STORE_TYPE = "KeyStoreType->";
+    public static final String KEY_STORE_TYPE = "KeyStoreType";
+    private final static String DEFAULT_KEYSTORE_TYPE = "UBER";
 
     public static UserRootBucketPath getUserRootBucketPath(UserID userID) {
         return new UserRootBucketPath("BP-" + userID.getValue());
     }
-
 
     public static KeyStoreID getKeyStoreID(UserID userID) {
         return new KeyStoreID("KS-" + userID.getValue());
@@ -42,7 +46,6 @@ public class UserIDUtil {
     public static KeyStoreAuth getKeyStoreAuth(UserIDAuth userIDAuth) {
         return new KeyStoreAuth(getReadStorePassword(userIDAuth.getUserID()), userIDAuth.getReadKeyPassword());
     }
-
 
     public static KeyStoreBucketPath getKeyStoreBucketPath(UserID userID) {
         UserRootBucketPath userRootBucketPath = UserIDUtil.getUserRootBucketPath(userID);
@@ -62,28 +65,38 @@ public class UserIDUtil {
         return new ReadStorePassword("ReadStorePasswordFor" + userID.getValue());
     }
 
-
-    public static void safeKeyStoreType(UserID userID, KeyStoreType keyStoreType, BucketService bucketService) {
-        PlainFileName plainFileName = new PlainFileName(KEY_STORE_TYPE + keyStoreType.getValue());
-        bucketService.createPlainFile(getKeyStoreBucketPath(userID),
-                plainFileName, new PlainFileContent("not encrypted".getBytes()));
-
+    public static void saveKeyStoreTypeFile(BucketService bucketService, KeyStoreBucketPath keyStoreBucketPath, KeyStoreType keyStoreType) {
+        PlainFileName plainFileName = new PlainFileName(KEY_STORE_TYPE);
+        Gson gson = new GsonBuilder().create();
+        String jsonString = gson.toJson(keyStoreType);
+        PlainFileContent plainFileContent = new PlainFileContent(jsonString.getBytes());
+        bucketService.createPlainFile(keyStoreBucketPath, plainFileName, plainFileContent);
     }
 
+    public static KeyStoreType loadKeyStoreTypeFile(BucketService bucketService, KeyStoreBucketPath keyStoreBucketPath) {
+        PlainFileName plainFileName = new PlainFileName(KEY_STORE_TYPE);
+        PlainFileContent plainFileContent = bucketService.readPlainFile(keyStoreBucketPath, plainFileName);
+        Gson gson = new GsonBuilder().create();
+        String jsonString = new String(plainFileContent.getValue());
+        KeyStoreType keyStoreType = gson.fromJson(jsonString, KeyStoreType.class);
+        return keyStoreType;
+    }
+
+
+    /**
+     * Unschön, dass hier eine Annahme getroffen wird, wie der KeyStore Dateiename aussieht,
+     * aber es spart Performance. Ansonsten müsste immer der TypeFile gelesen werden und das kostet
+     */
     public static KeyStoreLocation getKeyStoreLocation(UserID userID, BucketService bucketService) {
         KeyStoreBucketPath keyStoreBucketPath = getKeyStoreBucketPath(userID);
         KeyStoreID keyStoreID = getKeyStoreID(userID);
-
-        BucketContent bucketContent = bucketService.readDocumentBucket(keyStoreBucketPath, ListRecursiveFlag.FALSE);
-        String prefix = KEY_STORE_TYPE;
-
-        for (StorageMetadata meta : bucketContent.getStrippedContent()) {
-            if (meta.getName().startsWith(prefix)) {
-                KeyStoreType keyStoreType = new KeyStoreType(meta.getName().substring(prefix.length()));
-                return new KeyStoreLocation(keyStoreBucketPath, keyStoreID, keyStoreType);
-            }
+        PlainFileName plainFileName = new PlainFileName(keyStoreID.getValue() + "." + DEFAULT_KEYSTORE_TYPE);
+        if (bucketService.existsFile(keyStoreBucketPath, plainFileName)) {
+            return new KeyStoreLocation(keyStoreBucketPath, keyStoreID, new KeyStoreType(DEFAULT_KEYSTORE_TYPE));
         }
-        throw new BaseException("Did not find stored keyStoreType in " + keyStoreBucketPath);
+        LOGGER.warn("====================================");
+        KeyStoreType keyStoreType = loadKeyStoreTypeFile(bucketService, keyStoreBucketPath);
+        return new KeyStoreLocation(keyStoreBucketPath, keyStoreID, keyStoreType);
     }
 
 }

@@ -49,21 +49,27 @@ public class BucketServiceImpl implements BucketService {
 
     @Override
     public BucketContent readDocumentBucket(BucketPath bucketPath, ListRecursiveFlag listRecursiveFlag) {
-        return new BucketContent(bucketPath, extendedBlobStoreConnection.list(bucketPath, listRecursiveFlag));
+        LOGGER.info("start read document bucket " + bucketPath);
+        BucketContent bucketContent = new BucketContent(bucketPath, extendedBlobStoreConnection.list(bucketPath, listRecursiveFlag));
+        LOGGER.info("finished read document bucket " + bucketPath);
+        return bucketContent;
     }
 
     @Override
     public boolean bucketExists(BucketPath bucketPath) {
+        LOGGER.info("check bucket exsits " + bucketPath);
         return extendedBlobStoreConnection.containerExists(bucketPath.getObjectHandlePath());
     }
 
     @Override
     public void createPlainFile(BucketPath bucketPath, PlainFileName plainFileName, PlainFileContent plainFileContent) {
         try {
+            LOGGER.info("start create plain file " + bucketPath + " " + plainFileName);
             ObjectHandle objectHandle = new ObjectHandle();
             objectHandle.setContainer(bucketPath.getFirstBucket().getValue());
             objectHandle.setName(bucketPath.getSubBuckets() + plainFileName.getValue());
             extendedBlobStoreConnection.putBlob(objectHandle, plainFileContent.getValue());
+            LOGGER.info("finished create plain file " + bucketPath + " " + plainFileName);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
@@ -72,10 +78,13 @@ public class BucketServiceImpl implements BucketService {
     @Override
     public PlainFileContent readPlainFile(BucketPath bucketPath, PlainFileName plainFileName) {
         try {
+            LOGGER.info("start read plain file " + bucketPath + " " + plainFileName);
             ObjectHandle objectHandle = new ObjectHandle();
             objectHandle.setContainer(bucketPath.getFirstBucket().getValue());
             objectHandle.setName(bucketPath.getSubBuckets() + plainFileName.getValue());
-            return new PlainFileContent(extendedBlobStoreConnection.getBlob(objectHandle));
+            PlainFileContent plainFileContent = new PlainFileContent(extendedBlobStoreConnection.getBlob(objectHandle));
+            LOGGER.info("finished read plain file " + bucketPath + " " + plainFileName);
+            return plainFileContent;
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
@@ -83,9 +92,11 @@ public class BucketServiceImpl implements BucketService {
 
     @Override
     public boolean existsFile(BucketPath bucketPath, PlainFileName plainFileName) {
+        LOGGER.info("start file exists " + bucketPath + " " + plainFileName);
         ObjectHandle objectHandle = new ObjectHandle();
         objectHandle.setContainer(bucketPath.getFirstBucket().getValue());
         objectHandle.setName(bucketPath.getSubBuckets() + plainFileName.getValue());
+        LOGGER.info("finished file exists " + bucketPath + " " + plainFileName);
         return extendedBlobStoreConnection.blobExists(objectHandle);
     }
 
