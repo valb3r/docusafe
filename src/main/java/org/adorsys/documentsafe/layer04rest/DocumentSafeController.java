@@ -53,6 +53,18 @@ public class DocumentSafeController {
     }
 
     @RequestMapping(
+            value = "/internal/user",
+            method = {RequestMethod.DELETE},
+            consumes = {MediaType.APPLICATION_JSON},
+            produces = {MediaType.APPLICATION_JSON}
+    )
+    public void destroyUser(@RequestBody UserIDAuth userIDAuth) {
+        service.destroyUser(userIDAuth);
+    }
+
+
+
+    @RequestMapping(
             value = "/document",
             method = {RequestMethod.PUT},
             consumes = {MediaType.APPLICATION_JSON},
@@ -65,17 +77,6 @@ public class DocumentSafeController {
         service.storeDocument(userIDAuth, dsDocument);
     }
 
-    @RequestMapping(
-            value = "/internal/user",
-            method = {RequestMethod.DELETE},
-            consumes = {MediaType.APPLICATION_JSON},
-            produces = {MediaType.APPLICATION_JSON}
-    )
-    public void destroyUser(@RequestHeader("userid") String userid,
-                            @RequestHeader("password") String password) {
-        UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
-        service.destroyUser(userIDAuth);
-    }
 
     @RequestMapping(
             value = "/document/**",
