@@ -1,11 +1,15 @@
 package org.adorsys.documentsafe.layer03business;
 
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
+import org.adorsys.documentsafe.layer01persistence.types.ListRecursiveFlag;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
+import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreDirectory;
+import org.adorsys.documentsafe.layer02service.BucketService;
 import org.adorsys.documentsafe.layer02service.impl.BucketServiceImpl;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
+import org.adorsys.documentsafe.layer02service.types.complextypes.BucketContent;
 import org.adorsys.documentsafe.layer02service.utils.TestFsBlobStoreFactory;
 import org.adorsys.documentsafe.layer03business.impl.DocumentSafeServiceImpl;
 import org.adorsys.documentsafe.layer03business.types.UserHomeBucketPath;
@@ -17,6 +21,7 @@ import org.adorsys.documentsafe.layer03business.utils.GuardUtil;
 import org.adorsys.documentsafe.layer03business.utils.UserIDUtil;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.jclouds.blobstore.domain.StorageMetadata;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -63,6 +68,8 @@ public class BusinessTest {
         users.add(userIDAuth);
         DocumentSafeService service = new DocumentSafeServiceImpl(factory);
         service.createUser(userIDAuth);
+
+        Assert.assertEquals("Anzahl der guards muss genau 1 sein", 1, getNumberOfGuards(userIDAuth.getUserID()));
     }
 
     @Test
@@ -75,6 +82,7 @@ public class BusinessTest {
         service.createUser(userIDAuth);
         DSDocument dsDocument = service.readDocument(userIDAuth, documentFQN);
         LOGGER.debug("retrieved document:" + new String(dsDocument.getDocumentContent().getValue()));
+        Assert.assertEquals("Anzahl der guards muss genau 1 sein", 1, getNumberOfGuards(userIDAuth.getUserID()));
     }
 
     @Test
@@ -84,6 +92,8 @@ public class BusinessTest {
         users.add(userIDAuth);
         DocumentSafeService service = new DocumentSafeServiceImpl(factory);
         service.createUser(userIDAuth);
+        Assert.assertEquals("Anzahl der guards muss genau 1 sein", 1, getNumberOfGuards(userIDAuth.getUserID()));
+
         DocumentFQN documentFQN = new DocumentFQN("first/next/A new Document.txt");
         DocumentContent documentContent = new DocumentContent("Einfach nur a bisserl Text".getBytes());
         DSDocument dsDocument1 = new DSDocument(documentFQN, documentContent, null);
@@ -98,23 +108,26 @@ public class BusinessTest {
         LOGGER.debug("retrieved document:" + new String(dsDocument1Result.getDocumentContent().getValue()));
 
         // check, there exists exaclty one guard for the user
-        GuardUtil.loadBucketGuardKeyFile(new BucketServiceImpl(factory), UserIDUtil.getKeyStoreDirectory(userIDAuth.getUserID()),  homeBucketPath.append(new BucketPath(dsDocument1.getDocumentFQN().getValue())));
-        // check again with Assert, so get should have thrown an exception before
-        DocumentKeyID documentKeyID1 = GuardUtil.loadBucketGuardKeyFile(new BucketServiceImpl(factory), UserIDUtil.getKeyStoreDirectory(userIDAuth.getUserID()),  homeBucketPath.append(new BucketPath(dsDocument1.getDocumentFQN().getValue())));
-        Assert.assertNotNull(documentKeyID1);
+        Assert.assertEquals("Anzahl der guards muss genau 2 sein", 2, getNumberOfGuards(userIDAuth.getUserID()));
 
         DocumentFQN document2FQN = new DocumentFQN("first/next/Another new Document.txt");
         DSDocument dsDocument2 = new DSDocument(document2FQN, dsDocument1.getDocumentContent(), null);
         service.storeDocument(userIDAuth, dsDocument2);
         DSDocument dsDocument2Result = service.readDocument(userIDAuth, dsDocument2.getDocumentFQN());
         LOGGER.debug("retrieved document:" + new String(dsDocument2Result.getDocumentContent().getValue()));
+    }
 
-        // check again with Assert, so get should have thrown an exception before
-        DocumentKeyID documentKeyID2 = GuardUtil.loadBucketGuardKeyFile(new BucketServiceImpl(factory), UserIDUtil.getKeyStoreDirectory(userIDAuth.getUserID()),  homeBucketPath.append(new BucketPath(dsDocument1.getDocumentFQN().getValue())));
-        Assert.assertNotNull(documentKeyID2);
-
-        // And make sure, the guard ist still the same
-        Assert.assertEquals("guard for " + document2FQN + " must not change", documentKeyID1, documentKeyID2);
+    private int getNumberOfGuards(UserID userID) {
+        BucketService bucketService = new BucketServiceImpl(factory);
+        KeyStoreDirectory keyStoreDirectory = UserIDUtil.getKeyStoreDirectory(userID);
+        BucketContent bucketContent = bucketService.readDocumentBucket(keyStoreDirectory, ListRecursiveFlag.TRUE);
+        int count = 0;
+        for (StorageMetadata meta : bucketContent.getStrippedContent()) {
+            if (meta.getName().endsWith("bucketGuardKey")) {
+                count ++;
+            }
+        }
+        return count;
 
     }
 

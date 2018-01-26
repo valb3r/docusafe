@@ -36,6 +36,18 @@ curl -f -X PUT -H 'Content-Type: application/json' -H 'Accept: application/json'
 echo "get linked document"
 curl -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: affe' -H 'password: rkp' -i 'http://localhost:8080/document/%22green/bucket/README.txt%22'
 
+echo "--------------------- check filesystem ----------"
+find target/filesystemstorage
+echo "----------------------"
+guards=$(find target/filesystemstorage -name '*bucketGuardKey' | wc -l)
+if (( guards == 3 )) 
+then
+	echo "ok Anzahl der Guards ist 3.  Das ist fein."
+else
+	echo "DANGER DANGER ACHTUNG FEHLER. ANZAHL DER GUARDS IST NICHT KORREKT"
+	exit 1;
+fi
+
 echo "EVERYTHING WENT FINE so FAR"
 echo "wait 10 seconds, then delete user and exit"
 sleep 10
