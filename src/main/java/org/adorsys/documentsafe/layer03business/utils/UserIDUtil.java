@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
 import org.adorsys.documentsafe.layer01persistence.types.KeyStoreType;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreBucketPath;
+import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreDirectory;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreLocation;
 import org.adorsys.documentsafe.layer02service.BucketService;
 import org.adorsys.documentsafe.layer02service.types.PlainFileContent;
@@ -38,8 +38,8 @@ public class UserIDUtil {
         return new KeyStoreAuth(getReadStorePassword(userIDAuth.getUserID()), userIDAuth.getReadKeyPassword());
     }
 
-    public static KeyStoreBucketPath getKeyStoreBucketPath(UserID userID) {
-        return new KeyStoreBucketPath(UserIDUtil.getUserRootBucketPath(userID).append(".KEYSTORE"));
+    public static KeyStoreDirectory getKeyStoreDirectory(UserID userID) {
+        return new KeyStoreDirectory(UserIDUtil.getUserRootBucketPath(userID).append(".KEYSTORE"));
     }
 
     public static UserHomeBucketPath getHomeBucketPath(UserID userID) {
@@ -50,16 +50,16 @@ public class UserIDUtil {
         return new ReadStorePassword("ReadStorePasswordFor" + userID.getValue());
     }
 
-    public static void saveKeyStoreTypeFile(BucketService bucketService, KeyStoreBucketPath keyStoreBucketPath, KeyStoreType keyStoreType) {
-        BucketPath keystoreTypeHelperFile = keyStoreBucketPath.append(KEY_STORE_TYPE);
+    public static void saveKeyStoreTypeFile(BucketService bucketService, KeyStoreDirectory keyStoreDirectory, KeyStoreType keyStoreType) {
+        BucketPath keystoreTypeHelperFile = keyStoreDirectory.append(KEY_STORE_TYPE);
         Gson gson = new GsonBuilder().create();
         String jsonString = gson.toJson(keyStoreType);
         PlainFileContent plainFileContent = new PlainFileContent(jsonString.getBytes());
         bucketService.createPlainFile(keystoreTypeHelperFile, plainFileContent);
     }
 
-    public static KeyStoreType loadKeyStoreTypeFile(BucketService bucketService, KeyStoreBucketPath keyStoreBucketPath) {
-        BucketPath keystoreTypeHelperFile = keyStoreBucketPath.append(KEY_STORE_TYPE);
+    public static KeyStoreType loadKeyStoreTypeFile(BucketService bucketService, KeyStoreDirectory keyStoreDirectory) {
+        BucketPath keystoreTypeHelperFile = keyStoreDirectory.append(KEY_STORE_TYPE);
         PlainFileContent plainFileContent = bucketService.readPlainFile(keystoreTypeHelperFile);
         Gson gson = new GsonBuilder().create();
         String jsonString = new String(plainFileContent.getValue());
@@ -73,15 +73,15 @@ public class UserIDUtil {
      * aber es spart Performance. Ansonsten müsste immer der TypeFile gelesen werden und das kostet
      */
     public static KeyStoreLocation getKeyStoreLocation(UserID userID, BucketService bucketService) {
-        KeyStoreBucketPath keyStoreBucketPath = getKeyStoreBucketPath(userID);
+        KeyStoreDirectory keyStoreDirectory = getKeyStoreDirectory(userID);
         KeyStoreID keyStoreID = getKeyStoreID(userID);
-        BucketPath typeFile = keyStoreBucketPath.append(keyStoreID.getValue() + "." + DEFAULT_KEYSTORE_TYPE);
+        BucketPath typeFile = keyStoreDirectory.append(keyStoreID.getValue() + "." + DEFAULT_KEYSTORE_TYPE);
         if (bucketService.existsFile(typeFile)) {
-            return new KeyStoreLocation(keyStoreBucketPath, keyStoreID, new KeyStoreType(DEFAULT_KEYSTORE_TYPE));
+            return new KeyStoreLocation(keyStoreDirectory, keyStoreID, new KeyStoreType(DEFAULT_KEYSTORE_TYPE));
         }
         LOGGER.warn("====================================");
-        KeyStoreType keyStoreType = loadKeyStoreTypeFile(bucketService, keyStoreBucketPath);
-        return new KeyStoreLocation(keyStoreBucketPath, keyStoreID, keyStoreType);
+        KeyStoreType keyStoreType = loadKeyStoreTypeFile(bucketService, keyStoreDirectory);
+        return new KeyStoreLocation(keyStoreDirectory, keyStoreID, keyStoreType);
     }
 
 }

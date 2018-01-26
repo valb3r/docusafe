@@ -5,7 +5,7 @@ import org.adorsys.documentsafe.layer01persistence.ExtendedKeystorePersistence;
 import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
 import org.adorsys.documentsafe.layer01persistence.types.KeyStoreType;
 import org.adorsys.documentsafe.layer01persistence.types.ListRecursiveFlag;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreBucketPath;
+import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreDirectory;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreLocation;
 import org.adorsys.documentsafe.layer02service.BucketService;
 import org.adorsys.documentsafe.layer02service.KeyStoreService;
@@ -35,24 +35,19 @@ public class KeyStoreServiceImpl implements KeyStoreService {
 
     /**
      *
-     * @param keyStoreID
-     * @param keyStoreAuth
-     * @param keystoreBucketPath
-     * @param config may be null
-     * @return
      */
     @Override
     public KeyStoreLocation createKeyStore(KeyStoreID keyStoreID,
                                            KeyStoreAuth keyStoreAuth,
-                                           KeyStoreBucketPath keystoreBucketPath,
+                                           KeyStoreDirectory keyStoreDirectory,
                                            KeyStoreCreationConfig config) {
         try {
             LOGGER.info("start create keystore " + keyStoreID);
             {
-                BucketContent bucketContent = bucketService.readDocumentBucket(keystoreBucketPath, ListRecursiveFlag.FALSE);
+                BucketContent bucketContent = bucketService.readDocumentBucket(keyStoreDirectory, ListRecursiveFlag.FALSE);
                 for (StorageMetadata meta : bucketContent.getStrippedContent()) {
                     if (meta.getName().startsWith(keyStoreID.getValue())) {
-                        throw new KeyStoreExistsException("creation of keytore aborted. a keystore with potentially the same type already exists in " + keystoreBucketPath + " with name " + meta.getName());
+                        throw new KeyStoreExistsException("creation of keytore aborted. a keystore with potentially the same type already exists in " + keyStoreDirectory + " with name " + meta.getName());
                     }
                 }
             }
@@ -71,7 +66,7 @@ public class KeyStoreServiceImpl implements KeyStoreService {
                     keyStoreAuth.getReadKeyPassword());
             KeyStore userKeyStore = keyStoreGenerator.generate();
 
-            KeyStoreLocation keyStoreLocation = new KeyStoreLocation(keystoreBucketPath, keyStoreID, new KeyStoreType(userKeyStore.getType()));
+            KeyStoreLocation keyStoreLocation = new KeyStoreLocation(keyStoreDirectory, keyStoreID, new KeyStoreType(userKeyStore.getType()));
             LOGGER.debug("keystore location is " + keyStoreLocation);
 			keystorePersistence.saveKeyStore(userKeyStore, keyStoreAuth.getReadStoreHandler(), keyStoreLocation);
             LOGGER.info("finished create keystore " + keyStoreID + " at " + keyStoreLocation);

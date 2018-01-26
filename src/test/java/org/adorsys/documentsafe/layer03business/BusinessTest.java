@@ -90,7 +90,7 @@ public class BusinessTest {
 
         // check, there exists no guard yet
         UserHomeBucketPath homeBucketPath = UserIDUtil.getHomeBucketPath(userIDAuth.getUserID());
-        DocumentKeyID documentKeyID0 = GuardUtil.tryToLoadBucketGuardKeyFile(new BucketServiceImpl(factory), UserIDUtil.getKeyStoreBucketPath(userIDAuth.getUserID()), homeBucketPath.append(new BucketPath(dsDocument1.getDocumentFQN().getValue())));
+        DocumentKeyID documentKeyID0 = GuardUtil.tryToLoadBucketGuardKeyFile(new BucketServiceImpl(factory), UserIDUtil.getKeyStoreDirectory(userIDAuth.getUserID()), homeBucketPath.append(new BucketPath(dsDocument1.getDocumentFQN().getValue())));
         Assert.assertNull(documentKeyID0);
 
         service.storeDocument(userIDAuth, dsDocument1);
@@ -98,9 +98,9 @@ public class BusinessTest {
         LOGGER.debug("retrieved document:" + new String(dsDocument1Result.getDocumentContent().getValue()));
 
         // check, there exists exaclty one guard for the user
-        GuardUtil.loadBucketGuardKeyFile(new BucketServiceImpl(factory), UserIDUtil.getKeyStoreBucketPath(userIDAuth.getUserID()),  homeBucketPath.append(new BucketPath(dsDocument1.getDocumentFQN().getValue())));
+        GuardUtil.loadBucketGuardKeyFile(new BucketServiceImpl(factory), UserIDUtil.getKeyStoreDirectory(userIDAuth.getUserID()),  homeBucketPath.append(new BucketPath(dsDocument1.getDocumentFQN().getValue())));
         // check again with Assert, so get should have thrown an exception before
-        DocumentKeyID documentKeyID1 = GuardUtil.loadBucketGuardKeyFile(new BucketServiceImpl(factory), UserIDUtil.getKeyStoreBucketPath(userIDAuth.getUserID()),  homeBucketPath.append(new BucketPath(dsDocument1.getDocumentFQN().getValue())));
+        DocumentKeyID documentKeyID1 = GuardUtil.loadBucketGuardKeyFile(new BucketServiceImpl(factory), UserIDUtil.getKeyStoreDirectory(userIDAuth.getUserID()),  homeBucketPath.append(new BucketPath(dsDocument1.getDocumentFQN().getValue())));
         Assert.assertNotNull(documentKeyID1);
 
         DocumentFQN document2FQN = new DocumentFQN("first/next/Another new Document.txt");
@@ -110,7 +110,7 @@ public class BusinessTest {
         LOGGER.debug("retrieved document:" + new String(dsDocument2Result.getDocumentContent().getValue()));
 
         // check again with Assert, so get should have thrown an exception before
-        DocumentKeyID documentKeyID2 = GuardUtil.loadBucketGuardKeyFile(new BucketServiceImpl(factory), UserIDUtil.getKeyStoreBucketPath(userIDAuth.getUserID()),  homeBucketPath.append(new BucketPath(dsDocument1.getDocumentFQN().getValue())));
+        DocumentKeyID documentKeyID2 = GuardUtil.loadBucketGuardKeyFile(new BucketServiceImpl(factory), UserIDUtil.getKeyStoreDirectory(userIDAuth.getUserID()),  homeBucketPath.append(new BucketPath(dsDocument1.getDocumentFQN().getValue())));
         Assert.assertNotNull(documentKeyID2);
 
         // And make sure, the guard ist still the same

@@ -3,7 +3,7 @@ package org.adorsys.documentsafe.layer03business.utils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreBucketPath;
+import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreDirectory;
 import org.adorsys.documentsafe.layer02service.BucketService;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 import org.adorsys.documentsafe.layer02service.types.PlainFileContent;
@@ -18,16 +18,16 @@ public class GuardUtil {
     private final static Logger LOGGER = LoggerFactory.getLogger(GuardUtil.class);
     private final static String BUCKET_GUARD_KEY = ".bucketGuardKey";
 
-    public static void saveBucketGuardKeyFile(BucketService bucketService, KeyStoreBucketPath keyStoreBucketPath, BucketPath bucketPath, DocumentKeyID documentKeyID) {
-        BucketPath guardFile = keyStoreBucketPath.append(bucketPath).add(BUCKET_GUARD_KEY);
+    public static void saveBucketGuardKeyFile(BucketService bucketService, KeyStoreDirectory keyStoreDirectory, BucketPath bucketPath, DocumentKeyID documentKeyID) {
+        BucketPath guardFile = keyStoreDirectory.append(bucketPath).add(BUCKET_GUARD_KEY);
         Gson gson = new GsonBuilder().create();
         String jsonString = gson.toJson(documentKeyID);
         PlainFileContent plainFileContent = new PlainFileContent(jsonString.getBytes());
         bucketService.createPlainFile(guardFile, plainFileContent);
     }
 
-    public static DocumentKeyID tryToLoadBucketGuardKeyFile(BucketService bucketService, KeyStoreBucketPath keyStoreBucketPath, BucketPath bucketPath) {
-        BucketPath guardFile = keyStoreBucketPath.append(bucketPath).add(BUCKET_GUARD_KEY);
+    public static DocumentKeyID tryToLoadBucketGuardKeyFile(BucketService bucketService, KeyStoreDirectory keyStoreDirectory, BucketPath bucketPath) {
+        BucketPath guardFile = keyStoreDirectory.append(bucketPath).add(BUCKET_GUARD_KEY);
         if (!bucketService.existsFile(guardFile)) {
             return null;
         }
@@ -37,8 +37,8 @@ public class GuardUtil {
         return documentKeyID;
     }
 
-    public static DocumentKeyID loadBucketGuardKeyFile(BucketService bucketService, KeyStoreBucketPath keyStoreBucketPath, BucketPath bucketPath) {
-        DocumentKeyID documentKeyID = tryToLoadBucketGuardKeyFile(bucketService, keyStoreBucketPath, bucketPath);
+    public static DocumentKeyID loadBucketGuardKeyFile(BucketService bucketService, KeyStoreDirectory keyStoreDirectory, BucketPath bucketPath) {
+        DocumentKeyID documentKeyID = tryToLoadBucketGuardKeyFile(bucketService, keyStoreDirectory, bucketPath);
         if (documentKeyID == null) {
             throw new GuardException("No DocumentGuard found for Bucket" + bucketPath);
         }

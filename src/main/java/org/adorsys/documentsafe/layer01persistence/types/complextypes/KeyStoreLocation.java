@@ -15,18 +15,18 @@ public class KeyStoreLocation implements LocationInterface {
 	private final static Logger LOGGER = LoggerFactory.getLogger(KeyStoreLocation.class);
 	public static final String FILE_EXTENSION_SEPARATOR = ".";
 
-	private final KeyStoreBucketPath keyStoreBucketPath;
+	private final KeyStoreDirectory keyStoreDirectory;
 	private final KeyStoreID keyStoreID;
 	private final KeyStoreType keyStoreType;
 
-	public KeyStoreLocation(KeyStoreBucketPath keyStoreBucketPath, KeyStoreID keyStoreID, KeyStoreType keyStoreType) {
-		this.keyStoreBucketPath = keyStoreBucketPath;
+	public KeyStoreLocation(KeyStoreDirectory keyStoreDirectory, KeyStoreID keyStoreID, KeyStoreType keyStoreType) {
+		this.keyStoreDirectory = keyStoreDirectory;
 		this.keyStoreID = keyStoreID;
 		this.keyStoreType = keyStoreType;
 	}
 	
-	public KeyStoreBucketPath getKeyStoreBucketPath() {
-		return keyStoreBucketPath;
+	public KeyStoreDirectory getKeyStoreDirectory() {
+		return keyStoreDirectory;
 	}
 
 	public KeyStoreID getKeyStoreID() {
@@ -38,13 +38,13 @@ public class KeyStoreLocation implements LocationInterface {
 	}
 
 	public ObjectHandle getLocationHandle(){
-		return getKeyStoreBucketPath().append(keyStoreID.getValue() + FILE_EXTENSION_SEPARATOR + keyStoreType.getValue()).getObjectHandle();
+		return keyStoreDirectory.append(keyStoreID.getValue() + FILE_EXTENSION_SEPARATOR + keyStoreType.getValue()).getObjectHandle();
 	}
 
 	@Override
 	public String toString() {
 		return "KeyStoreLocation{" +
-				keyStoreBucketPath +
+				keyStoreDirectory +
 				", " + keyStoreID +
 				", " + keyStoreType +
 				'}';

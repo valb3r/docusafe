@@ -3,7 +3,8 @@ package org.adorsys.documentsafe.layer02service;
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer01persistence.ExtendedBlobStoreConnection;
 import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreBucketPath;
+import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
+import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreDirectory;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreLocation;
 import org.adorsys.documentsafe.layer02service.generators.KeyStoreCreationConfig;
 import org.adorsys.documentsafe.layer02service.impl.KeyStoreServiceImpl;
@@ -42,21 +43,21 @@ public class KeyStoreServiceTest {
                                         KeyStoreID keyStoreID,
                                         KeyStoreCreationConfig config) {
         try {
-            KeyStoreBucketPath keyStoreBucketPath = new KeyStoreBucketPath(keystoreContainer);
+            KeyStoreDirectory keyStoreDirectory = new KeyStoreDirectory(new BucketPath(keystoreContainer));
 
             ContainerPersistence containerPersistence = new ContainerPersistence(new ExtendedBlobStoreConnection(factory));
             try {
                 // sollte der container exsitieren, ignorieren wir die Exception, um zu
                 // sehen, ob sich ein keystore überschreiben lässt
-                containerPersistence.creteContainer(keyStoreBucketPath.getObjectHandle().getContainer());
+                containerPersistence.creteContainer(keyStoreDirectory.getObjectHandle().getContainer());
             } catch (Exception e) {
                 LOGGER.error("Exception is ignored");
             }
-            AllServiceTest.buckets.add(keyStoreBucketPath);
+            AllServiceTest.buckets.add(keyStoreDirectory);
 
             KeyStoreService keyStoreService = new KeyStoreServiceImpl(factory);
             KeyStoreAuth keyStoreAuth = new KeyStoreAuth(readStorePassword, readKeyPassword);
-            KeyStoreLocation keyStoreLocation = keyStoreService.createKeyStore(keyStoreID, keyStoreAuth, keyStoreBucketPath, config);
+            KeyStoreLocation keyStoreLocation = keyStoreService.createKeyStore(keyStoreID, keyStoreAuth, keyStoreDirectory, config);
             KeyStore keyStore = keyStoreService.loadKeystore(keyStoreLocation, keyStoreAuth.getReadStoreHandler());
             return new KeyStoreStuff(keyStore, factory, keyStoreID, new KeyStoreAccess(keyStoreLocation, keyStoreAuth));
         } catch (Exception e) {
