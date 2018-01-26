@@ -28,11 +28,14 @@ public class ExtendedStorageMetadata implements StorageMetadata {
     @Override
     public String getName() {
         String fullname = meta.getName();
-        String subBuckets = bucketPath.getSubBuckets();
-        if (!fullname.startsWith(subBuckets)) {
-            throw new BaseException("Expected path starting with " + subBuckets + " but was " + fullname);
+        if (bucketPath.getObjectHandle().getName() != null) {
+            String subBuckets = bucketPath.getObjectHandle().getName() + BucketPath.BUCKET_SEPARATOR;
+            if (!fullname.startsWith(subBuckets)) {
+                throw new BaseException("Expected path starting with " + subBuckets + " but was " + fullname);
+            }
+            return fullname.substring(subBuckets.length());
         }
-        return fullname.substring(subBuckets.length());
+        return fullname;
     }
 
 // alle weiteren nur Durchreichen

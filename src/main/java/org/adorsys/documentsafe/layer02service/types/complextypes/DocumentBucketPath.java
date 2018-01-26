@@ -17,4 +17,8 @@ public class DocumentBucketPath extends BucketPath {
     public DocumentBucketPath(BucketPath bucketPath) {
         super(bucketPath);
     }
+
+    public DocumentBucketPath(String container, String path) {
+        super(container, path);
+    }
 }

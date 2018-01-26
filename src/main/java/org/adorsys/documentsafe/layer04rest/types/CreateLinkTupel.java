@@ -1,6 +1,5 @@
 package org.adorsys.documentsafe.layer04rest.types;
 
-import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer03business.types.complex.DocumentFQN;
 
 /**

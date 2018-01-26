@@ -1,6 +1,5 @@
 package org.adorsys.documentsafe.layer03business.impl;
 
-import org.adorsys.documentsafe.layer00common.exceptions.BaseException;
 import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
 import org.adorsys.documentsafe.layer01persistence.types.OverwriteFlag;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
@@ -15,12 +14,10 @@ import org.adorsys.documentsafe.layer02service.impl.DocumentGuardServiceImpl;
 import org.adorsys.documentsafe.layer02service.impl.DocumentPersistenceServiceImpl;
 import org.adorsys.documentsafe.layer02service.impl.KeyStoreServiceImpl;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
-import org.adorsys.documentsafe.layer02service.types.DocumentID;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentContentWithContentMetaInfo;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
-import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentLocation;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAuth;
 import org.adorsys.documentsafe.layer03business.utils.ContentMetaInfoUtil;
@@ -28,7 +25,6 @@ import org.adorsys.documentsafe.layer03business.exceptions.UserIDAlreadyExistsEx
 import org.adorsys.documentsafe.layer03business.exceptions.UserIDDoesNotExistException;
 import org.adorsys.documentsafe.layer03business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.documentsafe.layer03business.types.complex.DocumentFQN;
-import org.adorsys.documentsafe.layer03business.types.RelativeBucketPath;
 import org.adorsys.documentsafe.layer03business.types.UserHomeBucketPath;
 import org.adorsys.documentsafe.layer03business.types.UserRootBucketPath;
 import org.adorsys.documentsafe.layer03business.types.complex.DSDocument;
@@ -100,19 +96,14 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
         LOGGER.info("start storeDocument for " + userIDAuth + " " + dsDocument.getDocumentFQN());
 
         ContentMetaInfo contentMetaInfo = ContentMetaInfoUtil.createContentMetaInfo(dsDocument);
-        DocumentLocation documentLocation = getDocumentLocation(userIDAuth, dsDocument.getDocumentFQN());
-        DocumentKeyIDWithKey documentKeyIDWithKey = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, documentLocation.getDocumentBucketPath());
-        DocumentLocation documentLocationResult = documentPersistenceService.persistDocument(
+        DocumentBucketPath documentBucketPath = getDocumentBucketPath(userIDAuth, dsDocument.getDocumentFQN());
+        DocumentKeyIDWithKey documentKeyIDWithKey = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, documentBucketPath);
+        documentPersistenceService.persistDocument(
                 documentKeyIDWithKey,
-                documentLocation.getDocumentBucketPath(),
-                documentLocation.getDocumentID(),
+                documentBucketPath,
                 dsDocument.getDocumentContent(),
                 OverwriteFlag.FALSE,
                 contentMetaInfo);
-        if (!documentLocation.equals(documentLocationResult)) {
-            throw new BaseException("programming error: expected " + documentLocation + " to be equal to " + documentLocationResult);
-        }
-
         LOGGER.info("finished storeDocument for " + userIDAuth + " " + dsDocument.getDocumentFQN());
     }
 
@@ -136,15 +127,15 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
     @Override
     public DSDocument readDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
         LOGGER.info("start readDocument for " + userIDAuth + " " + documentFQN);
-        DocumentLocation documentLocation = getDocumentLocation(userIDAuth, documentFQN);
+        DocumentBucketPath documentBucketPath = getDocumentBucketPath(userIDAuth, documentFQN);
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
-        DocumentContentWithContentMetaInfo documentContentWithContentMetaInfo = documentPersistenceService.loadDocument(keyStoreAccess, documentLocation);
+        DocumentContentWithContentMetaInfo documentContentWithContentMetaInfo = documentPersistenceService.loadDocument(keyStoreAccess, documentBucketPath);
         DSDocumentMetaInfo dsDocumentMetaInfo = ContentMetaInfoUtil.createDSDocumentMetaInfo(documentContentWithContentMetaInfo.getContentMetaInfo());
         if (ContentMetaInfoUtil.isLink(documentContentWithContentMetaInfo.getContentMetaInfo())) {
             LOGGER.info("start load link " + documentFQN);
             DocumentLink documentLink = LinkUtil.getDocumentLink(documentContentWithContentMetaInfo.getDocumentContent());
-            DocumentLocation sourceDocumentLocation = documentLink.getSourceDocumentLocation();
-            documentContentWithContentMetaInfo = documentPersistenceService.loadDocument(keyStoreAccess, sourceDocumentLocation);
+            DocumentBucketPath sourceDocumentBucketPath = documentLink.getSourceDocumentBucketPath();
+            documentContentWithContentMetaInfo = documentPersistenceService.loadDocument(keyStoreAccess, sourceDocumentBucketPath);
             dsDocumentMetaInfo = ContentMetaInfoUtil.createDSDocumentMetaInfo(documentContentWithContentMetaInfo.getContentMetaInfo());
             LOGGER.info("finished load link " + documentFQN);
         }
@@ -158,13 +149,14 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
 
         // Wir prüfen lediglich, ob es den source Bucket gibt und ob wir darauf Zugriff haben.
         // Ob das Document selbset existiert, bleibt vorher ein Geheimnis
-        DocumentLocation sourceDocumentLocation = getDocumentLocation(userIDAuth, sourceDocumentFQN);
-        DocumentKeyIDWithKey sourceDocumentKeyIDWithKey = getDocumentKeyIDwithKeyForBucketPath(userIDAuth, sourceDocumentLocation.getDocumentBucketPath());
+        DocumentBucketPath sourceDocumentBucketPath = getDocumentBucketPath(userIDAuth, sourceDocumentFQN);
+        DocumentKeyIDWithKey sourceDocumentKeyIDWithKey = getDocumentKeyIDwithKeyForBucketPath(userIDAuth, sourceDocumentBucketPath);
 
-        DocumentLocation destinationDocumentLocation = getDocumentLocation(userIDAuth, destinationDocumentFQN);
-        DocumentKeyIDWithKey destinationDocumentKeyIDWithKey = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, destinationDocumentLocation.getDocumentBucketPath());
+        DocumentBucketPath destinationDocumentBucketPath = getDocumentBucketPath(userIDAuth, destinationDocumentFQN);
+        DocumentKeyIDWithKey destinationDocumentKeyIDWithKey = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, destinationDocumentBucketPath);
 
-        DocumentLink documentLink = new DocumentLink(sourceDocumentLocation, destinationDocumentLocation);
+        // TODO, die keys der destination müssen noch in das linkDocument (das faktisch ein guard ist)
+        DocumentLink documentLink = new DocumentLink(sourceDocumentBucketPath, destinationDocumentBucketPath);
         DocumentLinkAsDSDocument dsDocumentLink = LinkUtil.createDSDocument(documentLink, destinationDocumentFQN);
 
         storeDocument(userIDAuth, dsDocumentLink);
@@ -178,13 +170,8 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
         return keyStoreAccess;
     }
 
-    private DocumentLocation getDocumentLocation(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
-        UserHomeBucketPath userHomeBucketPath = UserIDUtil.getHomeBucketPath(userIDAuth.getUserID());
-        RelativeBucketPath relativeBucketPath = documentFQN.getRelativeBucketPath();
-        DocumentID documentID = documentFQN.getDocumentID();
-        DocumentBucketPath documentBucketPath = new DocumentBucketPath(userHomeBucketPath.append(relativeBucketPath));
-        DocumentLocation documentLocation = new DocumentLocation(documentID, documentBucketPath);
-        return documentLocation;
+    private DocumentBucketPath getDocumentBucketPath(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+        return new DocumentBucketPath(UserIDUtil.getHomeBucketPath(userIDAuth.getUserID()).append(documentFQN.getValue()));
     }
 
     private DSDocument createWelcomeDocument() {
@@ -204,11 +191,11 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
      * @return
      */
     private DocumentKeyID createGuardForBucket(KeyStoreAccess keyStoreAccess, BucketPath bucketPath) {
-        LOGGER.debug("start create new guard for " + bucketPath.getObjectHandlePath());
+        LOGGER.debug("start create new guard for " + bucketPath);
         DocumentKeyIDWithKey documentKeyIdWithKey = documentGuardService.createDocumentKeyIdWithKey();
         documentGuardService.createSymmetricDocumentGuard(keyStoreAccess, documentKeyIdWithKey);
         GuardUtil.saveBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStoreLocation().getKeyStoreBucketPath(), bucketPath, documentKeyIdWithKey.getDocumentKeyID());
-        LOGGER.debug("finished create new guard for " + bucketPath.getObjectHandlePath());
+        LOGGER.debug("finished create new guard for " + bucketPath);
         return documentKeyIdWithKey.getDocumentKeyID();
     }
 

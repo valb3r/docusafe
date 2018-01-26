@@ -49,8 +49,18 @@ public class BucketContent {
 
     @Override
     public String toString() {
+
         StringBuilder sb = new StringBuilder();
-        sb.append("BucketContent " + bucketPath.getObjectHandlePath() + "(" + content.size() + "){");
+        sb.append("unstripped\n");
+        sb.append("BucketContent " + bucketPath + "(" + content.size() + "){");
+        for (StorageMetadata meta : getOriginalContent()) {
+            sb.append("\n\t[");
+            sb.append(meta.getName());
+            sb.append("] ");
+        }
+        sb.append("}");
+        sb.append("stripped\n");
+        sb.append("BucketContent " + bucketPath + "(" + content.size() + "){");
         for (StorageMetadata meta : getStrippedContent()) {
             sb.append("\n\t[");
             sb.append(meta.getName());

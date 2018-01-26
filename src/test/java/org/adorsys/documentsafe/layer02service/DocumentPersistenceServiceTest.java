@@ -4,10 +4,8 @@ import org.adorsys.documentsafe.layer01persistence.types.OverwriteFlag;
 import org.adorsys.documentsafe.layer02service.impl.DocumentPersistenceServiceImpl;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
-import org.adorsys.documentsafe.layer02service.types.DocumentID;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentContentWithContentMetaInfo;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
-import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentLocation;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.slf4j.Logger;
@@ -24,7 +22,6 @@ public class DocumentPersistenceServiceTest {
 
     private BlobStoreContextFactory factory;
     private Set<DocumentBucketPath> createdBuckets = new HashSet<>();
-    private DocumentID documentID = new DocumentID("document-id-123");
 
     public DocumentPersistenceServiceTest(BlobStoreContextFactory factory) {
         this.factory = factory;
@@ -34,47 +31,41 @@ public class DocumentPersistenceServiceTest {
                                              DocumentBucketPath documentBucketPath,
                                              DocumentKeyIDWithKey documentKeyIDWithKey,
                                              DocumentContent documentContent) {
-        return testPersistDocument(documentGuardService, documentBucketPath, documentKeyIDWithKey, documentID, documentContent, OverwriteFlag.FALSE);
+        return testPersistDocument(documentGuardService, documentBucketPath, documentKeyIDWithKey, documentContent, OverwriteFlag.FALSE);
     }
     public DocumentStuff testPersistDocument(DocumentGuardService documentGuardService,
                                              DocumentBucketPath documentBucketPath,
                                              DocumentKeyIDWithKey documentKeyIDWithKey,
-                                             DocumentID documentID,
                                              DocumentContent documentContent,
                                              OverwriteFlag overwriteFlag) {
         DocumentPersistenceService documentPersistenceService = new DocumentPersistenceServiceImpl(factory);
-        DocumentLocation documentLocation = documentPersistenceService.persistDocument(
+        documentPersistenceService.persistDocument(
                 documentKeyIDWithKey,
                 documentBucketPath,
-                documentID,
                 documentContent,
                 overwriteFlag,
                 null);
         createdBuckets.add(documentBucketPath);
         AllServiceTest.buckets.add(documentBucketPath);
-        return new DocumentStuff(documentID, documentLocation);
+        return new DocumentStuff(documentBucketPath);
     }
 
     public DocumentContentWithContentMetaInfo testLoadDocument(DocumentGuardService documentGuardService,
                                  KeyStoreAccess keyStoreAccess,
-                                 DocumentLocation documentLocation) {
+                                 DocumentBucketPath documentBucketPath) {
         DocumentPersistenceService documentPersistenceService = new DocumentPersistenceServiceImpl(factory);
         DocumentContentWithContentMetaInfo readContent = documentPersistenceService.loadDocument(
                 keyStoreAccess,
-                documentLocation);
+                documentBucketPath);
         LOGGER.debug("Gelesenes Document enthält:" + readContent + " bzw " + new String(readContent.getDocumentContent().getValue()));
         return readContent;
     }
 
     public static class DocumentStuff {
-        public final DocumentID documentID;
+        public final DocumentBucketPath documentBucketPath;
 
-        public DocumentStuff(DocumentID documentID, DocumentLocation documentLocation) {
-            this.documentID = documentID;
-            this.documentLocation = documentLocation;
+        public DocumentStuff(DocumentBucketPath documentBucketPath) {
+            this.documentBucketPath = documentBucketPath;
         }
-
-        public final DocumentLocation documentLocation;
-
     }
 }

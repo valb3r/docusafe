@@ -12,11 +12,9 @@ import org.adorsys.documentsafe.layer02service.DocumentPersistenceService;
 import org.adorsys.documentsafe.layer02service.keysource.DocumentGuardBasedKeySourceImpl;
 import org.adorsys.documentsafe.layer02service.keysource.DocumentKeyIDWithKeyBasedSourceImpl;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
-import org.adorsys.documentsafe.layer02service.types.DocumentID;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentContentWithContentMetaInfo;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
-import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentLocation;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
 import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.domain.ObjectHandle;
@@ -50,19 +48,18 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
      * Das Document liegt in einem Bucket mit dem Namen documentBucketPath.
      */
     @Override
-    public DocumentLocation persistDocument(
+    public void persistDocument(
             DocumentKeyIDWithKey documentKeyIDWithKey,
             DocumentBucketPath documentBucketPath,
-            DocumentID documentID,
             DocumentContent documentContent,
             OverwriteFlag overwriteFlag,
             ContentMetaInfo contentMetaInfo) {
 
         try {
-            LOGGER.info("start persist document with " + documentID);
+            LOGGER.info("start persist " + documentBucketPath);
 
             // Create object handle
-            ObjectHandle location = new ObjectHandle(documentBucketPath.getFirstBucket().getValue(), documentBucketPath.getSubBuckets() + documentID.getValue());
+            ObjectHandle location = documentBucketPath.getObjectHandle();
 
             // Store object.
             EncryptionParams encParams = null;
@@ -70,14 +67,14 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
             KeySource keySource = new DocumentKeyIDWithKeyBasedSourceImpl(documentKeyIDWithKey);
             LOGGER.debug("Document wird verschlüsselt mit " + documentKeyIDWithKey);
             // Create container if non existent
-            if (!containerPersistence.containerExists(location.getContainer())) {
-                containerPersistence.creteContainer(location.getContainer());
+            if (location.getContainer() != null) {
+                if (!containerPersistence.containerExists(location.getContainer())) {
+                    containerPersistence.creteContainer(location.getContainer());
+                }
             }
             KeyID keyID = new KeyID(documentKeyIDWithKey.getDocumentKeyID().getValue());
             objectPersistence.storeObject(documentContent.getValue(), contentMetaInfo, location, keySource, keyID, encParams, overwriteFlag);
-            DocumentLocation documentLocation = new DocumentLocation(documentID, documentBucketPath);
-            LOGGER.info("finished persist document with " + documentID + " at " + documentLocation);
-            return documentLocation;
+            LOGGER.info("finished persist " + documentBucketPath);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
@@ -89,16 +86,16 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
     @Override
     public DocumentContentWithContentMetaInfo loadDocument(
             KeyStoreAccess keyStoreAccess,
-            DocumentLocation documentLocation) {
+            DocumentBucketPath documentBucketPath) {
 
         try {
-            LOGGER.info("start load document at " + documentLocation + " " + keyStoreAccess);
+            LOGGER.info("start load " + documentBucketPath + " " + keyStoreAccess);
             KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess);
-            PersistentObjectWrapper persistentObjectWrapper = objectPersistence.loadObject(documentLocation.getLocationHandle(), keySource);
+            PersistentObjectWrapper persistentObjectWrapper = objectPersistence.loadObject(documentBucketPath.getObjectHandle(), keySource);
             DocumentContent documentContent = new DocumentContent(persistentObjectWrapper.getData());
             ContentMetaInfo contentMetaInfo = persistentObjectWrapper.getMetaIno();
             DocumentContentWithContentMetaInfo documentContentWithContentMetaInfo = new DocumentContentWithContentMetaInfo(documentContent, contentMetaInfo);
-            LOGGER.info("finished load document at " + documentLocation);
+            LOGGER.info("finished load " + documentBucketPath);
             return documentContentWithContentMetaInfo;
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);

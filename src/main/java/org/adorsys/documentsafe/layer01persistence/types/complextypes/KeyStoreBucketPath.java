@@ -7,4 +7,8 @@ public class KeyStoreBucketPath extends BucketPath {
     public KeyStoreBucketPath(String value) {
         super(value);
     }
+
+    public KeyStoreBucketPath(BucketPath bucketPath) {
+        super(bucketPath);
+    }
 }

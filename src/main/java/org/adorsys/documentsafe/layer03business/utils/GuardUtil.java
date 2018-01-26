@@ -7,7 +7,6 @@ import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreBu
 import org.adorsys.documentsafe.layer02service.BucketService;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 import org.adorsys.documentsafe.layer02service.types.PlainFileContent;
-import org.adorsys.documentsafe.layer02service.types.PlainFileName;
 import org.adorsys.documentsafe.layer03business.exceptions.GuardException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,19 +19,19 @@ public class GuardUtil {
     private final static String BUCKET_GUARD_KEY = ".bucketGuardKey";
 
     public static void saveBucketGuardKeyFile(BucketService bucketService, KeyStoreBucketPath keyStoreBucketPath, BucketPath bucketPath, DocumentKeyID documentKeyID) {
-        PlainFileName plainFileName = new PlainFileName(bucketPath.getObjectHandlePath() + BUCKET_GUARD_KEY);
+        BucketPath guardFile = keyStoreBucketPath.append(bucketPath).add(BUCKET_GUARD_KEY);
         Gson gson = new GsonBuilder().create();
         String jsonString = gson.toJson(documentKeyID);
         PlainFileContent plainFileContent = new PlainFileContent(jsonString.getBytes());
-        bucketService.createPlainFile(keyStoreBucketPath, plainFileName, plainFileContent);
+        bucketService.createPlainFile(guardFile, plainFileContent);
     }
 
     public static DocumentKeyID tryToLoadBucketGuardKeyFile(BucketService bucketService, KeyStoreBucketPath keyStoreBucketPath, BucketPath bucketPath) {
-        PlainFileName plainFileName = new PlainFileName(bucketPath.getObjectHandlePath() + BUCKET_GUARD_KEY);
-        if (!bucketService.existsFile(keyStoreBucketPath, plainFileName)) {
+        BucketPath guardFile = keyStoreBucketPath.append(bucketPath).add(BUCKET_GUARD_KEY);
+        if (!bucketService.existsFile(guardFile)) {
             return null;
         }
-        PlainFileContent plainFileContent = bucketService.readPlainFile(keyStoreBucketPath, plainFileName);
+        PlainFileContent plainFileContent = bucketService.readPlainFile(guardFile);
         Gson gson = new GsonBuilder().create();
         DocumentKeyID documentKeyID = gson.fromJson(new String(plainFileContent.getValue()), DocumentKeyID.class);
         return documentKeyID;
@@ -41,7 +40,7 @@ public class GuardUtil {
     public static DocumentKeyID loadBucketGuardKeyFile(BucketService bucketService, KeyStoreBucketPath keyStoreBucketPath, BucketPath bucketPath) {
         DocumentKeyID documentKeyID = tryToLoadBucketGuardKeyFile(bucketService, keyStoreBucketPath, bucketPath);
         if (documentKeyID == null) {
-            throw new GuardException("No DocumentGuard found for Bucket" + bucketPath.getObjectHandlePath());
+            throw new GuardException("No DocumentGuard found for Bucket" + bucketPath);
         }
         return documentKeyID;
     }

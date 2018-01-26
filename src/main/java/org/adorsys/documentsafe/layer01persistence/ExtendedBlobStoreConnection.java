@@ -1,6 +1,5 @@
 package org.adorsys.documentsafe.layer01persistence;
 
-import org.adorsys.documentsafe.layer00common.exceptions.BaseException;
 import org.adorsys.documentsafe.layer01persistence.types.BucketName;
 import org.adorsys.documentsafe.layer01persistence.types.ListRecursiveFlag;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
@@ -14,7 +13,6 @@ import org.jclouds.blobstore.BlobStoreContext;
 import org.jclouds.blobstore.domain.PageSet;
 import org.jclouds.blobstore.domain.StorageMetadata;
 import org.jclouds.blobstore.options.ListContainerOptions;
-import org.jclouds.domain.Location;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,22 +28,18 @@ public class ExtendedBlobStoreConnection extends BlobStoreConnection {
         this.factory = blobStoreContextFactory;
     }
 
+    /**
+     * Wenn der Container bereits exisitiert, wird das ignoriert.
+     */
     @Override
     public void createContainer(String container) throws ContainerExistsException {
         BlobStoreContext blobStoreContext = this.factory.alocate();
 
+        ObjectHandle objectHandle = new BucketPath(container).getObjectHandle();
         try {
-            BucketPath bp = new BucketPath(container);
-            if (bp.getDepth() <= 1) {
-                BlobStore blobStore = blobStoreContext.getBlobStore();
-                if (blobStore.containerExists(container)) {
-                    throw new ContainerExistsException(container);
-                }
-            }
-            if (bp.getDepth() > 1) {
-                blobStoreContext.getBlobStore().createContainerInLocation((Location) null, bp.getFirstBucket().getValue());
-            } else {
-                blobStoreContext.getBlobStore().createContainerInLocation((Location) null, container);
+            BlobStore blobStore = blobStoreContext.getBlobStore();
+            if (!blobStore.containerExists(container)) {
+                blobStoreContext.getBlobStore().createContainerInLocation(null, objectHandle.getContainer());
             }
         } finally {
             this.factory.dispose(blobStoreContext);
@@ -56,14 +50,9 @@ public class ExtendedBlobStoreConnection extends BlobStoreConnection {
     @Override
     public void deleteContainer(String container) throws UnknownContainerException {
         BlobStoreContext blobStoreContext = this.factory.alocate();
+        ObjectHandle objectHandle = new BucketPath(container).getObjectHandle();
         try {
-            BucketPath bucketPath = new BucketPath(container);
-            if (bucketPath.getDepth() > 1) {
-                throw new BaseException("NYI delete bucket with path " + bucketPath.toString());
-            }
-            BucketPath bp = new BucketPath(container);
-            BlobStore blobStore = blobStoreContext.getBlobStore();
-            blobStoreContext.getBlobStore().deleteContainer(bp.getObjectHandlePath());
+            blobStoreContext.getBlobStore().deleteContainer(objectHandle.getContainer());
         } finally {
             this.factory.dispose(blobStoreContext);
         }
@@ -72,15 +61,12 @@ public class ExtendedBlobStoreConnection extends BlobStoreConnection {
     @Override
     public boolean containerExists(String container) {
         BlobStoreContext blobStoreContext = this.factory.alocate();
+        ObjectHandle objectHandle = new BucketPath(container).getObjectHandle();
 
         boolean bucketExists = false;
         try {
             BlobStore blobStore = blobStoreContext.getBlobStore();
-            BucketPath bucketPath = new BucketPath(container);
-            if (bucketPath.getDepth() > 1) {
-                throw new BaseException("container exsits for bucket with path " + bucketPath.toString());
-            }
-            bucketExists = blobStore.containerExists(bucketPath.getObjectHandlePath());
+            bucketExists = blobStore.containerExists(objectHandle.getContainer());
         } finally {
             this.factory.dispose(blobStoreContext);
         }
@@ -97,7 +83,14 @@ public class ExtendedBlobStoreConnection extends BlobStoreConnection {
         BlobStoreContext blobStoreContext = this.factory.alocate();
         try {
             BlobStore blobStore = blobStoreContext.getBlobStore();
-            return blobStore.blobExists(location.getContainer(), location.getName());
+            LOGGER.debug("container:" + location.getContainer());
+            LOGGER.debug("name     :" + location.getName());
+            if (location.getContainer() == null) {
+                LOGGER.warn("dont know how to check if container is null");
+                return false;
+            }
+            return blobStore.blobExists(location.getContainer() != null ? location.getContainer() : "",
+                    location.getName() != null ? location.getName() : "");
         } finally {
             this.factory.dispose(blobStoreContext);
         }
@@ -111,15 +104,17 @@ public class ExtendedBlobStoreConnection extends BlobStoreConnection {
             if (listRecursiveFlag == ListRecursiveFlag.TRUE) {
                 listContainerOptions.recursive();
             }
-            if (bucketPath.getDepth() > 1) {
-                String prefix = bucketPath.getSubBuckets();
+            ObjectHandle objectHandle = bucketPath.getObjectHandle();
+            if (objectHandle.getName() != null) {
+                String prefix = objectHandle.getName() + BucketPath.BUCKET_SEPARATOR;
                 listContainerOptions.prefix(prefix);
                 if (listRecursiveFlag == ListRecursiveFlag.FALSE) {
                     listContainerOptions.delimiter(BucketName.BUCKET_SEPARATOR);
                 }
             }
 
-            return blobStore.list(bucketPath.getFirstBucket().getValue(), listContainerOptions);
+            LOGGER.debug("list container:" + objectHandle.getContainer() + " prefix:" + listContainerOptions.getPrefix() + " del:" + listContainerOptions.getDelimiter());
+            return blobStore.list(objectHandle.getContainer(), listContainerOptions);
         } finally
 
         {

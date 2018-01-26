@@ -36,5 +36,10 @@ curl -f -X PUT -H 'Content-Type: application/json' -H 'Accept: application/json'
 echo "get linked document"
 curl -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: affe' -H 'password: rkp' -i 'http://localhost:8080/document/%22green/bucket/README.txt%22'
 
+echo "EVERYTHING WENT FINE so FAR"
+echo "wait 10 seconds, then delete user and exit"
+sleep 10
+
 echo "delete user"
 curl -f -X DELETE -H 'Content-Type: application/json' -H 'Accept: application/json' -i http://localhost:8080/internal/user --data '{"userID":"affe", "readKeyPassword":"rkp"}'
+

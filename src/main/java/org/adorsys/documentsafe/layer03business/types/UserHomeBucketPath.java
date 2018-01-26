@@ -9,4 +9,8 @@ public class UserHomeBucketPath extends BucketPath {
     public UserHomeBucketPath(String path) {
         super(path);
     }
+
+    public UserHomeBucketPath(BucketPath bucketPath) {
+        super(bucketPath);
+    }
 }

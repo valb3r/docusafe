@@ -3,7 +3,6 @@ package org.adorsys.documentsafe.layer02service;
 import org.adorsys.documentsafe.layer01persistence.types.ListRecursiveFlag;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
 import org.adorsys.documentsafe.layer02service.types.PlainFileContent;
-import org.adorsys.documentsafe.layer02service.types.PlainFileName;
 import org.adorsys.documentsafe.layer02service.types.complextypes.BucketContent;
 
 /**
@@ -14,7 +13,7 @@ public interface BucketService {
     void destroyBucket(BucketPath bucketPath);
     BucketContent readDocumentBucket(BucketPath bucketPath, ListRecursiveFlag listRecursiveFlag);
     boolean bucketExists(BucketPath bucketPath);
-    void createPlainFile(BucketPath bucketPath, PlainFileName plainFileName, PlainFileContent plainFileContent);
-    PlainFileContent readPlainFile(BucketPath bucketPath, PlainFileName plainFileName);
-    boolean existsFile(BucketPath bucketPath, PlainFileName plainFileName);
+    void createPlainFile(BucketPath bucketPath, PlainFileContent plainFileContent);
+    PlainFileContent readPlainFile(BucketPath bucketPath);
+    boolean existsFile(BucketPath bucketPath);
 }

@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by peter on 29.12.2017 at 14:11:52.
  */
+// TODO müsste auch komplett auf BucketPath umgestellt werden, so wie DocumentBucketPath
 public class KeyStoreLocation implements LocationInterface {
 	private final static Logger LOGGER = LoggerFactory.getLogger(KeyStoreLocation.class);
 	public static final String FILE_EXTENSION_SEPARATOR = ".";
@@ -37,10 +38,7 @@ public class KeyStoreLocation implements LocationInterface {
 	}
 
 	public ObjectHandle getLocationHandle(){
-		ObjectHandle objectHandle = new ObjectHandle(
-				getKeyStoreBucketPath().getFirstBucket().getValue(),
-				getKeyStoreBucketPath().getSubBuckets() + keyStoreID.getValue() + FILE_EXTENSION_SEPARATOR + keyStoreType.getValue());
-		return objectHandle;
+		return getKeyStoreBucketPath().append(keyStoreID.getValue() + FILE_EXTENSION_SEPARATOR + keyStoreType.getValue()).getObjectHandle();
 	}
 
 	@Override
