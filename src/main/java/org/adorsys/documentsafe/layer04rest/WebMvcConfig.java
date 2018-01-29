@@ -5,9 +5,13 @@ import com.google.gson.GsonBuilder;
 import org.adorsys.documentsafe.layer01persistence.types.BucketName;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
+import org.adorsys.documentsafe.layer03business.types.AccessType;
 import org.adorsys.documentsafe.layer03business.types.UserID;
+import org.adorsys.documentsafe.layer03business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.documentsafe.layer03business.types.complex.DocumentFQN;
+import org.adorsys.documentsafe.layer04rest.adapter.AccessTypeJsonAdapter;
 import org.adorsys.documentsafe.layer04rest.adapter.BucketNameJsonAdapter;
+import org.adorsys.documentsafe.layer04rest.adapter.DocumentDirectoryFQNJsonAdapter;
 import org.adorsys.documentsafe.layer04rest.adapter.DocumentFQNJsonAdapter;
 import org.adorsys.documentsafe.layer04rest.adapter.DocumentKeyIDJsonAdapter;
 import org.adorsys.documentsafe.layer04rest.adapter.ReadKeyPasswordJsonAdapter;
@@ -41,6 +45,8 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
                 .registerTypeAdapter(UserID.class, new UserIDJsonAdapter())
                 .registerTypeAdapter(ReadKeyPassword.class, new ReadKeyPasswordJsonAdapter())
                 .registerTypeAdapter(DocumentFQN.class, new DocumentFQNJsonAdapter())
+                .registerTypeAdapter(AccessType.class, new AccessTypeJsonAdapter())
+                .registerTypeAdapter(DocumentDirectoryFQN.class, new DocumentDirectoryFQNJsonAdapter())
                 .create();
 
         GsonHttpMessageConverter gsonConverter = new GsonHttpMessageConverter();

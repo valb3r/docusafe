@@ -2,6 +2,7 @@ package org.adorsys.documentsafe.layer03business;
 
 import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer01persistence.types.ListRecursiveFlag;
+import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketDirectory;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreDirectory;
 import org.adorsys.documentsafe.layer02service.BucketService;
@@ -9,12 +10,16 @@ import org.adorsys.documentsafe.layer02service.impl.BucketServiceImpl;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
+import org.adorsys.documentsafe.layer02service.types.ReadStorePassword;
 import org.adorsys.documentsafe.layer02service.types.complextypes.BucketContent;
+import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentDirectory;
 import org.adorsys.documentsafe.layer02service.utils.TestFsBlobStoreFactory;
 import org.adorsys.documentsafe.layer03business.impl.DocumentSafeServiceImpl;
+import org.adorsys.documentsafe.layer03business.types.AccessType;
 import org.adorsys.documentsafe.layer03business.types.UserHomeBucketPath;
 import org.adorsys.documentsafe.layer03business.types.UserID;
 import org.adorsys.documentsafe.layer03business.types.complex.DSDocument;
+import org.adorsys.documentsafe.layer03business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.documentsafe.layer03business.types.complex.DocumentFQN;
 import org.adorsys.documentsafe.layer03business.types.complex.UserIDAuth;
 import org.adorsys.documentsafe.layer03business.utils.GuardUtil;
@@ -99,7 +104,6 @@ public class BusinessTest {
     }
 
 
-
     @Test
     public void linkDocument() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
@@ -123,6 +127,22 @@ public class BusinessTest {
         Assert.assertEquals("Anzahl der guards", 3, getNumberOfGuards(userIDAuth.getUserID()));
     }
 
+    @Test
+    public void grantAccessToFolder() {
+        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        UserIDAuth userIDAuthPeter = createUser(new UserID("peter"), new ReadKeyPassword("keyPasswordForPeter"));
+        UserIDAuth userIDAuthFrancis = createUser(new UserID("francis"), new ReadKeyPassword("keyPasswordForFrancis"));
+        DocumentFQN documentFQN = new DocumentFQN("first/next/a-new-document.txt");
+        DSDocument dsDocument1 = createDocument(userIDAuthPeter, documentFQN);
+
+        DocumentDirectoryFQN documentDirectoryFQN = new DocumentDirectoryFQN("first/next");
+
+        service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentDirectoryFQN, AccessType.WRITE);
+
+        DSDocument dsDocument = service.readDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
+        Assert.assertEquals("document content ok", dsDocument1.getDocumentContent(), dsDocument.getDocumentContent());
+    }
+
     private int getNumberOfGuards(UserID userID) {
         BucketService bucketService = new BucketServiceImpl(factory);
         KeyStoreDirectory keyStoreDirectory = UserIDUtil.getKeyStoreDirectory(userID);
@@ -137,8 +157,13 @@ public class BusinessTest {
 
     }
 
+
     private UserIDAuth createUser() {
-        UserIDAuth userIDAuth = new UserIDAuth(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));
+        return createUser(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));
+    }
+
+    private UserIDAuth createUser(UserID userID, ReadKeyPassword readKeyPassword) {
+        UserIDAuth userIDAuth = new UserIDAuth(userID, readKeyPassword);
         users.add(userIDAuth);
         service.createUser(userIDAuth);
         Assert.assertEquals("Anzahl der guards muss genau 1 sein", 1, getNumberOfGuards(userIDAuth.getUserID()));

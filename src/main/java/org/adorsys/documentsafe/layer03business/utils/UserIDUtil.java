@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
 import org.adorsys.documentsafe.layer01persistence.types.KeyStoreType;
+import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketDirectory;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreDirectory;
 import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreLocation;
@@ -46,6 +47,10 @@ public class UserIDUtil {
         return new UserHomeBucketPath(UserIDUtil.getUserRootBucketPath(userID).append("HOME"));
     }
 
+    public static BucketDirectory getGrantBucketDirectory(UserID userID) {
+        return new BucketDirectory(UserIDUtil.getUserRootBucketPath(userID).append(".GRANTS"));
+    }
+
     private static ReadStorePassword getReadStorePassword(UserID userID) {
         return new ReadStorePassword("ReadStorePasswordFor" + userID.getValue());
     }
@@ -79,6 +84,8 @@ public class UserIDUtil {
         if (bucketService.existsFile(typeFile)) {
             return new KeyStoreLocation(keyStoreDirectory, keyStoreID, new KeyStoreType(DEFAULT_KEYSTORE_TYPE));
         }
+        LOGGER.warn("====================================");
+        LOGGER.warn("==should not happen !!!!!!!!!!!!!===");
         LOGGER.warn("====================================");
         KeyStoreType keyStoreType = loadKeyStoreTypeFile(bucketService, keyStoreDirectory);
         return new KeyStoreLocation(keyStoreDirectory, keyStoreID, keyStoreType);

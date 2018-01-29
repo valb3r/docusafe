@@ -84,12 +84,12 @@
 
         <!-- lfs -->
         <!--
-        -->
         <dependency>
             <groupId>com.moonlit</groupId>
             <artifactId>lfsappenders</artifactId>
             <version>4.4.1</version>
         </dependency>
+        -->
 
         <!-- Encrypted object -->
         <dependency>

@@ -10,6 +10,7 @@ import org.adorsys.documentsafe.layer03business.types.complex.UserIDAuth;
 import org.adorsys.documentsafe.layer04rest.impl.FileSystemBlobStoreFactory;
 import org.adorsys.documentsafe.layer04rest.impl.JwtTokenExtractor;
 import org.adorsys.documentsafe.layer04rest.types.CreateLinkTupel;
+import org.adorsys.documentsafe.layer04rest.types.GrantDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.AntPathMatcher;
@@ -42,6 +43,9 @@ public class DocumentSafeController {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentSafeController.class);
     private DocumentSafeService service = new DocumentSafeServiceImpl(new FileSystemBlobStoreFactory());
 
+    /** USER
+     * ===========================================================================================
+     */
     @RequestMapping(
             value = "/internal/user",
             method = {RequestMethod.PUT},
@@ -64,6 +68,9 @@ public class DocumentSafeController {
 
 
 
+    /** DOCUMENT
+     * ===========================================================================================
+     */
     @RequestMapping(
             value = "/document",
             method = {RequestMethod.PUT},
@@ -76,6 +83,7 @@ public class DocumentSafeController {
         UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
         service.storeDocument(userIDAuth, dsDocument);
     }
+
 
 
     @RequestMapping(
@@ -100,6 +108,50 @@ public class DocumentSafeController {
         return service.readDocument(userIDAuth, documentFQN);
     }
 
+
+    /** GRANT/DOCUMENT
+     * ===========================================================================================
+     */
+    @RequestMapping(
+            value = "/grant/document",
+            method = {RequestMethod.PUT},
+            consumes = {MediaType.APPLICATION_JSON},
+            produces = {MediaType.APPLICATION_JSON}
+    )
+    public void grantAccess(@RequestHeader("userid") String userid,
+                            @RequestHeader("password") String password,
+                            @RequestBody GrantDocument grantDocument) {
+        UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
+        service.grantAccessToUserForFolder(userIDAuth, grantDocument.getReceivingUser(), grantDocument.getDocumentDirectoryFQN(), grantDocument.getAccessType());
+    }
+
+    @RequestMapping(
+            value = "/grant/document/{ownerUserID}/**",
+            method = {RequestMethod.GET},
+            consumes = {MediaType.APPLICATION_JSON},
+            produces = {MediaType.APPLICATION_JSON}
+    )
+    public @ResponseBody DSDocument readDocument(@RequestHeader("userid") String userid,
+                                                 @RequestHeader("password") String password,
+                                                 @PathVariable("ownerUserID") String ownerUserIDString,
+                                                 HttpServletRequest request
+    ) {
+        UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
+        UserID ownerUserID = new UserID(ownerUserIDString);
+
+        final String path = request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();
+        final String bestMatchingPattern = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();
+        final String documentFQNStringWithQuotes = new AntPathMatcher().extractPathWithinPattern(bestMatchingPattern, path);
+        final String documentFQNString = documentFQNStringWithQuotes.replaceAll("\"", "");
+
+        DocumentFQN documentFQN = new DocumentFQN(documentFQNString);
+        LOGGER.debug("received:" + userIDAuth + " and " + ownerUserID + " and " + documentFQN);
+        return service.readDocument(userIDAuth, ownerUserID, documentFQN);
+    }
+
+    /** DOCUMENT/LINK
+     * ===========================================================================================
+     */
     @RequestMapping(
             value = "/document/link",
             method = {RequestMethod.PUT},

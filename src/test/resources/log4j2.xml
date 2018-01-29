@@ -9,7 +9,9 @@
     </Properties>
 
     <Appenders>
+        <!--
         <logFaces name="LFST" application="${appname}" protocol="tcp" remoteHost="localhost" backup="lfs-notavailable"/>
+        -->
         <RollingRandomAccessFile name="randomrollingfile" fileName="${logpath}/rr-${appname}.log" append="true"
                                  filePattern="${logpath}/rr-${appname}-%d{MM-dd-yyyy}-%i.log.gz">
             <PatternLayout pattern="${pattern}"/>
@@ -47,7 +49,9 @@
         <Root level="debug">
             <AppenderRef ref="async"/>
             <AppenderRef ref="STDOUT"/>
+            <!--
             <AppenderRef ref="LFST"/>
+            -->
         </Root>
     </Loggers>
 
