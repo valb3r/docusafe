@@ -89,32 +89,72 @@ public class BusinessTest {
     public void storeDSDocumentInANewFolder() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         UserIDAuth userIDAuth = new UserIDAuth(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));
-        users.add(userIDAuth);
         DocumentSafeService service = new DocumentSafeServiceImpl(factory);
+        users.add(userIDAuth);
         service.createUser(userIDAuth);
         Assert.assertEquals("Anzahl der guards muss genau 1 sein", 1, getNumberOfGuards(userIDAuth.getUserID()));
 
-        DocumentFQN documentFQN = new DocumentFQN("first/next/A new Document.txt");
-        DocumentContent documentContent = new DocumentContent("Einfach nur a bisserl Text".getBytes());
-        DSDocument dsDocument1 = new DSDocument(documentFQN, documentContent, null);
+        DSDocument dsDocument;
+        {
+            DocumentFQN documentFQN = new DocumentFQN("first/next/A new Document.txt");
+            DocumentContent documentContent = new DocumentContent("Einfach nur a bisserl Text".getBytes());
+            dsDocument = new DSDocument(documentFQN, documentContent, null);
 
-        // check, there exists no guard yet
-        UserHomeBucketPath homeBucketPath = UserIDUtil.getHomeBucketPath(userIDAuth.getUserID());
-        DocumentKeyID documentKeyID0 = GuardUtil.tryToLoadBucketGuardKeyFile(new BucketServiceImpl(factory), UserIDUtil.getKeyStoreDirectory(userIDAuth.getUserID()), homeBucketPath.append(new BucketPath(dsDocument1.getDocumentFQN().getValue())));
-        Assert.assertNull(documentKeyID0);
+            // check, there exists no guard yet
+            UserHomeBucketPath homeBucketPath = UserIDUtil.getHomeBucketPath(userIDAuth.getUserID());
+            KeyStoreDirectory keyStoreDirectory = UserIDUtil.getKeyStoreDirectory(userIDAuth.getUserID());
+            BucketPath bucketPath = homeBucketPath.append(new BucketPath(dsDocument.getDocumentFQN().getValue()).getBucketDirectory());
+            LOGGER.debug("check no bucket guard exists yet for " + bucketPath);
+            DocumentKeyID documentKeyID0 = GuardUtil.tryToLoadBucketGuardKeyFile(
+                    new BucketServiceImpl(factory),
+                    keyStoreDirectory,
+                    bucketPath);
+            Assert.assertNull(documentKeyID0);
+        }
 
-        service.storeDocument(userIDAuth, dsDocument1);
-        DSDocument dsDocument1Result = service.readDocument(userIDAuth, dsDocument1.getDocumentFQN());
-        LOGGER.debug("retrieved document:" + new String(dsDocument1Result.getDocumentContent().getValue()));
+        DSDocument dsDocument1Result;
+        {
+            service.storeDocument(userIDAuth, dsDocument);
+            dsDocument1Result = service.readDocument(userIDAuth, dsDocument.getDocumentFQN());
+            LOGGER.debug("original  document:" + new String(dsDocument.getDocumentContent().getValue()));
+            LOGGER.debug("retrieved document:" + new String(dsDocument1Result.getDocumentContent().getValue()));
+            Assert.assertEquals("document content ok", dsDocument.getDocumentContent(), dsDocument1Result.getDocumentContent());
 
-        // check, there exists exaclty one guard for the user
-        Assert.assertEquals("Anzahl der guards muss genau 2 sein", 2, getNumberOfGuards(userIDAuth.getUserID()));
+            // check, there guards
+            UserHomeBucketPath homeBucketPath = UserIDUtil.getHomeBucketPath(userIDAuth.getUserID());
+            KeyStoreDirectory keyStoreDirectory = UserIDUtil.getKeyStoreDirectory(userIDAuth.getUserID());
+            BucketPath bucketPath = homeBucketPath.append(new BucketPath(dsDocument1Result.getDocumentFQN().getValue()).getBucketDirectory());
+            LOGGER.debug("check one bucket guard exists yet for " + bucketPath);
+            DocumentKeyID documentKeyID = GuardUtil.tryToLoadBucketGuardKeyFile(
+                    new BucketServiceImpl(factory),
+                    keyStoreDirectory,
+                    bucketPath);
+            Assert.assertNotNull(documentKeyID);
+            Assert.assertEquals("Anzahl der guards muss jetzt genau 2 sein", 2, getNumberOfGuards(userIDAuth.getUserID()));
+        }
 
-        DocumentFQN document2FQN = new DocumentFQN("first/next/Another new Document.txt");
-        DSDocument dsDocument2 = new DSDocument(document2FQN, dsDocument1.getDocumentContent(), null);
-        service.storeDocument(userIDAuth, dsDocument2);
-        DSDocument dsDocument2Result = service.readDocument(userIDAuth, dsDocument2.getDocumentFQN());
-        LOGGER.debug("retrieved document:" + new String(dsDocument2Result.getDocumentContent().getValue()));
+        DSDocument dsDocument2Result;
+        {
+            DocumentFQN document2FQN = new DocumentFQN("first/next/Another new Document.txt");
+            DSDocument dsDocument2 = new DSDocument(document2FQN, dsDocument.getDocumentContent(), null);
+            service.storeDocument(userIDAuth, dsDocument2);
+            dsDocument2Result = service.readDocument(userIDAuth, dsDocument2.getDocumentFQN());
+            LOGGER.debug("retrieved new document:" + new String(dsDocument2Result.getDocumentContent().getValue()));
+            Assert.assertEquals("document content ok", dsDocument.getDocumentContent(), dsDocument2Result.getDocumentContent());
+
+            // check, there guards
+            UserHomeBucketPath homeBucketPath = UserIDUtil.getHomeBucketPath(userIDAuth.getUserID());
+            KeyStoreDirectory keyStoreDirectory = UserIDUtil.getKeyStoreDirectory(userIDAuth.getUserID());
+            BucketPath bucketPath = homeBucketPath.append(new BucketPath(dsDocument2Result.getDocumentFQN().getValue()).getBucketDirectory());
+            DocumentKeyID documentKeyID0 = GuardUtil.tryToLoadBucketGuardKeyFile(
+                    new BucketServiceImpl(factory),
+                    keyStoreDirectory,
+                    bucketPath);
+            LOGGER.debug("check one bucket guard exists yet for " + bucketPath);
+            Assert.assertNotNull(documentKeyID0);
+            Assert.assertEquals("Anzahl der guards muss immer noch genau 2 sein", 2, getNumberOfGuards(userIDAuth.getUserID()));
+
+        }
     }
 
     private int getNumberOfGuards(UserID userID) {

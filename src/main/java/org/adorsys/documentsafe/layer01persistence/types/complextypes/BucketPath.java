@@ -1,5 +1,6 @@
 package org.adorsys.documentsafe.layer01persistence.types.complextypes;
 
+import org.adorsys.documentsafe.layer00common.exceptions.BaseException;
 import org.adorsys.documentsafe.layer01persistence.exceptions.BucketException;
 import org.adorsys.documentsafe.layer01persistence.types.BucketName;
 import org.adorsys.encobject.domain.ObjectHandle;
@@ -135,5 +136,26 @@ public class BucketPath {
         return "BucketPath{" + container + " - " + name + '}';
     }
 
+    public BucketDirectory getBucketDirectory() {
+        ObjectHandle objectHandle = getObjectHandle();
+        String name = objectHandle.getName();
+        if (name == null) {
+            throw new BaseException("name must not be null");
+        }
+        BucketDirectory documentDirectory = new BucketDirectory(this.getObjectHandle().getContainer());
+        String directory = getDirectoryOf(name);
+        if (directory != null) {
+            documentDirectory = new BucketDirectory(documentDirectory.append(directory));
+        }
+        LOGGER.debug("directory for path : " + documentDirectory + " for " + this);
+        return documentDirectory;
+    }
 
+    private static String getDirectoryOf(String value) {
+        int i = value.lastIndexOf(BucketPath.BUCKET_SEPARATOR);
+        if (i == -1) {
+            return null;
+        }
+        return value.substring(0, i);
+    }
 }
