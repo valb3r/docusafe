@@ -39,6 +39,8 @@ import java.util.Set;
 public class BusinessTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(BusinessTest.class);
     private final static BlobStoreContextFactory factory = new TestFsBlobStoreFactory();
+    private DocumentSafeService service;
+
     public static Set<UserIDAuth> users = new HashSet<>();
 
     @Before
@@ -46,12 +48,12 @@ public class BusinessTest {
         LOGGER.info("add bouncy castle provider");
         Security.addProvider(new BouncyCastleProvider());
         users.clear();
+        service = new DocumentSafeServiceImpl(factory);
     }
 
     @After
     public void after() {
         try {
-            DocumentSafeService service = new DocumentSafeServiceImpl(factory);
             users.forEach(userIDAuth -> {
                 LOGGER.debug("AFTER TEST DESTROY " + userIDAuth.getUserID().getValue());
                 service.destroyUser(userIDAuth);
@@ -64,97 +66,61 @@ public class BusinessTest {
     @Test
     public void testCreateUser() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
-        UserIDAuth userIDAuth = new UserIDAuth(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));
-        users.add(userIDAuth);
-        DocumentSafeService service = new DocumentSafeServiceImpl(factory);
-        service.createUser(userIDAuth);
-
-        Assert.assertEquals("Anzahl der guards muss genau 1 sein", 1, getNumberOfGuards(userIDAuth.getUserID()));
+        UserIDAuth userIDAuth = createUser();
+        Assert.assertEquals("Anzahl der guards muss 1 betragen", 1, getNumberOfGuards(userIDAuth.getUserID()));
     }
+
 
     @Test
     public void loadDSDocument() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
-        UserIDAuth userIDAuth = new UserIDAuth(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));
-        users.add(userIDAuth);
-        DocumentSafeService service = new DocumentSafeServiceImpl(factory);
-        DocumentFQN documentFQN = new DocumentFQN("README.txt");
-        service.createUser(userIDAuth);
-        DSDocument dsDocument = service.readDocument(userIDAuth, documentFQN);
-        LOGGER.debug("retrieved document:" + new String(dsDocument.getDocumentContent().getValue()));
-        Assert.assertEquals("Anzahl der guards muss genau 1 sein", 1, getNumberOfGuards(userIDAuth.getUserID()));
+        UserIDAuth userIDAuth = createUser();
+        checkGuardsForDocument(userIDAuth, new DocumentFQN("README.txt"), true);
+        Assert.assertEquals("Anzahl der guards muss 1 betragen", 1, getNumberOfGuards(userIDAuth.getUserID()));
     }
 
     @Test
     public void storeDSDocumentInANewFolder() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
-        UserIDAuth userIDAuth = new UserIDAuth(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));
-        DocumentSafeService service = new DocumentSafeServiceImpl(factory);
-        users.add(userIDAuth);
-        service.createUser(userIDAuth);
-        Assert.assertEquals("Anzahl der guards muss genau 1 sein", 1, getNumberOfGuards(userIDAuth.getUserID()));
+        UserIDAuth userIDAuth = createUser();
+        Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
 
-        DSDocument dsDocument;
-        {
-            DocumentFQN documentFQN = new DocumentFQN("first/next/A new Document.txt");
-            DocumentContent documentContent = new DocumentContent("Einfach nur a bisserl Text".getBytes());
-            dsDocument = new DSDocument(documentFQN, documentContent, null);
+        DocumentFQN documentFQN = new DocumentFQN("first/next/a-new-document.txt");
+        checkGuardsForDocument(userIDAuth, documentFQN, false);
+        DSDocument dsDocument1 = createDocument(userIDAuth, documentFQN);
+        checkGuardsForDocument(userIDAuth, documentFQN, true);
+        Assert.assertEquals("Anzahl der guards", 2, getNumberOfGuards(userIDAuth.getUserID()));
+        readDocument(userIDAuth, documentFQN, dsDocument1.getDocumentContent());
 
-            // check, there exists no guard yet
-            UserHomeBucketPath homeBucketPath = UserIDUtil.getHomeBucketPath(userIDAuth.getUserID());
-            KeyStoreDirectory keyStoreDirectory = UserIDUtil.getKeyStoreDirectory(userIDAuth.getUserID());
-            BucketPath bucketPath = homeBucketPath.append(new BucketPath(dsDocument.getDocumentFQN().getValue()).getBucketDirectory());
-            LOGGER.debug("check no bucket guard exists yet for " + bucketPath);
-            DocumentKeyID documentKeyID0 = GuardUtil.tryToLoadBucketGuardKeyFile(
-                    new BucketServiceImpl(factory),
-                    keyStoreDirectory,
-                    bucketPath);
-            Assert.assertNull(documentKeyID0);
-        }
+        DSDocument dsDocument2 = createDocument(userIDAuth, new DocumentFQN("first/next/another-new-document.txt"));
+        readDocument(userIDAuth, dsDocument2.getDocumentFQN(), dsDocument2.getDocumentContent());
+        checkGuardsForDocument(userIDAuth, documentFQN, true);
+        Assert.assertEquals("Anzahl der guards", 2, getNumberOfGuards(userIDAuth.getUserID()));
+    }
 
-        DSDocument dsDocument1Result;
-        {
-            service.storeDocument(userIDAuth, dsDocument);
-            dsDocument1Result = service.readDocument(userIDAuth, dsDocument.getDocumentFQN());
-            LOGGER.debug("original  document:" + new String(dsDocument.getDocumentContent().getValue()));
-            LOGGER.debug("retrieved document:" + new String(dsDocument1Result.getDocumentContent().getValue()));
-            Assert.assertEquals("document content ok", dsDocument.getDocumentContent(), dsDocument1Result.getDocumentContent());
 
-            // check, there guards
-            UserHomeBucketPath homeBucketPath = UserIDUtil.getHomeBucketPath(userIDAuth.getUserID());
-            KeyStoreDirectory keyStoreDirectory = UserIDUtil.getKeyStoreDirectory(userIDAuth.getUserID());
-            BucketPath bucketPath = homeBucketPath.append(new BucketPath(dsDocument1Result.getDocumentFQN().getValue()).getBucketDirectory());
-            LOGGER.debug("check one bucket guard exists yet for " + bucketPath);
-            DocumentKeyID documentKeyID = GuardUtil.tryToLoadBucketGuardKeyFile(
-                    new BucketServiceImpl(factory),
-                    keyStoreDirectory,
-                    bucketPath);
-            Assert.assertNotNull(documentKeyID);
-            Assert.assertEquals("Anzahl der guards muss jetzt genau 2 sein", 2, getNumberOfGuards(userIDAuth.getUserID()));
-        }
 
-        DSDocument dsDocument2Result;
-        {
-            DocumentFQN document2FQN = new DocumentFQN("first/next/Another new Document.txt");
-            DSDocument dsDocument2 = new DSDocument(document2FQN, dsDocument.getDocumentContent(), null);
-            service.storeDocument(userIDAuth, dsDocument2);
-            dsDocument2Result = service.readDocument(userIDAuth, dsDocument2.getDocumentFQN());
-            LOGGER.debug("retrieved new document:" + new String(dsDocument2Result.getDocumentContent().getValue()));
-            Assert.assertEquals("document content ok", dsDocument.getDocumentContent(), dsDocument2Result.getDocumentContent());
+    @Test
+    public void linkDocument() {
+        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        UserIDAuth userIDAuth = createUser();
 
-            // check, there guards
-            UserHomeBucketPath homeBucketPath = UserIDUtil.getHomeBucketPath(userIDAuth.getUserID());
-            KeyStoreDirectory keyStoreDirectory = UserIDUtil.getKeyStoreDirectory(userIDAuth.getUserID());
-            BucketPath bucketPath = homeBucketPath.append(new BucketPath(dsDocument2Result.getDocumentFQN().getValue()).getBucketDirectory());
-            DocumentKeyID documentKeyID0 = GuardUtil.tryToLoadBucketGuardKeyFile(
-                    new BucketServiceImpl(factory),
-                    keyStoreDirectory,
-                    bucketPath);
-            LOGGER.debug("check one bucket guard exists yet for " + bucketPath);
-            Assert.assertNotNull(documentKeyID0);
-            Assert.assertEquals("Anzahl der guards muss immer noch genau 2 sein", 2, getNumberOfGuards(userIDAuth.getUserID()));
+        DocumentFQN documentFQN = new DocumentFQN("first/next/a-new-document.txt");
+        checkGuardsForDocument(userIDAuth, documentFQN, false);
+        Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
+        DSDocument dsDocument = createDocument(userIDAuth, documentFQN);
+        checkGuardsForDocument(userIDAuth, documentFQN, true);
+        Assert.assertEquals("Anzahl der guards", 2, getNumberOfGuards(userIDAuth.getUserID()));
 
-        }
+        DocumentFQN linkDocumentFQN = new DocumentFQN("newBucket/a-new-document.txt");
+        checkGuardsForDocument(userIDAuth, linkDocumentFQN, false);
+        service.linkDocument(userIDAuth, documentFQN, linkDocumentFQN);
+        checkGuardsForDocument(userIDAuth, linkDocumentFQN, true);
+        Assert.assertEquals("Anzahl der guards", 3, getNumberOfGuards(userIDAuth.getUserID()));
+
+        readDocument(userIDAuth, linkDocumentFQN, dsDocument.getDocumentContent());
+
+        Assert.assertEquals("Anzahl der guards", 3, getNumberOfGuards(userIDAuth.getUserID()));
     }
 
     private int getNumberOfGuards(UserID userID) {
@@ -164,11 +130,71 @@ public class BusinessTest {
         int count = 0;
         for (StorageMetadata meta : bucketContent.getStrippedContent()) {
             if (meta.getName().endsWith("bucketGuardKey")) {
-                count ++;
+                count++;
             }
         }
         return count;
 
     }
+
+    private UserIDAuth createUser() {
+        UserIDAuth userIDAuth = new UserIDAuth(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));
+        users.add(userIDAuth);
+        service.createUser(userIDAuth);
+        Assert.assertEquals("Anzahl der guards muss genau 1 sein", 1, getNumberOfGuards(userIDAuth.getUserID()));
+        return userIDAuth;
+    }
+
+    private DSDocument createDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+        DSDocument dsDocument;
+        {
+            DocumentContent documentContent = new DocumentContent("Einfach nur a bisserl Text".getBytes());
+            dsDocument = new DSDocument(documentFQN, documentContent, null);
+
+            // check, there exists no guard yet
+            UserHomeBucketPath homeBucketPath = UserIDUtil.getHomeBucketPath(userIDAuth.getUserID());
+            KeyStoreDirectory keyStoreDirectory = UserIDUtil.getKeyStoreDirectory(userIDAuth.getUserID());
+            BucketPath bucketPath = homeBucketPath.append(new BucketPath(dsDocument.getDocumentFQN().getValue()).getBucketDirectory());
+            LOGGER.debug("check no bucket guard exists yet for " + bucketPath);
+            service.storeDocument(userIDAuth, dsDocument);
+        }
+        return dsDocument;
+    }
+
+    private DSDocument readDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN, DocumentContent documentContent) {
+        DSDocument dsDocument1Result = service.readDocument(userIDAuth, documentFQN);
+        LOGGER.debug("original  document:" + new String(documentContent.getValue()));
+        LOGGER.debug("retrieved document:" + new String(dsDocument1Result.getDocumentContent().getValue()));
+        Assert.assertEquals("document content ok", documentContent, dsDocument1Result.getDocumentContent());
+
+        // check, there guards
+        UserHomeBucketPath homeBucketPath = UserIDUtil.getHomeBucketPath(userIDAuth.getUserID());
+        KeyStoreDirectory keyStoreDirectory = UserIDUtil.getKeyStoreDirectory(userIDAuth.getUserID());
+        BucketPath bucketPath = homeBucketPath.append(new BucketPath(dsDocument1Result.getDocumentFQN().getValue()).getBucketDirectory());
+        LOGGER.debug("check one bucket guard exists yet for " + bucketPath);
+        DocumentKeyID documentKeyID = GuardUtil.tryToLoadBucketGuardKeyFile(
+                new BucketServiceImpl(factory),
+                keyStoreDirectory,
+                bucketPath);
+        Assert.assertNotNull(documentKeyID);
+        return dsDocument1Result;
+    }
+
+    private void checkGuardsForDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN, boolean exists) {
+        // check, there guards
+        UserHomeBucketPath homeBucketPath = UserIDUtil.getHomeBucketPath(userIDAuth.getUserID());
+        KeyStoreDirectory keyStoreDirectory = UserIDUtil.getKeyStoreDirectory(userIDAuth.getUserID());
+        BucketPath bucketPath = homeBucketPath.append(new BucketPath(documentFQN.getValue()).getBucketDirectory());
+        DocumentKeyID documentKeyID0 = GuardUtil.tryToLoadBucketGuardKeyFile(
+                new BucketServiceImpl(factory),
+                keyStoreDirectory,
+                bucketPath);
+        if (exists) {
+            Assert.assertNotNull(documentKeyID0);
+        } else {
+            Assert.assertNull(documentKeyID0);
+        }
+    }
+
 
 }

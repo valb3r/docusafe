@@ -140,7 +140,7 @@ public class BucketPath {
         ObjectHandle objectHandle = getObjectHandle();
         String name = objectHandle.getName();
         if (name == null) {
-            throw new BaseException("name must not be null");
+            return new BucketDirectory("");
         }
         BucketDirectory documentDirectory = new BucketDirectory(this.getObjectHandle().getContainer());
         String directory = getDirectoryOf(name);
