@@ -1,6 +1,9 @@
 trap error ERR
 
 function error () {
+	echo "=================================================="
+	echo "            NOT GOOD, AN ERROR OCCURED"
+	echo "=================================================="
 	echo "an error occured"
 	exit 1
 }
@@ -19,6 +22,12 @@ do
 	echo "$(date) wait for server to start"
 	sleep 1
 	started=$(grep "Started RestApplication" documentsafe.console.out.log | wc -l)
+	failed=$(grep -i "application failed to start" documentsafe.console.out.log | wc -l)
+	if (( failed == 1 )) 
+	then
+		echo "application can not start. see log file or documentsafe.console.out.log"
+		error
+	fi
 done
 echo "server is up"
 
