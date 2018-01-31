@@ -1,12 +1,6 @@
 package org.adorsys.documentsafe.layer02service.impl;
 
-import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
-import org.adorsys.documentsafe.layer01persistence.ExtendedBlobStoreConnection;
-import org.adorsys.documentsafe.layer01persistence.ExtendedObjectPersistence;
-import org.adorsys.documentsafe.layer01persistence.PersistentObjectWrapper;
-import org.adorsys.documentsafe.layer01persistence.keysource.KeySource;
-import org.adorsys.documentsafe.layer01persistence.types.KeyID;
-import org.adorsys.documentsafe.layer01persistence.types.OverwriteFlag;
+import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer02service.DocumentGuardService;
 import org.adorsys.documentsafe.layer02service.DocumentPersistenceService;
 import org.adorsys.documentsafe.layer02service.keysource.DocumentGuardBasedKeySourceImpl;
@@ -18,9 +12,15 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDW
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
 import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.domain.ObjectHandle;
+import org.adorsys.encobject.keysource.KeySource;
 import org.adorsys.encobject.params.EncryptionParams;
+import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.ContainerPersistence;
+import org.adorsys.encobject.service.ObjectPersistence;
+import org.adorsys.encobject.service.PersistentObjectWrapper;
+import org.adorsys.encobject.types.KeyID;
+import org.adorsys.encobject.types.OverwriteFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,13 +32,13 @@ import org.slf4j.LoggerFactory;
 public class DocumentPersistenceServiceImpl implements DocumentPersistenceService {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentPersistenceServiceImpl.class);
 
-    private ExtendedObjectPersistence objectPersistence;
+    private ObjectPersistence objectPersistence;
     private DocumentGuardService documentGuardService;
     private ContainerPersistence containerPersistence;
 
     public DocumentPersistenceServiceImpl(BlobStoreContextFactory factory) {
-        this.containerPersistence = new ContainerPersistence(new ExtendedBlobStoreConnection(factory));
-        this.objectPersistence = new ExtendedObjectPersistence(new ExtendedBlobStoreConnection(factory));
+        this.containerPersistence = new ContainerPersistence(new BlobStoreConnection(factory));
+        this.objectPersistence = new ObjectPersistence(new BlobStoreConnection(factory));
         this.documentGuardService = new DocumentGuardServiceImpl(factory);
     }
 

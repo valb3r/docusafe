@@ -1,6 +1,6 @@
 package org.adorsys.documentsafe.layer03business.types;
 
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
+import org.adorsys.encobject.complextypes.BucketPath;
 
 /**
  * Created by peter on 19.01.18 at 16:07.

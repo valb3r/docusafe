@@ -1,16 +1,15 @@
 package org.adorsys.documentsafe.layer02service.impl;
 
-import org.adorsys.documentsafe.layer00common.exceptions.BaseException;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
-import org.jclouds.blobstore.domain.StorageMetadata;
-import org.jclouds.blobstore.domain.StorageType;
-import org.jclouds.blobstore.domain.Tier;
-import org.jclouds.domain.Location;
-import org.jclouds.domain.ResourceMetadata;
-
 import java.net.URI;
 import java.util.Date;
 import java.util.Map;
+
+import org.adorsys.cryptoutils.exceptions.BaseException;
+import org.adorsys.encobject.complextypes.BucketPath;
+import org.adorsys.encobject.domain.Location;
+import org.adorsys.encobject.domain.ResourceMetadata;
+import org.adorsys.encobject.domain.StorageMetadata;
+import org.adorsys.encobject.domain.StorageType;
 
 /**
  * Created by peter on 20.01.18 at 16:38.
@@ -82,11 +81,6 @@ public class ExtendedStorageMetadata implements StorageMetadata {
     @Override
     public Long getSize() {
         return meta.getSize();
-    }
-
-    @Override
-    public Tier getTier() {
-        return meta.getTier();
     }
 
     @Override

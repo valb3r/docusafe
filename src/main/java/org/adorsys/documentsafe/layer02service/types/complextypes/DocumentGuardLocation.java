@@ -1,6 +1,6 @@
 package org.adorsys.documentsafe.layer02service.types.complextypes;
 
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreLocation;
+import org.adorsys.encobject.complextypes.KeyStoreLocation;
 import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 

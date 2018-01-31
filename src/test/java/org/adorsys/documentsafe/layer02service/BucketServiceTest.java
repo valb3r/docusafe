@@ -1,14 +1,14 @@
 package org.adorsys.documentsafe.layer02service;
 
-import org.adorsys.documentsafe.layer01persistence.types.ListRecursiveFlag;
-import org.adorsys.documentsafe.layer01persistence.types.OverwriteFlag;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
 import org.adorsys.documentsafe.layer02service.impl.BucketServiceImpl;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.complextypes.BucketContent;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
+import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
+import org.adorsys.encobject.types.ListRecursiveFlag;
+import org.adorsys.encobject.types.OverwriteFlag;
 
 /**
  * Created by peter on 17.01.18 at 16:51.

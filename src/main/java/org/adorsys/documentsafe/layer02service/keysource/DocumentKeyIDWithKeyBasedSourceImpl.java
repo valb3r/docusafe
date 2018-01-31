@@ -1,9 +1,9 @@
 package org.adorsys.documentsafe.layer02service.keysource;
 
 import org.adorsys.documentsafe.layer02service.exceptions.KeySourceException;
-import org.adorsys.documentsafe.layer01persistence.types.KeyID;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
-import org.adorsys.documentsafe.layer01persistence.keysource.KeySource;
+import org.adorsys.encobject.keysource.KeySource;
+import org.adorsys.encobject.types.KeyID;
 
 import java.security.Key;
 

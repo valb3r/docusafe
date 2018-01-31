@@ -1,12 +1,10 @@
 package org.adorsys.documentsafe.layer02service.impl;
 
-import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
-import org.adorsys.documentsafe.layer01persistence.ExtendedKeystorePersistence;
-import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
-import org.adorsys.documentsafe.layer01persistence.types.KeyStoreType;
-import org.adorsys.documentsafe.layer01persistence.types.ListRecursiveFlag;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreDirectory;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreLocation;
+import java.security.KeyStore;
+
+import javax.security.auth.callback.CallbackHandler;
+
+import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer02service.BucketService;
 import org.adorsys.documentsafe.layer02service.KeyStoreService;
 import org.adorsys.documentsafe.layer02service.exceptions.KeyStoreExistsException;
@@ -14,22 +12,26 @@ import org.adorsys.documentsafe.layer02service.generators.KeyStoreCreationConfig
 import org.adorsys.documentsafe.layer02service.generators.KeyStoreGenerator;
 import org.adorsys.documentsafe.layer02service.types.complextypes.BucketContent;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAuth;
+import org.adorsys.encobject.complextypes.KeyStoreDirectory;
+import org.adorsys.encobject.complextypes.KeyStoreLocation;
+import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
-import org.jclouds.blobstore.domain.StorageMetadata;
+import org.adorsys.encobject.service.BlobStoreKeystorePersistence;
+import org.adorsys.encobject.service.KeystorePersistence;
+import org.adorsys.encobject.types.KeyStoreID;
+import org.adorsys.encobject.types.KeyStoreType;
+import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.security.auth.callback.CallbackHandler;
-import java.security.KeyStore;
 
 public class KeyStoreServiceImpl implements KeyStoreService {
     private final static Logger LOGGER = LoggerFactory.getLogger(KeyStoreServiceImpl.class);
 
-    private ExtendedKeystorePersistence keystorePersistence;
+    private KeystorePersistence keystorePersistence;
     private BucketService bucketService;
 
     public KeyStoreServiceImpl(BlobStoreContextFactory factory) {
-        this.keystorePersistence = new ExtendedKeystorePersistence(factory);
+        this.keystorePersistence = new BlobStoreKeystorePersistence(factory);
         this.bucketService = new BucketServiceImpl(factory);
     }
 

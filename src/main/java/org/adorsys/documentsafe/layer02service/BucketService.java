@@ -1,9 +1,9 @@
 package org.adorsys.documentsafe.layer02service;
 
-import org.adorsys.documentsafe.layer01persistence.types.ListRecursiveFlag;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
 import org.adorsys.documentsafe.layer02service.types.PlainFileContent;
 import org.adorsys.documentsafe.layer02service.types.complextypes.BucketContent;
+import org.adorsys.encobject.complextypes.BucketPath;
+import org.adorsys.encobject.types.ListRecursiveFlag;
 
 /**
  * Created by peter on 15.01.18.

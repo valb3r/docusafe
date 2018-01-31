@@ -1,10 +1,5 @@
 package org.adorsys.documentsafe.layer03business.impl;
 
-import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
-import org.adorsys.documentsafe.layer01persistence.types.OverwriteFlag;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreDirectory;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreLocation;
 import org.adorsys.documentsafe.layer02service.BucketService;
 import org.adorsys.documentsafe.layer02service.DocumentGuardService;
 import org.adorsys.documentsafe.layer02service.DocumentPersistenceService;
@@ -39,8 +34,13 @@ import org.adorsys.documentsafe.layer03business.utils.GrantUtil;
 import org.adorsys.documentsafe.layer03business.utils.GuardUtil;
 import org.adorsys.documentsafe.layer03business.utils.LinkUtil;
 import org.adorsys.documentsafe.layer03business.utils.UserIDUtil;
+import org.adorsys.encobject.complextypes.BucketPath;
+import org.adorsys.encobject.complextypes.KeyStoreDirectory;
+import org.adorsys.encobject.complextypes.KeyStoreLocation;
 import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
+import org.adorsys.encobject.types.KeyStoreID;
+import org.adorsys.encobject.types.OverwriteFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

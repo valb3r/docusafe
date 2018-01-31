@@ -1,6 +1,6 @@
 package org.adorsys.documentsafe.layer02service.types;
 
-import org.adorsys.documentsafe.layer00common.basetypes.BaseTypeString;
+import org.adorsys.cryptoutils.basetypes.BaseTypeString;
 
 /**
  * Created by peter on 29.12.2017 at 14:11:52.

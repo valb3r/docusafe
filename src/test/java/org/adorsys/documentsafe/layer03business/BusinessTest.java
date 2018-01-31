@@ -1,18 +1,16 @@
 package org.adorsys.documentsafe.layer03business;
 
-import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
-import org.adorsys.documentsafe.layer01persistence.types.ListRecursiveFlag;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketDirectory;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreDirectory;
+import java.security.Security;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer02service.BucketService;
 import org.adorsys.documentsafe.layer02service.impl.BucketServiceImpl;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
-import org.adorsys.documentsafe.layer02service.types.ReadStorePassword;
 import org.adorsys.documentsafe.layer02service.types.complextypes.BucketContent;
-import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentDirectory;
 import org.adorsys.documentsafe.layer02service.utils.TestFsBlobStoreFactory;
 import org.adorsys.documentsafe.layer03business.impl.DocumentSafeServiceImpl;
 import org.adorsys.documentsafe.layer03business.types.AccessType;
@@ -24,19 +22,18 @@ import org.adorsys.documentsafe.layer03business.types.complex.DocumentFQN;
 import org.adorsys.documentsafe.layer03business.types.complex.UserIDAuth;
 import org.adorsys.documentsafe.layer03business.utils.GuardUtil;
 import org.adorsys.documentsafe.layer03business.utils.UserIDUtil;
+import org.adorsys.encobject.complextypes.BucketPath;
+import org.adorsys.encobject.complextypes.KeyStoreDirectory;
+import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
+import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.jclouds.blobstore.domain.StorageMetadata;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.security.Security;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Created by peter on 19.01.18 at 16:25.

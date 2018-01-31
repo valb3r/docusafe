@@ -1,14 +1,11 @@
 package org.adorsys.documentsafe.layer02service;
 
-import org.adorsys.documentsafe.layer00common.exceptions.BaseException;
-import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
-import org.adorsys.documentsafe.layer00common.utils.HexUtil;
-import org.adorsys.documentsafe.layer01persistence.ExtendedBlobStoreConnection;
-import org.adorsys.documentsafe.layer01persistence.exceptions.FileExistsException;
-import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
-import org.adorsys.documentsafe.layer01persistence.types.ListRecursiveFlag;
-import org.adorsys.documentsafe.layer01persistence.types.OverwriteFlag;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.adorsys.cryptoutils.exceptions.BaseException;
+import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
+import org.adorsys.cryptoutils.utils.HexUtil;
 import org.adorsys.documentsafe.layer02service.exceptions.KeyStoreExistsException;
 import org.adorsys.documentsafe.layer02service.generators.KeyStoreCreationConfig;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
@@ -22,18 +19,21 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess
 import org.adorsys.documentsafe.layer02service.utils.ShowKeyStore;
 import org.adorsys.documentsafe.layer02service.utils.TestFsBlobStoreFactory;
 import org.adorsys.documentsafe.layer02service.utils.TestKeyUtils;
+import org.adorsys.encobject.complextypes.BucketPath;
+import org.adorsys.encobject.domain.StorageMetadata;
+import org.adorsys.encobject.exceptions.FileExistsException;
+import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.ContainerPersistence;
-import org.jclouds.blobstore.domain.StorageMetadata;
+import org.adorsys.encobject.types.KeyStoreID;
+import org.adorsys.encobject.types.ListRecursiveFlag;
+import org.adorsys.encobject.types.OverwriteFlag;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Created by peter on 04.01.18.
@@ -52,7 +52,7 @@ public class AllServiceTest {
     @After
     public void after() {
         try {
-            ContainerPersistence containerPersistence = new ContainerPersistence(new ExtendedBlobStoreConnection(factory));
+            ContainerPersistence containerPersistence = new ContainerPersistence(new BlobStoreConnection(factory));
             for (BucketPath bucket : buckets) {
                 String container = bucket.getObjectHandle().getContainer();
                 LOGGER.debug("AFTER TEST: DELETE BUCKET " + container);
@@ -69,7 +69,7 @@ public class AllServiceTest {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         try {
             BucketPath bp = new BucketPath("1/2/3");
-            ContainerPersistence containerPersistence = new ContainerPersistence(new ExtendedBlobStoreConnection(factory));
+            ContainerPersistence containerPersistence = new ContainerPersistence(new BlobStoreConnection(factory));
             containerPersistence.creteContainer(bp.getObjectHandle().getContainer());
             buckets.add(bp);
         } catch (Exception e) {

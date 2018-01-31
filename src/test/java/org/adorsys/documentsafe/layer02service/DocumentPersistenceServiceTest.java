@@ -1,6 +1,5 @@
 package org.adorsys.documentsafe.layer02service;
 
-import org.adorsys.documentsafe.layer01persistence.types.OverwriteFlag;
 import org.adorsys.documentsafe.layer02service.impl.DocumentPersistenceServiceImpl;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
@@ -8,6 +7,7 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentConten
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
+import org.adorsys.encobject.types.OverwriteFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -2,13 +2,14 @@ package org.adorsys.documentsafe.layer03business.utils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreDirectory;
+
 import org.adorsys.documentsafe.layer02service.BucketService;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 import org.adorsys.documentsafe.layer02service.types.PlainFileContent;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentDirectory;
 import org.adorsys.documentsafe.layer03business.exceptions.GuardException;
+import org.adorsys.encobject.complextypes.BucketPath;
+import org.adorsys.encobject.complextypes.KeyStoreDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

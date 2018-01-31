@@ -1,10 +1,10 @@
 package org.adorsys.documentsafe.layer02service;
 
-import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreDirectory;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreLocation;
 import org.adorsys.documentsafe.layer02service.generators.KeyStoreCreationConfig;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAuth;
+import org.adorsys.encobject.complextypes.KeyStoreDirectory;
+import org.adorsys.encobject.complextypes.KeyStoreLocation;
+import org.adorsys.encobject.types.KeyStoreID;
 
 import javax.security.auth.callback.CallbackHandler;
 import java.security.KeyStore;

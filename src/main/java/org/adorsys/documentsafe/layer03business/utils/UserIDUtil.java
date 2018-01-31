@@ -2,12 +2,7 @@ package org.adorsys.documentsafe.layer03business.utils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
-import org.adorsys.documentsafe.layer01persistence.types.KeyStoreType;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketDirectory;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreDirectory;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreLocation;
+
 import org.adorsys.documentsafe.layer02service.BucketService;
 import org.adorsys.documentsafe.layer02service.types.PlainFileContent;
 import org.adorsys.documentsafe.layer02service.types.ReadStorePassword;
@@ -16,6 +11,12 @@ import org.adorsys.documentsafe.layer03business.types.UserHomeBucketPath;
 import org.adorsys.documentsafe.layer03business.types.UserID;
 import org.adorsys.documentsafe.layer03business.types.UserRootBucketPath;
 import org.adorsys.documentsafe.layer03business.types.complex.UserIDAuth;
+import org.adorsys.encobject.complextypes.BucketDirectory;
+import org.adorsys.encobject.complextypes.BucketPath;
+import org.adorsys.encobject.complextypes.KeyStoreDirectory;
+import org.adorsys.encobject.complextypes.KeyStoreLocation;
+import org.adorsys.encobject.types.KeyStoreID;
+import org.adorsys.encobject.types.KeyStoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

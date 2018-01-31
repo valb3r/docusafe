@@ -1,50 +1,5 @@
 package org.adorsys.documentsafe.layer02service.impl;
 
-import com.nimbusds.jose.jwk.ECKey;
-import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.jwk.JWKMatcher;
-import com.nimbusds.jose.jwk.JWKMatcher.Builder;
-import com.nimbusds.jose.jwk.JWKSelector;
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.KeyUse;
-import com.nimbusds.jose.jwk.PasswordLookup;
-import com.nimbusds.jose.jwk.RSAKey;
-import org.adorsys.documentsafe.layer01persistence.ExtendedBlobStoreConnection;
-import org.adorsys.documentsafe.layer01persistence.types.OverwriteFlag;
-import org.adorsys.documentsafe.layer02service.DocumentGuardService;
-import org.adorsys.documentsafe.layer02service.exceptions.AsymmetricEncryptionException;
-import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
-import org.adorsys.documentsafe.layer02service.generators.SecretKeyGenerator;
-import org.adorsys.documentsafe.layer02service.types.GuardKey;
-import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
-import org.adorsys.encobject.domain.ContentMetaInfo;
-import org.adorsys.encobject.domain.ObjectHandle;
-import org.adorsys.encobject.params.EncryptionParams;
-import org.adorsys.encobject.service.BlobStoreContextFactory;
-import org.adorsys.jjwk.keystore.JwkExport;
-import org.adorsys.jjwk.serverkey.KeyAndJwk;
-import org.adorsys.jjwk.serverkey.ServerKeyMap;
-import org.adorsys.jkeygen.keystore.SecretKeyData;
-import org.adorsys.jkeygen.utils.V3CertificateUtils;
-import org.adorsys.documentsafe.layer02service.exceptions.SymmetricEncryptionException;
-import org.adorsys.documentsafe.layer01persistence.ExtendedKeystorePersistence;
-import org.adorsys.documentsafe.layer01persistence.ExtendedObjectPersistence;
-import org.adorsys.documentsafe.layer01persistence.PersistentObjectWrapper;
-import org.adorsys.documentsafe.layer02service.types.DocumentKey;
-import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
-import org.adorsys.documentsafe.layer02service.types.GuardKeyID;
-import org.adorsys.documentsafe.layer01persistence.types.KeyID;
-import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentGuardLocation;
-import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
-import org.adorsys.documentsafe.layer01persistence.keysource.KeySource;
-import org.adorsys.documentsafe.layer02service.keysource.KeyStoreBasedPublicKeySourceImpl;
-import org.adorsys.documentsafe.layer02service.keysource.KeyStoreBasedSecretKeySourceImpl;
-import org.adorsys.documentsafe.layer02service.serializer.DocumentGuardSerializer;
-import org.adorsys.documentsafe.layer02service.serializer.DocumentGuardSerializer01;
-import org.adorsys.documentsafe.layer02service.serializer.DocumentGuardSerializerRegistery;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.cert.Certificate;
@@ -58,17 +13,64 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
+import org.adorsys.documentsafe.layer02service.DocumentGuardService;
+import org.adorsys.documentsafe.layer02service.exceptions.AsymmetricEncryptionException;
+import org.adorsys.documentsafe.layer02service.exceptions.SymmetricEncryptionException;
+import org.adorsys.documentsafe.layer02service.generators.SecretKeyGenerator;
+import org.adorsys.documentsafe.layer02service.keysource.KeyStoreBasedPublicKeySourceImpl;
+import org.adorsys.documentsafe.layer02service.keysource.KeyStoreBasedSecretKeySourceImpl;
+import org.adorsys.documentsafe.layer02service.serializer.DocumentGuardSerializer;
+import org.adorsys.documentsafe.layer02service.serializer.DocumentGuardSerializer01;
+import org.adorsys.documentsafe.layer02service.serializer.DocumentGuardSerializerRegistery;
+import org.adorsys.documentsafe.layer02service.types.DocumentKey;
+import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
+import org.adorsys.documentsafe.layer02service.types.GuardKey;
+import org.adorsys.documentsafe.layer02service.types.GuardKeyID;
+import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentGuardLocation;
+import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
+import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
+import org.adorsys.encobject.domain.ContentMetaInfo;
+import org.adorsys.encobject.domain.ObjectHandle;
+import org.adorsys.encobject.keysource.KeySource;
+import org.adorsys.encobject.params.EncryptionParams;
+import org.adorsys.encobject.service.BlobStoreConnection;
+import org.adorsys.encobject.service.BlobStoreContextFactory;
+import org.adorsys.encobject.service.BlobStoreKeystorePersistence;
+import org.adorsys.encobject.service.KeystorePersistence;
+import org.adorsys.encobject.service.ObjectPersistence;
+import org.adorsys.encobject.service.PersistentObjectWrapper;
+import org.adorsys.encobject.types.KeyID;
+import org.adorsys.encobject.types.OverwriteFlag;
+import org.adorsys.jjwk.keystore.JwkExport;
+import org.adorsys.jjwk.serverkey.KeyAndJwk;
+import org.adorsys.jjwk.serverkey.ServerKeyMap;
+import org.adorsys.jkeygen.keystore.SecretKeyData;
+import org.adorsys.jkeygen.utils.V3CertificateUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.nimbusds.jose.jwk.ECKey;
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKMatcher;
+import com.nimbusds.jose.jwk.JWKMatcher.Builder;
+import com.nimbusds.jose.jwk.JWKSelector;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.KeyUse;
+import com.nimbusds.jose.jwk.PasswordLookup;
+import com.nimbusds.jose.jwk.RSAKey;
+
 public class DocumentGuardServiceImpl implements DocumentGuardService {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentGuardServiceImpl.class);
 
-    private ExtendedKeystorePersistence keystorePersistence;
-    private ExtendedObjectPersistence objectPersistence;
+    private KeystorePersistence keystorePersistence;
+    private ObjectPersistence objectPersistence;
 
     private DocumentGuardSerializerRegistery serializerRegistry = DocumentGuardSerializerRegistery.getInstance();
 
     public DocumentGuardServiceImpl(BlobStoreContextFactory factory) {
-        this.objectPersistence = new ExtendedObjectPersistence(new ExtendedBlobStoreConnection(factory));
-        this.keystorePersistence = new ExtendedKeystorePersistence(factory);
+        this.objectPersistence = new ObjectPersistence(new BlobStoreConnection(factory));
+        this.keystorePersistence = new BlobStoreKeystorePersistence(factory);
     }
 
     /**

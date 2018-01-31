@@ -1,7 +1,7 @@
 package org.adorsys.documentsafe.layer01persistence;
 
-import org.adorsys.documentsafe.layer01persistence.exceptions.BucketException;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
+import org.adorsys.encobject.complextypes.BucketPath;
+import org.adorsys.encobject.exceptions.BucketException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;

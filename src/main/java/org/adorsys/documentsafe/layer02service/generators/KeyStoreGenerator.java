@@ -1,12 +1,12 @@
 package org.adorsys.documentsafe.layer02service.generators;
 
-import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
+import org.adorsys.encobject.types.KeyStoreID;
 import org.adorsys.jkeygen.keystore.KeyPairData;
 import org.adorsys.jkeygen.keystore.KeystoreBuilder;
 import org.adorsys.jkeygen.keystore.SecretKeyData;
 import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
-import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
+import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import javax.security.auth.callback.CallbackHandler;

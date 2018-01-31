@@ -1,7 +1,8 @@
 package org.adorsys.documentsafe.layer02service.utils;
 
 import com.google.protobuf.ByteString;
-import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
+
+import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.encobject.domain.keystore.KeystoreData;
 import org.adorsys.jkeygen.keystore.KeyStoreService;
 import org.adorsys.jkeygen.keystore.KeystoreBuilder;

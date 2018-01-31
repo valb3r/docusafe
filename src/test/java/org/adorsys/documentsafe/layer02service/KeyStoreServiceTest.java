@@ -1,23 +1,23 @@
 package org.adorsys.documentsafe.layer02service;
 
-import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
-import org.adorsys.documentsafe.layer01persistence.ExtendedBlobStoreConnection;
-import org.adorsys.documentsafe.layer01persistence.types.KeyStoreID;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreDirectory;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.KeyStoreLocation;
+import java.security.KeyStore;
+
+import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer02service.generators.KeyStoreCreationConfig;
 import org.adorsys.documentsafe.layer02service.impl.KeyStoreServiceImpl;
 import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
 import org.adorsys.documentsafe.layer02service.types.ReadStorePassword;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAuth;
+import org.adorsys.encobject.complextypes.BucketPath;
+import org.adorsys.encobject.complextypes.KeyStoreDirectory;
+import org.adorsys.encobject.complextypes.KeyStoreLocation;
+import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.ContainerPersistence;
+import org.adorsys.encobject.types.KeyStoreID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.security.KeyStore;
 
 /**
  * Created by peter on 02.01.18.
@@ -45,7 +45,7 @@ public class KeyStoreServiceTest {
         try {
             KeyStoreDirectory keyStoreDirectory = new KeyStoreDirectory(new BucketPath(keystoreContainer));
 
-            ContainerPersistence containerPersistence = new ContainerPersistence(new ExtendedBlobStoreConnection(factory));
+            ContainerPersistence containerPersistence = new ContainerPersistence(new BlobStoreConnection(factory));
             try {
                 // sollte der container exsitieren, ignorieren wir die Exception, um zu
                 // sehen, ob sich ein keystore überschreiben lässt

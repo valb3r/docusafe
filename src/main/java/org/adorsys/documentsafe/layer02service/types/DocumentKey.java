@@ -1,7 +1,7 @@
 package org.adorsys.documentsafe.layer02service.types;
 
-import org.adorsys.documentsafe.layer00common.basetypes.BaseTypePasswordByteArray;
-import org.adorsys.documentsafe.layer00common.utils.HexUtil;
+import org.adorsys.cryptoutils.basetypes.BaseTypePasswordByteArray;
+import org.adorsys.cryptoutils.utils.HexUtil;
 
 import javax.crypto.SecretKey;
 

@@ -1,14 +1,14 @@
 package org.adorsys.documentsafe.layer02service.impl;
 
-import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
-import org.adorsys.documentsafe.layer01persistence.ExtendedBlobStoreConnection;
-import org.adorsys.documentsafe.layer01persistence.types.ListRecursiveFlag;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
+import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer02service.BucketService;
 import org.adorsys.documentsafe.layer02service.types.PlainFileContent;
 import org.adorsys.documentsafe.layer02service.types.complextypes.BucketContent;
+import org.adorsys.encobject.complextypes.BucketPath;
+import org.adorsys.encobject.service.BlobStoreConnection;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.ContainerPersistence;
+import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,10 +18,10 @@ import org.slf4j.LoggerFactory;
 public class BucketServiceImpl implements BucketService {
     private final static Logger LOGGER = LoggerFactory.getLogger(BucketServiceImpl.class);
     private ContainerPersistence containerPersistence;
-    private ExtendedBlobStoreConnection extendedBlobStoreConnection;
+    private BlobStoreConnection extendedBlobStoreConnection;
 
     public BucketServiceImpl(BlobStoreContextFactory factory) {
-        this.extendedBlobStoreConnection = new ExtendedBlobStoreConnection(factory);
+        this.extendedBlobStoreConnection = new BlobStoreConnection(factory);
         this.containerPersistence = new ContainerPersistence(this.extendedBlobStoreConnection);
     }
 

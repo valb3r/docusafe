@@ -8,9 +8,9 @@ import java.security.UnrecoverableKeyException;
 
 import javax.security.auth.callback.CallbackHandler;
 
-import org.adorsys.documentsafe.layer00common.exceptions.BaseExceptionHandler;
-import org.adorsys.documentsafe.layer01persistence.types.KeyID;
-import org.adorsys.documentsafe.layer01persistence.keysource.KeySource;
+import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
+import org.adorsys.encobject.keysource.KeySource;
+import org.adorsys.encobject.types.KeyID;
 import org.adorsys.jkeygen.keystore.PasswordCallbackUtils;
 
 public class KeyStoreBasedSecretKeySourceImpl implements KeySource {

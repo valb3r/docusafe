@@ -1,9 +1,9 @@
 package org.adorsys.documentsafe.layer02service.types.complextypes;
 
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
 import org.adorsys.documentsafe.layer02service.impl.ExtendedStorageMetadata;
-import org.jclouds.blobstore.domain.PageSet;
-import org.jclouds.blobstore.domain.StorageMetadata;
+import org.adorsys.encobject.complextypes.BucketPath;
+import org.adorsys.encobject.domain.PageSet;
+import org.adorsys.encobject.domain.StorageMetadata;
 
 import java.util.ArrayList;
 import java.util.List;

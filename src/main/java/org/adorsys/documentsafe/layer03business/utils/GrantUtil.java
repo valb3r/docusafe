@@ -2,13 +2,14 @@ package org.adorsys.documentsafe.layer03business.utils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.adorsys.documentsafe.layer01persistence.types.complextypes.BucketPath;
+
 import org.adorsys.documentsafe.layer02service.BucketService;
 import org.adorsys.documentsafe.layer02service.types.PlainFileContent;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentDirectory;
 import org.adorsys.documentsafe.layer03business.types.AccessType;
 import org.adorsys.documentsafe.layer03business.types.UserID;
 import org.adorsys.documentsafe.layer03business.types.complex.GrantAccessList;
+import org.adorsys.encobject.complextypes.BucketPath;
 
 /**
  * Created by peter on 29.01.18 at 17:51.

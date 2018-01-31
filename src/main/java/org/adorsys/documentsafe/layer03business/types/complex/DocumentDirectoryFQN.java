@@ -1,6 +1,6 @@
 package org.adorsys.documentsafe.layer03business.types.complex;
 
-import org.adorsys.documentsafe.layer00common.basetypes.BaseTypeString;
+import org.adorsys.cryptoutils.basetypes.BaseTypeString;
 
 /**
  * Created by peter on 20.01.18 at 07:29.
