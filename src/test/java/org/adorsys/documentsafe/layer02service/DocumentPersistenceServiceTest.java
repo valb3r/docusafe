@@ -5,6 +5,7 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucket
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentContentWithContentMetaInfo;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
+import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.types.OverwriteFlag;
@@ -29,18 +30,18 @@ public class DocumentPersistenceServiceTest {
 
     public DocumentStuff testPersistDocument(DocumentGuardService documentGuardService,
                                              DocumentBucketPath documentBucketPath,
-                                             DocumentKeyIDWithKey documentKeyIDWithKey,
+                                             DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType,
                                              DocumentContent documentContent) {
-        return testPersistDocument(documentGuardService, documentBucketPath, documentKeyIDWithKey, documentContent, OverwriteFlag.FALSE);
+        return testPersistDocument(documentGuardService, documentBucketPath, documentKeyIDWithKeyAndAccessType, documentContent, OverwriteFlag.FALSE);
     }
     public DocumentStuff testPersistDocument(DocumentGuardService documentGuardService,
                                              DocumentBucketPath documentBucketPath,
-                                             DocumentKeyIDWithKey documentKeyIDWithKey,
+                                             DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType,
                                              DocumentContent documentContent,
                                              OverwriteFlag overwriteFlag) {
         DocumentPersistenceService documentPersistenceService = new DocumentPersistenceServiceImpl(factory);
         documentPersistenceService.persistDocument(
-                documentKeyIDWithKey,
+                documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey(),
                 documentBucketPath,
                 documentContent,
                 overwriteFlag,

@@ -5,7 +5,9 @@ import org.adorsys.cryptoutils.utils.HexUtil;
 import org.adorsys.documentsafe.layer02service.impl.DocumentGuardServiceImpl;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
+import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
+import org.adorsys.documentsafe.layer03business.types.AccessType;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.BlobStoreKeystorePersistence;
 import org.slf4j.Logger;
@@ -22,37 +24,39 @@ public class DocumentGuardServiceTest {
         this.factory = factory;
     }
 
-    public DocumentGuardStuff testCreateAsymmetricDocumentGuardForDocumentKeyIDWithKey(KeyStoreAccess keyStoreAccess, DocumentKeyIDWithKey documentKeyIDWithKey) {
+    public DocumentGuardStuff testCreateAsymmetricDocumentGuardForDocumentKeyIDWithKey(KeyStoreAccess keyStoreAccess,
+                                                                                       DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType) {
         try {
             DocumentGuardService documentGuardService = new DocumentGuardServiceImpl(factory);
-            documentGuardService.createAsymmetricDocumentGuard(keyStoreAccess, documentKeyIDWithKey);
-            LOGGER.debug("documentKeyID:" + documentKeyIDWithKey.getDocumentKeyID());
-            return new DocumentGuardStuff(documentGuardService, documentKeyIDWithKey);
+            documentGuardService.createAsymmetricDocumentGuard(keyStoreAccess, documentKeyIDWithKeyAndAccessType);
+            LOGGER.debug("documentKeyID:" + documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
+            return new DocumentGuardStuff(documentGuardService, documentKeyIDWithKeyAndAccessType);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
     }
 
-    public DocumentGuardStuff testCreateSymmetricDocumentGuard(KeyStoreAccess keyStoreAccess) {
+    public DocumentGuardStuff testCreateSymmetricDocumentGuard(KeyStoreAccess keyStoreAccess, AccessType accessType) {
         try {
             DocumentGuardService documentGuardService = new DocumentGuardServiceImpl(factory);
             DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardService.createDocumentKeyIdWithKey();
-            documentGuardService.createSymmetricDocumentGuard(keyStoreAccess, documentKeyIDWithKey);
-            return new DocumentGuardStuff(documentGuardService, documentKeyIDWithKey);
+            DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = new DocumentKeyIDWithKeyAndAccessType(documentKeyIDWithKey, accessType);
+            documentGuardService.createSymmetricDocumentGuard(keyStoreAccess, documentKeyIDWithKeyAndAccessType);
+            return new DocumentGuardStuff(documentGuardService, documentKeyIDWithKeyAndAccessType);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
     }
 
-    public DocumentKeyIDWithKey testLoadDocumentGuard(
+    public DocumentKeyIDWithKeyAndAccessType testLoadDocumentGuard(
             KeyStoreAccess keyStoreAccess,
             DocumentKeyID documentKeyID) {
         try {
             DocumentGuardService documentGuardService = new DocumentGuardServiceImpl(factory);
-            DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardService.loadDocumentKeyIDWithKeyFromDocumentGuard(keyStoreAccess, documentKeyID);
-            LOGGER.debug("key des Guards ist :" + documentKeyIDWithKey.getDocumentKey());
-            LOGGER.debug("LOAD DocumentKey:" + HexUtil.conventBytesToHexString(documentKeyIDWithKey.getDocumentKey().getSecretKey().getEncoded()));
-            return documentKeyIDWithKey;
+            DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = documentGuardService.loadDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(keyStoreAccess, documentKeyID);
+            LOGGER.debug("key des Guards ist :" + documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKey());
+            LOGGER.debug("LOAD DocumentKey:" + HexUtil.conventBytesToHexString(documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKey().getSecretKey().getEncoded()));
+            return documentKeyIDWithKeyAndAccessType;
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
@@ -66,11 +70,11 @@ public class DocumentGuardServiceTest {
 
     public static class DocumentGuardStuff {
         public final DocumentGuardService documentGuardService;
-        public final DocumentKeyIDWithKey documentKeyIDWithKey;
+        public final DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType;
 
-        public DocumentGuardStuff(DocumentGuardService documentGuardService, DocumentKeyIDWithKey documentKeyIDWithKey) {
+        public DocumentGuardStuff(DocumentGuardService documentGuardService, DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType) {
             this.documentGuardService = documentGuardService;
-            this.documentKeyIDWithKey = documentKeyIDWithKey;
+            this.documentKeyIDWithKeyAndAccessType = documentKeyIDWithKeyAndAccessType;
         }
     }
 }

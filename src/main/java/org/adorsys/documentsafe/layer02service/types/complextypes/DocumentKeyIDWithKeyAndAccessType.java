@@ -1,0 +1,24 @@
+package org.adorsys.documentsafe.layer02service.types.complextypes;
+
+import org.adorsys.documentsafe.layer03business.types.AccessType;
+
+/**
+ * Created by peter on 02.02.18 at 10:27.
+ */
+public class DocumentKeyIDWithKeyAndAccessType {
+    private DocumentKeyIDWithKey documentKeyIDWithKey;
+    private AccessType accessType;
+
+    public DocumentKeyIDWithKeyAndAccessType(DocumentKeyIDWithKey documentKeyIDWithKey, AccessType accessType) {
+        this.documentKeyIDWithKey = documentKeyIDWithKey;
+        this.accessType = accessType;
+    }
+
+    public DocumentKeyIDWithKey getDocumentKeyIDWithKey() {
+        return documentKeyIDWithKey;
+    }
+
+    public AccessType getAccessType() {
+        return accessType;
+    }
+}

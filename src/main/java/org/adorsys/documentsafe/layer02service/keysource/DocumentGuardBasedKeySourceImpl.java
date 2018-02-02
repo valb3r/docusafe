@@ -3,6 +3,7 @@ package org.adorsys.documentsafe.layer02service.keysource;
 import org.adorsys.documentsafe.layer02service.DocumentGuardService;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
+import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
 import org.adorsys.encobject.complextypes.KeyStoreLocation;
 import org.adorsys.encobject.keysource.KeySource;
@@ -34,9 +35,9 @@ public class DocumentGuardBasedKeySourceImpl implements KeySource {
             // We assume keystore container is docuement guard container
             DocumentKeyID documentKeyID = new DocumentKeyID(keyID.getValue());
             LOGGER.debug("try to load KEY WITH ID " + documentKeyID);
-            DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardService.loadDocumentKeyIDWithKeyFromDocumentGuard(keyStoreAccess, documentKeyID);
-            LOGGER.debug("LOADED DOCUMENT KEY WITH ID " + documentKeyIDWithKey);
-            return documentKeyIDWithKey.getDocumentKey().getSecretKey();
+            DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = documentGuardService.loadDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(keyStoreAccess, documentKeyID);
+            LOGGER.debug("LOADED DOCUMENT KEY WITH ID " + documentKeyIDWithKeyAndAccessType);
+            return documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKey().getSecretKey();
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }

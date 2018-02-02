@@ -15,10 +15,12 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.BucketContent;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentContentWithContentMetaInfo;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
+import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
 import org.adorsys.documentsafe.layer02service.utils.ShowKeyStore;
 import org.adorsys.documentsafe.layer02service.utils.TestFsBlobStoreFactory;
 import org.adorsys.documentsafe.layer02service.utils.TestKeyUtils;
+import org.adorsys.documentsafe.layer03business.types.AccessType;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.exceptions.FileExistsException;
@@ -108,7 +110,8 @@ public class AllServiceTest {
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest(factory).createKeyStore();
             new DocumentGuardServiceTest(factory).testCreateSymmetricDocumentGuard(
-                    keyStoreStuff.keyStoreAccess);
+                    keyStoreStuff.keyStoreAccess,
+                    AccessType.WRITE);
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
         }
@@ -121,12 +124,12 @@ public class AllServiceTest {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest(factory).createKeyStore();
             DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest(factory);
             DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = documentGuardServiceTest.testCreateSymmetricDocumentGuard(
-                    keyStoreStuff.keyStoreAccess);
-            DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardServiceTest.testLoadDocumentGuard(
+                    keyStoreStuff.keyStoreAccess, AccessType.WRITE);
+            DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = documentGuardServiceTest.testLoadDocumentGuard(
                     keyStoreStuff.keyStoreAccess,
-                    documentGuardStuff.documentKeyIDWithKey.getDocumentKeyID());
+                    documentGuardStuff.documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
 
-            LOGGER.debug("DocumentKey is " + HexUtil.conventBytesToHexString(documentKeyIDWithKey.getDocumentKey().getSecretKey().getEncoded()));
+            LOGGER.debug("DocumentKey is " + HexUtil.conventBytesToHexString(documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKey().getSecretKey().getEncoded()));
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
         }
@@ -141,14 +144,14 @@ public class AllServiceTest {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest(factory).createKeyStore();
             DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest(factory);
             DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = documentGuardServiceTest.testCreateSymmetricDocumentGuard(
-                    keyStoreStuff.keyStoreAccess);
-            DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardServiceTest.testLoadDocumentGuard(
+                    keyStoreStuff.keyStoreAccess, AccessType.WRITE);
+            DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = documentGuardServiceTest.testLoadDocumentGuard(
                     keyStoreStuff.keyStoreAccess,
-                    documentGuardStuff.documentKeyIDWithKey.getDocumentKeyID());
+                    documentGuardStuff.documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
             new DocumentPersistenceServiceTest(factory).testPersistDocument(
                     documentGuardStuff.documentGuardService,
                     new DocumentBucketPath("documentBucketPath1/doc1.txt"),
-                    documentKeyIDWithKey, documentContent);
+                    documentKeyIDWithKeyAndAccessType, documentContent);
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
         }
@@ -163,15 +166,15 @@ public class AllServiceTest {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest(factory).createKeyStore();
             DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest(factory);
             DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = documentGuardServiceTest.testCreateSymmetricDocumentGuard(
-                    keyStoreStuff.keyStoreAccess);
-            DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardServiceTest.testLoadDocumentGuard(
+                    keyStoreStuff.keyStoreAccess, AccessType.WRITE);
+            DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = documentGuardServiceTest.testLoadDocumentGuard(
                     keyStoreStuff.keyStoreAccess,
-                    documentGuardStuff.documentKeyIDWithKey.getDocumentKeyID());
+                    documentGuardStuff.documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
             DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest(factory);
             DocumentPersistenceServiceTest.DocumentStuff documentStuff = new DocumentPersistenceServiceTest(factory).testPersistDocument(
                     documentGuardStuff.documentGuardService,
                     new DocumentBucketPath("documentBucketPath2/doc2.txt"),
-                    documentKeyIDWithKey,
+                    documentKeyIDWithKeyAndAccessType,
                     documentContent);
             DocumentContentWithContentMetaInfo readContent = documentPersistenceServiceTest.testLoadDocument(documentGuardStuff.documentGuardService,
                     keyStoreStuff.keyStoreAccess,
@@ -179,9 +182,9 @@ public class AllServiceTest {
 
             Assert.assertEquals("Content of Document", readContent.getDocumentContent().toString(), documentContent.toString());
 
-            LOGGER.debug("DocumentBucketPath   :" + documentStuff.documentBucketPath);
-            LOGGER.debug("DocumentKeyID        :" + documentKeyIDWithKey.getDocumentKeyID());
-            LOGGER.debug("KeyStoreLocation     :" + keyStoreStuff.keyStoreAccess.getKeyStoreLocation());
+            LOGGER.debug("DocumentBucketPath         :" + documentStuff.documentBucketPath);
+            LOGGER.debug("DocumentKeyIDAndAccessType :" + documentKeyIDWithKeyAndAccessType);
+            LOGGER.debug("KeyStoreLocation           :" + keyStoreStuff.keyStoreAccess.getKeyStoreLocation());
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
         }
@@ -209,7 +212,7 @@ public class AllServiceTest {
 
         try {
             FullStuff symmetricStuff = createKeyStoreAndDocument(container1, documentBucketPath, documentContent);
-            createPublicKeyStoreForKnownDocument(container2, documentContent, symmetricStuff.documentStuff.documentBucketPath, symmetricStuff.documentGuardStuff.documentKeyIDWithKey, true);
+            createPublicKeyStoreForKnownDocument(container2, documentContent, symmetricStuff.documentStuff.documentBucketPath, symmetricStuff.documentGuardStuff.documentKeyIDWithKeyAndAccessType, true);
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
         }
@@ -230,7 +233,7 @@ public class AllServiceTest {
 
         try {
             FullStuff symmetricStuff = createKeyStoreAndDocument(container1, documentBucketPath, documentContent);
-            createPublicKeyStoreForKnownDocument(container2, documentContent, symmetricStuff.documentStuff.documentBucketPath, symmetricStuff.documentGuardStuff.documentKeyIDWithKey, false);
+            createPublicKeyStoreForKnownDocument(container2, documentContent, symmetricStuff.documentStuff.documentBucketPath, symmetricStuff.documentGuardStuff.documentKeyIDWithKeyAndAccessType, false);
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
         }
@@ -246,7 +249,7 @@ public class AllServiceTest {
         DocumentContent documentContent = new DocumentContent("Ein Affe im Zoo ist nie allein".getBytes());
         try {
             FullStuff symmetricStuff = createKeyStoreAndDocument(container1, documentBucketPath, documentContent);
-            FullStuff asymmetricStuff = createPublicKeyStoreForKnownDocument(container2, documentContent, symmetricStuff.documentStuff.documentBucketPath, symmetricStuff.documentGuardStuff.documentKeyIDWithKey, true);
+            FullStuff asymmetricStuff = createPublicKeyStoreForKnownDocument(container2, documentContent, symmetricStuff.documentStuff.documentBucketPath, symmetricStuff.documentGuardStuff.documentKeyIDWithKeyAndAccessType, true);
 
             // Neuer Inhalt für das Document, für das es bereits zwei Guards gibt
             DocumentContent newDocumentContent = new DocumentContent("ein anderer affe im zoo".getBytes());
@@ -254,7 +257,7 @@ public class AllServiceTest {
             DocumentPersistenceServiceTest.DocumentStuff documentStuff = documentPersistenceServiceTest.testPersistDocument(
                     asymmetricStuff.documentGuardStuff.documentGuardService,
                     documentBucketPath,
-                    asymmetricStuff.documentGuardStuff.documentKeyIDWithKey,
+                    asymmetricStuff.documentGuardStuff.documentKeyIDWithKeyAndAccessType,
                     newDocumentContent,
                     OverwriteFlag.TRUE
             );
@@ -280,12 +283,12 @@ public class AllServiceTest {
         DocumentContent documentContent = new DocumentContent("Affe".getBytes());
 
         DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest(factory);
-        DocumentKeyIDWithKey keyIDWithKey = documentGuardServiceTest.createKeyIDWithKey();
+        DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = new DocumentKeyIDWithKeyAndAccessType(documentGuardServiceTest.createKeyIDWithKey(), AccessType.WRITE);
 
         DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest(factory);
         DocumentBucketPath netDocumentBucketPath = new DocumentBucketPath(documentBucketPath.append("AffenDocument-1"));
-        documentPersistenceServiceTest.testPersistDocument(null, netDocumentBucketPath, keyIDWithKey, documentContent, OverwriteFlag.FALSE);
-        documentPersistenceServiceTest.testPersistDocument(null, netDocumentBucketPath, keyIDWithKey, documentContent, OverwriteFlag.FALSE);
+        documentPersistenceServiceTest.testPersistDocument(null, netDocumentBucketPath, documentKeyIDWithKeyAndAccessType, documentContent, OverwriteFlag.FALSE);
+        documentPersistenceServiceTest.testPersistDocument(null, netDocumentBucketPath, documentKeyIDWithKeyAndAccessType, documentContent, OverwriteFlag.FALSE);
     }
 
     @Test
@@ -295,12 +298,12 @@ public class AllServiceTest {
         DocumentContent documentContent = new DocumentContent("Affe".getBytes());
 
         DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest(factory);
-        DocumentKeyIDWithKey keyIDWithKey = documentGuardServiceTest.createKeyIDWithKey();
+        DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = new DocumentKeyIDWithKeyAndAccessType(documentGuardServiceTest.createKeyIDWithKey(), AccessType.WRITE);
 
         DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest(factory);
         DocumentBucketPath netDocumentBucketPath = new DocumentBucketPath(documentBucketPath.append("AffenDocument-1"));
-        documentPersistenceServiceTest.testPersistDocument(null, netDocumentBucketPath, keyIDWithKey, documentContent, OverwriteFlag.FALSE);
-        documentPersistenceServiceTest.testPersistDocument(null, netDocumentBucketPath, keyIDWithKey, documentContent, OverwriteFlag.TRUE);
+        documentPersistenceServiceTest.testPersistDocument(null, netDocumentBucketPath, documentKeyIDWithKeyAndAccessType, documentContent, OverwriteFlag.FALSE);
+        documentPersistenceServiceTest.testPersistDocument(null, netDocumentBucketPath, documentKeyIDWithKeyAndAccessType, documentContent, OverwriteFlag.TRUE);
 
     }
 
@@ -351,10 +354,11 @@ public class AllServiceTest {
         DocumentContent documentContent = new DocumentContent("Affe".getBytes());
 
         DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest(factory);
-        DocumentKeyIDWithKey keyIDWithKey = documentGuardServiceTest.createKeyIDWithKey();
+        DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = new DocumentKeyIDWithKeyAndAccessType(documentGuardServiceTest.createKeyIDWithKey(), AccessType.WRITE);
+
         DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest(factory);
 
-        documentPersistenceServiceTest.testPersistDocument(null, documentBucketPath, keyIDWithKey, documentContent, OverwriteFlag.FALSE);
+        documentPersistenceServiceTest.testPersistDocument(null, documentBucketPath, documentKeyIDWithKeyAndAccessType, documentContent, OverwriteFlag.FALSE);
 
         BucketContent bucketContent = bucketServiceTest.listBucket(documentBucketPath, ListRecursiveFlag.FALSE.TRUE);
         Assert.assertEquals("this is no bucket, so no result expected", 0, bucketContent.getStrippedContent().size());
@@ -401,7 +405,7 @@ public class AllServiceTest {
         // Erzeugen des ersten DocumentGuards mit dem dem KeyStore, der den Secret Key enthält
         DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest(factory);
         DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuffForSecretKey = documentGuardServiceTest.testCreateSymmetricDocumentGuard(
-                keyStoreStuffForKeyStoreWithSecretKey.keyStoreAccess);
+                keyStoreStuffForKeyStoreWithSecretKey.keyStoreAccess, AccessType.WRITE);
         LOGGER.debug("Ersten DocumentGuard mit secretKey verschlüsselt");
 
         // Erzeugen des Documents mit dem DocumentGuard, der mit dem secretKey verschlüsselt ist
@@ -409,7 +413,7 @@ public class AllServiceTest {
         DocumentPersistenceServiceTest.DocumentStuff documentStuff = documentPersistenceServiceTest.testPersistDocument(
                 documentGuardStuffForSecretKey.documentGuardService,
                 documentBucketPath,
-                documentGuardStuffForSecretKey.documentKeyIDWithKey,
+                documentGuardStuffForSecretKey.documentKeyIDWithKeyAndAccessType,
                 documentContent);
         LOGGER.debug("Document mit Schlüssel aus DocumentGuard verschlüsselt");
 
@@ -424,7 +428,7 @@ public class AllServiceTest {
         return new FullStuff(keyStoreStuffForKeyStoreWithSecretKey, documentGuardStuffForSecretKey, documentStuff);
     }
 
-    private FullStuff createPublicKeyStoreForKnownDocument(String container2, DocumentContent documentContent, DocumentBucketPath documentBucketPath, DocumentKeyIDWithKey documentKeyIDWithKey, boolean setReadKeyPassword) {
+    private FullStuff createPublicKeyStoreForKnownDocument(String container2, DocumentContent documentContent, DocumentBucketPath documentBucketPath, DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType, boolean setReadKeyPassword) {
         // Anlegen des zweiten KeyStores. Nur mit einen EncKey
         KeyStoreServiceTest.KeyStoreStuff keyStoreStuffForKeyStoreWithEncKey = new KeyStoreServiceTest(factory).createKeyStore(container2,
                 new ReadStorePassword("c"),
@@ -443,7 +447,7 @@ public class AllServiceTest {
         DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest(factory);
         DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuffForEncKey = documentGuardServiceTest.testCreateAsymmetricDocumentGuardForDocumentKeyIDWithKey(
                 keystoreAccessForKeyStoreWithEncKey,
-                documentKeyIDWithKey);
+                documentKeyIDWithKeyAndAccessType);
         LOGGER.debug("Zweiten DocumentGuard mit EncKey ohne Wissen über das Kennwort des Keys angelegt");
 
         if (setReadKeyPassword) {

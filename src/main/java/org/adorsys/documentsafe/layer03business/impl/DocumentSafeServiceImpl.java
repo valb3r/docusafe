@@ -14,6 +14,7 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucket
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentContentWithContentMetaInfo;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentDirectory;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
+import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAuth;
 import org.adorsys.documentsafe.layer03business.exceptions.UserIDAlreadyExistsException;
@@ -87,7 +88,7 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
         UserHomeBucketPath userHomeBucketPath = UserIDUtil.getHomeBucketPath(userIDAuth.getUserID());
         {   // create homeBucket
             bucketService.createBucket(userHomeBucketPath);
-            createGuardForBucket(keyStoreAccess, new DocumentDirectory(userHomeBucketPath));
+            createGuardForBucket(keyStoreAccess, new DocumentDirectory(userHomeBucketPath), AccessType.WRITE);
         }
         {   // Now create a welcome file in the Home directory
             storeDocument(userIDAuth, createWelcomeDocument());
@@ -102,9 +103,10 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
 
         ContentMetaInfo contentMetaInfo = ContentMetaInfoUtil.createContentMetaInfo(dsDocument);
         DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), dsDocument.getDocumentFQN());
-        DocumentKeyIDWithKey documentKeyIDWithKey = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, documentBucketPath.getDocumentDirectory());
+        DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, documentBucketPath.getDocumentDirectory(), AccessType.WRITE );
+        // Hier ist keine Prüfung des Schreibrechts notwendig
         documentPersistenceService.persistDocument(
-                documentKeyIDWithKey,
+                documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey(),
                 documentBucketPath,
                 dsDocument.getDocumentContent(),
                 OverwriteFlag.FALSE,
@@ -175,10 +177,10 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
         // Wir prüfen lediglich, ob es den source Bucket gibt und ob wir darauf Zugriff haben.
         // Ob das Document selbset existiert, bleibt vorher ein Geheimnis
         DocumentBucketPath sourceDocumentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), sourceDocumentFQN);
-        DocumentKeyIDWithKey sourceDocumentKeyIDWithKey = getDocumentKeyIDwithKeyForBucketPath(userIDAuth, sourceDocumentBucketPath.getDocumentDirectory());
+        DocumentKeyIDWithKeyAndAccessType sourceDocumentKeyIDWithKeyAndAccessType = getDocumentKeyIDwithKeyForBucketPath(userIDAuth, sourceDocumentBucketPath.getDocumentDirectory());
 
         DocumentBucketPath destinationDocumentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), destinationDocumentFQN);
-        DocumentKeyIDWithKey destinationDocumentKeyIDWithKey = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, destinationDocumentBucketPath.getDocumentDirectory());
+        DocumentKeyIDWithKeyAndAccessType destinationDocumentKeyIDWithKeyAndAccessType = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, destinationDocumentBucketPath.getDocumentDirectory(), AccessType.WRITE);
 
         // TODO, die keys der destination müssen noch in das linkDocument (das faktisch ein guard ist)
         DocumentLink documentLink = new DocumentLink(sourceDocumentBucketPath, destinationDocumentBucketPath);
@@ -189,7 +191,9 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
     }
 
     @Override
-    public void grantAccessToUserForFolder(UserIDAuth userIDAuth, UserID receiverUserID, DocumentDirectoryFQN documentDirectoryFQN, AccessType accessType) {
+    public void grantAccessToUserForFolder(UserIDAuth userIDAuth, UserID receiverUserID,
+                                           DocumentDirectoryFQN documentDirectoryFQN,
+                                           AccessType accessType) {
         LOGGER.info("start grant access for " + userIDAuth + " to  " + receiverUserID + " for " + documentDirectoryFQN);
 
         {
@@ -207,12 +211,12 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
 
         UserHomeBucketPath homeBucketPath = UserIDUtil.getHomeBucketPath(userIDAuth.getUserID());
         DocumentDirectory documentDirectory = new DocumentDirectory(homeBucketPath.append(new BucketPath(documentDirectoryFQN.getValue())));
-        DocumentKeyIDWithKey documentKeyIDWithKey = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, documentDirectory);
+        DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, documentDirectory, accessType);
 
         {
             UserIDAuth receiverUserIDAuth = new UserIDAuth(receiverUserID, null);
             KeyStoreAccess receiverKeyStoreAccess = getKeyStoreAccess(receiverUserIDAuth);
-            createAsymmetricGuardForBucket(receiverKeyStoreAccess, documentKeyIDWithKey, documentDirectory);
+            createAsymmetricGuardForBucket(receiverKeyStoreAccess, documentKeyIDWithKeyAndAccessType, documentDirectory);
         }
 
         {
@@ -224,13 +228,13 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
     }
 
     private DocumentKeyID createAsymmetricGuardForBucket(KeyStoreAccess keyStoreAccess,
-                                                         DocumentKeyIDWithKey documentKeyIDWithKey,
+                                                         DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType,
                                                          DocumentDirectory documentDirectory) {
         LOGGER.debug("start create asymmetric guard for " + documentDirectory + " " + keyStoreAccess.getKeyStoreLocation().getKeyStoreDirectory());
-        documentGuardService.createAsymmetricDocumentGuard(keyStoreAccess, documentKeyIDWithKey);
-        GuardUtil.saveBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStoreLocation().getKeyStoreDirectory(), documentDirectory, documentKeyIDWithKey.getDocumentKeyID());
+        documentGuardService.createAsymmetricDocumentGuard(keyStoreAccess, documentKeyIDWithKeyAndAccessType);
+        GuardUtil.saveBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStoreLocation().getKeyStoreDirectory(), documentDirectory, documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
         LOGGER.debug("finished create asymmetric guard for " + documentDirectory + " " + keyStoreAccess.getKeyStoreLocation().getKeyStoreDirectory());
-        return documentKeyIDWithKey.getDocumentKeyID();
+        return documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID();
     }
 
     private KeyStoreAccess getKeyStoreAccess(UserIDAuth userIDAuth) {
@@ -257,34 +261,38 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
      * Es wird extra nur die KeyID zurückgegeben. Damit der Zugriff auf den Key wirklich über den
      * KeyStore erfolgt und damit dann auch getestet ist.
      */
-    private DocumentKeyID createGuardForBucket(KeyStoreAccess keyStoreAccess, DocumentDirectory documentDirectory) {
+    private DocumentKeyID createGuardForBucket(KeyStoreAccess keyStoreAccess, DocumentDirectory documentDirectory, AccessType accessType) {
         LOGGER.debug("start create new guard for " + documentDirectory);
-        DocumentKeyIDWithKey documentKeyIdWithKey = documentGuardService.createDocumentKeyIdWithKey();
-        documentGuardService.createSymmetricDocumentGuard(keyStoreAccess, documentKeyIdWithKey);
-        GuardUtil.saveBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStoreLocation().getKeyStoreDirectory(), documentDirectory, documentKeyIdWithKey.getDocumentKeyID());
+        DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = new DocumentKeyIDWithKeyAndAccessType(documentGuardService.createDocumentKeyIdWithKey(), accessType);
+        documentGuardService.createSymmetricDocumentGuard(keyStoreAccess, documentKeyIDWithKeyAndAccessType);
+        GuardUtil.saveBucketGuardKeyFile(bucketService,
+                keyStoreAccess.getKeyStoreLocation().getKeyStoreDirectory(),
+                documentDirectory, documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
         LOGGER.debug("finished create new guard for " + documentDirectory);
-        return documentKeyIdWithKey.getDocumentKeyID();
+        return documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID();
     }
 
-    private DocumentKeyIDWithKey getOrCreateDocumentKeyIDwithKeyForBucketPath(UserIDAuth userIDAuth, DocumentDirectory documentDirectory) {
+    private DocumentKeyIDWithKeyAndAccessType getOrCreateDocumentKeyIDwithKeyForBucketPath(UserIDAuth userIDAuth,
+                                                                                           DocumentDirectory documentDirectory,
+                                                                                           AccessType accessType) {
         LOGGER.debug("search key for " + documentDirectory);
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
         DocumentKeyID documentKeyID = GuardUtil.tryToLoadBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStoreLocation().getKeyStoreDirectory(), documentDirectory);
         if (documentKeyID == null) {
-            documentKeyID = createGuardForBucket(keyStoreAccess, documentDirectory);
+            documentKeyID = createGuardForBucket(keyStoreAccess, documentDirectory, accessType);
         }
-        DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardService.loadDocumentKeyIDWithKeyFromDocumentGuard(keyStoreAccess, documentKeyID);
-        LOGGER.debug("found " + documentKeyIDWithKey + " for " + documentDirectory);
-        return documentKeyIDWithKey;
+        DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = documentGuardService.loadDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(keyStoreAccess, documentKeyID);
+        LOGGER.debug("found " + documentKeyIDWithKeyAndAccessType + " for " + documentDirectory);
+        return documentKeyIDWithKeyAndAccessType;
     }
 
-    private DocumentKeyIDWithKey getDocumentKeyIDwithKeyForBucketPath(UserIDAuth userIDAuth, DocumentDirectory documentDirectory) {
+    private DocumentKeyIDWithKeyAndAccessType getDocumentKeyIDwithKeyForBucketPath(UserIDAuth userIDAuth, DocumentDirectory documentDirectory) {
         LOGGER.debug("get key for " + documentDirectory);
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
         DocumentKeyID documentKeyID = GuardUtil.loadBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStoreLocation().getKeyStoreDirectory(), documentDirectory);
-        DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardService.loadDocumentKeyIDWithKeyFromDocumentGuard(keyStoreAccess, documentKeyID);
-        LOGGER.debug("found " + documentKeyIDWithKey + " for " + documentDirectory);
-        return documentKeyIDWithKey;
+        DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = documentGuardService.loadDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(keyStoreAccess, documentKeyID);
+        LOGGER.debug("found " + documentKeyIDWithKeyAndAccessType + " for " + documentDirectory);
+        return documentKeyIDWithKeyAndAccessType;
     }
 
 

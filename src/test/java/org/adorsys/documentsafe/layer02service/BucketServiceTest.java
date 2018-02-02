@@ -5,6 +5,8 @@ import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.complextypes.BucketContent;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
+import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
+import org.adorsys.documentsafe.layer03business.types.AccessType;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.types.ListRecursiveFlag;
@@ -42,12 +44,12 @@ public class BucketServiceTest {
         }
         DocumentContent documentContent = new DocumentContent("Affe".getBytes());
         DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest(factory);
-        DocumentKeyIDWithKey keyIDWithKey = documentGuardServiceTest.createKeyIDWithKey();
+        DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = new DocumentKeyIDWithKeyAndAccessType(documentGuardServiceTest.createKeyIDWithKey(), AccessType.WRITE);
         DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest(factory);
 
         for (int i = 0; i<subfiles; i++) {
             documentPersistenceServiceTest.testPersistDocument(null, new DocumentBucketPath(rootPath.append("file").add("" + i)),
-                    keyIDWithKey, documentContent, OverwriteFlag.FALSE);
+                    documentKeyIDWithKeyAndAccessType, documentContent, OverwriteFlag.FALSE);
 
         }
         for (int i = 0; i<subdirs; i++) {

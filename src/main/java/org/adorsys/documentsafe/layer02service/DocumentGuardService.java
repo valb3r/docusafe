@@ -2,6 +2,7 @@ package org.adorsys.documentsafe.layer02service;
 
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
+import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
 
 /**
@@ -11,11 +12,11 @@ public interface DocumentGuardService {
     DocumentKeyIDWithKey createDocumentKeyIdWithKey();
 
     void createSymmetricDocumentGuard(KeyStoreAccess keyStoreAccess,
-                                      DocumentKeyIDWithKey documentKeyIDWithKey);
+                                      DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType);
 
     void createAsymmetricDocumentGuard(KeyStoreAccess receiverKeyStoreAccess,
-                                       DocumentKeyIDWithKey documentKeyIDWithKey);
+                                       DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType);
 
-    DocumentKeyIDWithKey loadDocumentKeyIDWithKeyFromDocumentGuard(KeyStoreAccess keyStoreAccess,
-                                                                   DocumentKeyID documentKeyID);
+    DocumentKeyIDWithKeyAndAccessType loadDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(KeyStoreAccess keyStoreAccess,
+                                                                                             DocumentKeyID documentKeyID);
 }
