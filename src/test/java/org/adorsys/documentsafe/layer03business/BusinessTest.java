@@ -12,6 +12,7 @@ import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
 import org.adorsys.documentsafe.layer02service.types.complextypes.BucketContent;
 import org.adorsys.documentsafe.layer02service.utils.TestFsBlobStoreFactory;
+import org.adorsys.documentsafe.layer03business.exceptions.NoWriteAccessException;
 import org.adorsys.documentsafe.layer03business.impl.DocumentSafeServiceImpl;
 import org.adorsys.documentsafe.layer03business.types.AccessType;
 import org.adorsys.documentsafe.layer03business.types.UserHomeBucketPath;
@@ -25,6 +26,7 @@ import org.adorsys.documentsafe.layer03business.utils.UserIDUtil;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.complextypes.KeyStoreDirectory;
 import org.adorsys.encobject.domain.StorageMetadata;
+import org.adorsys.encobject.exceptions.FileExistsException;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -138,7 +140,42 @@ public class BusinessTest {
 
         DSDocument dsDocument = service.readDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
         Assert.assertEquals("document content ok", dsDocument1.getDocumentContent(), dsDocument.getDocumentContent());
+
+        service.storeDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), dsDocument);
     }
+
+    @Test(expected = NoWriteAccessException.class)
+    public void grantReadAccessToFolder() {
+        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        UserIDAuth userIDAuthPeter = createUser(new UserID("peter"), new ReadKeyPassword("keyPasswordForPeter"));
+        UserIDAuth userIDAuthFrancis = createUser(new UserID("francis"), new ReadKeyPassword("keyPasswordForFrancis"));
+        DocumentFQN documentFQN = new DocumentFQN("first/next/a-new-document.txt");
+        DSDocument dsDocument1 = createDocument(userIDAuthPeter, documentFQN);
+
+        DocumentDirectoryFQN documentDirectoryFQN = new DocumentDirectoryFQN("first/next");
+
+        service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentDirectoryFQN, AccessType.READ);
+
+        DSDocument dsDocument = service.readDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
+        Assert.assertEquals("document content ok", dsDocument1.getDocumentContent(), dsDocument.getDocumentContent());
+
+        service.storeDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), dsDocument);
+    }
+
+   //  @Test
+    public void tryOverwriteGrantAccessToFolder() {
+        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        UserIDAuth userIDAuthPeter = createUser(new UserID("peter"), new ReadKeyPassword("keyPasswordForPeter"));
+        UserIDAuth userIDAuthFrancis = createUser(new UserID("francis"), new ReadKeyPassword("keyPasswordForFrancis"));
+        DocumentFQN documentFQN = new DocumentFQN("first/next/a-new-document.txt");
+        DSDocument dsDocument1 = createDocument(userIDAuthPeter, documentFQN);
+
+        DocumentDirectoryFQN documentDirectoryFQN = new DocumentDirectoryFQN("first/next");
+
+        service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentDirectoryFQN, AccessType.READ);
+        service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentDirectoryFQN, AccessType.WRITE);
+    }
+
 
     private int getNumberOfGuards(UserID userID) {
         BucketService bucketService = new BucketServiceImpl(factory);

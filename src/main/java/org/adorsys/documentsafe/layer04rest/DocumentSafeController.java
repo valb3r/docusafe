@@ -43,7 +43,8 @@ public class DocumentSafeController {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentSafeController.class);
     private DocumentSafeService service = new DocumentSafeServiceImpl(new FileSystemBlobStoreFactory());
 
-    /** USER
+    /**
+     * USER
      * ===========================================================================================
      */
     @RequestMapping(
@@ -67,8 +68,8 @@ public class DocumentSafeController {
     }
 
 
-
-    /** DOCUMENT
+    /**
+     * DOCUMENT
      * ===========================================================================================
      */
     @RequestMapping(
@@ -85,16 +86,17 @@ public class DocumentSafeController {
     }
 
 
-
     @RequestMapping(
             value = "/document/**",
             method = {RequestMethod.GET},
             consumes = {MediaType.APPLICATION_JSON},
             produces = {MediaType.APPLICATION_JSON}
     )
-    public @ResponseBody DSDocument readDocument(@RequestHeader("userid") String userid,
-                                                 @RequestHeader("password") String password,
-                                                 HttpServletRequest request
+    public
+    @ResponseBody
+    DSDocument readDocument(@RequestHeader("userid") String userid,
+                            @RequestHeader("password") String password,
+                            HttpServletRequest request
     ) {
         UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
 
@@ -109,7 +111,8 @@ public class DocumentSafeController {
     }
 
 
-    /** GRANT/DOCUMENT
+    /**
+     * GRANT/DOCUMENT
      * ===========================================================================================
      */
     @RequestMapping(
@@ -126,15 +129,17 @@ public class DocumentSafeController {
     }
 
     @RequestMapping(
-            value = "/grant/document/{ownerUserID}/**",
+            value = "/granted/document/{ownerUserID}/**",
             method = {RequestMethod.GET},
             consumes = {MediaType.APPLICATION_JSON},
             produces = {MediaType.APPLICATION_JSON}
     )
-    public @ResponseBody DSDocument readDocument(@RequestHeader("userid") String userid,
-                                                 @RequestHeader("password") String password,
-                                                 @PathVariable("ownerUserID") String ownerUserIDString,
-                                                 HttpServletRequest request
+    public
+    @ResponseBody
+    DSDocument readGrantedDocument(@RequestHeader("userid") String userid,
+                                   @RequestHeader("password") String password,
+                                   @PathVariable("ownerUserID") String ownerUserIDString,
+                                   HttpServletRequest request
     ) {
         UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
         UserID ownerUserID = new UserID(ownerUserIDString);
@@ -149,7 +154,23 @@ public class DocumentSafeController {
         return service.readDocument(userIDAuth, ownerUserID, documentFQN);
     }
 
-    /** DOCUMENT/LINK
+    @RequestMapping(
+            value = "/granted/document/{ownerUserID}",
+            method = {RequestMethod.PUT},
+            consumes = {MediaType.APPLICATION_JSON},
+            produces = {MediaType.APPLICATION_JSON}
+    )
+    public void storeGrantedDocument(@RequestHeader("userid") String userid,
+                                     @RequestHeader("password") String password,
+                                     @PathVariable("ownerUserID") String ownerUserIDString,
+                                     @RequestBody DSDocument dsDocument) {
+        UserID ownerUserID = new UserID(ownerUserIDString);
+        UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
+        service.storeDocument(userIDAuth, ownerUserID, dsDocument);
+    }
+
+    /**
+     * DOCUMENT/LINK
      * ===========================================================================================
      */
     @RequestMapping(

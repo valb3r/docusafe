@@ -19,4 +19,7 @@ public class GrantAccessList {
         map.put(userID, accessType);
     }
 
+    public AccessType find(UserID userID) {
+        return map.get(userID);
+    }
 }

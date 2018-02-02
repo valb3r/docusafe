@@ -18,6 +18,8 @@ public interface DocumentSafeService {
     DSDocument readDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
 
     void grantAccessToUserForFolder(UserIDAuth userIDAuth, UserID receiverUserID, DocumentDirectoryFQN documentDirectoryFQN, AccessType accessType);
+
+    void storeDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument);
     DSDocument readDocument(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN);
 
     void linkDocument(UserIDAuth userIDAuth, DocumentFQN sourceDocumentFQN, DocumentFQN destinationDocumentFQN);

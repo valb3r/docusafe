@@ -5,5 +5,6 @@ package org.adorsys.documentsafe.layer03business.types;
  */
 public enum AccessType {
     READ,
-    WRITE
+    WRITE,
+    NONE
 }
