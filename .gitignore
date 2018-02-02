@@ -4,5 +4,5 @@
 .settings/
 .DS_Store
 /target/
-rr-documentsafe.log
+*.log
 *.iml
