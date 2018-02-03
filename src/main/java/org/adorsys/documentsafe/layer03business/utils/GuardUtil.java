@@ -28,6 +28,11 @@ public class GuardUtil {
         bucketService.createPlainFile(guardFile, plainFileContent);
     }
 
+    public static void deleteBucketGuardKeyFile(BucketService bucketService, KeyStoreDirectory keyStoreDirectory, DocumentDirectory documentDirectory) {
+        BucketPath guardFile = keyStoreDirectory.append(documentDirectory).add(BUCKET_GUARD_KEY);
+        bucketService.deletePlainFile(guardFile);
+    }
+
     public static DocumentKeyID tryToLoadBucketGuardKeyFile(BucketService bucketService, KeyStoreDirectory keyStoreDirectory, BucketPath bucketPath) {
         BucketPath guardFile = keyStoreDirectory.append(bucketPath).add(BUCKET_GUARD_KEY);
         if (!bucketService.existsFile(guardFile)) {

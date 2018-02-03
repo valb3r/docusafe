@@ -14,6 +14,7 @@ import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentContentWithContentMetaInfo;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentDirectory;
+import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentGuardLocation;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAuth;
@@ -40,6 +41,7 @@ import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.complextypes.KeyStoreDirectory;
 import org.adorsys.encobject.complextypes.KeyStoreLocation;
 import org.adorsys.encobject.domain.ContentMetaInfo;
+import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.types.KeyStoreID;
 import org.adorsys.encobject.types.OverwriteFlag;
@@ -104,13 +106,13 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
 
         ContentMetaInfo contentMetaInfo = ContentMetaInfoUtil.createContentMetaInfo(dsDocument);
         DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), dsDocument.getDocumentFQN());
-        DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, documentBucketPath.getDocumentDirectory(), AccessType.WRITE );
+        DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, documentBucketPath.getDocumentDirectory(), AccessType.WRITE);
         // Hier ist keine Prüfung des Schreibrechts notwendig
         documentPersistenceService.persistDocument(
                 documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey(),
                 documentBucketPath,
                 dsDocument.getDocumentContent(),
-                OverwriteFlag.FALSE,
+                OverwriteFlag.TRUE,
                 contentMetaInfo);
         LOGGER.info("finished storeDocument for " + userIDAuth + " " + dsDocument.getDocumentFQN());
     }
@@ -195,7 +197,7 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
     public void grantAccessToUserForFolder(UserIDAuth userIDAuth, UserID receiverUserID,
                                            DocumentDirectoryFQN documentDirectoryFQN,
                                            AccessType accessType) {
-        LOGGER.info("start grant access for " + userIDAuth + " to  " + receiverUserID + " for " + documentDirectoryFQN);
+        LOGGER.info("start grant access for " + userIDAuth + " to  " + receiverUserID + " for " + documentDirectoryFQN + " with " + accessType);
 
         {
             UserRootBucketPath userRootBucketPath = UserIDUtil.getUserRootBucketPath(userIDAuth.getUserID());
@@ -213,37 +215,26 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
         UserHomeBucketPath homeBucketPath = UserIDUtil.getHomeBucketPath(userIDAuth.getUserID());
         DocumentDirectory documentDirectory = new DocumentDirectory(homeBucketPath.append(new BucketPath(documentDirectoryFQN.getValue())));
 
-        AccessType originalAccessType = GrantUtil.getAccessTypeOfBucketGrantFile(bucketService, documentDirectory, userIDAuth.getUserID(), receiverUserID);
-        if (originalAccessType != AccessType.NONE) {
-            if (originalAccessType.equals(accessType)) {
-                LOGGER.debug("grant file already exists with originalAccessType. so nothing to do");
-                return;
-            }
-            LOGGER.debug("grant file already exists. overwirte accesstype from " + originalAccessType + " to " + accessType);
-            DocumentKeyIDWithKeyAndAccessType receiversDocumentKeyWithIDAndAccessType = getDocumentKeyIDwithKeyForBucketPath(userIDAuth, documentDirectory);
-            AccessType originalAccessTypeFromGuard = receiversDocumentKeyWithIDAndAccessType.getAccessType();
-            if (!originalAccessTypeFromGuard.equals(originalAccessType)) {
-                throw new BaseException("Programming error: AccessType in GrantFile is " + originalAccessType + " but in guard it is " + originalAccessTypeFromGuard);
-            }
 
-            UserIDAuth receiverUserIDAuth = new UserIDAuth(receiverUserID, null);
-            KeyStoreAccess receiverKeyStoreAccess = getKeyStoreAccess(receiverUserIDAuth);
-            DocumentKeyIDWithKeyAndAccessType newReceiversDocumentKeyWithIDAndAccessType = new DocumentKeyIDWithKeyAndAccessType(receiversDocumentKeyWithIDAndAccessType.getDocumentKeyIDWithKey(), accessType);
-            createAsymmetricGuardForBucket(receiverKeyStoreAccess, newReceiversDocumentKeyWithIDAndAccessType, documentDirectory, OverwriteFlag.TRUE);
-
-            GrantUtil.saveBucketGrantFile(bucketService, documentDirectory, userIDAuth.getUserID(), receiverUserID, accessType);
-
+        AccessType grantedAccess = GrantUtil.getAccessTypeOfBucketGrantFile(bucketService, documentDirectory, userIDAuth.getUserID(), receiverUserID);
+        if (grantedAccess.equals(accessType)) {
+            LOGGER.debug("nothing to do. granted access already exists for " + userIDAuth + " to  " + receiverUserID + " for " + documentDirectoryFQN + " with " + accessType);
             return;
+        }
+        if (!grantedAccess.equals(AccessType.NONE)) {
+            LOGGER.debug("granted access for " + userIDAuth + " to  " + receiverUserID + " for " + documentDirectoryFQN + " will be changed from " + grantedAccess + " to " + accessType);
         }
 
         DocumentKeyIDWithKeyAndAccessType usersDocumentKeyIDWithKeyAndAccessType = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, documentDirectory, AccessType.WRITE);
-
-
         {
             DocumentKeyIDWithKeyAndAccessType receiversDocumentKeyWithIDAndAccessType = new DocumentKeyIDWithKeyAndAccessType(usersDocumentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey(), accessType);
             UserIDAuth receiverUserIDAuth = new UserIDAuth(receiverUserID, null);
             KeyStoreAccess receiverKeyStoreAccess = getKeyStoreAccess(receiverUserIDAuth);
-            createAsymmetricGuardForBucket(receiverKeyStoreAccess, receiversDocumentKeyWithIDAndAccessType, documentDirectory, OverwriteFlag.FALSE);
+            if (AccessType.NONE.equals(accessType)) {
+                deleteGuardForBucket(receiverKeyStoreAccess, receiversDocumentKeyWithIDAndAccessType, documentDirectory);
+            } else {
+                createAsymmetricGuardForBucket(receiverKeyStoreAccess, receiversDocumentKeyWithIDAndAccessType, documentDirectory, OverwriteFlag.TRUE);
+            }
         }
 
         {
@@ -251,7 +242,7 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
             GrantUtil.saveBucketGrantFile(bucketService, documentDirectory, userIDAuth.getUserID(), receiverUserID, accessType);
         }
 
-        LOGGER.info("finished grant access for " + userIDAuth + " to  " + receiverUserID + " for " + documentDirectory);
+        LOGGER.info("finished grant access for " + userIDAuth + " to  " + receiverUserID + " for " + documentDirectoryFQN + " with " + accessType);
     }
 
 
@@ -279,10 +270,23 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
                                                          DocumentDirectory documentDirectory,
                                                          OverwriteFlag overwriteFlag) {
         LOGGER.debug("start create asymmetric guard for " + documentDirectory + " " + keyStoreAccess.getKeyStoreLocation().getKeyStoreDirectory());
-        documentGuardService.createAsymmetricDocumentGuard(keyStoreAccess, documentKeyIDWithKeyAndAccessType);
+        documentGuardService.createAsymmetricDocumentGuard(keyStoreAccess, documentKeyIDWithKeyAndAccessType, overwriteFlag);
         GuardUtil.saveBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStoreLocation().getKeyStoreDirectory(), documentDirectory, documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
         LOGGER.debug("finished create asymmetric guard for " + documentDirectory + " " + keyStoreAccess.getKeyStoreLocation().getKeyStoreDirectory());
         return documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID();
+    }
+
+    private void deleteGuardForBucket(KeyStoreAccess keyStoreAccess,
+                                      DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType,
+                                      DocumentDirectory documentDirectory
+    ) {
+        LOGGER.debug("start delete guard for " + documentDirectory + " " + keyStoreAccess.getKeyStoreLocation().getKeyStoreDirectory());
+        BucketPath documentGuardFileBucketPath = DocumentGuardLocation.getBucketPathOfGuard(keyStoreAccess.getKeyStoreLocation(),
+                documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
+        bucketService.deletePlainFile(documentGuardFileBucketPath);
+
+        GuardUtil.deleteBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStoreLocation().getKeyStoreDirectory(), documentDirectory);
+        LOGGER.debug("finished delete for " + documentDirectory + " " + keyStoreAccess.getKeyStoreLocation().getKeyStoreDirectory());
     }
 
     private KeyStoreAccess getKeyStoreAccess(UserIDAuth userIDAuth) {

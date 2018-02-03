@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer02service.BucketService;
+import org.adorsys.documentsafe.layer02service.exceptions.NoDocumentGuardExists;
 import org.adorsys.documentsafe.layer02service.impl.BucketServiceImpl;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
@@ -42,7 +43,7 @@ import org.slf4j.LoggerFactory;
  */
 public class BusinessTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(BusinessTest.class);
-    private final static BlobStoreContextFactory factory = new TestFsBlobStoreFactory();
+    public final static BlobStoreContextFactory factory = new TestFsBlobStoreFactory();
     private DocumentSafeService service;
 
     public static Set<UserIDAuth> users = new HashSet<>();
@@ -162,18 +163,61 @@ public class BusinessTest {
         service.storeDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), dsDocument);
     }
 
-   //  @Test
+    /**
+     * Zunächst erstellt peter ein document.
+     * Dann darf Francis das Document auch lesen, aber nicht schreiben.
+     * Dann darf er auch schreiben.
+     * Schließlich darf er garnicht mehr drauf zugreifen.
+     * Zuletzt wird gezeigt, dass Peter das Dokument nach wie vor schreiben darf.
+     */
+    @Test
     public void tryOverwriteGrantAccessToFolder() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         UserIDAuth userIDAuthPeter = createUser(new UserID("peter"), new ReadKeyPassword("keyPasswordForPeter"));
         UserIDAuth userIDAuthFrancis = createUser(new UserID("francis"), new ReadKeyPassword("keyPasswordForFrancis"));
         DocumentFQN documentFQN = new DocumentFQN("first/next/a-new-document.txt");
-        DSDocument dsDocument1 = createDocument(userIDAuthPeter, documentFQN);
+        DSDocument dsDocument = createDocument(userIDAuthPeter, documentFQN);
 
         DocumentDirectoryFQN documentDirectoryFQN = new DocumentDirectoryFQN("first/next");
 
+        Assert.assertEquals("Anzahl der guards", 2, getNumberOfGuards(userIDAuthPeter.getUserID()));
+        Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuthFrancis.getUserID()));
+
         service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentDirectoryFQN, AccessType.READ);
+        Assert.assertEquals("Anzahl der guards", 2, getNumberOfGuards(userIDAuthPeter.getUserID()));
+        Assert.assertEquals("Anzahl der guards", 2, getNumberOfGuards(userIDAuthFrancis.getUserID()));
+        boolean noWriteAccessExceptionCaught = false;
+        try {
+            service.storeDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), dsDocument);
+        } catch (NoWriteAccessException e) {
+            LOGGER.debug("NoWriteAccessException was expected. Now we give francis the write access");
+            noWriteAccessExceptionCaught = true;
+
+        }
+        Assert.assertTrue(noWriteAccessExceptionCaught);
         service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentDirectoryFQN, AccessType.WRITE);
+        Assert.assertEquals("Anzahl der guards", 2, getNumberOfGuards(userIDAuthPeter.getUserID()));
+        Assert.assertEquals("Anzahl der guards", 2, getNumberOfGuards(userIDAuthFrancis.getUserID()));
+
+        service.storeDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), dsDocument);
+        service.readDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
+        service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentDirectoryFQN, AccessType.READ);
+        service.readDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
+
+        service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentDirectoryFQN, AccessType.NONE);
+        Assert.assertEquals("Anzahl der guards", 2, getNumberOfGuards(userIDAuthPeter.getUserID()));
+        Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuthFrancis.getUserID()));
+        boolean documentGuardExists = true;
+        try {
+            service.readDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
+        } catch(NoDocumentGuardExists e) {
+            documentGuardExists = false;
+            LOGGER.debug("Exception was expected");
+        }
+        Assert.assertFalse("es darf kein dokument guard mehr exisitieren", documentGuardExists);
+
+        DSDocument dsDocument1 = service.readDocument(userIDAuthPeter, documentFQN);
+        service.storeDocument(userIDAuthPeter, dsDocument1);
     }
 
 
@@ -255,5 +299,13 @@ public class BusinessTest {
         }
     }
 
+    private static void sleep(int secs) {
+        try {
+            LOGGER.info("SLEEP FOR " + secs + " secs");
+            Thread.sleep(secs * 1000);
+        } catch (Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
+    }
 
 }

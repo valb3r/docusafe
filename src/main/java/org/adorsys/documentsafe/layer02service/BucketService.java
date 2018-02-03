@@ -14,6 +14,7 @@ public interface BucketService {
     BucketContent readDocumentBucket(BucketPath bucketPath, ListRecursiveFlag listRecursiveFlag);
     boolean bucketExists(BucketPath bucketPath);
     void createPlainFile(BucketPath bucketPath, PlainFileContent plainFileContent);
+    void deletePlainFile(BucketPath bucketPath);
     PlainFileContent readPlainFile(BucketPath bucketPath);
     boolean existsFile(BucketPath bucketPath);
 }

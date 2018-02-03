@@ -71,6 +71,17 @@ public class BucketServiceImpl implements BucketService {
     }
 
     @Override
+    public void deletePlainFile(BucketPath bucketPath) {
+        try {
+            LOGGER.info("start delete plain file " + bucketPath);
+            extendedBlobStoreConnection.deleteBlob(bucketPath.getObjectHandle());
+            LOGGER.info("finished delete plain file " + bucketPath);
+        } catch (Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
+    }
+
+    @Override
     public PlainFileContent readPlainFile(BucketPath bucketPath) {
         try {
             LOGGER.info("start read plain file " + bucketPath);

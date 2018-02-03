@@ -10,6 +10,7 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess
 import org.adorsys.documentsafe.layer03business.types.AccessType;
 import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.BlobStoreKeystorePersistence;
+import org.adorsys.encobject.types.OverwriteFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +29,7 @@ public class DocumentGuardServiceTest {
                                                                                        DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType) {
         try {
             DocumentGuardService documentGuardService = new DocumentGuardServiceImpl(factory);
-            documentGuardService.createAsymmetricDocumentGuard(keyStoreAccess, documentKeyIDWithKeyAndAccessType);
+            documentGuardService.createAsymmetricDocumentGuard(keyStoreAccess, documentKeyIDWithKeyAndAccessType, OverwriteFlag.FALSE);
             LOGGER.debug("documentKeyID:" + documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
             return new DocumentGuardStuff(documentGuardService, documentKeyIDWithKeyAndAccessType);
         } catch (Exception e) {

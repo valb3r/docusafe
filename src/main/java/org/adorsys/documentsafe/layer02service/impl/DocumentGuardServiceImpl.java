@@ -15,8 +15,10 @@ import java.util.UUID;
 
 import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
+import org.adorsys.documentsafe.layer02service.BucketService;
 import org.adorsys.documentsafe.layer02service.DocumentGuardService;
 import org.adorsys.documentsafe.layer02service.exceptions.AsymmetricEncryptionException;
+import org.adorsys.documentsafe.layer02service.exceptions.NoDocumentGuardExists;
 import org.adorsys.documentsafe.layer02service.exceptions.SymmetricEncryptionException;
 import org.adorsys.documentsafe.layer02service.generators.SecretKeyGenerator;
 import org.adorsys.documentsafe.layer02service.keysource.KeyStoreBasedPublicKeySourceImpl;
@@ -33,6 +35,7 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDW
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
 import org.adorsys.documentsafe.layer03business.types.AccessType;
+import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.keysource.KeySource;
@@ -69,12 +72,15 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
 
     private KeystorePersistence keystorePersistence;
     private ObjectPersistence objectPersistence;
+    private BucketService bucketService;
+
 
     private DocumentGuardSerializerRegistery serializerRegistry = DocumentGuardSerializerRegistery.getInstance();
 
     public DocumentGuardServiceImpl(BlobStoreContextFactory factory) {
         this.objectPersistence = new ObjectPersistence(new BlobStoreConnection(factory));
         this.keystorePersistence = new BlobStoreKeystorePersistence(factory);
+        this.bucketService = new BucketServiceImpl(factory);
     }
 
     /**
@@ -147,7 +153,8 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
      */
     @Override
     public void createAsymmetricDocumentGuard(KeyStoreAccess receiverKeyStoreAccess,
-                                              DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType) {
+                                              DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType,
+                                              OverwriteFlag overwriteFlag) {
         try {
             LOGGER.info("start create asymmetric encrypted document guard for " + documentKeyIDWithKeyAndAccessType + " at " + receiverKeyStoreAccess.getKeyStoreLocation());
             KeyStore userKeystore = keystorePersistence.loadKeystore(receiverKeyStoreAccess.getKeyStoreLocation(), receiverKeyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
@@ -176,7 +183,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
             metaInfo.getAddInfos().put(ACCESS_TYPE, documentKeyIDWithKeyAndAccessType.getAccessType().toString());
             GuardKey guardKey = new GuardKey(serializerRegistry.defaultSerializer().serializeSecretKey(documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKey()));
 
-            objectPersistence.storeObject(guardKey.getValue(), metaInfo, documentGuardHandle, keySource, new KeyID(guardKeyID.getValue()), encParams, OverwriteFlag.FALSE);
+            objectPersistence.storeObject(guardKey.getValue(), metaInfo, documentGuardHandle, keySource, new KeyID(guardKeyID.getValue()), encParams, overwriteFlag);
             LOGGER.info("finished create asymmetric encrypted document guard for " + documentKeyIDWithKeyAndAccessType + " at " + receiverKeyStoreAccess.getKeyStoreLocation());
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
@@ -195,8 +202,12 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
 
             // load guard file
             KeySource keySource = new KeyStoreBasedSecretKeySourceImpl(userKeystore, keyStoreAccess.getKeyStoreAuth().getReadKeyHandler());
-            PersistentObjectWrapper wrapper = objectPersistence.loadObject(DocumentGuardLocation.getLocationHandle(keyStoreAccess.getKeyStoreLocation(), documentKeyID), keySource);
-
+            BucketPath guardBucketPath = DocumentGuardLocation.getBucketPathOfGuard(keyStoreAccess.getKeyStoreLocation(), documentKeyID);
+            if (!bucketService.existsFile(guardBucketPath)) {
+                throw new NoDocumentGuardExists(guardBucketPath.toString());
+            }
+            LOGGER.debug("loadDocumentKey for " + guardBucketPath);
+            PersistentObjectWrapper wrapper = objectPersistence.loadObject(guardBucketPath.getObjectHandle(), keySource);
             ContentMetaInfo metaIno = wrapper.getMetaIno();
             Map<String, Object> addInfos = metaIno.getAddInfos();
             String accesstypestring = (String) addInfos.get(ACCESS_TYPE);
