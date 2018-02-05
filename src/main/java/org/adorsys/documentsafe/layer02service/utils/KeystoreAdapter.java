@@ -33,7 +33,7 @@ public class KeystoreAdapter {
      * @return
      */
     public static KeyStore wrapSecretKey2KeyStore(SecretKey secretKey, String alias, CallbackHandler keyPassHandler) {
-        SecretKeyData secretKeyData = new SecretKeyData(secretKey, alias, keyPassHandler);
+        SecretKeyData secretKeyData = SecretKeyData.builder().secretKey(secretKey).alias(alias).passwordSource(keyPassHandler).build();
         try {
             return new KeystoreBuilder().withKeyEntry(secretKeyData).build();
         } catch (NoSuchAlgorithmException | CertificateException | IOException e) {

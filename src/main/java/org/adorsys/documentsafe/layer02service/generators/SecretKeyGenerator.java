@@ -22,6 +22,7 @@ public class SecretKeyGenerator {
                 .withKeyLength(keySize)
                 .build();
 
-        return new SecretKeyData(secretKey, alias, secretKeyPassHandler);
+        return SecretKeyData.builder().secretKey(secretKey).alias(alias).passwordSource(secretKeyPassHandler).keyAlgo(secretKeyAlgo).build();
+
     }
 }

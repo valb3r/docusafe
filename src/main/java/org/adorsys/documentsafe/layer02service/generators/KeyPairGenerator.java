@@ -51,6 +51,6 @@ public class KeyPairGenerator {
                 .withCa(false)
                 .withKeyUsages(keyUsages)
                 .build(keyPair);
-        return new KeyPairData(keyPairData, null, alias, keyPassHandler);
+        return KeyPairData.builder().keyPair(keyPairData).alias(alias).passwordSource(keyPassHandler).build();
     }
 }
