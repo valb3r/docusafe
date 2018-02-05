@@ -1,4 +1,5 @@
 #@IgnoreInspection BashAddShebang
+
 trap error ERR
 
 function error () {
@@ -33,7 +34,25 @@ function checkGuards() {
 		echo "ok Anzahl von $user Guards ist $expected.  Das ist fein." | tee -a curl.log
 	else
 		print "DANGER DANGER ACHTUNG FEHLER. ANZAHL DER GUARD von $user IST NICHT KORREKT expected $expected but was $guards"
-		exit 1;
+		exit 1
+	fi
+}
+
+function checkCurl() {
+	status=$1
+	shift
+	rm -f curl.out
+	curl "$@" 2>/dev/null > curl.out 
+
+	cat curl.out >> curl.log
+	httpStatus=$(cat curl.out | head -n 1 | cut -d$' ' -f2)
+	rm -f curl.out
+	if (( httpStatus!=status )) 
+	then
+		echo "expected status $status but was $httpStatus of cmd" | tee -a curl.log
+		exit 1
+	else
+		echo "expected status was $httpStatus" | tee -a curl.log
 	fi
 }
 
@@ -42,52 +61,99 @@ print "delete user, if exists, ignore error"
 curl -X DELETE -H 'Content-Type: application/json' -H 'Accept: application/json' -i http://localhost:8080/internal/user --data '{"userID":"peter", "readKeyPassword":"rkp"}' >> curl.log
 curl -X DELETE -H 'Content-Type: application/json' -H 'Accept: application/json' -i http://localhost:8080/internal/user --data '{"userID":"francis", "readKeyPassword":"passWordXyZ"}' >> curl.log
 
-print "create user"
-curl -f -X PUT -H 'Content-Type: application/json' -H 'Accept: application/json' -i http://localhost:8080/internal/user --data '{"userID":"peter", "readKeyPassword":"rkp"}' >> curl.log
+print "create user peter"
+checkCurl 200 -f -X PUT -H 'Content-Type: application/json' -H 'Accept: application/json' -i http://localhost:8080/internal/user --data '{"userID":"peter", "readKeyPassword":"rkp"}' 
+checkGuards peter   1
 
-print "get README.txt of home dir"
-curl -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22README.txt%22' >> curl.log
+print "peter gets README.txt of home dir"
+checkCurl 200 -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22README.txt%22' >> curl.log
 
-print "save deep document"
-curl -f -X PUT -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i http://localhost:8080/document --data '{
+print "peter saves deep document"
+checkCurl 200 -f -X PUT -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i http://localhost:8080/document --data '{
   "documentFQN": "deeper/and/deeper/README.txt",
   "documentContent": {
     "value": [
     1,2,3,4,5,6,7,8
     ]
   }
-}' >> curl.log
+}' 
+checkGuards peter   2
 
-print "get deep document"
-curl -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22deeper/and/deeper/README.txt%22' >> curl.log
+print "peter gets deep document"
+checkCurl 200 -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22deeper/and/deeper/README.txt%22' 
 
-print "link deep document"
-curl -f -X PUT -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i http://localhost:8080/document/link --data '{
+print "peter links deep document"
+checkCurl 200 -f -X PUT -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i http://localhost:8080/document/link --data '{
   "source": "deeper/and/deeper/README.txt",
   "destination": "green/bucket/README.txt"
-}' >> curl.log
+}' 
 
-print "get linked document"
-curl -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22green/bucket/README.txt%22' >> curl.log
+print "peter gets linked document"
+checkCurl 200 -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22green/bucket/README.txt%22' 
+checkGuards peter   3
 
 print "create user francis"
-curl -X PUT -H 'Content-Type: application/json' -H 'Accept: application/json' -i http://localhost:8080/internal/user --data '{"userID":"francis", "readKeyPassword":"passWordXyZ"}' >> curl.log
+checkCurl 200 -X PUT -H 'Content-Type: application/json' -H 'Accept: application/json' -i http://localhost:8080/internal/user --data '{"userID":"francis", "readKeyPassword":"passWordXyZ"}' 
+checkGuards francis 1
 
-print "grant peters deeper/and/deeper to francis"
-curl -X PUT -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i http://localhost:8080/grant/document --data '{
+print "peter grants read permsission for  deeper/and/deeper to francis"
+checkCurl 200 -X PUT -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i http://localhost:8080/grant/document --data '{
+  "documentDirectoryFQN": "deeper/and/deeper",
+  "receivingUser": "francis",
+  "accessType" : "READ"
+}' 
+checkGuards francis 2
+
+print "francis liest deeper Document von Peter"
+checkCurl 200 -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: francis' -H 'password: passWordXyZ' -i 'http://localhost:8080/granted/document/peter/%22/deeper/and/deeper/README.txt%22' 
+
+print "francis tries to  save peters deeper document"
+checkCurl 403 -X PUT -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: francis' -H 'password: passWordXyZ' -i http://localhost:8080/granted/document/peter --data '{
+  "documentFQN": "deeper/and/deeper/README.txt",
+  "documentContent": {
+    "value": [
+    1,2,3,4,5,6,7,8
+    ]
+  }
+}' 
+
+print "francis liest nicht existentes Document von Peter"
+checkCurl 409 -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: francis' -H 'password: passWordXyZ' -i 'http://localhost:8080/granted/document/peter/%22/deeper/and/deeper/README-notexist.txt%22' 
+
+print "peter grants write permsission for  deeper/and/deeper to francis"
+checkCurl 200 -X PUT -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i http://localhost:8080/grant/document --data '{
   "documentDirectoryFQN": "deeper/and/deeper",
   "receivingUser": "francis",
   "accessType" : "WRITE"
-}' >> curl.log
+}' 
+checkGuards francis 2
 
-print "francis liest Document von Peter"
-curl -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: francis' -H 'password: passWordXyZ' -i 'http://localhost:8080/grant/document/peter/%22/deeper/and/deeper/README.txt%22' >> curl.log
+print "francis tries to  save peters deeper document"
+checkCurl 200 -X PUT -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: francis' -H 'password: passWordXyZ' -i http://localhost:8080/granted/document/peter --data '{
+  "documentFQN": "deeper/and/deeper/README.txt",
+  "documentContent": {
+    "value": [
+    1,4,5,6,7,8
+    ]
+  }
+}' 
+
+print "peter removes grant permsission for  deeper/and/deeper from francis"
+checkCurl 200 -X PUT -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i http://localhost:8080/grant/document --data '{
+  "documentDirectoryFQN": "deeper/and/deeper",
+  "receivingUser": "francis",
+  "accessType" : "NONE"
+}' 
+checkGuards francis 1
+
+print "francis tries to read deeper Document von Peter"
+checkCurl 403 -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: francis' -H 'password: passWordXyZ' -i 'http://localhost:8080/granted/document/peter/%22/deeper/and/deeper/README.txt%22' 
 
 print "check filesystem"
 find target/filesystemstorage -type f >> curl.log
 
 checkGuards peter   3
-checkGuards francis 2
+checkGuards francis 1
 
 print "EVERYTHING WENT FINE so FAR"
 

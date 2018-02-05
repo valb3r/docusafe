@@ -204,7 +204,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
             KeySource keySource = new KeyStoreBasedSecretKeySourceImpl(userKeystore, keyStoreAccess.getKeyStoreAuth().getReadKeyHandler());
             BucketPath guardBucketPath = DocumentGuardLocation.getBucketPathOfGuard(keyStoreAccess.getKeyStoreLocation(), documentKeyID);
             if (!bucketService.existsFile(guardBucketPath)) {
-                throw new NoDocumentGuardExists(guardBucketPath.toString());
+                throw new NoDocumentGuardExists(guardBucketPath);
             }
             LOGGER.debug("loadDocumentKey for " + guardBucketPath);
             PersistentObjectWrapper wrapper = objectPersistence.loadObject(guardBucketPath.getObjectHandle(), keySource);

@@ -6,7 +6,10 @@ import org.adorsys.documentsafe.layer03business.types.UserID;
 import org.adorsys.documentsafe.layer03business.types.complex.UserIDAuth;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.context.request.WebRequest;
 
+import javax.jws.WebResult;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
 import java.util.List;
@@ -20,36 +23,16 @@ public enum JwtTokenExtractor {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(JwtTokenExtractor.class);
 
-    public UserIDAuth getUserIDAuth(HttpHeaders headers) {
-        MultivaluedMap<String, String> requestHeaders = headers.getRequestHeaders();
+    public UserIDAuth getUserIDAuth(WebRequest request) {
         UserID userID = null;
         ReadKeyPassword readKeyPassword = null;
-
-        {
-            List<String> elements = requestHeaders.get("userid");
-            if (elements != null && !elements.isEmpty()) {
-                for (int i = 0; i < elements.size(); i++) {
-                    String token = elements.get(i);
-                    LOGGER.info("Element " + i + " :" + token);
-                    userID = new UserID(token);
-                }
-            }
-        }
-        {
-            List<String> elements = requestHeaders.get("password");
-            if (elements != null && !elements.isEmpty()) {
-                for (int i = 0; i < elements.size(); i++) {
-                    String token = elements.get(i);
-                    LOGGER.info("Element " + i + " :" + token);
-                    readKeyPassword = new ReadKeyPassword(token);
-                }
-            }
-        }
-        if (userID == null || readKeyPassword == null) {
-            throw new BaseException("missing headerfields userid and password");
+        try {
+            userID = new UserID(request.getHeader("userid"));
+            readKeyPassword = new ReadKeyPassword(request.getHeader("password"));
+        } catch (Exception e) {
+            return null;
         }
         return new UserIDAuth(userID, readKeyPassword);
-
     }
 
 }
