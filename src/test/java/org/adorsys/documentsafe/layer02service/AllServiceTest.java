@@ -1,6 +1,7 @@
 package org.adorsys.documentsafe.layer02service;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.adorsys.cryptoutils.exceptions.BaseException;
@@ -8,6 +9,7 @@ import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.cryptoutils.utils.HexUtil;
 import org.adorsys.documentsafe.layer02service.exceptions.KeyStoreExistsException;
 import org.adorsys.documentsafe.layer02service.generators.KeyStoreCreationConfig;
+import org.adorsys.documentsafe.layer02service.impl.ExtendedStorageMetadata;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
 import org.adorsys.documentsafe.layer02service.types.ReadStorePassword;
@@ -324,14 +326,23 @@ public class AllServiceTest {
         BucketContent bucketContent3 = bucketServiceTest.listBucket(bp, ListRecursiveFlag.FALSE);
         LOGGER.debug("3 einfaches listing " + bucketContent3.toString());
         Assert.assertEquals("rekursiv erwartete Einträge", 5, bucketContent3.getStrippedContent().size());
-        Assert.assertEquals("erster file", "file0", bucketContent3.getStrippedContent().get(0).getName());
-        Assert.assertEquals("erstes directory", "subdir0/", bucketContent3.getStrippedContent().get(2).getName());
+        Assert.assertTrue("es gibt file", contains(bucketContent3.getStrippedContent(), "file0"));
+        Assert.assertTrue("es gibt directory", contains(bucketContent3.getStrippedContent(), "subdir0/"));
 
         BucketContent bucketContent4 = bucketServiceTest.listBucket(bp, ListRecursiveFlag.TRUE);
         LOGGER.debug("4 recursives listing " + bucketContent4.toString());
         Assert.assertEquals("rekursiv erwartete Einträge", 8, bucketContent4.getStrippedContent().size());
-        Assert.assertEquals("erster file", "file0", bucketContent4.getStrippedContent().get(0).getName());
-        Assert.assertEquals("erstes directory", "subdir0/file0", bucketContent4.getStrippedContent().get(2).getName());
+        Assert.assertTrue("es gibt", contains(bucketContent4.getStrippedContent(), "file0"));
+        Assert.assertTrue("es gibt directory", contains(bucketContent4.getStrippedContent(), "subdir0/file0"));
+    }
+
+    private boolean contains(List<ExtendedStorageMetadata> strippedContent, String file0) {
+        for (ExtendedStorageMetadata m : strippedContent) {
+            if (m.getName().equals(file0)){
+                return true;
+            }
+        }
+        return false;
     }
 
     @Test
