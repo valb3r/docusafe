@@ -4,13 +4,12 @@ import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
 import org.adorsys.documentsafe.layer03business.DocumentSafeService;
 import org.adorsys.documentsafe.layer03business.impl.DocumentSafeServiceImpl;
 import org.adorsys.documentsafe.layer03business.types.UserID;
-import org.adorsys.documentsafe.layer03business.types.complex.DocumentFQN;
 import org.adorsys.documentsafe.layer03business.types.complex.DSDocument;
+import org.adorsys.documentsafe.layer03business.types.complex.DocumentFQN;
 import org.adorsys.documentsafe.layer03business.types.complex.UserIDAuth;
-import org.adorsys.documentsafe.layer04rest.impl.FileSystemBlobStoreFactory;
-import org.adorsys.documentsafe.layer04rest.impl.JwtTokenExtractor;
 import org.adorsys.documentsafe.layer04rest.types.CreateLinkTupel;
 import org.adorsys.documentsafe.layer04rest.types.GrantDocument;
+import org.adorsys.encobject.impl.FileSystemExtendedStorageConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.AntPathMatcher;
@@ -19,15 +18,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.HandlerMapping;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
 
 /**
  * Created by peter on 22.01.18 at 19:27.
@@ -36,12 +31,10 @@ import javax.ws.rs.core.MediaType;
  */
 @RestController
 public class DocumentSafeController {
-
-    @Context
-    private HttpHeaders headers;
+    private final static String JSON = "application/json";
 
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentSafeController.class);
-    private DocumentSafeService service = new DocumentSafeServiceImpl(new FileSystemBlobStoreFactory());
+    private DocumentSafeService service = new DocumentSafeServiceImpl(new FileSystemExtendedStorageConnection());
 
     /**
      * USER
@@ -50,8 +43,8 @@ public class DocumentSafeController {
     @RequestMapping(
             value = "/internal/user",
             method = {RequestMethod.PUT},
-            consumes = {MediaType.APPLICATION_JSON},
-            produces = {MediaType.APPLICATION_JSON}
+            consumes = {JSON},
+            produces = {JSON}
     )
     public void createUser(@RequestBody UserIDAuth userIDAuth) {
         service.createUser(userIDAuth);
@@ -60,8 +53,8 @@ public class DocumentSafeController {
     @RequestMapping(
             value = "/internal/user",
             method = {RequestMethod.DELETE},
-            consumes = {MediaType.APPLICATION_JSON},
-            produces = {MediaType.APPLICATION_JSON}
+            consumes = {JSON},
+            produces = {JSON}
     )
     public void destroyUser(@RequestBody UserIDAuth userIDAuth) {
         service.destroyUser(userIDAuth);
@@ -75,8 +68,8 @@ public class DocumentSafeController {
     @RequestMapping(
             value = "/document",
             method = {RequestMethod.PUT},
-            consumes = {MediaType.APPLICATION_JSON},
-            produces = {MediaType.APPLICATION_JSON}
+            consumes = {JSON},
+            produces = {JSON}
     )
     public void storeDocument(@RequestHeader("userid") String userid,
                               @RequestHeader("password") String password,
@@ -89,8 +82,8 @@ public class DocumentSafeController {
     @RequestMapping(
             value = "/document/**",
             method = {RequestMethod.GET},
-            consumes = {MediaType.APPLICATION_JSON},
-            produces = {MediaType.APPLICATION_JSON}
+            consumes = {JSON},
+            produces = {JSON}
     )
     public
     @ResponseBody
@@ -118,8 +111,8 @@ public class DocumentSafeController {
     @RequestMapping(
             value = "/grant/document",
             method = {RequestMethod.PUT},
-            consumes = {MediaType.APPLICATION_JSON},
-            produces = {MediaType.APPLICATION_JSON}
+            consumes = {JSON},
+            produces = {JSON}
     )
     public void grantAccess(@RequestHeader("userid") String userid,
                             @RequestHeader("password") String password,
@@ -131,8 +124,8 @@ public class DocumentSafeController {
     @RequestMapping(
             value = "/granted/document/{ownerUserID}/**",
             method = {RequestMethod.GET},
-            consumes = {MediaType.APPLICATION_JSON},
-            produces = {MediaType.APPLICATION_JSON}
+            consumes = {JSON},
+            produces = {JSON}
     )
     public
     @ResponseBody
@@ -157,8 +150,8 @@ public class DocumentSafeController {
     @RequestMapping(
             value = "/granted/document/{ownerUserID}",
             method = {RequestMethod.PUT},
-            consumes = {MediaType.APPLICATION_JSON},
-            produces = {MediaType.APPLICATION_JSON}
+            consumes = {JSON},
+            produces = {JSON}
     )
     public void storeGrantedDocument(@RequestHeader("userid") String userid,
                                      @RequestHeader("password") String password,
@@ -176,8 +169,8 @@ public class DocumentSafeController {
     @RequestMapping(
             value = "/document/link",
             method = {RequestMethod.PUT},
-            consumes = {MediaType.APPLICATION_JSON},
-            produces = {MediaType.APPLICATION_JSON}
+            consumes = {JSON},
+            produces = {JSON}
     )
     public void createLink(@RequestHeader("userid") String userid,
                            @RequestHeader("password") String password,

@@ -14,9 +14,8 @@ import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.keysource.KeySource;
 import org.adorsys.encobject.params.EncryptionParams;
-import org.adorsys.encobject.service.BlobStoreConnection;
-import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.ContainerPersistence;
+import org.adorsys.encobject.service.ExtendedStoreConnection;
 import org.adorsys.encobject.service.ObjectPersistence;
 import org.adorsys.encobject.service.PersistentObjectWrapper;
 import org.adorsys.encobject.types.KeyID;
@@ -36,10 +35,10 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
     private DocumentGuardService documentGuardService;
     private ContainerPersistence containerPersistence;
 
-    public DocumentPersistenceServiceImpl(BlobStoreContextFactory factory) {
-        this.containerPersistence = new ContainerPersistence(new BlobStoreConnection(factory));
-        this.objectPersistence = new ObjectPersistence(new BlobStoreConnection(factory));
-        this.documentGuardService = new DocumentGuardServiceImpl(factory);
+    public DocumentPersistenceServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
+        this.containerPersistence = new ContainerPersistence(extendedStoreConnection);
+        this.objectPersistence = new ObjectPersistence(extendedStoreConnection);
+        this.documentGuardService = new DocumentGuardServiceImpl(extendedStoreConnection);
     }
 
     /**

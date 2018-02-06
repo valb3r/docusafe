@@ -4,15 +4,13 @@ import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer02service.BucketService;
 import org.adorsys.documentsafe.layer02service.impl.BucketServiceImpl;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentDirectory;
-import org.adorsys.documentsafe.layer02service.utils.TestFsBlobStoreFactory;
-import org.adorsys.documentsafe.layer03business.impl.DocumentSafeServiceImpl;
 import org.adorsys.documentsafe.layer03business.types.AccessType;
 import org.adorsys.documentsafe.layer03business.types.UserID;
-import org.adorsys.documentsafe.layer03business.types.complex.UserIDAuth;
 import org.adorsys.documentsafe.layer03business.utils.GrantUtil;
 import org.adorsys.documentsafe.layer03business.utils.UserIDUtil;
 import org.adorsys.encobject.complextypes.BucketPath;
-import org.adorsys.encobject.service.BlobStoreContextFactory;
+import org.adorsys.encobject.impl.FileSystemExtendedStorageConnection;
+import org.adorsys.encobject.service.ExtendedStoreConnection;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.After;
 import org.junit.Assert;
@@ -30,7 +28,7 @@ import java.util.Set;
  */
 public class GrantUtilTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(GrantUtilTest.class);
-    public final static BlobStoreContextFactory factory = new TestFsBlobStoreFactory();
+    public final static ExtendedStoreConnection extendedStoreConnection = new FileSystemExtendedStorageConnection();
 
     public static Set<UserID> users = new HashSet<>();
 
@@ -46,7 +44,7 @@ public class GrantUtilTest {
         try {
             users.forEach(userID -> {
                 LOGGER.debug("AFTER TEST DESTROY " + userID.getValue());
-                BucketService service = new BucketServiceImpl(factory);
+                BucketService service = new BucketServiceImpl(extendedStoreConnection);
                 service.destroyBucket(UserIDUtil.getHomeBucketPath(userID));
             });
         } catch (Exception e) {
@@ -60,7 +58,7 @@ public class GrantUtilTest {
         UserID owner = new UserID("peter");
         UserID receiver = new UserID("affe");
 
-        BucketService bucketService = new BucketServiceImpl(BusinessTest.factory);
+        BucketService bucketService = new BucketServiceImpl(BusinessTest.extendedStoreConnection);
         bucketService.createBucket(UserIDUtil.getHomeBucketPath(owner));
         users.add(owner);
         DocumentDirectory documentDirectory = new DocumentDirectory(new BucketPath("affe/1/2/3"));
@@ -74,7 +72,7 @@ public class GrantUtilTest {
         UserID owner = new UserID("peter");
         UserID receiver = new UserID("affe");
 
-        BucketService bucketService = new BucketServiceImpl(BusinessTest.factory);
+        BucketService bucketService = new BucketServiceImpl(BusinessTest.extendedStoreConnection);
         bucketService.createBucket(UserIDUtil.getHomeBucketPath(owner));
         users.add(owner);
         DocumentDirectory documentDirectory = new DocumentDirectory(new BucketPath("affe/1/2/3"));
@@ -108,7 +106,7 @@ public class GrantUtilTest {
         UserID owner = new UserID("peter");
         UserID receiver = new UserID("affe");
 
-        BucketService bucketService = new BucketServiceImpl(BusinessTest.factory);
+        BucketService bucketService = new BucketServiceImpl(BusinessTest.extendedStoreConnection);
         bucketService.createBucket(UserIDUtil.getHomeBucketPath(owner));
         users.add(owner);
         DocumentDirectory documentDirectory = new DocumentDirectory(new BucketPath("affe/1/2/3"));

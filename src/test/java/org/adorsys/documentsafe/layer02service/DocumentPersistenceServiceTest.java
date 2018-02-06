@@ -1,13 +1,12 @@
 package org.adorsys.documentsafe.layer02service;
 
 import org.adorsys.documentsafe.layer02service.impl.DocumentPersistenceServiceImpl;
-import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
+import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentContentWithContentMetaInfo;
-import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
-import org.adorsys.encobject.service.BlobStoreContextFactory;
+import org.adorsys.encobject.service.ExtendedStoreConnection;
 import org.adorsys.encobject.types.OverwriteFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,11 +20,11 @@ import java.util.Set;
 public class DocumentPersistenceServiceTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentPersistenceServiceTest.class);
 
-    private BlobStoreContextFactory factory;
+    private ExtendedStoreConnection extendedStoreConnection;
     private Set<DocumentBucketPath> createdBuckets = new HashSet<>();
 
-    public DocumentPersistenceServiceTest(BlobStoreContextFactory factory) {
-        this.factory = factory;
+    public DocumentPersistenceServiceTest(ExtendedStoreConnection extendedStoreConnection) {
+        this.extendedStoreConnection = extendedStoreConnection;
     }
 
     public DocumentStuff testPersistDocument(DocumentGuardService documentGuardService,
@@ -39,7 +38,7 @@ public class DocumentPersistenceServiceTest {
                                              DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType,
                                              DocumentContent documentContent,
                                              OverwriteFlag overwriteFlag) {
-        DocumentPersistenceService documentPersistenceService = new DocumentPersistenceServiceImpl(factory);
+        DocumentPersistenceService documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection);
         documentPersistenceService.persistDocument(
                 documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey(),
                 documentBucketPath,
@@ -54,7 +53,7 @@ public class DocumentPersistenceServiceTest {
     public DocumentContentWithContentMetaInfo testLoadDocument(DocumentGuardService documentGuardService,
                                  KeyStoreAccess keyStoreAccess,
                                  DocumentBucketPath documentBucketPath) {
-        DocumentPersistenceService documentPersistenceService = new DocumentPersistenceServiceImpl(factory);
+        DocumentPersistenceService documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection);
         DocumentContentWithContentMetaInfo readContent = documentPersistenceService.loadDocument(
                 keyStoreAccess,
                 documentBucketPath);

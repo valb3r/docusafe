@@ -12,7 +12,6 @@ import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
 import org.adorsys.documentsafe.layer02service.types.complextypes.BucketContent;
-import org.adorsys.documentsafe.layer02service.utils.TestFsBlobStoreFactory;
 import org.adorsys.documentsafe.layer03business.exceptions.NoWriteAccessException;
 import org.adorsys.documentsafe.layer03business.impl.DocumentSafeServiceImpl;
 import org.adorsys.documentsafe.layer03business.types.AccessType;
@@ -27,8 +26,8 @@ import org.adorsys.documentsafe.layer03business.utils.UserIDUtil;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.complextypes.KeyStoreDirectory;
 import org.adorsys.encobject.domain.StorageMetadata;
-import org.adorsys.encobject.exceptions.FileExistsException;
-import org.adorsys.encobject.service.BlobStoreContextFactory;
+import org.adorsys.encobject.impl.FileSystemExtendedStorageConnection;
+import org.adorsys.encobject.service.ExtendedStoreConnection;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.After;
@@ -43,7 +42,7 @@ import org.slf4j.LoggerFactory;
  */
 public class BusinessTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(BusinessTest.class);
-    public final static BlobStoreContextFactory factory = new TestFsBlobStoreFactory();
+    public final static ExtendedStoreConnection extendedStoreConnection = new FileSystemExtendedStorageConnection();
     private DocumentSafeService service;
 
     public static Set<UserIDAuth> users = new HashSet<>();
@@ -53,7 +52,7 @@ public class BusinessTest {
         LOGGER.info("add bouncy castle provider");
         Security.addProvider(new BouncyCastleProvider());
         users.clear();
-        service = new DocumentSafeServiceImpl(factory);
+        service = new DocumentSafeServiceImpl(extendedStoreConnection);
     }
 
     @After
@@ -222,7 +221,7 @@ public class BusinessTest {
 
 
     private int getNumberOfGuards(UserID userID) {
-        BucketService bucketService = new BucketServiceImpl(factory);
+        BucketService bucketService = new BucketServiceImpl(extendedStoreConnection);
         KeyStoreDirectory keyStoreDirectory = UserIDUtil.getKeyStoreDirectory(userID);
         BucketContent bucketContent = bucketService.readDocumentBucket(keyStoreDirectory, ListRecursiveFlag.TRUE);
         int count = 0;
@@ -276,7 +275,7 @@ public class BusinessTest {
         BucketPath bucketPath = homeBucketPath.append(new BucketPath(dsDocument1Result.getDocumentFQN().getValue()).getBucketDirectory());
         LOGGER.debug("check one bucket guard exists yet for " + bucketPath);
         DocumentKeyID documentKeyID = GuardUtil.tryToLoadBucketGuardKeyFile(
-                new BucketServiceImpl(factory),
+                new BucketServiceImpl(extendedStoreConnection),
                 keyStoreDirectory,
                 bucketPath);
         Assert.assertNotNull(documentKeyID);
@@ -289,7 +288,7 @@ public class BusinessTest {
         KeyStoreDirectory keyStoreDirectory = UserIDUtil.getKeyStoreDirectory(userIDAuth.getUserID());
         BucketPath bucketPath = homeBucketPath.append(new BucketPath(documentFQN.getValue()).getBucketDirectory());
         DocumentKeyID documentKeyID0 = GuardUtil.tryToLoadBucketGuardKeyFile(
-                new BucketServiceImpl(factory),
+                new BucketServiceImpl(extendedStoreConnection),
                 keyStoreDirectory,
                 bucketPath);
         if (exists) {

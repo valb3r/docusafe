@@ -41,8 +41,7 @@ import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.complextypes.KeyStoreDirectory;
 import org.adorsys.encobject.complextypes.KeyStoreLocation;
 import org.adorsys.encobject.domain.ContentMetaInfo;
-import org.adorsys.encobject.domain.ObjectHandle;
-import org.adorsys.encobject.service.BlobStoreContextFactory;
+import org.adorsys.encobject.service.ExtendedStoreConnection;
 import org.adorsys.encobject.types.KeyStoreID;
 import org.adorsys.encobject.types.OverwriteFlag;
 import org.slf4j.Logger;
@@ -59,11 +58,11 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
     private DocumentGuardService documentGuardService;
     private DocumentPersistenceService documentPersistenceService;
 
-    public DocumentSafeServiceImpl(BlobStoreContextFactory factory) {
-        bucketService = new BucketServiceImpl(factory);
-        keyStoreService = new KeyStoreServiceImpl(factory);
-        documentGuardService = new DocumentGuardServiceImpl(factory);
-        documentPersistenceService = new DocumentPersistenceServiceImpl(factory);
+    public DocumentSafeServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
+        bucketService = new BucketServiceImpl(extendedStoreConnection);
+        keyStoreService = new KeyStoreServiceImpl(extendedStoreConnection);
+        documentGuardService = new DocumentGuardServiceImpl(extendedStoreConnection);
+        documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection);
     }
 
     @Override

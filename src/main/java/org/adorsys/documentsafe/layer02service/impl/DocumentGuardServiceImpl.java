@@ -40,9 +40,8 @@ import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.keysource.KeySource;
 import org.adorsys.encobject.params.EncryptionParams;
-import org.adorsys.encobject.service.BlobStoreConnection;
-import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.BlobStoreKeystorePersistence;
+import org.adorsys.encobject.service.ExtendedStoreConnection;
 import org.adorsys.encobject.service.KeystorePersistence;
 import org.adorsys.encobject.service.ObjectPersistence;
 import org.adorsys.encobject.service.PersistentObjectWrapper;
@@ -77,10 +76,10 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
 
     private DocumentGuardSerializerRegistery serializerRegistry = DocumentGuardSerializerRegistery.getInstance();
 
-    public DocumentGuardServiceImpl(BlobStoreContextFactory factory) {
-        this.objectPersistence = new ObjectPersistence(new BlobStoreConnection(factory));
-        this.keystorePersistence = new BlobStoreKeystorePersistence(factory);
-        this.bucketService = new BucketServiceImpl(factory);
+    public DocumentGuardServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
+        this.objectPersistence = new ObjectPersistence(extendedStoreConnection);
+        this.keystorePersistence = new BlobStoreKeystorePersistence(extendedStoreConnection);
+        this.bucketService = new BucketServiceImpl(extendedStoreConnection);
     }
 
     /**

@@ -15,9 +15,10 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAuth;
 import org.adorsys.encobject.complextypes.KeyStoreDirectory;
 import org.adorsys.encobject.complextypes.KeyStoreLocation;
 import org.adorsys.encobject.domain.StorageMetadata;
-import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.adorsys.encobject.service.BlobStoreKeystorePersistence;
+import org.adorsys.encobject.service.ExtendedStoreConnection;
 import org.adorsys.encobject.service.KeystorePersistence;
+import org.adorsys.encobject.service.StoreConnection;
 import org.adorsys.encobject.types.KeyStoreID;
 import org.adorsys.encobject.types.KeyStoreType;
 import org.adorsys.encobject.types.ListRecursiveFlag;
@@ -30,9 +31,9 @@ public class KeyStoreServiceImpl implements KeyStoreService {
     private KeystorePersistence keystorePersistence;
     private BucketService bucketService;
 
-    public KeyStoreServiceImpl(BlobStoreContextFactory factory) {
-        this.keystorePersistence = new BlobStoreKeystorePersistence(factory);
-        this.bucketService = new BucketServiceImpl(factory);
+    public KeyStoreServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
+        this.keystorePersistence = new BlobStoreKeystorePersistence(extendedStoreConnection);
+        this.bucketService = new BucketServiceImpl(extendedStoreConnection);
     }
 
     /**

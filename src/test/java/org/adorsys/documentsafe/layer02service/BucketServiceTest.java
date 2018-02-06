@@ -4,11 +4,10 @@ import org.adorsys.documentsafe.layer02service.impl.BucketServiceImpl;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.complextypes.BucketContent;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
-import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
 import org.adorsys.documentsafe.layer03business.types.AccessType;
 import org.adorsys.encobject.complextypes.BucketPath;
-import org.adorsys.encobject.service.BlobStoreContextFactory;
+import org.adorsys.encobject.service.ExtendedStoreConnection;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.adorsys.encobject.types.OverwriteFlag;
 
@@ -18,8 +17,8 @@ import org.adorsys.encobject.types.OverwriteFlag;
 public class BucketServiceTest {
     private BucketService bucketService;
 
-    public BucketServiceTest(BlobStoreContextFactory factory) {
-        bucketService = new BucketServiceImpl(factory);
+    public BucketServiceTest(ExtendedStoreConnection extendedStoreConnection) {
+        bucketService = new BucketServiceImpl(extendedStoreConnection);
     }
 
     public void createBucket(BucketPath bucketPath) {
@@ -34,18 +33,18 @@ public class BucketServiceTest {
         return bucketService.bucketExists(bucketPath);
     }
 
-    public void createFiles(BlobStoreContextFactory factory, BucketPath rootPath, int subdirs, int subfiles) {
-        createFilesAndFoldersRecursivly(rootPath, subdirs, subfiles, 3, factory);
+    public void createFiles(ExtendedStoreConnection extendedStoreConnection, BucketPath rootPath, int subdirs, int subfiles) {
+        createFilesAndFoldersRecursivly(rootPath, subdirs, subfiles, 3, extendedStoreConnection);
     }
 
-    private void createFilesAndFoldersRecursivly(BucketPath rootPath, int subdirs, int subfiles, int depth , BlobStoreContextFactory factory) {
+    private void createFilesAndFoldersRecursivly(BucketPath rootPath, int subdirs, int subfiles, int depth , ExtendedStoreConnection extendedStoreConnection) {
         if (depth == 0) {
             return;
         }
         DocumentContent documentContent = new DocumentContent("Affe".getBytes());
-        DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest(factory);
+        DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest(extendedStoreConnection);
         DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = new DocumentKeyIDWithKeyAndAccessType(documentGuardServiceTest.createKeyIDWithKey(), AccessType.WRITE);
-        DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest(factory);
+        DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest(extendedStoreConnection);
 
         for (int i = 0; i<subfiles; i++) {
             documentPersistenceServiceTest.testPersistDocument(null, new DocumentBucketPath(rootPath.append("file").add("" + i)),
@@ -53,7 +52,7 @@ public class BucketServiceTest {
 
         }
         for (int i = 0; i<subdirs; i++) {
-            createFilesAndFoldersRecursivly(rootPath.append("subdir").add("" + i), subdirs, subfiles, depth-1, factory);
+            createFilesAndFoldersRecursivly(rootPath.append("subdir").add("" + i), subdirs, subfiles, depth-1, extendedStoreConnection);
         }
     }
 
