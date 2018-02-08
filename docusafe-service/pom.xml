@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.adorsys</groupId>
+        <groupId>de.adorsys</groupId>
         <artifactId>docusafe</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
+        <version>0.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>docusafe-service</artifactId>
@@ -75,7 +75,7 @@
     </dependencies>
 
     <build>
-        <finalName>docusafe-service</finalName>
+        <finalName>${project.artifactId}</finalName>
         <plugins>
 
             <!-- START needed for mongodb TESTS -->

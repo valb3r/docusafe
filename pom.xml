@@ -2,9 +2,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.adorsys</groupId>
+
+    <groupId>de.adorsys</groupId>
     <artifactId>docusafe</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -14,17 +16,17 @@
 
 
     <name>docusafe</name>
+    <url>https://github.com/adorsys/docusafe</url>
+
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <docusafe.version>0.1.0-SNAPSHOT</docusafe.version>
         <crypt.version>0.14.0</crypt.version>
+        <version.swagger>1.5.5</version.swagger>
+        <deploy.disabled>false</deploy.disabled>
     </properties>
 
-
-    <url>https://github.com/adorsys/docusafe</url>
-    <packaging>pom</packaging>
     <scm>
         <connection>scm:git@github.com:adorsys/docusafe.git</connection>
         <developerConnection>scm:git:git@github.com:adorsys/docusafe.git</developerConnection>
@@ -92,15 +94,175 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.adorsys</groupId>
+                <groupId>de.adorsys</groupId>
                 <artifactId>docusafe-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.adorsys</groupId>
+                <groupId>de.adorsys</groupId>
                 <artifactId>docusafe-business</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>2.2.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.5</version>
+                        <configuration>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+                            <additionalparam>-Xdoclint:none</additionalparam>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-project-info-reports-plugin</artifactId>
+                            <version>2.7</version>
+                        </plugin>
+
+                        <!-- Maven Release Build fails if javadoc comments are invalid. http://stackoverflow.com/questions/15886209/maven-is-not-working-in-java-8-when-javadoc-tags-are-incomplete -->
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-javadoc-plugin</artifactId>
+                            <version>2.9.1</version>
+                            <configuration>
+                                <charset>${project.build.sourceEncoding}</charset>
+                                <encoding>${project.build.sourceEncoding}</encoding>
+                                <docencoding>${project.build.sourceEncoding}</docencoding>
+                                <additionalparam>-Xdoclint:none</additionalparam>
+                            </configuration>
+                        </plugin>
+                        <plugin>
+                            <artifactId>maven-release-plugin</artifactId>
+                            <version>2.5.2</version>
+                            <configuration>
+                                <releaseProfiles>release</releaseProfiles>
+                                <autoVersionSubmodules>true</autoVersionSubmodules>
+                            </configuration>
+                        </plugin>
+
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-compiler-plugin</artifactId>
+                            <version>3.7.0</version>
+                        </plugin>
+
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-jar-plugin</artifactId>
+                            <version>2.6</version>
+                            <configuration>
+                                <archive>
+                                    <manifest>
+                                        <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                                        <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                                    </manifest>
+                                    <manifestEntries>
+                                        <Implementation-Version>${project.version}_${maven.build.timestamp}</Implementation-Version>
+                                        <Project-buildArtifact>${project.artifactId}</Project-buildArtifact>
+                                        <Project-buildVersion>${project.version}</Project-buildVersion>
+                                        <Project-buildTimestamp>${maven.build.timestamp}</Project-buildTimestamp>
+                                        <Project-buildNumber>${buildNumber}</Project-buildNumber>
+                                        <Project-buildScmBranch>${scmBranch}</Project-buildScmBranch>
+                                    </manifestEntries>
+                                </archive>
+                            </configuration>
+                        </plugin>
+
+                        <plugin>
+                            <groupId>org.codehaus.mojo</groupId>
+                            <artifactId>buildnumber-maven-plugin</artifactId>
+                            <version>1.3</version>
+                            <executions>
+                                <execution>
+                                    <phase>validate</phase>
+                                    <goals>
+                                        <goal>create</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                            <configuration>
+                                <!-- Die commit id bei "git log -abbrev-commit" ist ebenfalls 7 Zeichen. -->
+                                <shortRevisionLength>7</shortRevisionLength>
+                            </configuration>
+                        </plugin>
+
+                        <plugin>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok-maven-plugin</artifactId>
+                            <version>1.16.18.1</version>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-deploy-plugin</artifactId>
+                            <version>2.8.1</version>
+                            <configuration>
+                                <skip>${deploy.disabled}</skip>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+    </profiles>
+
+    <distributionManagement>
+        <repository>
+            <id>sonatype</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+        </repository>
+        <snapshotRepository>
+            <id>sonatype</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>
