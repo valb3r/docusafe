@@ -9,7 +9,7 @@ import org.adorsys.documentsafe.layer03business.types.complex.DocumentFQN;
 import org.adorsys.documentsafe.layer03business.types.complex.UserIDAuth;
 import org.adorsys.documentsafe.layer04rest.types.CreateLinkTupel;
 import org.adorsys.documentsafe.layer04rest.types.GrantDocument;
-import org.adorsys.encobject.impl.FileSystemExtendedStorageConnection;
+import org.adorsys.encobject.filesystem.FileSystemExtendedStorageConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.AntPathMatcher;

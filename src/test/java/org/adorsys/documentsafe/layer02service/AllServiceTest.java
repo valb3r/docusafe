@@ -1,9 +1,5 @@
 package org.adorsys.documentsafe.layer02service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.cryptoutils.utils.HexUtil;
@@ -24,7 +20,7 @@ import org.adorsys.documentsafe.layer03business.types.AccessType;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.exceptions.FileExistsException;
-import org.adorsys.encobject.impl.FileSystemExtendedStorageConnection;
+import org.adorsys.encobject.filesystem.FileSystemExtendedStorageConnection;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.service.ExtendedStoreConnection;
 import org.adorsys.encobject.types.KeyStoreID;
@@ -36,6 +32,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by peter on 04.01.18.

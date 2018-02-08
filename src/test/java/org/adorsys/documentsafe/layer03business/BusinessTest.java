@@ -1,9 +1,5 @@
 package org.adorsys.documentsafe.layer03business;
 
-import java.security.Security;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer02service.BucketService;
 import org.adorsys.documentsafe.layer02service.exceptions.NoDocumentGuardExists;
@@ -26,7 +22,7 @@ import org.adorsys.documentsafe.layer03business.utils.UserIDUtil;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.complextypes.KeyStoreDirectory;
 import org.adorsys.encobject.domain.StorageMetadata;
-import org.adorsys.encobject.impl.FileSystemExtendedStorageConnection;
+import org.adorsys.encobject.filesystem.FileSystemExtendedStorageConnection;
 import org.adorsys.encobject.service.ExtendedStoreConnection;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -36,6 +32,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.security.Security;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by peter on 19.01.18 at 16:25.

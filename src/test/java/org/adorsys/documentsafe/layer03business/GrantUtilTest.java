@@ -9,7 +9,7 @@ import org.adorsys.documentsafe.layer03business.types.UserID;
 import org.adorsys.documentsafe.layer03business.utils.GrantUtil;
 import org.adorsys.documentsafe.layer03business.utils.UserIDUtil;
 import org.adorsys.encobject.complextypes.BucketPath;
-import org.adorsys.encobject.impl.FileSystemExtendedStorageConnection;
+import org.adorsys.encobject.filesystem.FileSystemExtendedStorageConnection;
 import org.adorsys.encobject.service.ExtendedStoreConnection;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.After;
