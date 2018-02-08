@@ -92,22 +92,27 @@
         </dependency>
         -->
 
-		<dependency>
-			<groupId>de.adorsys.cryptoutils</groupId>
-			<artifactId>basetypes</artifactId>
-			<version>0.11.0</version>
-		</dependency>
+        <dependency>
+            <groupId>de.adorsys.cryptoutils</groupId>
+            <artifactId>basetypes</artifactId>
+            <version>${crypt.version}</version>
+        </dependency>
 
         <!-- Encrypted object -->
         <dependency>
             <groupId>de.adorsys.cryptoutils</groupId>
             <artifactId>encobject</artifactId>
-		<version>${crypt.version}</version>
+            <version>${crypt.version}</version>
         </dependency>
         <dependency>
             <groupId>de.adorsys.cryptoutils</groupId>
             <artifactId>jkeyutils</artifactId>
-		<version>${crypt.version}</version>
+            <version>${crypt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.adorsys.cryptoutils</groupId>
+            <artifactId>filesystemstoreconnection</artifactId>
+            <version>${crypt.version}</version>
         </dependency>
 
         <!-- bouncy castle -->
