@@ -1,9 +1,5 @@
 package org.adorsys.documentsafe.layer02service.impl;
 
-import java.security.KeyStore;
-
-import javax.security.auth.callback.CallbackHandler;
-
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer02service.BucketService;
 import org.adorsys.documentsafe.layer02service.KeyStoreService;
@@ -18,12 +14,14 @@ import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.service.BlobStoreKeystorePersistence;
 import org.adorsys.encobject.service.ExtendedStoreConnection;
 import org.adorsys.encobject.service.KeystorePersistence;
-import org.adorsys.encobject.service.StoreConnection;
 import org.adorsys.encobject.types.KeyStoreID;
 import org.adorsys.encobject.types.KeyStoreType;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.security.auth.callback.CallbackHandler;
+import java.security.KeyStore;
 
 public class KeyStoreServiceImpl implements KeyStoreService {
     private final static Logger LOGGER = LoggerFactory.getLogger(KeyStoreServiceImpl.class);

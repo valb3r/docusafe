@@ -7,7 +7,6 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.BucketContent;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.service.ExtendedStoreConnection;
-import org.adorsys.encobject.service.StoreConnection;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
