@@ -1,18 +1,14 @@
 package org.adorsys.documentsafe.layer02service.impl;
 
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-import java.security.interfaces.ECPublicKey;
-import java.security.interfaces.RSAPublicKey;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
+import com.nimbusds.jose.jwk.ECKey;
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKMatcher;
+import com.nimbusds.jose.jwk.JWKMatcher.Builder;
+import com.nimbusds.jose.jwk.JWKSelector;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.KeyUse;
+import com.nimbusds.jose.jwk.PasswordLookup;
+import com.nimbusds.jose.jwk.RSAKey;
 import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer02service.BucketService;
@@ -55,15 +51,18 @@ import org.adorsys.jkeygen.utils.V3CertificateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nimbusds.jose.jwk.ECKey;
-import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.jwk.JWKMatcher;
-import com.nimbusds.jose.jwk.JWKMatcher.Builder;
-import com.nimbusds.jose.jwk.JWKSelector;
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.KeyUse;
-import com.nimbusds.jose.jwk.PasswordLookup;
-import com.nimbusds.jose.jwk.RSAKey;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.RSAPublicKey;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class DocumentGuardServiceImpl implements DocumentGuardService {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentGuardServiceImpl.class);
@@ -112,7 +111,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
         try {
             LOGGER.info("start create symmetric encrypted document guard for " + documentKeyIDWithKeyAndAccessType + " at " + keyStoreAccess.getKeyStoreLocation());
             // KeyStore laden
-            KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStoreLocation(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
+            KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStoreLocation().getLocationHandle(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
             KeySource keySource = new KeyStoreBasedSecretKeySourceImpl(userKeystore, keyStoreAccess.getKeyStoreAuth().getReadKeyHandler());
 
             // Willkürlich einen SecretKey aus dem KeyStore nehmen für die Verschlüsselung des Guards
@@ -156,7 +155,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
                                               OverwriteFlag overwriteFlag) {
         try {
             LOGGER.info("start create asymmetric encrypted document guard for " + documentKeyIDWithKeyAndAccessType + " at " + receiverKeyStoreAccess.getKeyStoreLocation());
-            KeyStore userKeystore = keystorePersistence.loadKeystore(receiverKeyStoreAccess.getKeyStoreLocation(), receiverKeyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
+            KeyStore userKeystore = keystorePersistence.loadKeystore(receiverKeyStoreAccess.getKeyStoreLocation().getLocationHandle(), receiverKeyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
 
             JWKSet exportKeys = load(userKeystore, null);
             LOGGER.debug("number of public keys found:" + exportKeys.getKeys().size());
@@ -197,7 +196,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
         try {
             LOGGER.info("start load " + documentKeyID + " from document guard at " + keyStoreAccess.getKeyStoreLocation());
 
-            KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStoreLocation(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
+            KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStoreLocation().getLocationHandle(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
 
             // load guard file
             KeySource keySource = new KeyStoreBasedSecretKeySourceImpl(userKeystore, keyStoreAccess.getKeyStoreAuth().getReadKeyHandler());

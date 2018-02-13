@@ -69,7 +69,7 @@ public class KeyStoreServiceImpl implements KeyStoreService {
 
             KeyStoreLocation keyStoreLocation = new KeyStoreLocation(keyStoreDirectory, keyStoreID, new KeyStoreType(userKeyStore.getType()));
             LOGGER.debug("keystore location is " + keyStoreLocation);
-			keystorePersistence.saveKeyStore(userKeyStore, keyStoreAuth.getReadStoreHandler(), keyStoreLocation);
+			keystorePersistence.saveKeyStore(userKeyStore, keyStoreAuth.getReadStoreHandler(), keyStoreLocation.getLocationHandle());
             LOGGER.info("finished create keystore " + keyStoreID + " at " + keyStoreLocation);
 			return keyStoreLocation;
         } catch (Exception e) {
@@ -80,7 +80,7 @@ public class KeyStoreServiceImpl implements KeyStoreService {
     @Override
     public KeyStore loadKeystore(KeyStoreLocation keyStoreLocation, CallbackHandler userKeystoreHandler){
         LOGGER.info("start load keystore @ " + keyStoreLocation);
-        KeyStore keyStore = keystorePersistence.loadKeystore(keyStoreLocation, userKeystoreHandler);
+        KeyStore keyStore = keystorePersistence.loadKeystore(keyStoreLocation.getLocationHandle(), userKeystoreHandler);
         LOGGER.info("finished load keystore @ " + keyStoreLocation);
         return keyStore;
     }
