@@ -24,9 +24,4 @@ public class DocumentBucketPath extends BucketPath {
     public DocumentBucketPath(String container, String path) {
         super(container, path);
     }
-
-
-    public DocumentDirectory getDocumentDirectory() {
-        return new DocumentDirectory(getBucketDirectory());
-    }
 }

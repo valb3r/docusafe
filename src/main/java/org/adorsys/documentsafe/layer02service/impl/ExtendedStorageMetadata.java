@@ -1,34 +1,35 @@
 package org.adorsys.documentsafe.layer02service.impl;
 
-import java.net.URI;
-import java.util.Date;
-import java.util.Map;
-
 import org.adorsys.cryptoutils.exceptions.BaseException;
+import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.domain.Location;
 import org.adorsys.encobject.domain.ResourceMetadata;
 import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.domain.StorageType;
 
+import java.net.URI;
+import java.util.Date;
+import java.util.Map;
+
 /**
  * Created by peter on 20.01.18 at 16:38.
  */
 public class ExtendedStorageMetadata implements StorageMetadata {
     private StorageMetadata meta;
-    private BucketPath bucketPath;
+    private BucketDirectory bucketDirectory;
 
-    public ExtendedStorageMetadata(BucketPath bucketPath, StorageMetadata meta) {
+    public ExtendedStorageMetadata(BucketDirectory bucketDirectory, StorageMetadata meta) {
         this.meta = meta;
-        this.bucketPath = bucketPath;
+        this.bucketDirectory = bucketDirectory;
     }
 
     // hier wird der Pfad abgezogen
     @Override
     public String getName() {
         String fullname = meta.getName();
-        if (bucketPath.getObjectHandle().getName() != null) {
-            String subBuckets = bucketPath.getObjectHandle().getName() + BucketPath.BUCKET_SEPARATOR;
+        if (bucketDirectory.getObjectHandle().getName() != null) {
+            String subBuckets = bucketDirectory.getObjectHandle().getName() + BucketPath.BUCKET_SEPARATOR;
             if (!fullname.startsWith(subBuckets)) {
                 throw new BaseException("Expected path starting with " + subBuckets + " but was " + fullname);
             }

@@ -1,7 +1,7 @@
 package org.adorsys.documentsafe.layer02service.types.complextypes;
 
 import org.adorsys.documentsafe.layer02service.impl.ExtendedStorageMetadata;
-import org.adorsys.encobject.complextypes.BucketPath;
+import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.domain.PageSet;
 import org.adorsys.encobject.domain.StorageMetadata;
 
@@ -12,11 +12,11 @@ import java.util.List;
  * Created by peter on 15.01.18.
  */
 public class BucketContent {
-    private final BucketPath bucketPath;
+    private final BucketDirectory bucketDirectory;
     private final PageSet<? extends StorageMetadata> content;
 
-    public BucketContent(BucketPath bucketPath, PageSet<? extends StorageMetadata> content) {
-        this.bucketPath = bucketPath;
+    public BucketContent(BucketDirectory bucketDirectory, PageSet<? extends StorageMetadata> content) {
+        this.bucketDirectory = bucketDirectory;
         this.content = content;
     }
 
@@ -39,12 +39,8 @@ public class BucketContent {
      */
     public List<ExtendedStorageMetadata> getStrippedContent() {
         List<ExtendedStorageMetadata> list = new ArrayList<>();
-        content.forEach(meta -> list.add(new ExtendedStorageMetadata(bucketPath, meta)));
+        content.forEach(meta -> list.add(new ExtendedStorageMetadata(bucketDirectory, meta)));
         return list;
-    }
-
-    public BucketPath getBucketPath() {
-        return bucketPath;
     }
 
     @Override
@@ -52,7 +48,7 @@ public class BucketContent {
 
         StringBuilder sb = new StringBuilder();
         sb.append("unstripped\n");
-        sb.append("BucketContent " + bucketPath + "(" + content.size() + "){");
+        sb.append("BucketContent " + bucketDirectory + "(" + content.size() + "){");
         for (StorageMetadata meta : getOriginalContent()) {
             sb.append("\n\t[");
             sb.append(meta.getName());
@@ -60,7 +56,7 @@ public class BucketContent {
         }
         sb.append("}");
         sb.append("stripped\n");
-        sb.append("BucketContent " + bucketPath + "(" + content.size() + "){");
+        sb.append("BucketContent " + bucketDirectory + "(" + content.size() + "){");
         for (StorageMetadata meta : getStrippedContent()) {
             sb.append("\n\t[");
             sb.append(meta.getName());

@@ -1,33 +1,32 @@
 package org.adorsys.documentsafe.layer02service.types.complextypes;
 
-import org.adorsys.encobject.complextypes.KeyStoreLocation;
+import org.adorsys.encobject.complextypes.BucketPath;
 
 /**
  * Created by peter on 08.01.18.
  */
 public class KeyStoreAccess {
-    private final KeyStoreLocation keyStoreLocation;
+    private final BucketPath keyStorePath;
     private final KeyStoreAuth keyStoreAuth;
 
-    public KeyStoreAccess(KeyStoreLocation keyStoreLocation, KeyStoreAuth keyStoreAuth) {
-        this.keyStoreLocation = keyStoreLocation;
+    public KeyStoreAccess(BucketPath keyStorePath, KeyStoreAuth keyStoreAuth) {
+        this.keyStorePath = keyStorePath;
         this.keyStoreAuth = keyStoreAuth;
+    }
+
+    public BucketPath getKeyStorePath() {
+        return keyStorePath;
     }
 
     public KeyStoreAuth getKeyStoreAuth() {
         return keyStoreAuth;
     }
 
-    public KeyStoreLocation getKeyStoreLocation() {
-
-        return keyStoreLocation;
-    }
-
     @Override
     public String toString() {
         return "KeyStoreAccess{" +
-                keyStoreLocation +
-                ", " + keyStoreAuth +
+                "keyStorePath=" + keyStorePath +
+                ", keyStoreAuth=" + keyStoreAuth +
                 '}';
     }
 }

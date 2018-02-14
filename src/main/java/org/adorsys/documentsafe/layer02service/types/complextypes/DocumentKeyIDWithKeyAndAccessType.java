@@ -21,4 +21,12 @@ public class DocumentKeyIDWithKeyAndAccessType {
     public AccessType getAccessType() {
         return accessType;
     }
+
+    @Override
+    public String toString() {
+        return "DocumentKeyIDWithKeyAndAccessType{" +
+                "documentKeyIDWithKey=" + documentKeyIDWithKey +
+                ", accessType=" + accessType +
+                '}';
+    }
 }

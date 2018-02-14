@@ -56,7 +56,7 @@ public class DocumentGuardServiceTest {
             DocumentGuardService documentGuardService = new DocumentGuardServiceImpl(extendedStoreConnection);
             DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = documentGuardService.loadDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(keyStoreAccess, documentKeyID);
             LOGGER.debug("key des Guards ist :" + documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKey());
-            LOGGER.debug("LOAD DocumentKey:" + HexUtil.conventBytesToHexString(documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKey().getSecretKey().getEncoded()));
+            LOGGER.debug("LOAD DocumentKey:" + HexUtil.convertBytesToHexString(documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKey().getSecretKey().getEncoded()));
             return documentKeyIDWithKeyAndAccessType;
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);

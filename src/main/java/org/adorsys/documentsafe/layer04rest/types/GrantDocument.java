@@ -1,10 +1,8 @@
 package org.adorsys.documentsafe.layer04rest.types;
 
-import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentDirectory;
 import org.adorsys.documentsafe.layer03business.types.AccessType;
 import org.adorsys.documentsafe.layer03business.types.UserID;
 import org.adorsys.documentsafe.layer03business.types.complex.DocumentDirectoryFQN;
-import org.adorsys.documentsafe.layer03business.types.complex.DocumentFQN;
 
 /**
  * Created by peter on 29.01.18 at 20:17.

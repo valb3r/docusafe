@@ -11,7 +11,6 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.BucketContent;
 import org.adorsys.documentsafe.layer03business.exceptions.NoWriteAccessException;
 import org.adorsys.documentsafe.layer03business.impl.DocumentSafeServiceImpl;
 import org.adorsys.documentsafe.layer03business.types.AccessType;
-import org.adorsys.documentsafe.layer03business.types.UserHomeBucketPath;
 import org.adorsys.documentsafe.layer03business.types.UserID;
 import org.adorsys.documentsafe.layer03business.types.complex.DSDocument;
 import org.adorsys.documentsafe.layer03business.types.complex.DocumentDirectoryFQN;
@@ -19,8 +18,8 @@ import org.adorsys.documentsafe.layer03business.types.complex.DocumentFQN;
 import org.adorsys.documentsafe.layer03business.types.complex.UserIDAuth;
 import org.adorsys.documentsafe.layer03business.utils.GuardUtil;
 import org.adorsys.documentsafe.layer03business.utils.UserIDUtil;
+import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
-import org.adorsys.encobject.complextypes.KeyStoreDirectory;
 import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.filesystem.FileSystemExtendedStorageConnection;
 import org.adorsys.encobject.service.ExtendedStoreConnection;
@@ -222,7 +221,7 @@ public class BusinessTest {
 
     private int getNumberOfGuards(UserID userID) {
         BucketService bucketService = new BucketServiceImpl(extendedStoreConnection);
-        KeyStoreDirectory keyStoreDirectory = UserIDUtil.getKeyStoreDirectory(userID);
+        BucketDirectory keyStoreDirectory = UserIDUtil.getKeyStoreDirectory(userID);
         BucketContent bucketContent = bucketService.readDocumentBucket(keyStoreDirectory, ListRecursiveFlag.TRUE);
         int count = 0;
         for (StorageMetadata meta : bucketContent.getStrippedContent()) {
@@ -254,10 +253,7 @@ public class BusinessTest {
             dsDocument = new DSDocument(documentFQN, documentContent, null);
 
             // check, there exists no guard yet
-            UserHomeBucketPath homeBucketPath = UserIDUtil.getHomeBucketPath(userIDAuth.getUserID());
-            KeyStoreDirectory keyStoreDirectory = UserIDUtil.getKeyStoreDirectory(userIDAuth.getUserID());
-            BucketPath bucketPath = homeBucketPath.append(new BucketPath(dsDocument.getDocumentFQN().getValue()).getBucketDirectory());
-            LOGGER.debug("check no bucket guard exists yet for " + bucketPath);
+            LOGGER.debug("check no bucket guard exists yet for " + dsDocument.getDocumentFQN());
             service.storeDocument(userIDAuth, dsDocument);
         }
         return dsDocument;
@@ -270,27 +266,27 @@ public class BusinessTest {
         Assert.assertEquals("document content ok", documentContent, dsDocument1Result.getDocumentContent());
 
         // check, there guards
-        UserHomeBucketPath homeBucketPath = UserIDUtil.getHomeBucketPath(userIDAuth.getUserID());
-        KeyStoreDirectory keyStoreDirectory = UserIDUtil.getKeyStoreDirectory(userIDAuth.getUserID());
-        BucketPath bucketPath = homeBucketPath.append(new BucketPath(dsDocument1Result.getDocumentFQN().getValue()).getBucketDirectory());
-        LOGGER.debug("check one bucket guard exists yet for " + bucketPath);
+        BucketDirectory homeBucketDirectory = UserIDUtil.getHomeBucketDirectory(userIDAuth.getUserID());
+        BucketDirectory keyStoreDirectory = UserIDUtil.getKeyStoreDirectory(userIDAuth.getUserID());
+        BucketDirectory bucketDirectory = homeBucketDirectory.append(new BucketPath(dsDocument1Result.getDocumentFQN().getValue())).getBucketDirectory();
+        LOGGER.debug("check one bucket guard exists yet for " + bucketDirectory);
         DocumentKeyID documentKeyID = GuardUtil.tryToLoadBucketGuardKeyFile(
                 new BucketServiceImpl(extendedStoreConnection),
                 keyStoreDirectory,
-                bucketPath);
+                bucketDirectory);
         Assert.assertNotNull(documentKeyID);
         return dsDocument1Result;
     }
 
     private void checkGuardsForDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN, boolean exists) {
         // check, there guards
-        UserHomeBucketPath homeBucketPath = UserIDUtil.getHomeBucketPath(userIDAuth.getUserID());
-        KeyStoreDirectory keyStoreDirectory = UserIDUtil.getKeyStoreDirectory(userIDAuth.getUserID());
-        BucketPath bucketPath = homeBucketPath.append(new BucketPath(documentFQN.getValue()).getBucketDirectory());
+        BucketDirectory homeBucketDirectory = UserIDUtil.getHomeBucketDirectory(userIDAuth.getUserID());
+        BucketDirectory keyStoreDirectory = UserIDUtil.getKeyStoreDirectory(userIDAuth.getUserID());
+        BucketDirectory bucketDirectory = homeBucketDirectory.append(new BucketPath(documentFQN.getValue())).getBucketDirectory();
         DocumentKeyID documentKeyID0 = GuardUtil.tryToLoadBucketGuardKeyFile(
                 new BucketServiceImpl(extendedStoreConnection),
                 keyStoreDirectory,
-                bucketPath);
+                bucketDirectory);
         if (exists) {
             Assert.assertNotNull(documentKeyID0);
         } else {

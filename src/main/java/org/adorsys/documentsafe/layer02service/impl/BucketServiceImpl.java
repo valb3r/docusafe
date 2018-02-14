@@ -4,6 +4,7 @@ import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer02service.BucketService;
 import org.adorsys.documentsafe.layer02service.types.PlainFileContent;
 import org.adorsys.documentsafe.layer02service.types.complextypes.BucketContent;
+import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.service.ExtendedStoreConnection;
@@ -25,36 +26,36 @@ public class BucketServiceImpl implements BucketService {
     }
 
     @Override
-    public void createBucket(BucketPath bucketPath) {
+    public void createBucket(BucketDirectory bucketDirectory) {
         try {
-            containerPersistence.creteContainer(bucketPath.getObjectHandle().getContainer());
+            containerPersistence.creteContainer(bucketDirectory.getObjectHandle().getContainer());
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
     }
 
     @Override
-    public void destroyBucket(BucketPath bucketPath) {
+    public void destroyBucket(BucketDirectory bucketDirectory) {
         try {
-            containerPersistence.deleteContainer(bucketPath.getObjectHandle().getContainer());
+            containerPersistence.deleteContainer(bucketDirectory.getObjectHandle().getContainer());
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
     }
 
     @Override
-    public BucketContent readDocumentBucket(BucketPath bucketPath, ListRecursiveFlag listRecursiveFlag) {
-        LOGGER.info("start read document bucket " + bucketPath);
-        BucketContent bucketContent = new BucketContent(bucketPath, extendedStoreConnection.list(bucketPath, listRecursiveFlag));
-        LOGGER.info("finished read document bucket " + bucketPath + " -> " + bucketContent.getOriginalContent().size());
+    public BucketContent readDocumentBucket(BucketDirectory bucketDirectory, ListRecursiveFlag listRecursiveFlag) {
+        LOGGER.info("start read document bucket " + bucketDirectory);
+        BucketContent bucketContent = new BucketContent(bucketDirectory, extendedStoreConnection.list(bucketDirectory, listRecursiveFlag));
+        LOGGER.info("finished read document bucket " + bucketDirectory + " -> " + bucketContent.getOriginalContent().size());
         return bucketContent;
     }
 
     @Override
-    public boolean bucketExists(BucketPath bucketPath) {
-        LOGGER.info("start check bucket exsits " + bucketPath);
-        boolean b = extendedStoreConnection.containerExists(bucketPath.getObjectHandle().getContainer());
-        LOGGER.info("finished check bucket exsits " + bucketPath + " -> " + b);
+    public boolean bucketExists(BucketDirectory bucketDirectory) {
+        LOGGER.info("start check bucket exsits " + bucketDirectory);
+        boolean b = extendedStoreConnection.containerExists(bucketDirectory.getObjectHandle().getContainer());
+        LOGGER.info("finished check bucket exsits " + bucketDirectory + " -> " + b);
         return b;
     }
 
@@ -93,7 +94,7 @@ public class BucketServiceImpl implements BucketService {
     }
 
     @Override
-    public boolean existsFile(BucketPath bucketPath) {
+    public boolean fileExists(BucketPath bucketPath) {
         LOGGER.info("start file exists " + bucketPath);
         boolean blobExists = extendedStoreConnection.blobExists(bucketPath.getObjectHandle());
         LOGGER.info("finished file exists " + bucketPath);

@@ -17,13 +17,12 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess
 import org.adorsys.documentsafe.layer02service.utils.ShowKeyStore;
 import org.adorsys.documentsafe.layer02service.utils.TestKeyUtils;
 import org.adorsys.documentsafe.layer03business.types.AccessType;
-import org.adorsys.encobject.complextypes.BucketPath;
+import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.exceptions.FileExistsException;
 import org.adorsys.encobject.filesystem.FileSystemExtendedStorageConnection;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.service.ExtendedStoreConnection;
-import org.adorsys.encobject.types.KeyStoreID;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.adorsys.encobject.types.OverwriteFlag;
 import org.junit.After;
@@ -43,7 +42,7 @@ import java.util.Set;
 public class AllServiceTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(AllServiceTest.class);
     private final static ExtendedStoreConnection extendedStoreConnection = new FileSystemExtendedStorageConnection();
-    public static Set<BucketPath> buckets = new HashSet<>();
+    public static Set<BucketDirectory> buckets = new HashSet<>();
 
     @Before
     public void before() {
@@ -55,7 +54,7 @@ public class AllServiceTest {
     public void after() {
         try {
             ContainerPersistence containerPersistence = new ContainerPersistence(extendedStoreConnection);
-            for (BucketPath bucket : buckets) {
+            for (BucketDirectory bucket : buckets) {
                 String container = bucket.getObjectHandle().getContainer();
                 LOGGER.debug("AFTER TEST: DELETE BUCKET " + container);
                 containerPersistence.deleteContainer(container);
@@ -70,7 +69,7 @@ public class AllServiceTest {
     public void testCreateBucketPath() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         try {
-            BucketPath bp = new BucketPath("1/2/3");
+            BucketDirectory bp = new BucketDirectory("1/2/3");
             ContainerPersistence containerPersistence = new ContainerPersistence(extendedStoreConnection);
             containerPersistence.creteContainer(bp.getObjectHandle().getContainer());
             buckets.add(bp);
@@ -129,7 +128,7 @@ public class AllServiceTest {
                     keyStoreStuff.keyStoreAccess,
                     documentGuardStuff.documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
 
-            LOGGER.debug("DocumentKey is " + HexUtil.conventBytesToHexString(documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKey().getSecretKey().getEncoded()));
+            LOGGER.debug("DocumentKey is " + HexUtil.convertBytesToHexString(documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKey().getSecretKey().getEncoded()));
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
         }
@@ -184,7 +183,7 @@ public class AllServiceTest {
 
             LOGGER.debug("DocumentBucketPath         :" + documentStuff.documentBucketPath);
             LOGGER.debug("DocumentKeyIDAndAccessType :" + documentKeyIDWithKeyAndAccessType);
-            LOGGER.debug("KeyStoreLocation           :" + keyStoreStuff.keyStoreAccess.getKeyStoreLocation());
+            LOGGER.debug("KeyStorePath               :" + keyStoreStuff.keyStoreAccess.getKeyStorePath());
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
         }
@@ -311,18 +310,18 @@ public class AllServiceTest {
     public void testBucketService1() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         BucketServiceTest bucketServiceTest = new BucketServiceTest(extendedStoreConnection);
-        BucketPath rootPath = new BucketPath("user1");
-        bucketServiceTest.createFiles(extendedStoreConnection, rootPath, 3,2);
+        BucketDirectory rootDirectory = new BucketDirectory("user1");
+        bucketServiceTest.createFiles(extendedStoreConnection, rootDirectory, 3,2);
 
-        BucketContent bucketContent1 = bucketServiceTest.listBucket(rootPath, ListRecursiveFlag.FALSE);
+        BucketContent bucketContent1 = bucketServiceTest.listBucket(rootDirectory, ListRecursiveFlag.FALSE);
         LOGGER.debug("1 einfaches listing" + bucketContent1.toString());
         Assert.assertEquals("nicht rekursiv erwartete Einträge", 5, bucketContent1.getStrippedContent().size());
 
-        BucketContent bucketContent2 = bucketServiceTest.listBucket(rootPath, ListRecursiveFlag.TRUE);
+        BucketContent bucketContent2 = bucketServiceTest.listBucket(rootDirectory, ListRecursiveFlag.TRUE);
         LOGGER.debug("2 recursives listing " + bucketContent2.toString());
         Assert.assertEquals("rekursiv erwartete Einträge", 26, bucketContent2.getStrippedContent().size());
 
-        BucketPath bp = rootPath.append("subdir1");
+        BucketDirectory bp = rootDirectory.appendDirectory("subdir1");
         BucketContent bucketContent3 = bucketServiceTest.listBucket(bp, ListRecursiveFlag.FALSE);
         LOGGER.debug("3 einfaches listing " + bucketContent3.toString());
         Assert.assertEquals("rekursiv erwartete Einträge", 5, bucketContent3.getStrippedContent().size());
@@ -349,8 +348,8 @@ public class AllServiceTest {
     public void checkNonExistingBucket() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         BucketServiceTest bucketServiceTest = new BucketServiceTest(extendedStoreConnection);
-        BucketPath rootPath = new BucketPath("user1");
-        boolean exists = bucketServiceTest.bucketExists(rootPath);
+        BucketDirectory bucketDirectory = new BucketDirectory("user1");
+        boolean exists = bucketServiceTest.bucketExists(bucketDirectory);
         Assert.assertFalse("bucket must not exist", exists);
     }
 
@@ -369,9 +368,10 @@ public class AllServiceTest {
 
         documentPersistenceServiceTest.testPersistDocument(null, documentBucketPath, documentKeyIDWithKeyAndAccessType, documentContent, OverwriteFlag.FALSE);
 
-        BucketContent bucketContent = bucketServiceTest.listBucket(documentBucketPath, ListRecursiveFlag.FALSE.TRUE);
+        BucketDirectory pathAsDirectory = new BucketDirectory(documentBucketPath);
+        BucketContent bucketContent = bucketServiceTest.listBucket(pathAsDirectory, ListRecursiveFlag.FALSE.TRUE);
         Assert.assertEquals("this is no bucket, so no result expected", 0, bucketContent.getStrippedContent().size());
-        boolean fileExsits = bucketServiceTest.bucketExists(documentBucketPath);
+        boolean fileExsits = bucketServiceTest.fileExists(documentBucketPath);
         Assert.assertEquals("file should exist", true, fileExsits);
 
     }
@@ -406,7 +406,7 @@ public class AllServiceTest {
         KeyStoreServiceTest.KeyStoreStuff keyStoreStuffForKeyStoreWithSecretKey = new KeyStoreServiceTest(extendedStoreConnection).createKeyStore(container1,
                 new ReadStorePassword("a"),
                 new ReadKeyPassword("b"),
-                new KeyStoreID("first"),
+                "first",
                 new KeyStoreCreationConfig(0, 0, 1));
         LOGGER.debug(ShowKeyStore.toString(keyStoreStuffForKeyStoreWithSecretKey.keyStore, keyStoreStuffForKeyStoreWithSecretKey.keyStoreAccess.getKeyStoreAuth().getReadKeyPassword()));
         LOGGER.debug("Ersten KeyStore mit SecretKey erfolgreich angelegt");
@@ -442,7 +442,7 @@ public class AllServiceTest {
         KeyStoreServiceTest.KeyStoreStuff keyStoreStuffForKeyStoreWithEncKey = new KeyStoreServiceTest(extendedStoreConnection).createKeyStore(container2,
                 new ReadStorePassword("c"),
                 new ReadKeyPassword("d"),
-                new KeyStoreID("second"),
+                "second",
                 new KeyStoreCreationConfig(1, 0, 0));
         LOGGER.debug(ShowKeyStore.toString(keyStoreStuffForKeyStoreWithEncKey.keyStore, keyStoreStuffForKeyStoreWithEncKey.keyStoreAccess.getKeyStoreAuth().getReadKeyPassword()));
         LOGGER.debug("Zweiten KeyStore mit EncKey erfolgreich angelegt");

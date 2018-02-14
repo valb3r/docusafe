@@ -1,7 +1,5 @@
 package org.adorsys.documentsafe.layer02service.generators;
 
-import org.adorsys.encobject.types.KeyStoreID;
-
 /**
  * Created by peter on 09.01.18.
  */
@@ -22,15 +20,15 @@ public class KeyStoreCreationConfig {
         this.secretKeyNumber = secretKeyNumber;
     }
 
-    public KeyPairGenerator getEncKeyPairGenerator(KeyStoreID keyStoreID) {
-        return new KeyPairGenerator("RSA", 2048, "SHA256withRSA", "enc-" + keyStoreID.getValue());
+    public KeyPairGenerator getEncKeyPairGenerator(String keyPrefix) {
+        return new KeyPairGenerator("RSA", 2048, "SHA256withRSA", "enc-" + keyPrefix);
     }
 
-    public KeyPairGenerator getSignKeyPairGenerator(KeyStoreID keyStoreID) {
-        return new KeyPairGenerator("RSA", 2048, "SHA256withRSA", "sign-" + keyStoreID.getValue());
+    public KeyPairGenerator getSignKeyPairGenerator(String keyPrefix) {
+        return new KeyPairGenerator("RSA", 2048, "SHA256withRSA", "sign-" + keyPrefix);
     }
 
-    public SecretKeyGenerator getSecretKeyGenerator(KeyStoreID keyStoreID) {
+    public SecretKeyGenerator getSecretKeyGenerator(String keyPrefix) {
         return new SecretKeyGenerator("AES", 256);
     }
 

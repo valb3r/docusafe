@@ -46,7 +46,7 @@ public class DocumentPersistenceServiceTest {
                 overwriteFlag,
                 null);
         createdBuckets.add(documentBucketPath);
-        AllServiceTest.buckets.add(documentBucketPath);
+        AllServiceTest.buckets.add(documentBucketPath.getBucketDirectory());
         return new DocumentStuff(documentBucketPath);
     }
 

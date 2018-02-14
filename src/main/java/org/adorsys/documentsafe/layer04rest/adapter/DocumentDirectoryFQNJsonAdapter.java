@@ -3,9 +3,7 @@ package org.adorsys.documentsafe.layer04rest.adapter;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentDirectory;
 import org.adorsys.documentsafe.layer03business.types.complex.DocumentDirectoryFQN;
-import org.adorsys.documentsafe.layer03business.types.complex.DocumentFQN;
 
 import java.io.IOException;
 

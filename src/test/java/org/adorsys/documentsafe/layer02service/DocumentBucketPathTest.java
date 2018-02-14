@@ -1,7 +1,7 @@
 package org.adorsys.documentsafe.layer02service;
 
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
-import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentDirectory;
+import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -16,7 +16,7 @@ public class DocumentBucketPathTest {
     public void test1() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         DocumentBucketPath bp=new DocumentBucketPath("a/b/c/d");
-        DocumentDirectory dd = bp.getDocumentDirectory();
+        BucketDirectory dd = bp.getBucketDirectory();
         Assert.assertEquals("dd container", "a", dd.getObjectHandle().getContainer());
         Assert.assertEquals("dd name     ", "b/c", dd.getObjectHandle().getName());
     }

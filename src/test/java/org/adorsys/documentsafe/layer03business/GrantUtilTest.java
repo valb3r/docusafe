@@ -3,11 +3,11 @@ package org.adorsys.documentsafe.layer03business;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer02service.BucketService;
 import org.adorsys.documentsafe.layer02service.impl.BucketServiceImpl;
-import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentDirectory;
 import org.adorsys.documentsafe.layer03business.types.AccessType;
 import org.adorsys.documentsafe.layer03business.types.UserID;
 import org.adorsys.documentsafe.layer03business.utils.GrantUtil;
 import org.adorsys.documentsafe.layer03business.utils.UserIDUtil;
+import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.filesystem.FileSystemExtendedStorageConnection;
 import org.adorsys.encobject.service.ExtendedStoreConnection;
@@ -45,7 +45,7 @@ public class GrantUtilTest {
             users.forEach(userID -> {
                 LOGGER.debug("AFTER TEST DESTROY " + userID.getValue());
                 BucketService service = new BucketServiceImpl(extendedStoreConnection);
-                service.destroyBucket(UserIDUtil.getHomeBucketPath(userID));
+                service.destroyBucket(UserIDUtil.getHomeBucketDirectory(userID));
             });
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
@@ -59,9 +59,9 @@ public class GrantUtilTest {
         UserID receiver = new UserID("affe");
 
         BucketService bucketService = new BucketServiceImpl(BusinessTest.extendedStoreConnection);
-        bucketService.createBucket(UserIDUtil.getHomeBucketPath(owner));
+        bucketService.createBucket(UserIDUtil.getHomeBucketDirectory(owner));
         users.add(owner);
-        DocumentDirectory documentDirectory = new DocumentDirectory(new BucketPath("affe/1/2/3"));
+        BucketDirectory documentDirectory = new BucketDirectory("affe/1/2/3");
         GrantUtil.saveBucketGrantFile(bucketService, documentDirectory, owner, receiver, AccessType.WRITE);
         AccessType a = GrantUtil.getAccessTypeOfBucketGrantFile(bucketService, documentDirectory, owner, receiver);
         Assert.assertEquals("accessType ", AccessType.WRITE, a);
@@ -73,9 +73,9 @@ public class GrantUtilTest {
         UserID receiver = new UserID("affe");
 
         BucketService bucketService = new BucketServiceImpl(BusinessTest.extendedStoreConnection);
-        bucketService.createBucket(UserIDUtil.getHomeBucketPath(owner));
+        bucketService.createBucket(UserIDUtil.getHomeBucketDirectory(owner));
         users.add(owner);
-        DocumentDirectory documentDirectory = new DocumentDirectory(new BucketPath("affe/1/2/3"));
+        BucketDirectory documentDirectory = new BucketDirectory(new BucketPath("affe/1/2/3"));
 
 
         AccessType a = GrantUtil.getAccessTypeOfBucketGrantFile(bucketService, documentDirectory, owner, receiver);
@@ -89,15 +89,15 @@ public class GrantUtilTest {
         a = GrantUtil.getAccessTypeOfBucketGrantFile(bucketService, documentDirectory, owner, receiver);
         Assert.assertEquals("accessType ", AccessType.READ, a);
 
-        BucketPath grantFile = UserIDUtil.getGrantBucketDirectory(owner).append(documentDirectory).add(GrantUtil.GRANT_EXT);
+        BucketPath grantFile = UserIDUtil.getGrantBucketDirectory(owner).append(documentDirectory).addSuffix(GrantUtil.GRANT_EXT);
 
-        Assert.assertTrue("grant file exists", bucketService.existsFile(grantFile));
+        Assert.assertTrue("grant file exists", bucketService.fileExists(grantFile));
 
         GrantUtil.saveBucketGrantFile(bucketService, documentDirectory, owner, receiver, AccessType.NONE);
         a = GrantUtil.getAccessTypeOfBucketGrantFile(bucketService, documentDirectory, owner, receiver);
         Assert.assertEquals("accessType ", AccessType.NONE, a);
 
-        Assert.assertFalse("grant file must not exist any more", bucketService.existsFile(grantFile));
+        Assert.assertFalse("grant file must not exist any more", bucketService.fileExists(grantFile));
     }
 
 
@@ -107,9 +107,9 @@ public class GrantUtilTest {
         UserID receiver = new UserID("affe");
 
         BucketService bucketService = new BucketServiceImpl(BusinessTest.extendedStoreConnection);
-        bucketService.createBucket(UserIDUtil.getHomeBucketPath(owner));
+        bucketService.createBucket(UserIDUtil.getHomeBucketDirectory(owner));
         users.add(owner);
-        DocumentDirectory documentDirectory = new DocumentDirectory(new BucketPath("affe/1/2/3"));
+        BucketDirectory documentDirectory = new BucketDirectory(new BucketPath("affe/1/2/3"));
 
 
         AccessType a = GrantUtil.getAccessTypeOfBucketGrantFile(bucketService, documentDirectory, owner, receiver);
@@ -119,8 +119,8 @@ public class GrantUtilTest {
         a = GrantUtil.getAccessTypeOfBucketGrantFile(bucketService, documentDirectory, owner, receiver);
         Assert.assertEquals("accessType ", AccessType.NONE, a);
 
-        BucketPath grantFile = UserIDUtil.getGrantBucketDirectory(owner).append(documentDirectory).add(GrantUtil.GRANT_EXT);
-        Assert.assertFalse("grant file must not exist any more", bucketService.existsFile(grantFile));
+        BucketPath grantFile = UserIDUtil.getGrantBucketDirectory(owner).append(documentDirectory).addSuffix(GrantUtil.GRANT_EXT);
+        Assert.assertFalse("grant file must not exist any more", bucketService.fileExists(grantFile));
     }
 
 }

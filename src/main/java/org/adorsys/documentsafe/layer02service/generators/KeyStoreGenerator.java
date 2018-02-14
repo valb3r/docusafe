@@ -1,12 +1,12 @@
 package org.adorsys.documentsafe.layer02service.generators;
 
+import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
-import org.adorsys.encobject.types.KeyStoreID;
+import org.adorsys.encobject.types.KeyStoreType;
 import org.adorsys.jkeygen.keystore.KeyPairData;
 import org.adorsys.jkeygen.keystore.KeystoreBuilder;
 import org.adorsys.jkeygen.keystore.SecretKeyData;
 import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
-import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import javax.security.auth.callback.CallbackHandler;
@@ -14,29 +14,27 @@ import java.security.KeyStore;
 import java.util.UUID;
 
 public class KeyStoreGenerator {
-    private final String keyStoreType;
+    private final KeyStoreType keyStoreType;
     private final String serverKeyPairAliasPrefix;
     private final CallbackHandler readKeyHandler;
-    private final KeyStoreID keyStoreID;
     private final KeyStoreCreationConfig config;
 
     public KeyStoreGenerator(
             KeyStoreCreationConfig config,
-            KeyStoreID keyStoreID,
-            String keyStoreType,
+            KeyStoreType keyStoreType,
             String serverKeyPairAliasPrefix,
             ReadKeyPassword readKeyPassword
     ) {
         this.config = config;
-        this.keyStoreID = keyStoreID;
         this.keyStoreType = keyStoreType;
         this.serverKeyPairAliasPrefix = serverKeyPairAliasPrefix;
         this.readKeyHandler = new PasswordCallbackHandler(readKeyPassword.getValue().toCharArray());
     }
 
     public KeyStore generate() {
+        String keyStoreID = serverKeyPairAliasPrefix;
         try {
-            KeystoreBuilder keystoreBuilder = new KeystoreBuilder().withStoreType(keyStoreType);
+            KeystoreBuilder keystoreBuilder = new KeystoreBuilder().withStoreType(keyStoreType.getValue());
             PasswordCallbackHandler dummyKeyHandler = new PasswordCallbackHandler("".toCharArray());
 
             {
@@ -52,7 +50,6 @@ public class KeyStoreGenerator {
                 }
             }
             {
-                // TODO warum hier einen UUID Key und in den anderen nur 5 stelliger string
                 KeyPairGenerator signKeyPairGenerator = config.getSignKeyPairGenerator(keyStoreID);
                 int numberOfSignKeyPairs = config.getSignKeyNumber();
                 for (int i = 0; i < numberOfSignKeyPairs; i++) {

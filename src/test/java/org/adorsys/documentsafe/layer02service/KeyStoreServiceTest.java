@@ -1,7 +1,5 @@
 package org.adorsys.documentsafe.layer02service;
 
-import java.security.KeyStore;
-
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer02service.generators.KeyStoreCreationConfig;
 import org.adorsys.documentsafe.layer02service.impl.KeyStoreServiceImpl;
@@ -9,14 +7,15 @@ import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
 import org.adorsys.documentsafe.layer02service.types.ReadStorePassword;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAuth;
+import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
-import org.adorsys.encobject.complextypes.KeyStoreDirectory;
-import org.adorsys.encobject.complextypes.KeyStoreLocation;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.service.ExtendedStoreConnection;
-import org.adorsys.encobject.types.KeyStoreID;
+import org.adorsys.encobject.types.KeyStoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.security.KeyStore;
 
 /**
  * Created by peter on 02.01.18.
@@ -33,16 +32,16 @@ public class KeyStoreServiceTest {
     }
 
     public KeyStoreStuff createKeyStore() {
-        return createKeyStore(keystoreContainer, new ReadStorePassword("storePassword"), new ReadKeyPassword("keypassword"), new KeyStoreID("key-store-id-123"), null);
+        return createKeyStore(keystoreContainer, new ReadStorePassword("storePassword"), new ReadKeyPassword("keypassword"), "key-store-id-123", null);
     }
 
     public KeyStoreStuff createKeyStore(String keystoreContainer,
                                         ReadStorePassword readStorePassword,
                                         ReadKeyPassword readKeyPassword,
-                                        KeyStoreID keyStoreID,
+                                        String keyStoreID,
                                         KeyStoreCreationConfig config) {
         try {
-            KeyStoreDirectory keyStoreDirectory = new KeyStoreDirectory(new BucketPath(keystoreContainer));
+            BucketDirectory keyStoreDirectory = new BucketDirectory(keystoreContainer);
 
             ContainerPersistence containerPersistence = new ContainerPersistence(extendedStoreConnection);
             try {
@@ -56,9 +55,10 @@ public class KeyStoreServiceTest {
 
             KeyStoreService keyStoreService = new KeyStoreServiceImpl(extendedStoreConnection);
             KeyStoreAuth keyStoreAuth = new KeyStoreAuth(readStorePassword, readKeyPassword);
-            KeyStoreLocation keyStoreLocation = keyStoreService.createKeyStore(keyStoreID, keyStoreAuth, keyStoreDirectory, config);
-            KeyStore keyStore = keyStoreService.loadKeystore(keyStoreLocation, keyStoreAuth.getReadStoreHandler());
-            return new KeyStoreStuff(keyStore, extendedStoreConnection, keyStoreID, new KeyStoreAccess(keyStoreLocation, keyStoreAuth));
+            BucketPath keyStorePath = keyStoreDirectory.appendName(keyStoreID);
+            keyStoreService.createKeyStore(keyStoreAuth, new KeyStoreType("UBER"), keyStorePath, config);
+            KeyStore keyStore = keyStoreService.loadKeystore(keyStorePath, keyStoreAuth.getReadStoreHandler());
+            return new KeyStoreStuff(keyStore, extendedStoreConnection, new KeyStoreAccess(keyStorePath, keyStoreAuth));
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
@@ -71,7 +71,7 @@ public class KeyStoreServiceTest {
         public final KeyStoreAccess keyStoreAccess;
 
 
-        public KeyStoreStuff(KeyStore keyStore, ExtendedStoreConnection extendedStoreConnection, KeyStoreID keyStoreID, KeyStoreAccess keyStoreAccess) {
+        public KeyStoreStuff(KeyStore keyStore, ExtendedStoreConnection extendedStoreConnection, KeyStoreAccess keyStoreAccess) {
             this.keyStore = keyStore;
             this.extendedStoreConnection = extendedStoreConnection;
             this.keyStoreAccess = keyStoreAccess;

@@ -109,15 +109,15 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
     public void createSymmetricDocumentGuard(KeyStoreAccess keyStoreAccess,
                                              DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType) {
         try {
-            LOGGER.info("start create symmetric encrypted document guard for " + documentKeyIDWithKeyAndAccessType + " at " + keyStoreAccess.getKeyStoreLocation());
+            LOGGER.info("start create symmetric encrypted document guard for " + documentKeyIDWithKeyAndAccessType + " at " + keyStoreAccess.getKeyStorePath());
             // KeyStore laden
-            KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStoreLocation().getLocationHandle(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
+            KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStorePath().getObjectHandle(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
             KeySource keySource = new KeyStoreBasedSecretKeySourceImpl(userKeystore, keyStoreAccess.getKeyStoreAuth().getReadKeyHandler());
 
             // Willkürlich einen SecretKey aus dem KeyStore nehmen für die Verschlüsselung des Guards
             JWKSet jwkSet = JwkExport.exportKeys(userKeystore, keyStoreAccess.getKeyStoreAuth().getReadKeyHandler());
             if (jwkSet.getKeys().isEmpty()) {
-                throw new SymmetricEncryptionException("did not find any secret keys in keystore with id: " + keyStoreAccess.getKeyStoreLocation().getKeyStoreID());
+                throw new SymmetricEncryptionException("did not find any secret keys in keystore with id: " + keyStoreAccess.getKeyStorePath());
             }
             ServerKeyMap serverKeyMap = new ServerKeyMap(jwkSet);
             KeyAndJwk randomSecretKey = serverKeyMap.randomSecretKey();
@@ -125,8 +125,8 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
             LOGGER.debug("Guard created with symmetric KeyID :" + guardKeyID);
 
             // Zielpfad für den DocumentKeyIDWithKey bestimmen
-            ObjectHandle documentGuardHandle = DocumentGuardLocation.getLocationHandle(keyStoreAccess.getKeyStoreLocation(),
-                    documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
+            ObjectHandle documentGuardHandle = DocumentGuardLocation.getBucketPathOfGuard(keyStoreAccess.getKeyStorePath(),
+                    documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID()).getObjectHandle();
             EncryptionParams encParams = null;
 
             // Den DocumentKey serialisieren, in der MetaInfo die SerializerID vermerken
@@ -137,7 +137,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
             GuardKey guardKey = new GuardKey(serializerRegistry.defaultSerializer().serializeSecretKey(documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKey()));
 
             objectPersistence.storeObject(guardKey.getValue(), metaInfo, documentGuardHandle, keySource, new KeyID(guardKeyID.getValue()), encParams, OverwriteFlag.FALSE);
-            LOGGER.info("finished create symmetric encrypted document guard for " + documentKeyIDWithKeyAndAccessType + " at " + keyStoreAccess.getKeyStoreLocation());
+            LOGGER.info("finished create symmetric encrypted document guard for " + documentKeyIDWithKeyAndAccessType + " at " + keyStoreAccess.getKeyStorePath());
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
@@ -154,14 +154,14 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
                                               DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType,
                                               OverwriteFlag overwriteFlag) {
         try {
-            LOGGER.info("start create asymmetric encrypted document guard for " + documentKeyIDWithKeyAndAccessType + " at " + receiverKeyStoreAccess.getKeyStoreLocation());
-            KeyStore userKeystore = keystorePersistence.loadKeystore(receiverKeyStoreAccess.getKeyStoreLocation().getLocationHandle(), receiverKeyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
+            LOGGER.info("start create asymmetric encrypted document guard for " + documentKeyIDWithKeyAndAccessType + " at " + receiverKeyStoreAccess.getKeyStorePath());
+            KeyStore userKeystore = keystorePersistence.loadKeystore(receiverKeyStoreAccess.getKeyStorePath().getObjectHandle(), receiverKeyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
 
             JWKSet exportKeys = load(userKeystore, null);
             LOGGER.debug("number of public keys found:" + exportKeys.getKeys().size());
             List<JWK> encKeys = selectEncKeys(exportKeys);
             if (encKeys.isEmpty()) {
-                throw new AsymmetricEncryptionException("did not find any public keys in keystore with id: " + receiverKeyStoreAccess.getKeyStoreLocation().getKeyStoreID());
+                throw new AsymmetricEncryptionException("did not find any public keys in keystore " + receiverKeyStoreAccess.getKeyStorePath());
             }
             JWK randomKey = JwkExport.randomKey(encKeys);
             GuardKeyID guardKeyID = new GuardKeyID(randomKey.getKeyID());
@@ -170,8 +170,8 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
             KeySource keySource = new KeyStoreBasedPublicKeySourceImpl(exportKeys);
 
             // Zielpfad für den DocumentKeyIDWithKey bestimmen
-            ObjectHandle documentGuardHandle = DocumentGuardLocation.getLocationHandle(receiverKeyStoreAccess.getKeyStoreLocation(),
-                    documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
+            ObjectHandle documentGuardHandle = DocumentGuardLocation.getBucketPathOfGuard(receiverKeyStoreAccess.getKeyStorePath(),
+                    documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID()).getObjectHandle();
             EncryptionParams encParams = null;
 
             // Den DocumentKey serialisieren, in der MetaInfo die SerializerID vermerken
@@ -182,7 +182,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
             GuardKey guardKey = new GuardKey(serializerRegistry.defaultSerializer().serializeSecretKey(documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKey()));
 
             objectPersistence.storeObject(guardKey.getValue(), metaInfo, documentGuardHandle, keySource, new KeyID(guardKeyID.getValue()), encParams, overwriteFlag);
-            LOGGER.info("finished create asymmetric encrypted document guard for " + documentKeyIDWithKeyAndAccessType + " at " + receiverKeyStoreAccess.getKeyStoreLocation());
+            LOGGER.info("finished create asymmetric encrypted document guard for " + documentKeyIDWithKeyAndAccessType + " at " + receiverKeyStoreAccess.getKeyStorePath());
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
@@ -194,14 +194,14 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
     @Override
     public DocumentKeyIDWithKeyAndAccessType loadDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(KeyStoreAccess keyStoreAccess, DocumentKeyID documentKeyID) {
         try {
-            LOGGER.info("start load " + documentKeyID + " from document guard at " + keyStoreAccess.getKeyStoreLocation());
+            LOGGER.info("start load " + documentKeyID + " from document guard at " + keyStoreAccess.getKeyStorePath());
 
-            KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStoreLocation().getLocationHandle(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
+            KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStorePath().getObjectHandle(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
 
             // load guard file
             KeySource keySource = new KeyStoreBasedSecretKeySourceImpl(userKeystore, keyStoreAccess.getKeyStoreAuth().getReadKeyHandler());
-            BucketPath guardBucketPath = DocumentGuardLocation.getBucketPathOfGuard(keyStoreAccess.getKeyStoreLocation(), documentKeyID);
-            if (!bucketService.existsFile(guardBucketPath)) {
+            BucketPath guardBucketPath = DocumentGuardLocation.getBucketPathOfGuard(keyStoreAccess.getKeyStorePath(), documentKeyID);
+            if (!bucketService.fileExists(guardBucketPath)) {
                 throw new NoDocumentGuardExists(guardBucketPath);
             }
             LOGGER.debug("loadDocumentKey for " + guardBucketPath);
@@ -218,7 +218,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
             DocumentGuardSerializer serializer = serializerRegistry.getSerializer(serializerId);
             DocumentKey documentKey = serializer.deserializeSecretKey(wrapper.getData());
 
-            LOGGER.info("finished load " + documentKeyID + " from document guard at " + keyStoreAccess.getKeyStoreLocation());
+            LOGGER.info("finished load " + documentKeyID + " from document guard at " + keyStoreAccess.getKeyStorePath());
             return new DocumentKeyIDWithKeyAndAccessType(new DocumentKeyIDWithKey(documentKeyID, documentKey), accessType);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);

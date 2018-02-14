@@ -28,7 +28,7 @@ function checkGuards() {
 		exit 1;
 	fi
 
-	guards=$(find target/filesystemstorage -type f |  grep "^target/filesystemstorage/BP-$user/.KEYSTORE/.*UBER." | wc -l)
+	guards=$(find target/filesystemstorage -type f |  grep "^target/filesystemstorage/BP-$user/.KEYSTORE/KS-$user.DK.*" | wc -l)
 	if (( guards == expected )) 
 	then
 		echo "ok Anzahl von $user Guards ist $expected.  Das ist fein." | tee -a curl.log

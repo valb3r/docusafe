@@ -1,14 +1,12 @@
 package org.adorsys.documentsafe.layer02service.keysource;
 
+import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer02service.DocumentGuardService;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
-import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
-import org.adorsys.encobject.complextypes.KeyStoreLocation;
 import org.adorsys.encobject.keysource.KeySource;
 import org.adorsys.encobject.types.KeyID;
-import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +17,6 @@ public class DocumentGuardBasedKeySourceImpl implements KeySource {
     private DocumentGuardService documentGuardService;
 
     private KeyStoreAccess keyStoreAccess;
-    private KeyStoreLocation keyStoreLocation;
 
     public DocumentGuardBasedKeySourceImpl(DocumentGuardService documentGuardService, KeyStoreAccess keyStoreAccess) {
         super();
