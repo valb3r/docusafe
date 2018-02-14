@@ -71,7 +71,7 @@ public class AllServiceTest {
         try {
             BucketDirectory bp = new BucketDirectory("1/2/3");
             ContainerPersistence containerPersistence = new ContainerPersistence(extendedStoreConnection);
-            containerPersistence.creteContainer(bp.getObjectHandle().getContainer());
+            containerPersistence.createContainer(bp.getObjectHandle().getContainer());
             buckets.add(bp);
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);

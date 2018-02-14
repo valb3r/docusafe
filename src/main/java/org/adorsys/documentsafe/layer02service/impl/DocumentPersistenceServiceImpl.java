@@ -16,7 +16,7 @@ import org.adorsys.encobject.keysource.KeySource;
 import org.adorsys.encobject.params.EncryptionParams;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.service.ExtendedStoreConnection;
-import org.adorsys.encobject.service.ObjectPersistence;
+import org.adorsys.encobject.service.JWEPersistence;
 import org.adorsys.encobject.service.PersistentObjectWrapper;
 import org.adorsys.encobject.types.KeyID;
 import org.adorsys.encobject.types.OverwriteFlag;
@@ -31,13 +31,13 @@ import org.slf4j.LoggerFactory;
 public class DocumentPersistenceServiceImpl implements DocumentPersistenceService {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentPersistenceServiceImpl.class);
 
-    private ObjectPersistence objectPersistence;
+    private JWEPersistence jwePersistence;
     private DocumentGuardService documentGuardService;
     private ContainerPersistence containerPersistence;
 
     public DocumentPersistenceServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
         this.containerPersistence = new ContainerPersistence(extendedStoreConnection);
-        this.objectPersistence = new ObjectPersistence(extendedStoreConnection);
+        this.jwePersistence = new JWEPersistence(extendedStoreConnection);
         this.documentGuardService = new DocumentGuardServiceImpl(extendedStoreConnection);
     }
 
@@ -68,11 +68,11 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
             // Create container if non existent
             if (location.getContainer() != null) {
                 if (!containerPersistence.containerExists(location.getContainer())) {
-                    containerPersistence.creteContainer(location.getContainer());
+                    containerPersistence.createContainer(location.getContainer());
                 }
             }
             KeyID keyID = new KeyID(documentKeyIDWithKey.getDocumentKeyID().getValue());
-            objectPersistence.storeObject(documentContent.getValue(), contentMetaInfo, location, keySource, keyID, encParams, overwriteFlag);
+            jwePersistence.storeObject(documentContent.getValue(), contentMetaInfo, location, keySource, keyID, encParams, overwriteFlag);
             LOGGER.info("finished persist " + documentBucketPath);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
@@ -90,7 +90,7 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
         try {
             LOGGER.info("start load " + documentBucketPath + " " + keyStoreAccess);
             KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess);
-            PersistentObjectWrapper persistentObjectWrapper = objectPersistence.loadObject(documentBucketPath.getObjectHandle(), keySource);
+            PersistentObjectWrapper persistentObjectWrapper = jwePersistence.loadObject(documentBucketPath.getObjectHandle(), keySource);
             DocumentContent documentContent = new DocumentContent(persistentObjectWrapper.getData());
             ContentMetaInfo contentMetaInfo = persistentObjectWrapper.getMetaIno();
             DocumentContentWithContentMetaInfo documentContentWithContentMetaInfo = new DocumentContentWithContentMetaInfo(documentContent, contentMetaInfo);

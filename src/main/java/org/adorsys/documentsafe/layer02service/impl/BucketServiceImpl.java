@@ -28,7 +28,7 @@ public class BucketServiceImpl implements BucketService {
     @Override
     public void createBucket(BucketDirectory bucketDirectory) {
         try {
-            containerPersistence.creteContainer(bucketDirectory.getObjectHandle().getContainer());
+            containerPersistence.createContainer(bucketDirectory.getObjectHandle().getContainer());
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }

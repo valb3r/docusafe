@@ -38,8 +38,8 @@ import org.adorsys.encobject.keysource.KeySource;
 import org.adorsys.encobject.params.EncryptionParams;
 import org.adorsys.encobject.service.BlobStoreKeystorePersistence;
 import org.adorsys.encobject.service.ExtendedStoreConnection;
+import org.adorsys.encobject.service.JWEPersistence;
 import org.adorsys.encobject.service.KeystorePersistence;
-import org.adorsys.encobject.service.ObjectPersistence;
 import org.adorsys.encobject.service.PersistentObjectWrapper;
 import org.adorsys.encobject.types.KeyID;
 import org.adorsys.encobject.types.OverwriteFlag;
@@ -69,14 +69,14 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
     private final static String ACCESS_TYPE = "AccessType";
 
     private KeystorePersistence keystorePersistence;
-    private ObjectPersistence objectPersistence;
+    private JWEPersistence jwePersistence;
     private BucketService bucketService;
 
 
     private DocumentGuardSerializerRegistery serializerRegistry = DocumentGuardSerializerRegistery.getInstance();
 
     public DocumentGuardServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
-        this.objectPersistence = new ObjectPersistence(extendedStoreConnection);
+        this.jwePersistence = new JWEPersistence(extendedStoreConnection);
         this.keystorePersistence = new BlobStoreKeystorePersistence(extendedStoreConnection);
         this.bucketService = new BucketServiceImpl(extendedStoreConnection);
     }
@@ -136,7 +136,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
             metaInfo.getAddInfos().put(ACCESS_TYPE, documentKeyIDWithKeyAndAccessType.getAccessType());
             GuardKey guardKey = new GuardKey(serializerRegistry.defaultSerializer().serializeSecretKey(documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKey()));
 
-            objectPersistence.storeObject(guardKey.getValue(), metaInfo, documentGuardHandle, keySource, new KeyID(guardKeyID.getValue()), encParams, OverwriteFlag.FALSE);
+            jwePersistence.storeObject(guardKey.getValue(), metaInfo, documentGuardHandle, keySource, new KeyID(guardKeyID.getValue()), encParams, OverwriteFlag.FALSE);
             LOGGER.info("finished create symmetric encrypted document guard for " + documentKeyIDWithKeyAndAccessType + " at " + keyStoreAccess.getKeyStorePath());
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
@@ -181,7 +181,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
             metaInfo.getAddInfos().put(ACCESS_TYPE, documentKeyIDWithKeyAndAccessType.getAccessType().toString());
             GuardKey guardKey = new GuardKey(serializerRegistry.defaultSerializer().serializeSecretKey(documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKey()));
 
-            objectPersistence.storeObject(guardKey.getValue(), metaInfo, documentGuardHandle, keySource, new KeyID(guardKeyID.getValue()), encParams, overwriteFlag);
+            jwePersistence.storeObject(guardKey.getValue(), metaInfo, documentGuardHandle, keySource, new KeyID(guardKeyID.getValue()), encParams, overwriteFlag);
             LOGGER.info("finished create asymmetric encrypted document guard for " + documentKeyIDWithKeyAndAccessType + " at " + receiverKeyStoreAccess.getKeyStorePath());
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
@@ -205,7 +205,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
                 throw new NoDocumentGuardExists(guardBucketPath);
             }
             LOGGER.debug("loadDocumentKey for " + guardBucketPath);
-            PersistentObjectWrapper wrapper = objectPersistence.loadObject(guardBucketPath.getObjectHandle(), keySource);
+            PersistentObjectWrapper wrapper = jwePersistence.loadObject(guardBucketPath.getObjectHandle(), keySource);
             ContentMetaInfo metaIno = wrapper.getMetaIno();
             Map<String, Object> addInfos = metaIno.getAddInfos();
             String accesstypestring = (String) addInfos.get(ACCESS_TYPE);
