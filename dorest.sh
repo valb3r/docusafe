@@ -19,7 +19,7 @@ function checkGuards() {
 	user=$1
 	expected=$2
 
-	guardKeys=$(find target/filesystemstorage -type f |  grep "^target/filesystemstorage/BP-$user/.KEYSTORE" | grep bucketGuardKey | wc -l)
+	guardKeys=$(find target/filesystemstorage -type f |  grep "^target/filesystemstorage/BP-$user/.KEYSTORE" | grep bucketGuardKey | grep -v $META | wc -l)
 	if (( guardKeys == expected )) 
 	then
 		echo "ok Anzahl von $user GuardKeys ist $expected.  Das ist fein." | tee -a curl.log
@@ -28,7 +28,7 @@ function checkGuards() {
 		exit 1;
 	fi
 
-	guards=$(find target/filesystemstorage -type f |  grep "^target/filesystemstorage/BP-$user/.KEYSTORE/KS-$user.DK.*" | wc -l)
+	guards=$(find target/filesystemstorage -type f |  grep "^target/filesystemstorage/BP-$user/.KEYSTORE/KS-$user.DK.*" | grep -v $META | wc -l)
 	if (( guards == expected )) 
 	then
 		echo "ok Anzahl von $user Guards ist $expected.  Das ist fein." | tee -a curl.log
@@ -47,19 +47,26 @@ function checkCurl() {
 	cat curl.out >> curl.log
 	httpStatus=$(cat curl.out | head -n 1 | cut -d$' ' -f2)
 	rm -f curl.out
-	if (( httpStatus!=status )) 
+	if [[ status -eq "any" ]]
 	then
-		echo "expected status $status but was $httpStatus of cmd" | tee -a curl.log
-		exit 1
+		echo "$httpStatus is ignored" | tee -a curl.log
 	else
-		echo "expected status was $httpStatus" | tee -a curl.log
+		if (( httpStatus!=status )) 
+		then
+			echo "expected status $status but was $httpStatus of cmd" | tee -a curl.log
+			exit 1
+		else
+			echo "expected status was $httpStatus" | tee -a curl.log
+		fi
 	fi
 }
 
+META="._META-INFORMATION_"
+
 rm -f curl.log
 print "delete user, if exists, ignore error"
-curl -X DELETE -H 'Content-Type: application/json' -H 'Accept: application/json' -i http://localhost:8080/internal/user --data '{"userID":"peter", "readKeyPassword":"rkp"}' >> curl.log
-curl -X DELETE -H 'Content-Type: application/json' -H 'Accept: application/json' -i http://localhost:8080/internal/user --data '{"userID":"francis", "readKeyPassword":"passWordXyZ"}' >> curl.log
+checkCurl any -X DELETE -H 'Content-Type: application/json' -H 'Accept: application/json' -i http://localhost:8080/internal/user --data '{"userID":"peter", "readKeyPassword":"rkp"}'
+checkCurl any -X DELETE -H 'Content-Type: application/json' -H 'Accept: application/json' -i http://localhost:8080/internal/user --data '{"userID":"francis", "readKeyPassword":"passWordXyZ"}' 
 
 print "create user peter"
 checkCurl 200 -f -X PUT -H 'Content-Type: application/json' -H 'Accept: application/json' -i http://localhost:8080/internal/user --data '{"userID":"peter", "readKeyPassword":"rkp"}' 
@@ -158,5 +165,5 @@ checkGuards francis 1
 print "EVERYTHING WENT FINE so FAR"
 
 print "delete user"
-curl -f -X DELETE -H 'Content-Type: application/json' -H 'Accept: application/json' -i http://localhost:8080/internal/user --data '{"userID":"peter", "readKeyPassword":"rkp"}' >> curl.log
-curl -f -X DELETE -H 'Content-Type: application/json' -H 'Accept: application/json' -i http://localhost:8080/internal/user --data '{"userID":"francis", "readKeyPassword":"passWordXyZ"}' >> curl.log
+checkCurl -f -X DELETE -H 'Content-Type: application/json' -H 'Accept: application/json' -i http://localhost:8080/internal/user --data '{"userID":"peter", "readKeyPassword":"rkp"}'
+checkCurl -f -X DELETE -H 'Content-Type: application/json' -H 'Accept: application/json' -i http://localhost:8080/internal/user --data '{"userID":"francis", "readKeyPassword":"passWordXyZ"}'

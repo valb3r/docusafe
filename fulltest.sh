@@ -5,6 +5,8 @@ function error () {
 	echo "            NOT GOOD, AN ERROR OCCURED"
 	echo "=================================================="
 	echo "an error occured"
+	echo "dont forget to kill serverproccess"
+	echo "kill -9 $pid"
 	exit 1
 }
 

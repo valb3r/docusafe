@@ -63,7 +63,7 @@ public class BucketServiceImpl implements BucketService {
     public void createPlainFile(BucketPath bucketPath, PlainFileContent plainFileContent) {
         try {
             LOGGER.info("start create plain file " + bucketPath);
-            extendedStoreConnection.putBlob(bucketPath.getObjectHandle(), plainFileContent.getValue());
+            extendedStoreConnection.putBlob(bucketPath, plainFileContent.getValue());
             LOGGER.info("finished create plain file " + bucketPath);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
@@ -85,7 +85,7 @@ public class BucketServiceImpl implements BucketService {
     public PlainFileContent readPlainFile(BucketPath bucketPath) {
         try {
             LOGGER.info("start read plain file " + bucketPath);
-            PlainFileContent plainFileContent = new PlainFileContent(extendedStoreConnection.getBlob(bucketPath.getObjectHandle()));
+            PlainFileContent plainFileContent = new PlainFileContent(extendedStoreConnection.getBlob(bucketPath).getData());
             LOGGER.info("finished read plain file " + bucketPath);
             return plainFileContent;
         } catch (Exception e) {
@@ -96,7 +96,7 @@ public class BucketServiceImpl implements BucketService {
     @Override
     public boolean fileExists(BucketPath bucketPath) {
         LOGGER.info("start file exists " + bucketPath);
-        boolean blobExists = extendedStoreConnection.blobExists(bucketPath.getObjectHandle());
+        boolean blobExists = extendedStoreConnection.blobExists(bucketPath);
         LOGGER.info("finished file exists " + bucketPath);
         return blobExists;
     }

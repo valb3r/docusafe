@@ -10,8 +10,6 @@ import org.slf4j.LoggerFactory;
  */
 public class DocumentBucketPath extends BucketPath {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentBucketPath.class);
-    public DocumentBucketPath() {
-    }
 
     public DocumentBucketPath(String value) {
         super(value);
