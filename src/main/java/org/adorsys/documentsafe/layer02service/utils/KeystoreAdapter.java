@@ -1,13 +1,13 @@
 package org.adorsys.documentsafe.layer02service.utils;
 
-import com.google.protobuf.ByteString;
-
+import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
-import org.adorsys.encobject.domain.keystore.KeystoreData;
 import org.adorsys.jkeygen.keystore.KeyStoreService;
 import org.adorsys.jkeygen.keystore.KeystoreBuilder;
 import org.adorsys.jkeygen.keystore.PasswordCallbackUtils;
 import org.adorsys.jkeygen.keystore.SecretKeyData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.crypto.SecretKey;
 import javax.security.auth.callback.CallbackHandler;
@@ -23,6 +23,7 @@ import java.security.cert.CertificateException;
  * @author fpo
  */
 public class KeystoreAdapter {
+    private final static Logger LOGGER = LoggerFactory.getLogger(KeystoreAdapter.class);
 
     /**
      * Wrap a SecretKey into a keystore.
@@ -47,8 +48,10 @@ public class KeystoreAdapter {
      */
     public static KeyStore loadKeystoreFromBytes(byte[] keyStoreDataBytes, String storeid, CallbackHandler keystoreHandler) {
         try {
-            KeystoreData keystoreData = KeystoreData.parseFrom(keyStoreDataBytes);
-            return KeyStoreService.loadKeyStore(keystoreData.getKeystore().toByteArray(), storeid, keystoreData.getType(), keystoreHandler);
+            String storeId = "if you can see this, its a programming error in KeyStoreAdapter";
+            String keyStoreType = null;
+            new BaseException("loadkeyStoreFromBytes without knowledge of type - this is just a warning with a stack, not a real exception but at least a programming error");
+            return KeyStoreService.loadKeyStore(keyStoreDataBytes, storeid, keyStoreType, keystoreHandler);
         } catch (Exception ex) {
             throw BaseExceptionHandler.handle(ex);
         }
@@ -68,10 +71,8 @@ public class KeystoreAdapter {
 
     public static byte[] toBytes(KeyStore keystore, String storeid, CallbackHandler storePassHandler) {
         try {
-            String e = keystore.getType();
             byte[] bs = KeyStoreService.toByteArray(keystore, storeid, storePassHandler);
-            KeystoreData keystoreData = KeystoreData.newBuilder().setType(e).setKeystore(ByteString.copyFrom(bs)).build();
-            return keystoreData.toByteArray();
+            return bs;
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
