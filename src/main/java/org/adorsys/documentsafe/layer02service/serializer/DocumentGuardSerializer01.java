@@ -1,8 +1,8 @@
 package org.adorsys.documentsafe.layer02service.serializer;
 
-import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
 import org.adorsys.documentsafe.layer02service.types.DocumentKey;
 import org.adorsys.documentsafe.layer02service.utils.KeystoreAdapter;
+import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
 
 import javax.crypto.SecretKey;
 import javax.security.auth.callback.CallbackHandler;
@@ -16,7 +16,9 @@ public class DocumentGuardSerializer01 implements DocumentGuardSerializer {
      */
     public static final String SERIALIZER_ID = "dgs01";
     private static final String DGS01_KEYID = "keyid";
-    private static CallbackHandler keystoreHandler = new PasswordCallbackHandler("any-password".toCharArray());
+    // TODO besser wäre wirklich null zu übergeben, da es nicht gebraucht werden darf
+    // private static CallbackHandler keystoreHandler = null;
+    private static CallbackHandler keystoreHandler = new PasswordCallbackHandler("just-to-have-a-not-null-callbackhandler".toCharArray());
 
     /*
      * Deserializes the secret key. In order not to define a proper key

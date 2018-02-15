@@ -14,10 +14,12 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucket
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentContentWithContentMetaInfo;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
+import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAuth;
 import org.adorsys.documentsafe.layer02service.utils.ShowKeyStore;
 import org.adorsys.documentsafe.layer02service.utils.TestKeyUtils;
 import org.adorsys.documentsafe.layer03business.types.AccessType;
 import org.adorsys.encobject.complextypes.BucketDirectory;
+import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.exceptions.FileExistsException;
 import org.adorsys.encobject.filesystem.FileSystemExtendedStorageConnection;
@@ -32,6 +34,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.UTFDataFormatException;
+import java.security.UnrecoverableKeyException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -133,6 +138,80 @@ public class AllServiceTest {
             BaseExceptionHandler.handle(e);
         }
     }
+
+    @Test
+    public void testCreateKeyStoreAndDocumentGuardAndTryToLoadDocumentGuardWithWrongKey() {
+        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        try {
+            KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest(extendedStoreConnection).createKeyStore();
+            DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest(extendedStoreConnection);
+
+            DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = documentGuardServiceTest.testCreateSymmetricDocumentGuard(
+                    keyStoreStuff.keyStoreAccess, AccessType.WRITE);
+            BucketPath keyStorePath = keyStoreStuff.keyStoreAccess.getKeyStorePath();
+
+            ReadKeyPassword readKeyPassword = keyStoreStuff.keyStoreAccess.getKeyStoreAuth().getReadKeyPassword();
+            ReadStorePassword readStorePassword = keyStoreStuff.keyStoreAccess.getKeyStoreAuth().getReadStorePassword();
+
+            {
+                boolean waitForUnrecoverableKeyException = false;
+                try {
+                    ReadKeyPassword wrongReadKeyPassword = new ReadKeyPassword("hassenichtgesehen");
+                    KeyStoreAuth newKeyStoreAuth = new KeyStoreAuth(readStorePassword, wrongReadKeyPassword);
+                    KeyStoreAccess newKeyStoreAccess = new KeyStoreAccess(keyStorePath, newKeyStoreAuth);
+                    documentGuardServiceTest.testLoadDocumentGuard(newKeyStoreAccess,
+                            documentGuardStuff.documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
+                } catch (Exception e) {
+                    if (e.getCause() instanceof UnrecoverableKeyException) {
+                        waitForUnrecoverableKeyException = true;
+                    }
+                }
+                Assert.assertTrue("UnrecoverableKeyException for wrong keyPassword did not raise", waitForUnrecoverableKeyException);
+                LOGGER.error("Exception was expected, thats fine");
+            }
+            {
+                boolean waitForUTFDataFormatException = false;
+                try {
+                    ReadStorePassword wrongReadStorePassword = new ReadStorePassword("hassenichtgesehen");
+                    KeyStoreAuth newKeyStoreAuth = new KeyStoreAuth(wrongReadStorePassword, readKeyPassword);
+                    KeyStoreAccess newKeyStoreAccess = new KeyStoreAccess(keyStorePath, newKeyStoreAuth);
+                    documentGuardServiceTest.testLoadDocumentGuard(newKeyStoreAccess,
+                            documentGuardStuff.documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
+                } catch (Exception e) {
+                    if (e.getCause() instanceof UTFDataFormatException) {
+                        waitForUTFDataFormatException = true;
+                    }
+                    if (e.getCause() instanceof IOException) {
+                        waitForUTFDataFormatException = true;
+
+                        LOGGER.error("============================================================================================================================");
+                        LOGGER.error("why a io exception");
+                        LOGGER.error(" ");
+                        LOGGER.error("This will work: ");
+                        LOGGER.error("mvn test -Dtest=AllServiceTest#testCreateKeyStoreAndDocumentGuard");
+                        LOGGER.error("mvn test -Dtest=AllServiceTest#testCreateKeyStoreAndDocumentGuardAndLoadDocumentGuard");
+                        LOGGER.error("mvn test -Dtest=AllServiceTest#testCreateKeyStoreAndDocumentGuardAndTryToLoadDocumentGuardWithWrongKey");
+                        LOGGER.error(" ");
+                        LOGGER.error("This will not work: ");
+                        LOGGER.error("mvn test -Dtest=AllServiceTest#testCreateKeyStoreAndDocumentGuard");
+                        LOGGER.error("mvn test -Dtest=AllServiceTest#testCreateKeyStoreAndDocumentGuardAndTryToLoadDocumentGuardWithWrongKey");
+                        LOGGER.error("============================================================================================================================");
+                    }
+                }
+                Assert.assertTrue("UTFDataFormatException for wrong storePassword did not raise", waitForUTFDataFormatException);
+                LOGGER.error("Exception was expected, thats fine");
+            }
+            KeyStoreAuth newKeyStoreAuth = new KeyStoreAuth(readStorePassword, readKeyPassword);
+            KeyStoreAccess newKeyStoreAccess = new KeyStoreAccess(keyStorePath, newKeyStoreAuth);
+            DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = documentGuardServiceTest.testLoadDocumentGuard(newKeyStoreAccess,
+                    documentGuardStuff.documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
+
+            LOGGER.debug("DocumentKey is " + HexUtil.convertBytesToHexString(documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKey().getSecretKey().getEncoded()));
+        } catch (Exception e) {
+            BaseExceptionHandler.handle(e);
+        }
+    }
+
 
     @Test
     public void testCreateDocument() {
@@ -311,7 +390,7 @@ public class AllServiceTest {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         BucketServiceTest bucketServiceTest = new BucketServiceTest(extendedStoreConnection);
         BucketDirectory rootDirectory = new BucketDirectory("user1");
-        bucketServiceTest.createFiles(extendedStoreConnection, rootDirectory, 3,2);
+        bucketServiceTest.createFiles(extendedStoreConnection, rootDirectory, 3, 2);
 
         BucketContent bucketContent1 = bucketServiceTest.listBucket(rootDirectory, ListRecursiveFlag.FALSE);
         LOGGER.debug("1 einfaches listing" + bucketContent1.toString());
@@ -337,7 +416,7 @@ public class AllServiceTest {
 
     private boolean contains(List<ExtendedStorageMetadata> strippedContent, String file0) {
         for (ExtendedStorageMetadata m : strippedContent) {
-            if (m.getName().equals(file0)){
+            if (m.getName().equals(file0)) {
                 return true;
             }
         }
