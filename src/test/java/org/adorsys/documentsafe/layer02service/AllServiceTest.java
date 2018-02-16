@@ -27,13 +27,18 @@ import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.service.ExtendedStoreConnection;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.adorsys.encobject.types.OverwriteFlag;
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.crypto.BadPaddingException;
+import java.io.File;
 import java.io.IOException;
 import java.io.UTFDataFormatException;
 import java.security.UnrecoverableKeyException;
@@ -140,10 +145,61 @@ public class AllServiceTest {
     }
 
     @Test
+    public void testWrongKeyLoop() {
+        if (System.getProperty("loop") == null) {
+            LOGGER.info("TEST WRONG LOOP IGNROED. PLEASE RUN WITH -Dloop");
+            return;
+        }
+        try {
+            int i = 0;
+            boolean foundFirstException = false;
+            boolean foundSecondException = false;
+            FileUtils.deleteDirectory(new File("target/filesystemstorage"));
+            while (!foundFirstException || !foundSecondException) {
+                buckets.clear();
+                int e = testCreateKeyStoreAndDocumentGuardAndTryToLoadDocumentGuardWithWrongKey("loop" + i);
+                if (e == 1) {
+                    if (!foundFirstException) {
+                        LOGGER.info("========================================");
+                        LOGGER.info("FOUND EXCEPTION 1 WITH CONTAINERID " + i);
+                        LOGGER.info("========================================");
+                        foundFirstException = true;
+                    } else {
+                        after();
+                    }
+                }
+                if (e == 2) {
+                    if (!foundSecondException) {
+                        LOGGER.info("========================================");
+                        LOGGER.info("FOUND EXCEPTION 2 WITH CONTAINERID " + i);
+                        LOGGER.info("========================================");
+                        foundSecondException = true;
+                    } else {
+                        after();
+                    }
+                }
+                i = i + 1;
+            }
+            // avoid removing result
+            buckets.clear();
+        } catch (Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
+    }
+
+    @Test
     public void testCreateKeyStoreAndDocumentGuardAndTryToLoadDocumentGuardWithWrongKey() {
+        testCreateKeyStoreAndDocumentGuardAndTryToLoadDocumentGuardWithWrongKey("testWrongKey");
+    }
+
+    private int testCreateKeyStoreAndDocumentGuardAndTryToLoadDocumentGuardWithWrongKey(String container) {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         try {
-            KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest(extendedStoreConnection).createKeyStore();
+
+            ReadStorePassword origReadStorePassword = new ReadStorePassword("affe1");
+            ReadKeyPassword origReadKeyPassword = new ReadKeyPassword("password2");
+            String keyStoreID = "keystore";
+            KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest(extendedStoreConnection).createKeyStore(container, origReadStorePassword, origReadKeyPassword, keyStoreID, null);
             DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest(extendedStoreConnection);
 
             DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = documentGuardServiceTest.testCreateSymmetricDocumentGuard(
@@ -154,7 +210,7 @@ public class AllServiceTest {
             ReadStorePassword readStorePassword = keyStoreStuff.keyStoreAccess.getKeyStoreAuth().getReadStorePassword();
 
             {
-                boolean waitForUnrecoverableKeyException = false;
+                boolean waitForException = false;
                 try {
                     ReadKeyPassword wrongReadKeyPassword = new ReadKeyPassword("hassenichtgesehen");
                     KeyStoreAuth newKeyStoreAuth = new KeyStoreAuth(readStorePassword, wrongReadKeyPassword);
@@ -163,14 +219,15 @@ public class AllServiceTest {
                             documentGuardStuff.documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
                 } catch (Exception e) {
                     if (e.getCause() instanceof UnrecoverableKeyException) {
-                        waitForUnrecoverableKeyException = true;
+                        waitForException = true;
                     }
                 }
-                Assert.assertTrue("UnrecoverableKeyException for wrong keyPassword did not raise", waitForUnrecoverableKeyException);
+                Assert.assertTrue("UnrecoverableKeyException for wrong keyPassword did not raise", waitForException);
                 LOGGER.error("Exception was expected, thats fine");
             }
+            int returnValue = 0;
             {
-                boolean waitForUTFDataFormatException = false;
+                boolean waitForException = false;
                 try {
                     ReadStorePassword wrongReadStorePassword = new ReadStorePassword("hassenichtgesehen");
                     KeyStoreAuth newKeyStoreAuth = new KeyStoreAuth(wrongReadStorePassword, readKeyPassword);
@@ -179,26 +236,14 @@ public class AllServiceTest {
                             documentGuardStuff.documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
                 } catch (Exception e) {
                     if (e.getCause() instanceof UTFDataFormatException) {
-                        waitForUTFDataFormatException = true;
-                    }
-                    if (e.getCause() instanceof IOException) {
-                        waitForUTFDataFormatException = true;
-
-                        LOGGER.error("============================================================================================================================");
-                        LOGGER.error("why a io exception");
-                        LOGGER.error(" ");
-                        LOGGER.error("This will work: ");
-                        LOGGER.error("mvn test -Dtest=AllServiceTest#testCreateKeyStoreAndDocumentGuard");
-                        LOGGER.error("mvn test -Dtest=AllServiceTest#testCreateKeyStoreAndDocumentGuardAndLoadDocumentGuard");
-                        LOGGER.error("mvn test -Dtest=AllServiceTest#testCreateKeyStoreAndDocumentGuardAndTryToLoadDocumentGuardWithWrongKey");
-                        LOGGER.error(" ");
-                        LOGGER.error("This will not work: ");
-                        LOGGER.error("mvn test -Dtest=AllServiceTest#testCreateKeyStoreAndDocumentGuard");
-                        LOGGER.error("mvn test -Dtest=AllServiceTest#testCreateKeyStoreAndDocumentGuardAndTryToLoadDocumentGuardWithWrongKey");
-                        LOGGER.error("============================================================================================================================");
+                        waitForException = true;
+                        returnValue = 1;
+                    } else if (e.getCause() instanceof IOException) {
+                        waitForException = true;
+                        returnValue = 2;
                     }
                 }
-                Assert.assertTrue("UTFDataFormatException for wrong storePassword did not raise", waitForUTFDataFormatException);
+                Assert.assertTrue("UTFDataFormatException for wrong storePassword did not raise", waitForException);
                 LOGGER.error("Exception was expected, thats fine");
             }
             KeyStoreAuth newKeyStoreAuth = new KeyStoreAuth(readStorePassword, readKeyPassword);
@@ -207,8 +252,9 @@ public class AllServiceTest {
                     documentGuardStuff.documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
 
             LOGGER.debug("DocumentKey is " + HexUtil.convertBytesToHexString(documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKey().getSecretKey().getEncoded()));
+            return returnValue;
         } catch (Exception e) {
-            BaseExceptionHandler.handle(e);
+            throw BaseExceptionHandler.handle(e);
         }
     }
 
