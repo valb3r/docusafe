@@ -16,7 +16,8 @@ public class DocumentGuardSerializerRegistery {
 	public Map<String, DocumentGuardSerializer> serializers = new HashMap<>();
 
 	private DocumentGuardSerializerRegistery(){
-		registerSerializer(DocumentGuardSerializer01.SERIALIZER_ID, new DocumentGuardSerializer01());
+		DocumentGuardSerializer01 documentGuardSerializer01 = new DocumentGuardSerializer01();
+		registerSerializer(documentGuardSerializer01.getSerializerID(), documentGuardSerializer01);
 	}
 	
 	public DocumentGuardSerializer getSerializer(String serializerId){

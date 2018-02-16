@@ -2,6 +2,7 @@ package org.adorsys.documentsafe.layer02service.utils;
 
 import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
+import org.adorsys.encobject.types.KeyStoreType;
 import org.adorsys.jkeygen.keystore.KeyStoreService;
 import org.adorsys.jkeygen.keystore.KeystoreBuilder;
 import org.adorsys.jkeygen.keystore.PasswordCallbackUtils;
@@ -33,10 +34,10 @@ public class KeystoreAdapter {
      * @param keyPassHandler
      * @return
      */
-    public static KeyStore wrapSecretKey2KeyStore(SecretKey secretKey, String alias, CallbackHandler keyPassHandler) {
+    public static KeyStore wrapSecretKey2KeyStore(SecretKey secretKey, String alias, CallbackHandler keyPassHandler, KeyStoreType keyStoreType) {
         SecretKeyData secretKeyData = SecretKeyData.builder().secretKey(secretKey).alias(alias).passwordSource(keyPassHandler).build();
         try {
-            return new KeystoreBuilder().withKeyEntry(secretKeyData).build();
+            return new KeystoreBuilder().withKeyEntry(secretKeyData).withStoreType(keyStoreType.getValue()).build();
         } catch (NoSuchAlgorithmException | CertificateException | IOException e) {
             throw BaseExceptionHandler.handle(e);
         }
@@ -46,12 +47,10 @@ public class KeystoreAdapter {
      * Load keystore from bytes, using the format defined in /encobject/src/main/protobuf/KeystorePbf.proto
      *
      */
-    public static KeyStore loadKeystoreFromBytes(byte[] keyStoreDataBytes, String storeid, CallbackHandler keystoreHandler) {
+    public static KeyStore loadKeystoreFromBytes(byte[] keyStoreDataBytes, CallbackHandler keystoreHandler, KeyStoreType keyStoreType) {
         try {
-            String storeId = "if you can see this, its a programming error in KeyStoreAdapter";
-            String keyStoreType = null;
-            new BaseException("loadkeyStoreFromBytes without knowledge of type - this is just a warning with a stack, not a real exception but at least a programming error");
-            return KeyStoreService.loadKeyStore(keyStoreDataBytes, storeid, keyStoreType, keystoreHandler);
+            String storeid = "if you can see this, its a programming error in KeyStoreAdapter";
+            return KeyStoreService.loadKeyStore(keyStoreDataBytes, storeid, keyStoreType.getValue(), keystoreHandler);
         } catch (Exception ex) {
             throw BaseExceptionHandler.handle(ex);
         }

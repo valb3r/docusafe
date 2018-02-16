@@ -31,6 +31,7 @@ import org.adorsys.encobject.service.JWEPersistence;
 import org.adorsys.encobject.service.KeystorePersistence;
 import org.adorsys.encobject.service.PersistentObjectWrapper;
 import org.adorsys.encobject.types.KeyID;
+import org.adorsys.encobject.types.KeyStoreType;
 import org.adorsys.encobject.types.OverwriteFlag;
 import org.adorsys.jkeygen.keystore.SecretKeyData;
 import org.slf4j.Logger;
@@ -44,6 +45,7 @@ import java.util.UUID;
 public class DocumentGuardServiceImpl implements DocumentGuardService {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentGuardServiceImpl.class);
     private final static String ACCESS_TYPE = "AccessType";
+    private final static String KEYSTORE_TYPE = "KeyStoreType";
 
     private KeystorePersistence keystorePersistence;
     private JWEPersistence jwePersistence;
@@ -107,13 +109,18 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
         Map<String, Object> addInfos = metaIno.getAddInfos();
         String accesstypestring = (String) addInfos.get(ACCESS_TYPE);
         if (accesstypestring == null) {
-            throw new BaseException("PROGRAMMING ERROR. AcessType for Guard with KeyID " + documentKeyID + " not known");
+            throw new BaseException("PROGRAMMING ERROR. AccessType for Guard with KeyID " + documentKeyID + " not known");
         }
+        String keyStoreTypeString = (String) addInfos.get(KEYSTORE_TYPE);
+        if (keyStoreTypeString == null) {
+            throw new BaseException("PROGRAMMING ERROR. KeyStoreType for Guard with KeyID " + documentKeyID + " not known");
+        }
+        KeyStoreType keyStoreType = new KeyStoreType(keyStoreTypeString);
+
         AccessType accessType = AccessType.WRITE.valueOf(accesstypestring);
         String serializerId = (String) addInfos.get(serializerRegistry.SERIALIZER_HEADER_KEY);
-        serializerRegistry.getSerializer(serializerId);
         DocumentGuardSerializer serializer = serializerRegistry.getSerializer(serializerId);
-        DocumentKey documentKey = serializer.deserializeSecretKey(wrapper.getData());
+        DocumentKey documentKey = serializer.deserializeSecretKey(wrapper.getData(), keyStoreType);
 
         LOGGER.info("finished load " + documentKeyID + " from document guard at " + keyStoreAccess.getKeyStorePath());
         return new DocumentKeyIDWithKeyAndAccessType(new DocumentKeyIDWithKey(documentKeyID, documentKey), accessType);
@@ -125,6 +132,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
                                      KeySourceAndGuardKeyID keySourceAndGuardKeyID,
                                      OverwriteFlag overwriteFlag) {
         LOGGER.info("start persist document guard for " + documentKeyIDWithKeyAndAccessType + " at " + keyStoreAccess.getKeyStorePath());
+        KeyStoreType keyStoreType = new KeyStoreType("UBER");
         ObjectHandle documentGuardHandle = DocumentGuardLocation.getBucketPathOfGuard(keyStoreAccess.getKeyStorePath(),
                 documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID()).getObjectHandle();
         EncryptionParams encParams = null;
@@ -132,9 +140,12 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
         // Den DocumentKey serialisieren, in der MetaInfo die SerializerID vermerken
         ContentMetaInfo metaInfo = new ContentMetaInfo();
         metaInfo.setAddInfos(new HashMap<>());
-        metaInfo.getAddInfos().put(serializerRegistry.SERIALIZER_HEADER_KEY, DocumentGuardSerializer01.SERIALIZER_ID);
+        DocumentGuardSerializer documentGuardSerializer = serializerRegistry.defaultSerializer();
+        metaInfo.getAddInfos().put(serializerRegistry.SERIALIZER_HEADER_KEY, documentGuardSerializer.getSerializerID());
         metaInfo.getAddInfos().put(ACCESS_TYPE, documentKeyIDWithKeyAndAccessType.getAccessType());
-        GuardKey guardKey = new GuardKey(serializerRegistry.defaultSerializer().serializeSecretKey(documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKey()));
+        metaInfo.getAddInfos().put(KEYSTORE_TYPE, keyStoreType.getValue());
+        GuardKey guardKey = new GuardKey(documentGuardSerializer.serializeSecretKey(
+                documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKey(), keyStoreType));
 
         jwePersistence.storeObject(guardKey.getValue(), metaInfo, documentGuardHandle, keySourceAndGuardKeyID.keySource,
                 new KeyID(keySourceAndGuardKeyID.guardKeyID.getValue()), encParams, overwriteFlag);

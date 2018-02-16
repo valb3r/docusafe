@@ -2,6 +2,7 @@ package org.adorsys.documentsafe.layer02service.serializer;
 
 import org.adorsys.documentsafe.layer02service.types.DocumentKey;
 import org.adorsys.documentsafe.layer02service.utils.KeystoreAdapter;
+import org.adorsys.encobject.types.KeyStoreType;
 import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
 
 import javax.crypto.SecretKey;
@@ -24,15 +25,19 @@ public class DocumentGuardSerializer01 implements DocumentGuardSerializer {
      * Deserializes the secret key. In order not to define a proper key
      * serialization format, we reuse the keystore format system.
      */
-    public DocumentKey deserializeSecretKey(byte[] decryptedGuardBytes) {
-        KeyStore secretKeystore;
-        secretKeystore = KeystoreAdapter.loadKeystoreFromBytes(decryptedGuardBytes, DGS01_KEYID, keystoreHandler);
+    public DocumentKey deserializeSecretKey(byte[] decryptedGuardBytes, KeyStoreType keyStoreType) {
+        KeyStore secretKeystore = KeystoreAdapter.loadKeystoreFromBytes(decryptedGuardBytes, keystoreHandler, keyStoreType);
         SecretKey secretKey = (SecretKey) KeystoreAdapter.readKeyFromKeystore(secretKeystore, DGS01_KEYID, keystoreHandler);
         return new DocumentKey(secretKey);
     }
 
-    public byte[] serializeSecretKey(DocumentKey documentKey) {
-        KeyStore docKeyStore = KeystoreAdapter.wrapSecretKey2KeyStore(documentKey.getSecretKey(), DGS01_KEYID, keystoreHandler);
+    public byte[] serializeSecretKey(DocumentKey documentKey, KeyStoreType keyStoreType) {
+        KeyStore docKeyStore = KeystoreAdapter.wrapSecretKey2KeyStore(documentKey.getSecretKey(), DGS01_KEYID, keystoreHandler, keyStoreType);
         return KeystoreAdapter.toBytes(docKeyStore, DGS01_KEYID, keystoreHandler);
+    }
+
+    @Override
+    public String getSerializerID() {
+        return SERIALIZER_ID;
     }
 }
