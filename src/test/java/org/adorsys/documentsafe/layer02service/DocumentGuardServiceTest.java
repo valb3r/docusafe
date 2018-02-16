@@ -3,6 +3,7 @@ package org.adorsys.documentsafe.layer02service;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.cryptoutils.utils.HexUtil;
 import org.adorsys.documentsafe.layer02service.impl.DocumentGuardServiceImpl;
+import org.adorsys.documentsafe.layer02service.impl.GuardKeyType;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
@@ -29,7 +30,7 @@ public class DocumentGuardServiceTest {
                                                                                        DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType) {
         try {
             DocumentGuardService documentGuardService = new DocumentGuardServiceImpl(extendedStoreConnection);
-            documentGuardService.createAsymmetricDocumentGuard(keyStoreAccess, documentKeyIDWithKeyAndAccessType, OverwriteFlag.FALSE);
+            documentGuardService.createDocumentGuardFor(GuardKeyType.PUBLIC_KEY, keyStoreAccess, documentKeyIDWithKeyAndAccessType, OverwriteFlag.FALSE);
             LOGGER.debug("documentKeyID:" + documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
             return new DocumentGuardStuff(documentGuardService, documentKeyIDWithKeyAndAccessType);
         } catch (Exception e) {
@@ -42,7 +43,7 @@ public class DocumentGuardServiceTest {
             DocumentGuardService documentGuardService = new DocumentGuardServiceImpl(extendedStoreConnection);
             DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardService.createDocumentKeyIdWithKey();
             DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = new DocumentKeyIDWithKeyAndAccessType(documentKeyIDWithKey, accessType);
-            documentGuardService.createSymmetricDocumentGuard(keyStoreAccess, documentKeyIDWithKeyAndAccessType);
+            documentGuardService.createDocumentGuardFor(GuardKeyType.SECRET_KEY, keyStoreAccess, documentKeyIDWithKeyAndAccessType, OverwriteFlag.FALSE);
             return new DocumentGuardStuff(documentGuardService, documentKeyIDWithKeyAndAccessType);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);

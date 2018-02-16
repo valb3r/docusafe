@@ -7,6 +7,7 @@ import org.adorsys.documentsafe.layer02service.KeyStoreService;
 import org.adorsys.documentsafe.layer02service.impl.BucketServiceImpl;
 import org.adorsys.documentsafe.layer02service.impl.DocumentGuardServiceImpl;
 import org.adorsys.documentsafe.layer02service.impl.DocumentPersistenceServiceImpl;
+import org.adorsys.documentsafe.layer02service.impl.GuardKeyType;
 import org.adorsys.documentsafe.layer02service.impl.KeyStoreServiceImpl;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
@@ -206,7 +207,6 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
         BucketDirectory homeBucketDirectory = UserIDUtil.getHomeBucketDirectory(userIDAuth.getUserID());
         BucketDirectory documentBucketDirectory = homeBucketDirectory.append(new BucketDirectory(documentDirectoryFQN.getValue()));
 
-
         AccessType grantedAccess = GrantUtil.getAccessTypeOfBucketGrantFile(bucketService, documentBucketDirectory, userIDAuth.getUserID(), receiverUserID);
         if (grantedAccess.equals(accessType)) {
             LOGGER.debug("nothing to do. granted access already exists for " + userIDAuth + " to  " + receiverUserID + " for " + documentDirectoryFQN + " with " + accessType);
@@ -261,7 +261,7 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
                                                          BucketDirectory documentDirectory,
                                                          OverwriteFlag overwriteFlag) {
         LOGGER.debug("start create asymmetric guard for " + documentDirectory + " " + keyStoreAccess.getKeyStorePath().getBucketDirectory());
-        documentGuardService.createAsymmetricDocumentGuard(keyStoreAccess, documentKeyIDWithKeyAndAccessType, overwriteFlag);
+        documentGuardService.createDocumentGuardFor(GuardKeyType.PUBLIC_KEY, keyStoreAccess, documentKeyIDWithKeyAndAccessType, overwriteFlag);
         GuardUtil.saveBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStorePath().getBucketDirectory(), documentDirectory, documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
         LOGGER.debug("finished create asymmetric guard for " + documentDirectory + " " + keyStoreAccess.getKeyStorePath().getBucketDirectory());
         return documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID();
@@ -307,7 +307,7 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
     private DocumentKeyID createGuardForBucket(KeyStoreAccess keyStoreAccess, BucketDirectory documentDirectory, AccessType accessType) {
         LOGGER.debug("start create new guard for " + documentDirectory);
         DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = new DocumentKeyIDWithKeyAndAccessType(documentGuardService.createDocumentKeyIdWithKey(), accessType);
-        documentGuardService.createSymmetricDocumentGuard(keyStoreAccess, documentKeyIDWithKeyAndAccessType);
+        documentGuardService.createDocumentGuardFor(GuardKeyType.SECRET_KEY, keyStoreAccess, documentKeyIDWithKeyAndAccessType, OverwriteFlag.FALSE);
         GuardUtil.saveBucketGuardKeyFile(bucketService,
                 keyStoreAccess.getKeyStorePath().getBucketDirectory(),
                 documentDirectory, documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
