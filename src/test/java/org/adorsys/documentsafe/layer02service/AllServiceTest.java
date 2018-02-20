@@ -5,7 +5,6 @@ import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.cryptoutils.utils.HexUtil;
 import org.adorsys.documentsafe.layer02service.exceptions.KeyStoreExistsException;
 import org.adorsys.documentsafe.layer02service.generators.KeyStoreCreationConfig;
-import org.adorsys.documentsafe.layer02service.impl.ExtendedStorageMetadata;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
 import org.adorsys.documentsafe.layer02service.types.ReadStorePassword;
@@ -21,6 +20,7 @@ import org.adorsys.documentsafe.layer03business.types.AccessType;
 import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.domain.StorageMetadata;
+import org.adorsys.encobject.domain.StorageType;
 import org.adorsys.encobject.exceptions.FileExistsException;
 import org.adorsys.encobject.filesystem.FileSystemExtendedStorageConnection;
 import org.adorsys.encobject.service.ContainerPersistence;
@@ -39,6 +39,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UTFDataFormatException;
 import java.security.UnrecoverableKeyException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -437,28 +438,19 @@ public class AllServiceTest {
 
         BucketContent bucketContent1 = bucketServiceTest.listBucket(rootDirectory, ListRecursiveFlag.FALSE);
         LOGGER.debug("1 einfaches listing" + bucketContent1.toString());
-        Assert.assertEquals("nicht rekursiv erwartete Einträge", 5, bucketContent1.getStrippedContent().size());
+        Assert.assertEquals("nicht rekursiv erwartete Einträge", 6, bucketContent1.getContent().size());
 
         BucketContent bucketContent2 = bucketServiceTest.listBucket(rootDirectory, ListRecursiveFlag.TRUE);
         LOGGER.debug("2 recursives listing " + bucketContent2.toString());
-        Assert.assertEquals("rekursiv erwartete Einträge", 26, bucketContent2.getStrippedContent().size());
-
-        BucketDirectory bp = rootDirectory.appendDirectory("subdir1");
-        BucketContent bucketContent3 = bucketServiceTest.listBucket(bp, ListRecursiveFlag.FALSE);
-        LOGGER.debug("3 einfaches listing " + bucketContent3.toString());
-        Assert.assertEquals("rekursiv erwartete Einträge", 5, bucketContent3.getStrippedContent().size());
-        Assert.assertTrue("es gibt file", contains(bucketContent3.getStrippedContent(), "file0"));
-        Assert.assertTrue("es gibt directory", contains(bucketContent3.getStrippedContent(), "subdir0/"));
-
-        BucketContent bucketContent4 = bucketServiceTest.listBucket(bp, ListRecursiveFlag.TRUE);
-        LOGGER.debug("4 recursives listing " + bucketContent4.toString());
-        Assert.assertEquals("rekursiv erwartete Einträge", 8, bucketContent4.getStrippedContent().size());
-        Assert.assertTrue("es gibt", contains(bucketContent4.getStrippedContent(), "file0"));
-        Assert.assertTrue("es gibt directory", contains(bucketContent4.getStrippedContent(), "subdir0/file0"));
+        List<BucketDirectory> dirs = getDirectoresOnly(bucketContent2.getContent());
+        List<BucketPath> files = getFilesOnly(bucketContent2.getContent());
+        Assert.assertEquals("number of entries", 39, bucketContent2.getContent().size());
+        Assert.assertEquals("number of entries", 13, dirs.size());
+        Assert.assertEquals("number of entries", 26, files.size());
     }
 
-    private boolean contains(List<ExtendedStorageMetadata> strippedContent, String file0) {
-        for (ExtendedStorageMetadata m : strippedContent) {
+    private boolean contains(List<StorageMetadata> content, String file0) {
+        for (StorageMetadata m : content) {
             if (m.getName().equals(file0)) {
                 return true;
             }
@@ -492,19 +484,20 @@ public class AllServiceTest {
 
         BucketDirectory pathAsDirectory = new BucketDirectory(documentBucketPath);
         BucketContent bucketContent = bucketServiceTest.listBucket(pathAsDirectory, ListRecursiveFlag.FALSE.TRUE);
-        Assert.assertEquals("this is no bucket, so no result expected", 0, bucketContent.getStrippedContent().size());
+        LOGGER.debug(bucketContent.toString());
+        Assert.assertEquals("this is no bucket, so no result expected", 0, bucketContent.getContent().size());
         boolean fileExsits = bucketServiceTest.fileExists(documentBucketPath);
         Assert.assertEquals("file should exist", true, fileExsits);
 
     }
 
     private void showBucketContent(BucketContent bucketContent2) {
-        for (StorageMetadata meta : bucketContent2.getStrippedContent()) {
+        for (StorageMetadata meta : bucketContent2.getContent()) {
             LOGGER.debug("name: " + meta.getName());
             LOGGER.debug("size: " + meta.getSize());
             LOGGER.debug("type: " + meta.getType());
             LOGGER.debug("etag: " + meta.getETag());
-            LOGGER.debug("providerid: " + meta.getProviderId());
+            LOGGER.debug("providerid: " + meta.getProviderID());
             LOGGER.debug("creation: " + meta.getCreationDate());
             LOGGER.debug("uri: " + meta.getUri());
             LOGGER.debug(" ");
@@ -604,4 +597,25 @@ public class AllServiceTest {
 
     }
 
+    private List<BucketPath> getFilesOnly(List<StorageMetadata> a) {
+        List<BucketPath> result = new ArrayList<>();
+        for (StorageMetadata s : a) {
+            if (s.getType().equals(StorageType.BLOB)) {
+                result.add(new BucketPath(s.getName()));
+            }
+
+        }
+        return result;
+    }
+
+
+    private List<BucketDirectory> getDirectoresOnly(List<StorageMetadata> a) {
+        List<BucketDirectory> result = new ArrayList<>();
+        for (StorageMetadata s : a) {
+            if (s.getType().equals(StorageType.FOLDER)) {
+                result.add(new BucketDirectory(s.getName()));
+            }
+        }
+        return result;
+    }
 }

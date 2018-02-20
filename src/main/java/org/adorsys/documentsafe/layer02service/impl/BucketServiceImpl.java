@@ -47,7 +47,7 @@ public class BucketServiceImpl implements BucketService {
     public BucketContent readDocumentBucket(BucketDirectory bucketDirectory, ListRecursiveFlag listRecursiveFlag) {
         LOGGER.info("start read document bucket " + bucketDirectory);
         BucketContent bucketContent = new BucketContent(bucketDirectory, extendedStoreConnection.list(bucketDirectory, listRecursiveFlag));
-        LOGGER.info("finished read document bucket " + bucketDirectory + " -> " + bucketContent.getOriginalContent().size());
+        LOGGER.info("finished read document bucket " + bucketDirectory + " -> " + bucketContent.getContent().size());
         return bucketContent;
     }
 

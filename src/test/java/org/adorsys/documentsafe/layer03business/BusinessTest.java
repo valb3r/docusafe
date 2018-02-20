@@ -224,7 +224,7 @@ public class BusinessTest {
         BucketDirectory keyStoreDirectory = UserIDUtil.getKeyStoreDirectory(userID);
         BucketContent bucketContent = bucketService.readDocumentBucket(keyStoreDirectory, ListRecursiveFlag.TRUE);
         int count = 0;
-        for (StorageMetadata meta : bucketContent.getStrippedContent()) {
+        for (StorageMetadata meta : bucketContent.getContent()) {
             if (meta.getName().endsWith("bucketGuardKey")) {
                 count++;
             }
