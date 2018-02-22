@@ -15,10 +15,6 @@ public class DSDocument {
         this.documentFQN = documentFQN;
         this.documentContent = documentContent;
         this.dsDocumentMetaInfo = dsDocumentMetaInfo;
-
-        if (this.dsDocumentMetaInfo == null) {
-            this.dsDocumentMetaInfo = new DSDocumentMetaInfo(new Long(documentContent.getValue().length));
-        }
     }
 
     public DocumentFQN getDocumentFQN() {

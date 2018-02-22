@@ -6,6 +6,8 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentConten
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
 import org.adorsys.encobject.domain.ContentMetaInfo;
+import org.adorsys.encobject.domain.Payload;
+import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.types.OverwriteFlag;
 
 /**
@@ -17,9 +19,9 @@ public interface DocumentPersistenceService {
             DocumentBucketPath documentBucketPath,
             DocumentContent documentContent,
             OverwriteFlag overwriteFlag,
-            ContentMetaInfo contentMetaInfo);
+            StorageMetadata storageMetadata);
 
-    DocumentContentWithContentMetaInfo loadDocument(
+    Payload loadDocument(
             KeyStoreAccess keyStoreAccess,
             DocumentBucketPath documentBucketPath);
 }

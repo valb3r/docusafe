@@ -19,6 +19,7 @@ import org.adorsys.documentsafe.layer02service.utils.TestKeyUtils;
 import org.adorsys.documentsafe.layer03business.types.AccessType;
 import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
+import org.adorsys.encobject.domain.Payload;
 import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.domain.StorageType;
 import org.adorsys.encobject.exceptions.FileExistsException;
@@ -298,11 +299,11 @@ public class AllServiceTest {
                     new DocumentBucketPath("documentBucketPath2/doc2.txt"),
                     documentKeyIDWithKeyAndAccessType,
                     documentContent);
-            DocumentContentWithContentMetaInfo readContent = documentPersistenceServiceTest.testLoadDocument(documentGuardStuff.documentGuardService,
+            Payload payload = documentPersistenceServiceTest.testLoadDocument(documentGuardStuff.documentGuardService,
                     keyStoreStuff.keyStoreAccess,
                     documentStuff.documentBucketPath);
 
-            Assert.assertEquals("Content of Document", readContent.getDocumentContent().toString(), documentContent.toString());
+            Assert.assertEquals("Content of Document", new DocumentContent(payload.getData()).toString(), documentContent.toString());
 
             LOGGER.debug("DocumentBucketPath         :" + documentStuff.documentBucketPath);
             LOGGER.debug("DocumentKeyIDAndAccessType :" + documentKeyIDWithKeyAndAccessType);
@@ -386,11 +387,11 @@ public class AllServiceTest {
             LOGGER.debug("Document erfolgreich ERNEUT geschrieben");
 
             // Load with asymmetric key
-            DocumentContentWithContentMetaInfo newReadDocumentContent = documentPersistenceServiceTest.testLoadDocument(
+            Payload payload = documentPersistenceServiceTest.testLoadDocument(
                     asymmetricStuff.documentGuardStuff.documentGuardService,
                     asymmetricStuff.keyStoreStuff.keyStoreAccess,
                     documentStuff.documentBucketPath);
-            Assert.assertEquals("Content of Document", newDocumentContent.toString(), newReadDocumentContent.getDocumentContent().toString());
+            Assert.assertEquals("Content of Document", newDocumentContent.toString(), new DocumentContent(payload.getData()).toString());
             LOGGER.debug("Document erfolgreich mit DocumentGuard für EncKey gelesen");
 
         } catch (Exception e) {
@@ -542,10 +543,10 @@ public class AllServiceTest {
         LOGGER.debug("Document mit Schlüssel aus DocumentGuard verschlüsselt");
 
         // Laden des Documents mit dem KeyStore mit secretKey
-        DocumentContentWithContentMetaInfo readDocumentContent = documentPersistenceServiceTest.testLoadDocument(documentGuardStuffForSecretKey.documentGuardService,
+        Payload payload = documentPersistenceServiceTest.testLoadDocument(documentGuardStuffForSecretKey.documentGuardService,
                 keyStoreStuffForKeyStoreWithSecretKey.keyStoreAccess,
                 documentStuff.documentBucketPath);
-        Assert.assertEquals("Content of Document", readDocumentContent.getDocumentContent().toString(), documentContent.toString());
+        Assert.assertEquals("Content of Document", new DocumentContent(payload.getData()).toString(), documentContent.toString());
 
         LOGGER.debug("Document mit DocumentGuard erfolgreich gelesen");
 
@@ -587,10 +588,10 @@ public class AllServiceTest {
 
         // Load with asymmetric key
         DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest(extendedStoreConnection);
-        DocumentContentWithContentMetaInfo readDocumentContent = documentPersistenceServiceTest.testLoadDocument(documentGuardStuffForEncKey.documentGuardService,
+        Payload payload = documentPersistenceServiceTest.testLoadDocument(documentGuardStuffForEncKey.documentGuardService,
                 keystoreAccessForKeyStoreWithEncKey,
                 documentBucketPath);
-        Assert.assertEquals("Content of Document", readDocumentContent.getDocumentContent().toString(), documentContent.toString());
+        Assert.assertEquals("Content of Document", new DocumentContent(payload.getData()).toString(), documentContent.toString());
         LOGGER.debug("Document erfolgreich mit DocumentGuard für EncKey gelesen");
 
         return new FullStuff(keyStoreStuffForKeyStoreWithEncKey, documentGuardStuffForEncKey, null);

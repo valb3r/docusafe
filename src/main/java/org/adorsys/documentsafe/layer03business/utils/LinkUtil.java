@@ -19,9 +19,9 @@ public class LinkUtil {
         return new DocumentLinkAsDSDocument(documentFQN, documentContent);
     }
 
-    public static DocumentLink getDocumentLink(DocumentContent documentContent) {
+    public static DocumentLink getDocumentLink(byte[] bytes) {
         Gson gson = new GsonBuilder().create();
-        String jsonString = new String(documentContent.getValue());
+        String jsonString = new String(bytes);
         DocumentLink documentLink = gson.fromJson(jsonString, DocumentLink.class);
         return documentLink;
     }

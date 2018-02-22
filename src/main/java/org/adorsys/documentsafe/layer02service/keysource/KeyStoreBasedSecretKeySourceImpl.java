@@ -41,6 +41,5 @@ public class KeyStoreBasedSecretKeySourceImpl implements KeySource {
 		} catch (UnrecoverableKeyException | KeyStoreException | NoSuchAlgorithmException e) {
 			throw BaseExceptionHandler.handle(e);
 		}
-
 	}
 }

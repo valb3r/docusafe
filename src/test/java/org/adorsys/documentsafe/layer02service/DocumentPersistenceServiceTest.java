@@ -6,7 +6,9 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucket
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentContentWithContentMetaInfo;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
+import org.adorsys.encobject.domain.Payload;
 import org.adorsys.encobject.service.ExtendedStoreConnection;
+import org.adorsys.encobject.service.SimpleStorageMetadataImpl;
 import org.adorsys.encobject.types.OverwriteFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,21 +46,21 @@ public class DocumentPersistenceServiceTest {
                 documentBucketPath,
                 documentContent,
                 overwriteFlag,
-                null);
+                new SimpleStorageMetadataImpl());
         createdBuckets.add(documentBucketPath);
         AllServiceTest.buckets.add(documentBucketPath.getBucketDirectory());
         return new DocumentStuff(documentBucketPath);
     }
 
-    public DocumentContentWithContentMetaInfo testLoadDocument(DocumentGuardService documentGuardService,
+    public Payload testLoadDocument(DocumentGuardService documentGuardService,
                                  KeyStoreAccess keyStoreAccess,
                                  DocumentBucketPath documentBucketPath) {
         DocumentPersistenceService documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection);
-        DocumentContentWithContentMetaInfo readContent = documentPersistenceService.loadDocument(
+        Payload payload = documentPersistenceService.loadDocument(
                 keyStoreAccess,
                 documentBucketPath);
-        LOGGER.debug("Gelesenes Document enthält:" + readContent + " bzw " + new String(readContent.getDocumentContent().getValue()));
-        return readContent;
+        LOGGER.debug("Gelesenes Document enthält:" + payload.getData() + " bzw " + new String(payload.getData()));
+        return payload;
     }
 
     public static class DocumentStuff {

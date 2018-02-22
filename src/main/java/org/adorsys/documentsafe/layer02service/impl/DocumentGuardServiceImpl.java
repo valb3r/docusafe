@@ -10,7 +10,6 @@ import org.adorsys.documentsafe.layer02service.impl.guardHelper.GuardKeyHelperFa
 import org.adorsys.documentsafe.layer02service.impl.guardHelper.KeySourceAndGuardKeyID;
 import org.adorsys.documentsafe.layer02service.keysource.KeyStoreBasedSecretKeySourceImpl;
 import org.adorsys.documentsafe.layer02service.serializer.DocumentGuardSerializer;
-import org.adorsys.documentsafe.layer02service.serializer.DocumentGuardSerializer01;
 import org.adorsys.documentsafe.layer02service.serializer.DocumentGuardSerializerRegistery;
 import org.adorsys.documentsafe.layer02service.types.DocumentKey;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
@@ -21,15 +20,16 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDW
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
 import org.adorsys.documentsafe.layer03business.types.AccessType;
 import org.adorsys.encobject.complextypes.BucketPath;
-import org.adorsys.encobject.domain.ContentMetaInfo;
-import org.adorsys.encobject.domain.ObjectHandle;
+import org.adorsys.encobject.domain.Payload;
+import org.adorsys.encobject.exceptions.FileExistsException;
 import org.adorsys.encobject.keysource.KeySource;
-import org.adorsys.encobject.params.EncryptionParams;
 import org.adorsys.encobject.service.BlobStoreKeystorePersistence;
+import org.adorsys.encobject.service.EncryptedPersistenceUtil;
 import org.adorsys.encobject.service.ExtendedStoreConnection;
-import org.adorsys.encobject.service.JWEPersistence;
+import org.adorsys.encobject.service.JWEncryptionService;
 import org.adorsys.encobject.service.KeystorePersistence;
-import org.adorsys.encobject.service.PersistentObjectWrapper;
+import org.adorsys.encobject.service.SimplePayloadImpl;
+import org.adorsys.encobject.service.SimpleStorageMetadataImpl;
 import org.adorsys.encobject.types.KeyID;
 import org.adorsys.encobject.types.KeyStoreType;
 import org.adorsys.encobject.types.OverwriteFlag;
@@ -38,8 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.security.KeyStore;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 public class DocumentGuardServiceImpl implements DocumentGuardService {
@@ -48,14 +46,14 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
     private final static String KEYSTORE_TYPE = "KeyStoreType";
 
     private KeystorePersistence keystorePersistence;
-    private JWEPersistence jwePersistence;
+    private EncryptedPersistenceUtil encryptedPersistenceUtil;
     private BucketService bucketService;
 
 
     private DocumentGuardSerializerRegistery serializerRegistry = DocumentGuardSerializerRegistery.getInstance();
 
     public DocumentGuardServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
-        this.jwePersistence = new JWEPersistence(extendedStoreConnection);
+        this.encryptedPersistenceUtil = new EncryptedPersistenceUtil(extendedStoreConnection, new JWEncryptionService());
         this.keystorePersistence = new BlobStoreKeystorePersistence(extendedStoreConnection);
         this.bucketService = new BucketServiceImpl(extendedStoreConnection);
     }
@@ -104,23 +102,21 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
             throw new NoDocumentGuardExists(guardBucketPath);
         }
         LOGGER.debug("loadDocumentKey for " + guardBucketPath);
-        PersistentObjectWrapper wrapper = jwePersistence.loadObject(guardBucketPath.getObjectHandle(), keySource);
-        ContentMetaInfo metaIno = wrapper.getMetaIno();
-        Map<String, Object> addInfos = metaIno.getAddInfos();
-        String accesstypestring = (String) addInfos.get(ACCESS_TYPE);
+        Payload payload = encryptedPersistenceUtil.loadAndDecrypt(guardBucketPath, keySource);
+        String accesstypestring = payload.getStorageMetadata().getUserMetadata().get(ACCESS_TYPE);
         if (accesstypestring == null) {
             throw new BaseException("PROGRAMMING ERROR. AccessType for Guard with KeyID " + documentKeyID + " not known");
         }
-        String keyStoreTypeString = (String) addInfos.get(KEYSTORE_TYPE);
+        String keyStoreTypeString = payload.getStorageMetadata().getUserMetadata().get(KEYSTORE_TYPE);
         if (keyStoreTypeString == null) {
             throw new BaseException("PROGRAMMING ERROR. KeyStoreType for Guard with KeyID " + documentKeyID + " not known");
         }
         KeyStoreType keyStoreType = new KeyStoreType(keyStoreTypeString);
 
         AccessType accessType = AccessType.WRITE.valueOf(accesstypestring);
-        String serializerId = (String) addInfos.get(serializerRegistry.SERIALIZER_HEADER_KEY);
+        String serializerId = payload.getStorageMetadata().getUserMetadata().get(serializerRegistry.SERIALIZER_HEADER_KEY);
         DocumentGuardSerializer serializer = serializerRegistry.getSerializer(serializerId);
-        DocumentKey documentKey = serializer.deserializeSecretKey(wrapper.getData(), keyStoreType);
+        DocumentKey documentKey = serializer.deserializeSecretKey(payload.getData(), keyStoreType);
 
         LOGGER.info("finished load " + documentKeyID + " from document guard at " + keyStoreAccess.getKeyStorePath());
         return new DocumentKeyIDWithKeyAndAccessType(new DocumentKeyIDWithKey(documentKeyID, documentKey), accessType);
@@ -133,22 +129,28 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
                                      OverwriteFlag overwriteFlag) {
         LOGGER.info("start persist document guard for " + documentKeyIDWithKeyAndAccessType + " at " + keyStoreAccess.getKeyStorePath());
         KeyStoreType keyStoreType = new KeyStoreType("UBER");
-        ObjectHandle documentGuardHandle = DocumentGuardLocation.getBucketPathOfGuard(keyStoreAccess.getKeyStorePath(),
-                documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID()).getObjectHandle();
-        EncryptionParams encParams = null;
+        BucketPath documentGuardBucketPath = DocumentGuardLocation.getBucketPathOfGuard(keyStoreAccess.getKeyStorePath(),
+                documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
+        if (overwriteFlag.equals(OverwriteFlag.FALSE)) {
+            if (bucketService.fileExists(documentGuardBucketPath)) {
+                throw new FileExistsException("File " + documentGuardBucketPath + " already exists and overwriteflag is false");
+            }
+        }
 
         // Den DocumentKey serialisieren, in der MetaInfo die SerializerID vermerken
-        ContentMetaInfo metaInfo = new ContentMetaInfo();
-        metaInfo.setAddInfos(new HashMap<>());
+        SimpleStorageMetadataImpl storageMetadata = new SimpleStorageMetadataImpl();
         DocumentGuardSerializer documentGuardSerializer = serializerRegistry.defaultSerializer();
-        metaInfo.getAddInfos().put(serializerRegistry.SERIALIZER_HEADER_KEY, documentGuardSerializer.getSerializerID());
-        metaInfo.getAddInfos().put(ACCESS_TYPE, documentKeyIDWithKeyAndAccessType.getAccessType());
-        metaInfo.getAddInfos().put(KEYSTORE_TYPE, keyStoreType.getValue());
+        storageMetadata.getUserMetadata().put(serializerRegistry.SERIALIZER_HEADER_KEY, documentGuardSerializer.getSerializerID());
+        storageMetadata.getUserMetadata().put(ACCESS_TYPE, documentKeyIDWithKeyAndAccessType.getAccessType().toString());
+        storageMetadata.getUserMetadata().put(KEYSTORE_TYPE, keyStoreType.getValue());
         GuardKey guardKey = new GuardKey(documentGuardSerializer.serializeSecretKey(
                 documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKey(), keyStoreType));
 
-        jwePersistence.storeObject(guardKey.getValue(), metaInfo, documentGuardHandle, keySourceAndGuardKeyID.keySource,
-                new KeyID(keySourceAndGuardKeyID.guardKeyID.getValue()), encParams, overwriteFlag);
+        Payload payload = new SimplePayloadImpl(storageMetadata, guardKey.getValue());
+
+        encryptedPersistenceUtil.encryptAndPersist(documentGuardBucketPath, payload, keySourceAndGuardKeyID.keySource,
+                new KeyID(keySourceAndGuardKeyID.guardKeyID.getValue()));
+        // TODO OverwriteFlag
         LOGGER.info("finished persist document guard for " + documentKeyIDWithKeyAndAccessType + " at " + keyStoreAccess.getKeyStorePath());
     }
 

@@ -12,7 +12,6 @@ import org.adorsys.documentsafe.layer02service.impl.KeyStoreServiceImpl;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
-import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentContentWithContentMetaInfo;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentGuardLocation;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
 import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
@@ -29,15 +28,16 @@ import org.adorsys.documentsafe.layer03business.types.complex.DocumentFQN;
 import org.adorsys.documentsafe.layer03business.types.complex.DocumentLink;
 import org.adorsys.documentsafe.layer03business.types.complex.DocumentLinkAsDSDocument;
 import org.adorsys.documentsafe.layer03business.types.complex.UserIDAuth;
-import org.adorsys.documentsafe.layer03business.utils.ContentMetaInfoUtil;
 import org.adorsys.documentsafe.layer03business.utils.GrantUtil;
 import org.adorsys.documentsafe.layer03business.utils.GuardUtil;
 import org.adorsys.documentsafe.layer03business.utils.LinkUtil;
 import org.adorsys.documentsafe.layer03business.utils.UserIDUtil;
 import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
-import org.adorsys.encobject.domain.ContentMetaInfo;
+import org.adorsys.encobject.domain.Payload;
+import org.adorsys.encobject.domain.UserMetaData;
 import org.adorsys.encobject.service.ExtendedStoreConnection;
+import org.adorsys.encobject.service.SimpleStorageMetadataImpl;
 import org.adorsys.encobject.types.KeyStoreType;
 import org.adorsys.encobject.types.OverwriteFlag;
 import org.slf4j.Logger;
@@ -48,6 +48,7 @@ import org.slf4j.LoggerFactory;
  */
 public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03business.DocumentSafeService {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentSafeServiceImpl.class);
+    public static final String LINK_KEY = "LINK_KEY";
 
     private BucketService bucketService;
     private KeyStoreService keyStoreService;
@@ -96,7 +97,11 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
     public void storeDocument(UserIDAuth userIDAuth, DSDocument dsDocument) {
         LOGGER.info("start storeDocument for " + userIDAuth + " " + dsDocument.getDocumentFQN());
 
-        ContentMetaInfo contentMetaInfo = ContentMetaInfoUtil.createContentMetaInfo(dsDocument);
+        SimpleStorageMetadataImpl storageMetadata = new SimpleStorageMetadataImpl();
+        if (dsDocument instanceof DocumentLinkAsDSDocument) {
+            storageMetadata.getUserMetadata().put(LINK_KEY, "TRUE");
+        }
+        storageMetadata.setSize(new Long(dsDocument.getDocumentContent().getValue().length));
         DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), dsDocument.getDocumentFQN());
         DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, documentBucketPath.getBucketDirectory(), AccessType.WRITE);
         // Hier ist keine Prüfung des Schreibrechts notwendig
@@ -105,7 +110,7 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
                 documentBucketPath,
                 dsDocument.getDocumentContent(),
                 OverwriteFlag.TRUE,
-                contentMetaInfo);
+                storageMetadata);
         LOGGER.info("finished storeDocument for " + userIDAuth + " " + dsDocument.getDocumentFQN());
     }
 
@@ -131,18 +136,17 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
         LOGGER.info("start readDocument for " + userIDAuth + " " + documentFQN);
         DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), documentFQN);
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
-        DocumentContentWithContentMetaInfo documentContentWithContentMetaInfo = documentPersistenceService.loadDocument(keyStoreAccess, documentBucketPath);
-        DSDocumentMetaInfo dsDocumentMetaInfo = ContentMetaInfoUtil.createDSDocumentMetaInfo(documentContentWithContentMetaInfo.getContentMetaInfo());
-        if (ContentMetaInfoUtil.isLink(documentContentWithContentMetaInfo.getContentMetaInfo())) {
+        Payload payload = documentPersistenceService.loadDocument(keyStoreAccess, documentBucketPath);
+        UserMetaData userMetaData = payload.getStorageMetadata().getUserMetadata();
+        if (userMetaData.find(LINK_KEY) != null) {
             LOGGER.info("start load link " + documentFQN);
-            DocumentLink documentLink = LinkUtil.getDocumentLink(documentContentWithContentMetaInfo.getDocumentContent());
+            DocumentLink documentLink = LinkUtil.getDocumentLink(payload.getData());
             DocumentBucketPath sourceDocumentBucketPath = documentLink.getSourceDocumentBucketPath();
-            documentContentWithContentMetaInfo = documentPersistenceService.loadDocument(keyStoreAccess, sourceDocumentBucketPath);
-            dsDocumentMetaInfo = ContentMetaInfoUtil.createDSDocumentMetaInfo(documentContentWithContentMetaInfo.getContentMetaInfo());
+            payload = documentPersistenceService.loadDocument(keyStoreAccess, sourceDocumentBucketPath);
             LOGGER.info("finished load link " + documentFQN);
         }
         LOGGER.info("finished readDocument for " + userIDAuth + " " + documentFQN);
-        return new DSDocument(documentFQN, documentContentWithContentMetaInfo.getDocumentContent(), dsDocumentMetaInfo);
+        return new DSDocument(documentFQN, new DocumentContent(payload.getData()), new DSDocumentMetaInfo(payload.getStorageMetadata()));
     }
 
     @Override
@@ -150,19 +154,17 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
         LOGGER.info("start readDocument for " + userIDAuth + " " + documentOwner + " " + documentFQN);
         DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(documentOwner, documentFQN);
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
-        DocumentContentWithContentMetaInfo documentContentWithContentMetaInfo = documentPersistenceService.loadDocument(
-                keyStoreAccess, documentBucketPath);
-        DSDocumentMetaInfo dsDocumentMetaInfo = ContentMetaInfoUtil.createDSDocumentMetaInfo(documentContentWithContentMetaInfo.getContentMetaInfo());
-        if (ContentMetaInfoUtil.isLink(documentContentWithContentMetaInfo.getContentMetaInfo())) {
+        Payload payload = documentPersistenceService.loadDocument(keyStoreAccess, documentBucketPath);
+        UserMetaData userMetaData = payload.getStorageMetadata().getUserMetadata();
+        if (userMetaData.find(LINK_KEY) != null) {
             LOGGER.info("start load link " + documentFQN);
-            DocumentLink documentLink = LinkUtil.getDocumentLink(documentContentWithContentMetaInfo.getDocumentContent());
+            DocumentLink documentLink = LinkUtil.getDocumentLink(payload.getData());
             DocumentBucketPath sourceDocumentBucketPath = documentLink.getSourceDocumentBucketPath();
-            documentContentWithContentMetaInfo = documentPersistenceService.loadDocument(keyStoreAccess, sourceDocumentBucketPath);
-            dsDocumentMetaInfo = ContentMetaInfoUtil.createDSDocumentMetaInfo(documentContentWithContentMetaInfo.getContentMetaInfo());
+            payload = documentPersistenceService.loadDocument(keyStoreAccess, sourceDocumentBucketPath);
             LOGGER.info("finished load link " + documentFQN);
         }
         LOGGER.info("finisherd readDocument for " + userIDAuth + " " + documentOwner + " " + documentFQN);
-        return new DSDocument(documentFQN, documentContentWithContentMetaInfo.getDocumentContent(), dsDocumentMetaInfo);
+        return new DSDocument(documentFQN, new DocumentContent(payload.getData()), new DSDocumentMetaInfo(payload.getStorageMetadata()));
     }
 
     @Override
@@ -241,7 +243,8 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
     public void storeDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument) {
         LOGGER.info("start storeDocument for " + userIDAuth + " " + documentOwner + " " + dsDocument.getDocumentFQN());
 
-        ContentMetaInfo contentMetaInfo = ContentMetaInfoUtil.createContentMetaInfo(dsDocument);
+        SimpleStorageMetadataImpl storageMetadata = new SimpleStorageMetadataImpl();
+        storageMetadata.setSize(new Long(dsDocument.getDocumentContent().getValue().length));
         DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(documentOwner, dsDocument.getDocumentFQN());
         DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = getDocumentKeyIDwithKeyForBucketPath(userIDAuth, documentBucketPath.getBucketDirectory());
         if (!documentKeyIDWithKeyAndAccessType.getAccessType().equals(AccessType.WRITE)) {
@@ -252,7 +255,7 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
                 documentBucketPath,
                 dsDocument.getDocumentContent(),
                 OverwriteFlag.TRUE,
-                contentMetaInfo);
+                storageMetadata);
         LOGGER.info("finished storeDocument for " + userIDAuth + " " + documentOwner + " " + dsDocument.getDocumentFQN());
     }
 
