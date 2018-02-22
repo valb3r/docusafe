@@ -72,11 +72,11 @@ public class GrantUtilTest {
         UserID owner = new UserID("peter");
         UserID receiver = new UserID("affe");
 
+
+        BucketDirectory documentDirectory = new BucketDirectory(new BucketPath("affe/1/2/3"));
         BucketService bucketService = new BucketServiceImpl(BusinessTest.extendedStoreConnection);
         bucketService.createBucket(UserIDUtil.getHomeBucketDirectory(owner));
         users.add(owner);
-        BucketDirectory documentDirectory = new BucketDirectory(new BucketPath("affe/1/2/3"));
-
 
         AccessType a = GrantUtil.getAccessTypeOfBucketGrantFile(bucketService, documentDirectory, owner, receiver);
         Assert.assertEquals("accessType ", AccessType.NONE, a);
@@ -86,6 +86,7 @@ public class GrantUtilTest {
         Assert.assertEquals("accessType ", AccessType.WRITE, a);
 
         GrantUtil.saveBucketGrantFile(bucketService, documentDirectory, owner, receiver, AccessType.READ);
+//        AccessType a;
         a = GrantUtil.getAccessTypeOfBucketGrantFile(bucketService, documentDirectory, owner, receiver);
         Assert.assertEquals("accessType ", AccessType.READ, a);
 
@@ -99,7 +100,6 @@ public class GrantUtilTest {
 
         Assert.assertFalse("grant file must not exist any more", bucketService.fileExists(grantFile));
     }
-
 
     @Test
     public void test3() {

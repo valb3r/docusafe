@@ -18,9 +18,9 @@ import org.slf4j.LoggerFactory;
 public class GrantUtil {
     private final static Logger LOGGER = LoggerFactory.getLogger(GrantUtil.class);
     public final static String GRANT_EXT = ".grants";
-    private final static Gson gson = new GsonBuilder().create();
 
     public static void saveBucketGrantFile(BucketService bucketService, BucketDirectory documentDirectory, UserID owner, UserID receiver, AccessType accessType) {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         BucketPath grantFile = UserIDUtil.getGrantBucketDirectory(owner).append(documentDirectory.addSuffix(GRANT_EXT));
         GrantAccessList grantAccessList = new GrantAccessList();
         if (bucketService.fileExists(grantFile)) {
@@ -36,6 +36,7 @@ public class GrantUtil {
             return;
         }
         String gsonString = gson.toJson(grantAccessList);
+        LOGGER.debug("write grant file contains " + gsonString);
 
         PlainFileContent plainFileContent = new PlainFileContent(gsonString.getBytes());
         bucketService.createPlainFile(grantFile, plainFileContent);
@@ -49,6 +50,8 @@ public class GrantUtil {
 
         PlainFileContent plainFileContent = bucketService.readPlainFile(grantFile);
         String gsonString = new String(plainFileContent.getValue());
+        LOGGER.debug("read grant file contains " + gsonString);
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         GrantAccessList grantAccessList = gson.fromJson(gsonString, GrantAccessList.class);
         if (grantAccessList.find(receiver) != null) {
             return grantAccessList.find(receiver);
