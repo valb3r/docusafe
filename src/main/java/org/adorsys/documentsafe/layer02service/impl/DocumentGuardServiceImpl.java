@@ -24,7 +24,7 @@ import org.adorsys.encobject.domain.Payload;
 import org.adorsys.encobject.exceptions.FileExistsException;
 import org.adorsys.encobject.keysource.KeySource;
 import org.adorsys.encobject.service.BlobStoreKeystorePersistence;
-import org.adorsys.encobject.service.EncryptedPersistenceUtil;
+import org.adorsys.encobject.service.EncryptedPersistenceService;
 import org.adorsys.encobject.service.ExtendedStoreConnection;
 import org.adorsys.encobject.service.JWEncryptionService;
 import org.adorsys.encobject.service.KeystorePersistence;
@@ -46,14 +46,14 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
     private final static String KEYSTORE_TYPE = "KeyStoreType";
 
     private KeystorePersistence keystorePersistence;
-    private EncryptedPersistenceUtil encryptedPersistenceUtil;
+    private EncryptedPersistenceService encryptedPersistenceUtil;
     private BucketService bucketService;
 
 
     private DocumentGuardSerializerRegistery serializerRegistry = DocumentGuardSerializerRegistery.getInstance();
 
     public DocumentGuardServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
-        this.encryptedPersistenceUtil = new EncryptedPersistenceUtil(extendedStoreConnection, new JWEncryptionService());
+        this.encryptedPersistenceUtil = new EncryptedPersistenceService(extendedStoreConnection, new JWEncryptionService());
         this.keystorePersistence = new BlobStoreKeystorePersistence(extendedStoreConnection);
         this.bucketService = new BucketServiceImpl(extendedStoreConnection);
     }

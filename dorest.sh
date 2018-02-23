@@ -165,5 +165,5 @@ checkGuards francis 1
 print "EVERYTHING WENT FINE so FAR"
 
 print "delete user"
-checkCurl -f -X DELETE -H 'Content-Type: application/json' -H 'Accept: application/json' -i http://localhost:8080/internal/user --data '{"userID":"peter", "readKeyPassword":"rkp"}'
-checkCurl -f -X DELETE -H 'Content-Type: application/json' -H 'Accept: application/json' -i http://localhost:8080/internal/user --data '{"userID":"francis", "readKeyPassword":"passWordXyZ"}'
+# checkCurl -f -X DELETE -H 'Content-Type: application/json' -H 'Accept: application/json' -i http://localhost:8080/internal/user --data '{"userID":"peter", "readKeyPassword":"rkp"}'
+# checkCurl -f -X DELETE -H 'Content-Type: application/json' -H 'Accept: application/json' -i http://localhost:8080/internal/user --data '{"userID":"francis", "readKeyPassword":"passWordXyZ"}'

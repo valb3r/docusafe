@@ -14,7 +14,7 @@ import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.exceptions.FileExistsException;
 import org.adorsys.encobject.keysource.KeySource;
 import org.adorsys.encobject.service.ContainerPersistence;
-import org.adorsys.encobject.service.EncryptedPersistenceUtil;
+import org.adorsys.encobject.service.EncryptedPersistenceService;
 import org.adorsys.encobject.service.ExtendedStoreConnection;
 import org.adorsys.encobject.service.JWEncryptionService;
 import org.adorsys.encobject.service.SimplePayloadImpl;
@@ -31,14 +31,14 @@ import org.slf4j.LoggerFactory;
 public class DocumentPersistenceServiceImpl implements DocumentPersistenceService {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentPersistenceServiceImpl.class);
 
-    private EncryptedPersistenceUtil encryptedPersistenceUtil;
+    private EncryptedPersistenceService encryptedPersistenceUtil;
     private DocumentGuardService documentGuardService;
     private ContainerPersistence containerPersistence;
     private BucketServiceImpl bucketService;
 
     public DocumentPersistenceServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
         this.containerPersistence = new ContainerPersistence(extendedStoreConnection);
-        this.encryptedPersistenceUtil = new EncryptedPersistenceUtil(extendedStoreConnection, new JWEncryptionService());
+        this.encryptedPersistenceUtil = new EncryptedPersistenceService(extendedStoreConnection, new JWEncryptionService());
         this.documentGuardService = new DocumentGuardServiceImpl(extendedStoreConnection);
         this.bucketService = new BucketServiceImpl(extendedStoreConnection);
     }
