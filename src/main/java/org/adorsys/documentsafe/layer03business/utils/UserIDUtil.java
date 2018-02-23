@@ -1,11 +1,11 @@
 package org.adorsys.documentsafe.layer03business.utils;
 
-import org.adorsys.documentsafe.layer02service.types.ReadStorePassword;
-import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAuth;
 import org.adorsys.documentsafe.layer03business.types.UserID;
 import org.adorsys.documentsafe.layer03business.types.complex.UserIDAuth;
 import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
+import org.adorsys.encobject.domain.KeyStoreAuth;
+import org.adorsys.encobject.domain.ReadStorePassword;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,7 +1,7 @@
 package org.adorsys.documentsafe.layer02service.impl.guardHelper;
 
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
-import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
+import org.adorsys.encobject.domain.KeyStoreAccess;
 import org.adorsys.encobject.service.KeystorePersistence;
 
 /**

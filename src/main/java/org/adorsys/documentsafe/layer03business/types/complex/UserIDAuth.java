@@ -1,7 +1,7 @@
 package org.adorsys.documentsafe.layer03business.types.complex;
 
-import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
 import org.adorsys.documentsafe.layer03business.types.UserID;
+import org.adorsys.encobject.domain.ReadKeyPassword;
 
 /**
  * Created by peter on 19.01.18 at 14:49.

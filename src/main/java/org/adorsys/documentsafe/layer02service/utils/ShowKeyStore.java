@@ -1,7 +1,7 @@
 package org.adorsys.documentsafe.layer02service.utils;
 
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
-import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
+import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey;
 
 import javax.crypto.spec.SecretKeySpec;

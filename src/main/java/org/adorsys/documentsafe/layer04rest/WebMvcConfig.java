@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
-import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
 import org.adorsys.documentsafe.layer03business.types.AccessType;
 import org.adorsys.documentsafe.layer03business.types.UserID;
 import org.adorsys.documentsafe.layer03business.types.complex.DocumentDirectoryFQN;
@@ -16,6 +15,7 @@ import org.adorsys.documentsafe.layer04rest.adapter.DocumentFQNJsonAdapter;
 import org.adorsys.documentsafe.layer04rest.adapter.DocumentKeyIDJsonAdapter;
 import org.adorsys.documentsafe.layer04rest.adapter.ReadKeyPasswordJsonAdapter;
 import org.adorsys.documentsafe.layer04rest.adapter.UserIDJsonAdapter;
+import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.adorsys.encobject.types.BucketName;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;

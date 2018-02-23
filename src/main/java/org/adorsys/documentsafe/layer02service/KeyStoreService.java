@@ -1,8 +1,8 @@
 package org.adorsys.documentsafe.layer02service;
 
 import org.adorsys.documentsafe.layer02service.generators.KeyStoreCreationConfig;
-import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAuth;
 import org.adorsys.encobject.complextypes.BucketPath;
+import org.adorsys.encobject.domain.KeyStoreAuth;
 import org.adorsys.encobject.types.KeyStoreType;
 
 import javax.security.auth.callback.CallbackHandler;

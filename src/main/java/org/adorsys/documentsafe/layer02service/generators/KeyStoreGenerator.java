@@ -1,7 +1,7 @@
 package org.adorsys.documentsafe.layer02service.generators;
 
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
-import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
+import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.adorsys.encobject.types.KeyStoreType;
 import org.adorsys.jkeygen.keystore.KeyPairData;
 import org.adorsys.jkeygen.keystore.KeystoreBuilder;

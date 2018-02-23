@@ -1,8 +1,8 @@
 package org.adorsys.documentsafe.layer04rest.impl;
 
-import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
 import org.adorsys.documentsafe.layer03business.types.UserID;
 import org.adorsys.documentsafe.layer03business.types.complex.UserIDAuth;
+import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.context.request.WebRequest;

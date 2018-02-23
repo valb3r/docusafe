@@ -4,7 +4,7 @@ import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer02service.DocumentGuardService;
 import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
-import org.adorsys.documentsafe.layer02service.types.complextypes.KeyStoreAccess;
+import org.adorsys.encobject.domain.KeyStoreAccess;
 import org.adorsys.encobject.keysource.KeySource;
 import org.adorsys.encobject.types.KeyID;
 import org.slf4j.Logger;

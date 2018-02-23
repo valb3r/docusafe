@@ -1,6 +1,5 @@
 package org.adorsys.documentsafe.layer04rest;
 
-import org.adorsys.documentsafe.layer02service.types.ReadKeyPassword;
 import org.adorsys.documentsafe.layer03business.DocumentSafeService;
 import org.adorsys.documentsafe.layer03business.impl.DocumentSafeServiceImpl;
 import org.adorsys.documentsafe.layer03business.types.UserID;
@@ -9,6 +8,7 @@ import org.adorsys.documentsafe.layer03business.types.complex.DocumentFQN;
 import org.adorsys.documentsafe.layer03business.types.complex.UserIDAuth;
 import org.adorsys.documentsafe.layer04rest.types.CreateLinkTupel;
 import org.adorsys.documentsafe.layer04rest.types.GrantDocument;
+import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.adorsys.encobject.filesystem.FileSystemExtendedStorageConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
