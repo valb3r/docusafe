@@ -12,7 +12,7 @@ import org.adorsys.encobject.domain.KeyStoreAuth;
 import org.adorsys.encobject.service.BlobStoreKeystorePersistence;
 import org.adorsys.encobject.service.ExtendedStoreConnection;
 import org.adorsys.encobject.service.KeystorePersistence;
-import org.adorsys.encobject.types.KeyStoreType;
+import org.adorsys.jkeygen.keystore.KeyStoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

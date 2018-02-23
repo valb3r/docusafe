@@ -2,8 +2,8 @@ package org.adorsys.documentsafe.layer02service.generators;
 
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.encobject.domain.ReadKeyPassword;
-import org.adorsys.encobject.types.KeyStoreType;
 import org.adorsys.jkeygen.keystore.KeyPairData;
+import org.adorsys.jkeygen.keystore.KeyStoreType;
 import org.adorsys.jkeygen.keystore.KeystoreBuilder;
 import org.adorsys.jkeygen.keystore.SecretKeyData;
 import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
@@ -34,7 +34,7 @@ public class KeyStoreGenerator {
     public KeyStore generate() {
         String keyStoreID = serverKeyPairAliasPrefix;
         try {
-            KeystoreBuilder keystoreBuilder = new KeystoreBuilder().withStoreType(keyStoreType.getValue());
+            KeystoreBuilder keystoreBuilder = new KeystoreBuilder().withStoreType(keyStoreType);
             PasswordCallbackHandler dummyKeyHandler = new PasswordCallbackHandler("".toCharArray());
 
             {

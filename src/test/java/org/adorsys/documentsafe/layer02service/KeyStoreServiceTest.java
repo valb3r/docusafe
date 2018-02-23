@@ -11,7 +11,7 @@ import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.adorsys.encobject.domain.ReadStorePassword;
 import org.adorsys.encobject.service.ContainerPersistence;
 import org.adorsys.encobject.service.ExtendedStoreConnection;
-import org.adorsys.encobject.types.KeyStoreType;
+import org.adorsys.jkeygen.keystore.KeyStoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +56,7 @@ public class KeyStoreServiceTest {
             KeyStoreService keyStoreService = new KeyStoreServiceImpl(extendedStoreConnection);
             KeyStoreAuth keyStoreAuth = new KeyStoreAuth(readStorePassword, readKeyPassword);
             BucketPath keyStorePath = keyStoreDirectory.appendName(keyStoreID);
-            keyStoreService.createKeyStore(keyStoreAuth, new KeyStoreType("UBER"), keyStorePath, config);
+            keyStoreService.createKeyStore(keyStoreAuth, KeyStoreType.DEFAULT, keyStorePath, config);
             KeyStore keyStore = keyStoreService.loadKeystore(keyStorePath, keyStoreAuth.getReadStoreHandler());
             return new KeyStoreStuff(keyStore, extendedStoreConnection, new KeyStoreAccess(keyStorePath, keyStoreAuth));
         } catch (Exception e) {

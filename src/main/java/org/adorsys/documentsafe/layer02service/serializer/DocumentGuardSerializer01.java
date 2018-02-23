@@ -2,7 +2,7 @@ package org.adorsys.documentsafe.layer02service.serializer;
 
 import org.adorsys.documentsafe.layer02service.types.DocumentKey;
 import org.adorsys.documentsafe.layer02service.utils.KeystoreAdapter;
-import org.adorsys.encobject.types.KeyStoreType;
+import org.adorsys.jkeygen.keystore.KeyStoreType;
 import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
 
 import javax.crypto.SecretKey;

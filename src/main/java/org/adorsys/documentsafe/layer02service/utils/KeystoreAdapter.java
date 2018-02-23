@@ -1,9 +1,8 @@
 package org.adorsys.documentsafe.layer02service.utils;
 
-import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
-import org.adorsys.encobject.types.KeyStoreType;
 import org.adorsys.jkeygen.keystore.KeyStoreService;
+import org.adorsys.jkeygen.keystore.KeyStoreType;
 import org.adorsys.jkeygen.keystore.KeystoreBuilder;
 import org.adorsys.jkeygen.keystore.PasswordCallbackUtils;
 import org.adorsys.jkeygen.keystore.SecretKeyData;
@@ -37,7 +36,7 @@ public class KeystoreAdapter {
     public static KeyStore wrapSecretKey2KeyStore(SecretKey secretKey, String alias, CallbackHandler keyPassHandler, KeyStoreType keyStoreType) {
         SecretKeyData secretKeyData = SecretKeyData.builder().secretKey(secretKey).alias(alias).passwordSource(keyPassHandler).build();
         try {
-            return new KeystoreBuilder().withKeyEntry(secretKeyData).withStoreType(keyStoreType.getValue()).build();
+            return new KeystoreBuilder().withKeyEntry(secretKeyData).withStoreType(keyStoreType).build();
         } catch (NoSuchAlgorithmException | CertificateException | IOException e) {
             throw BaseExceptionHandler.handle(e);
         }
@@ -50,7 +49,7 @@ public class KeystoreAdapter {
     public static KeyStore loadKeystoreFromBytes(byte[] keyStoreDataBytes, CallbackHandler keystoreHandler, KeyStoreType keyStoreType) {
         try {
             String storeid = "if you can see this, its a programming error in KeyStoreAdapter";
-            return KeyStoreService.loadKeyStore(keyStoreDataBytes, storeid, keyStoreType.getValue(), keystoreHandler);
+            return KeyStoreService.loadKeyStore(keyStoreDataBytes, storeid, keyStoreType, keystoreHandler);
         } catch (Exception ex) {
             throw BaseExceptionHandler.handle(ex);
         }

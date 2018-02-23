@@ -38,8 +38,8 @@ import org.adorsys.encobject.domain.Payload;
 import org.adorsys.encobject.domain.UserMetaData;
 import org.adorsys.encobject.service.ExtendedStoreConnection;
 import org.adorsys.encobject.service.SimpleStorageMetadataImpl;
-import org.adorsys.encobject.types.KeyStoreType;
 import org.adorsys.encobject.types.OverwriteFlag;
+import org.adorsys.jkeygen.keystore.KeyStoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,7 +78,7 @@ public class DocumentSafeServiceImpl implements org.adorsys.documentsafe.layer03
             KeyStoreAuth keyStoreAuth = UserIDUtil.getKeyStoreAuth(userIDAuth);
             bucketService.createBucket(keyStoreDirectory);
             BucketPath keyStorePath = UserIDUtil.getKeyStorePath(userIDAuth.getUserID());
-            keyStoreService.createKeyStore(keyStoreAuth, new KeyStoreType("UBER"), keyStorePath, null);
+            keyStoreService.createKeyStore(keyStoreAuth, KeyStoreType.DEFAULT, keyStorePath, null);
             keyStoreAccess = new KeyStoreAccess(keyStorePath, keyStoreAuth);
         }
         BucketDirectory userHomeBucketDirectory = UserIDUtil.getHomeBucketDirectory(userIDAuth.getUserID());

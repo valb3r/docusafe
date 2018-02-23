@@ -31,8 +31,8 @@ import org.adorsys.encobject.service.KeystorePersistence;
 import org.adorsys.encobject.service.SimplePayloadImpl;
 import org.adorsys.encobject.service.SimpleStorageMetadataImpl;
 import org.adorsys.encobject.types.KeyID;
-import org.adorsys.encobject.types.KeyStoreType;
 import org.adorsys.encobject.types.OverwriteFlag;
+import org.adorsys.jkeygen.keystore.KeyStoreType;
 import org.adorsys.jkeygen.keystore.SecretKeyData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,7 +128,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
                                      KeySourceAndGuardKeyID keySourceAndGuardKeyID,
                                      OverwriteFlag overwriteFlag) {
         LOGGER.info("start persist document guard for " + documentKeyIDWithKeyAndAccessType + " at " + keyStoreAccess.getKeyStorePath());
-        KeyStoreType keyStoreType = new KeyStoreType("UBER");
+        KeyStoreType keyStoreType = KeyStoreType.DEFAULT;
         BucketPath documentGuardBucketPath = DocumentGuardLocation.getBucketPathOfGuard(keyStoreAccess.getKeyStorePath(),
                 documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
         if (overwriteFlag.equals(OverwriteFlag.FALSE)) {
