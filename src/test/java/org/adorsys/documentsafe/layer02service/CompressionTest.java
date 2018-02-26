@@ -3,7 +3,6 @@ package org.adorsys.documentsafe.layer02service;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.documentsafe.layer02service.impl.KeyStoreServiceImpl;
 import org.adorsys.documentsafe.layer02service.utils.ExtendedFileSystemExtendedStorageConnection;
-import org.adorsys.encobject.filesystem.ExtendedZipFileHelper;
 import org.adorsys.documentsafe.layer02service.utils.TestKeyUtils;
 import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
@@ -13,7 +12,9 @@ import org.adorsys.encobject.domain.Payload;
 import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.adorsys.encobject.domain.ReadStorePassword;
 import org.adorsys.encobject.domain.StorageMetadata;
+import org.adorsys.encobject.filesystem.ExtendedZipFileHelper;
 import org.adorsys.encobject.filesystem.FileSystemExtendedStorageConnection;
+import org.adorsys.encobject.keysource.KeySource;
 import org.adorsys.encobject.keysource.KeyStore2KeySourceHelper;
 import org.adorsys.encobject.service.BlobStoreKeystorePersistence;
 import org.adorsys.encobject.service.ContainerPersistence;
@@ -65,8 +66,8 @@ public class CompressionTest {
     }
 
     @Test
-    public void testCompression() {
-        BucketDirectory bd = new BucketDirectory("containerForCompressionTest");
+    public void testCompressionWithPrivateAndPublicKey() {
+        BucketDirectory bd = new BucketDirectory("containerForCompressionTestWithPrivatePublicKeyPay");
         buckets.add(bd);
 
         KeyStoreService keyStoreService = new KeyStoreServiceImpl(extendedStoreConnection);
@@ -96,13 +97,14 @@ public class CompressionTest {
         KeystorePersistence keystorePersistence = new BlobStoreKeystorePersistence(extendedStoreConnection);
         KeyStoreAccess keyStoreAccess = new KeyStoreAccess(keystorePath, keyStoreAuth);
 
-        KeyStore2KeySourceHelper.KeySourceAndKeyID publicKeySource = KeyStore2KeySourceHelper.getForSecretKey(keystorePersistence, keyStoreAccess);
+        KeyStore2KeySourceHelper.KeySourceAndKeyID publicKeySource = KeyStore2KeySourceHelper.getForPublicKey(keystorePersistence, keyStoreAccess);
+        KeySource privateKeySource = KeyStore2KeySourceHelper.getForPrivateKey(keystorePersistence, keyStoreAccess);
 
         encryptedPersistenceService.encryptAndPersist(documentPath1, payloadWithCompress, publicKeySource.getKeySource(), publicKeySource.getKeyID());
         encryptedPersistenceService.encryptAndPersist(documentPath2, payloadWithoutCompress, publicKeySource.getKeySource(), publicKeySource.getKeyID());
 
-        Payload loadedPayloadWithCompress = encryptedPersistenceService.loadAndDecrypt(documentPath1, publicKeySource.getKeySource());
-        Payload loadedPayloadWithoutCompress = encryptedPersistenceService.loadAndDecrypt(documentPath2, publicKeySource.getKeySource());
+        Payload loadedPayloadWithCompress = encryptedPersistenceService.loadAndDecrypt(documentPath1, privateKeySource);
+        Payload loadedPayloadWithoutCompress = encryptedPersistenceService.loadAndDecrypt(documentPath2, privateKeySource);
         Assert.assertTrue(Arrays.equals(loadedPayloadWithCompress.getData(), data));
         Assert.assertTrue(Arrays.equals(loadedPayloadWithoutCompress.getData(), data));
 
@@ -125,6 +127,67 @@ public class CompressionTest {
         Assert.assertTrue(diff > 0);
     }
 
+
+    @Test
+    public void testCompressionWithSecretKey() {
+        BucketDirectory bd = new BucketDirectory("containerForCompressionTestWithSecretKey");
+        buckets.add(bd);
+
+        KeyStoreService keyStoreService = new KeyStoreServiceImpl(extendedStoreConnection);
+        KeyStoreAuth keyStoreAuth = new KeyStoreAuth(new ReadStorePassword("storepassword"), new ReadKeyPassword("keypassword"));
+
+        BucketPath keystorePath = bd.appendName("keystore");
+        keyStoreService.createKeyStore(keyStoreAuth, KeyStoreType.DEFAULT, keystorePath, null);
+
+        BucketPath documentPath1 = bd.appendName("document1");
+        BucketPath documentPath2 = bd.appendName("document2");
+        int size = 2000;
+        byte[] data = new byte[size];
+        for (int i = 0; i < size; i++) {
+            data[i] = (byte) i;
+        }
+
+        EncryptedPersistenceService encryptedPersistenceService = new EncryptedPersistenceService(extendedStoreConnection, new JWEncryptionService());
+
+        SimpleStorageMetadataImpl storageMetadata = new SimpleStorageMetadataImpl();
+        storageMetadata.setShouldBeCompressed(Boolean.TRUE);
+        Payload payloadWithCompress = new SimplePayloadImpl(storageMetadata, data);
+
+        SimpleStorageMetadataImpl storageMetadata2 = new SimpleStorageMetadataImpl();
+        storageMetadata2.setShouldBeCompressed(Boolean.FALSE);
+        Payload payloadWithoutCompress = new SimplePayloadImpl(storageMetadata2, data);
+
+        KeystorePersistence keystorePersistence = new BlobStoreKeystorePersistence(extendedStoreConnection);
+        KeyStoreAccess keyStoreAccess = new KeyStoreAccess(keystorePath, keyStoreAuth);
+
+        KeyStore2KeySourceHelper.KeySourceAndKeyID secretKeySourceAndID = KeyStore2KeySourceHelper.getForSecretKey(keystorePersistence, keyStoreAccess);
+
+        encryptedPersistenceService.encryptAndPersist(documentPath1, payloadWithCompress, secretKeySourceAndID.getKeySource(), secretKeySourceAndID.getKeyID());
+        encryptedPersistenceService.encryptAndPersist(documentPath2, payloadWithoutCompress, secretKeySourceAndID.getKeySource(), secretKeySourceAndID.getKeyID());
+
+        Payload loadedPayloadWithCompress = encryptedPersistenceService.loadAndDecrypt(documentPath1, secretKeySourceAndID.getKeySource());
+        Payload loadedPayloadWithoutCompress = encryptedPersistenceService.loadAndDecrypt(documentPath2, secretKeySourceAndID.getKeySource());
+        Assert.assertTrue(Arrays.equals(loadedPayloadWithCompress.getData(), data));
+        Assert.assertTrue(Arrays.equals(loadedPayloadWithoutCompress.getData(), data));
+
+        LOGGER.info("size compressed:" + loadedPayloadWithCompress.getStorageMetadata().getSize());
+        LOGGER.info("size uncompressed:" + loadedPayloadWithoutCompress.getStorageMetadata().getSize());
+
+        Assert.assertEquals(loadedPayloadWithCompress.getStorageMetadata().getSize().longValue(), size);
+        Assert.assertEquals(loadedPayloadWithoutCompress.getStorageMetadata().getSize().longValue(), size);
+
+        ExtendedZipFileHelper extendedZipFileHelper = new ExtendedZipFileHelper(new ExtendedFileSystemExtendedStorageConnection().getBaseDir());
+        StorageMetadata plainStorageMetadata1 = extendedZipFileHelper.plainReadZipMetadataOnly(documentPath1);
+        StorageMetadata plainStorageMetadata2 = extendedZipFileHelper.plainReadZipMetadataOnly(documentPath2);
+
+        int encryptedUncrompressedSize = Integer.parseInt(plainStorageMetadata2.getUserMetadata().get(extendedZipFileHelper.getCompressedKey()));
+        int encryptedCrompressedSize = Integer.parseInt(plainStorageMetadata1.getUserMetadata().get(extendedZipFileHelper.getCompressedKey()));
+        int diff = encryptedUncrompressedSize - encryptedCrompressedSize;
+        LOGGER.info("encrypted size compressed:" + encryptedCrompressedSize);
+        LOGGER.info("encrypted size uncompressed:" + encryptedUncrompressedSize);
+        LOGGER.info("compression saves bytes:" + diff);
+        Assert.assertTrue(diff > 0);
+    }
 
 
 }
