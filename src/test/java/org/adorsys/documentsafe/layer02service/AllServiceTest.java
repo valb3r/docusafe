@@ -3,8 +3,6 @@ package org.adorsys.documentsafe.layer02service;
 import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.cryptoutils.utils.HexUtil;
-import org.adorsys.documentsafe.layer02service.exceptions.KeyStoreExistsException;
-import org.adorsys.documentsafe.layer02service.generators.KeyStoreCreationConfig;
 import org.adorsys.documentsafe.layer02service.types.DocumentContent;
 import org.adorsys.documentsafe.layer02service.types.complextypes.BucketContent;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucketPath;
@@ -22,10 +20,12 @@ import org.adorsys.encobject.domain.ReadStorePassword;
 import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.domain.StorageType;
 import org.adorsys.encobject.exceptions.FileExistsException;
+import org.adorsys.encobject.exceptions.KeyStoreExistsException;
 import org.adorsys.encobject.filesystem.FileSystemExtendedStorageConnection;
 import org.adorsys.encobject.service.api.ContainerPersistence;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
 import org.adorsys.encobject.service.impl.ContainerPersistenceImpl;
+import org.adorsys.encobject.service.impl.generator.KeyStoreCreationConfigImpl;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.adorsys.encobject.types.OverwriteFlag;
 import org.apache.commons.io.FileUtils;
@@ -523,7 +523,7 @@ public class AllServiceTest {
                 new ReadStorePassword("a"),
                 new ReadKeyPassword("b"),
                 "first",
-                new KeyStoreCreationConfig(0, 0, 1));
+                new KeyStoreCreationConfigImpl(0, 0, 1));
         LOGGER.debug(ShowKeyStore.toString(keyStoreStuffForKeyStoreWithSecretKey.keyStore, keyStoreStuffForKeyStoreWithSecretKey.keyStoreAccess.getKeyStoreAuth().getReadKeyPassword()));
         LOGGER.debug("Ersten KeyStore mit SecretKey erfolgreich angelegt");
 
@@ -559,7 +559,7 @@ public class AllServiceTest {
                 new ReadStorePassword("c"),
                 new ReadKeyPassword("d"),
                 "second",
-                new KeyStoreCreationConfig(1, 0, 0));
+                new KeyStoreCreationConfigImpl(1, 0, 0));
         LOGGER.debug(ShowKeyStore.toString(keyStoreStuffForKeyStoreWithEncKey.keyStore, keyStoreStuffForKeyStoreWithEncKey.keyStoreAccess.getKeyStoreAuth().getReadKeyPassword()));
         LOGGER.debug("Zweiten KeyStore mit EncKey erfolgreich angelegt");
 

@@ -4,7 +4,6 @@ import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.documentsafe.layer02service.BucketService;
 import org.adorsys.documentsafe.layer02service.DocumentGuardService;
 import org.adorsys.documentsafe.layer02service.exceptions.NoDocumentGuardExists;
-import org.adorsys.documentsafe.layer02service.generators.SecretKeyGenerator;
 import org.adorsys.documentsafe.layer02service.impl.guardHelper.GuardKeyHelper;
 import org.adorsys.documentsafe.layer02service.impl.guardHelper.GuardKeyHelperFactory;
 import org.adorsys.documentsafe.layer02service.impl.guardHelper.KeySourceAndGuardKeyID;
@@ -31,6 +30,7 @@ import org.adorsys.encobject.service.impl.JWEncryptionServiceImpl;
 import org.adorsys.encobject.service.impl.KeyStoreBasedSecretKeySourceImpl;
 import org.adorsys.encobject.service.impl.SimplePayloadImpl;
 import org.adorsys.encobject.service.impl.SimpleStorageMetadataImpl;
+import org.adorsys.encobject.service.impl.generator.SecretKeyGeneratorImpl;
 import org.adorsys.encobject.types.KeyID;
 import org.adorsys.encobject.types.OverwriteFlag;
 import org.adorsys.jkeygen.keystore.KeyStoreType;
@@ -68,7 +68,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
         DocumentKeyID documentKeyID = new DocumentKeyID("DK" + UUID.randomUUID().toString());
 
         // Für die DocumentKeyID einen DocumentKey erzeugen
-        SecretKeyGenerator secretKeyGenerator = new SecretKeyGenerator("AES", 256);
+        SecretKeyGeneratorImpl secretKeyGenerator = new SecretKeyGeneratorImpl("AES", 256);
         SecretKeyData secretKeyData = secretKeyGenerator.generate(documentKeyID.getValue(), null);
         DocumentKey documentKey = new DocumentKey(secretKeyData.getSecretKey());
         return new DocumentKeyIDWithKey(documentKeyID, documentKey);

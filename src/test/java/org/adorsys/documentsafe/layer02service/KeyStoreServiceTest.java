@@ -1,8 +1,6 @@
 package org.adorsys.documentsafe.layer02service;
 
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
-import org.adorsys.documentsafe.layer02service.generators.KeyStoreCreationConfig;
-import org.adorsys.documentsafe.layer02service.impl.KeyStoreServiceImpl;
 import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.domain.KeyStoreAccess;
@@ -11,7 +9,10 @@ import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.adorsys.encobject.domain.ReadStorePassword;
 import org.adorsys.encobject.service.api.ContainerPersistence;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
+import org.adorsys.encobject.service.api.KeyStoreService;
 import org.adorsys.encobject.service.impl.ContainerPersistenceImpl;
+import org.adorsys.encobject.service.impl.KeyStoreServiceImpl;
+import org.adorsys.encobject.service.impl.generator.KeyStoreCreationConfigImpl;
 import org.adorsys.jkeygen.keystore.KeyStoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +41,7 @@ public class KeyStoreServiceTest {
                                         ReadStorePassword readStorePassword,
                                         ReadKeyPassword readKeyPassword,
                                         String keyStoreID,
-                                        KeyStoreCreationConfig config) {
+                                        KeyStoreCreationConfigImpl config) {
         try {
             BucketDirectory keyStoreDirectory = new BucketDirectory(keystoreContainer);
 

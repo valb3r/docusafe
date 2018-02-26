@@ -1,7 +1,6 @@
 package org.adorsys.documentsafe.layer02service;
 
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
-import org.adorsys.documentsafe.layer02service.impl.KeyStoreServiceImpl;
 import org.adorsys.documentsafe.layer02service.utils.ExtendedFileSystemExtendedStorageConnection;
 import org.adorsys.documentsafe.layer02service.utils.TestKeyUtils;
 import org.adorsys.encobject.complextypes.BucketDirectory;
@@ -19,11 +18,13 @@ import org.adorsys.encobject.service.api.EncryptedPersistenceService;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
 import org.adorsys.encobject.service.api.KeySource;
 import org.adorsys.encobject.service.api.KeyStore2KeySourceHelper;
+import org.adorsys.encobject.service.api.KeyStoreService;
 import org.adorsys.encobject.service.api.KeystorePersistence;
 import org.adorsys.encobject.service.impl.BlobStoreKeystorePersistenceImpl;
 import org.adorsys.encobject.service.impl.ContainerPersistenceImpl;
 import org.adorsys.encobject.service.impl.EncryptedPersistenceServiceImpl;
 import org.adorsys.encobject.service.impl.JWEncryptionServiceImpl;
+import org.adorsys.encobject.service.impl.KeyStoreServiceImpl;
 import org.adorsys.encobject.service.impl.SimplePayloadImpl;
 import org.adorsys.encobject.service.impl.SimpleStorageMetadataImpl;
 import org.adorsys.jkeygen.keystore.KeyStoreType;

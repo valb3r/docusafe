@@ -1,9 +1,6 @@
 package org.adorsys.documentsafe.layer02service.exceptions;
 
 import org.adorsys.cryptoutils.exceptions.BaseException;
-import org.adorsys.documentsafe.layer02service.types.DocumentKeyID;
-import org.adorsys.documentsafe.layer02service.types.complextypes.BucketContent;
-import org.adorsys.documentsafe.layer03business.types.UserID;
 import org.adorsys.encobject.complextypes.BucketPath;
 
 /**
