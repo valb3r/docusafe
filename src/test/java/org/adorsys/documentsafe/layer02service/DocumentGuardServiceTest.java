@@ -9,8 +9,8 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDW
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
 import org.adorsys.documentsafe.layer03business.types.AccessType;
 import org.adorsys.encobject.domain.KeyStoreAccess;
-import org.adorsys.encobject.service.BlobStoreKeystorePersistence;
-import org.adorsys.encobject.service.ExtendedStoreConnection;
+import org.adorsys.encobject.service.api.ExtendedStoreConnection;
+import org.adorsys.encobject.service.impl.BlobStoreKeystorePersistenceImpl;
 import org.adorsys.encobject.types.OverwriteFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +65,7 @@ public class DocumentGuardServiceTest {
     }
 
     public DocumentKeyIDWithKey createKeyIDWithKey() {
-        BlobStoreKeystorePersistence keystorePersistence = null;
+        BlobStoreKeystorePersistenceImpl keystorePersistence = null;
         DocumentGuardService documentGuardService = new DocumentGuardServiceImpl(extendedStoreConnection);
         return documentGuardService.createDocumentKeyIdWithKey();
     }

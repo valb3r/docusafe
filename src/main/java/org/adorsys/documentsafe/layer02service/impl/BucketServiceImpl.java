@@ -6,8 +6,9 @@ import org.adorsys.documentsafe.layer02service.types.PlainFileContent;
 import org.adorsys.documentsafe.layer02service.types.complextypes.BucketContent;
 import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
-import org.adorsys.encobject.service.ContainerPersistence;
-import org.adorsys.encobject.service.ExtendedStoreConnection;
+import org.adorsys.encobject.service.api.ContainerPersistence;
+import org.adorsys.encobject.service.api.ExtendedStoreConnection;
+import org.adorsys.encobject.service.impl.ContainerPersistenceImpl;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +23,7 @@ public class BucketServiceImpl implements BucketService {
 
     public BucketServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
         this.extendedStoreConnection = extendedStoreConnection;
-        this.containerPersistence = new ContainerPersistence(this.extendedStoreConnection);
+        this.containerPersistence = new ContainerPersistenceImpl(this.extendedStoreConnection);
     }
 
     @Override

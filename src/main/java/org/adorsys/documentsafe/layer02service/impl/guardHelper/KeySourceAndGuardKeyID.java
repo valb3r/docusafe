@@ -1,7 +1,7 @@
 package org.adorsys.documentsafe.layer02service.impl.guardHelper;
 
 import org.adorsys.documentsafe.layer02service.types.GuardKeyID;
-import org.adorsys.encobject.keysource.KeySource;
+import org.adorsys.encobject.service.api.KeySource;
 
 /**
  * Created by peter on 16.02.18 at 17:38.

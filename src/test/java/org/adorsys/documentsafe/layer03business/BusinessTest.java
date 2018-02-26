@@ -22,7 +22,7 @@ import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.filesystem.FileSystemExtendedStorageConnection;
-import org.adorsys.encobject.service.ExtendedStoreConnection;
+import org.adorsys.encobject.service.api.ExtendedStoreConnection;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.After;

@@ -12,12 +12,14 @@ import org.adorsys.encobject.domain.KeyStoreAccess;
 import org.adorsys.encobject.domain.Payload;
 import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.exceptions.FileExistsException;
-import org.adorsys.encobject.keysource.KeySource;
-import org.adorsys.encobject.service.ContainerPersistence;
-import org.adorsys.encobject.service.EncryptedPersistenceService;
-import org.adorsys.encobject.service.ExtendedStoreConnection;
-import org.adorsys.encobject.service.JWEncryptionService;
-import org.adorsys.encobject.service.SimplePayloadImpl;
+import org.adorsys.encobject.service.api.ContainerPersistence;
+import org.adorsys.encobject.service.api.EncryptedPersistenceService;
+import org.adorsys.encobject.service.api.ExtendedStoreConnection;
+import org.adorsys.encobject.service.api.KeySource;
+import org.adorsys.encobject.service.impl.ContainerPersistenceImpl;
+import org.adorsys.encobject.service.impl.EncryptedPersistenceServiceImpl;
+import org.adorsys.encobject.service.impl.JWEncryptionServiceImpl;
+import org.adorsys.encobject.service.impl.SimplePayloadImpl;
 import org.adorsys.encobject.types.KeyID;
 import org.adorsys.encobject.types.OverwriteFlag;
 import org.slf4j.Logger;
@@ -37,8 +39,8 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
     private BucketServiceImpl bucketService;
 
     public DocumentPersistenceServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
-        this.containerPersistence = new ContainerPersistence(extendedStoreConnection);
-        this.encryptedPersistenceUtil = new EncryptedPersistenceService(extendedStoreConnection, new JWEncryptionService());
+        this.containerPersistence = new ContainerPersistenceImpl(extendedStoreConnection);
+        this.encryptedPersistenceUtil = new EncryptedPersistenceServiceImpl(extendedStoreConnection, new JWEncryptionServiceImpl());
         this.documentGuardService = new DocumentGuardServiceImpl(extendedStoreConnection);
         this.bucketService = new BucketServiceImpl(extendedStoreConnection);
     }

@@ -14,16 +14,18 @@ import org.adorsys.encobject.domain.ReadStorePassword;
 import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.filesystem.ExtendedZipFileHelper;
 import org.adorsys.encobject.filesystem.FileSystemExtendedStorageConnection;
-import org.adorsys.encobject.keysource.KeySource;
-import org.adorsys.encobject.keysource.KeyStore2KeySourceHelper;
-import org.adorsys.encobject.service.BlobStoreKeystorePersistence;
-import org.adorsys.encobject.service.ContainerPersistence;
-import org.adorsys.encobject.service.EncryptedPersistenceService;
-import org.adorsys.encobject.service.ExtendedStoreConnection;
-import org.adorsys.encobject.service.JWEncryptionService;
-import org.adorsys.encobject.service.KeystorePersistence;
-import org.adorsys.encobject.service.SimplePayloadImpl;
-import org.adorsys.encobject.service.SimpleStorageMetadataImpl;
+import org.adorsys.encobject.service.api.ContainerPersistence;
+import org.adorsys.encobject.service.api.EncryptedPersistenceService;
+import org.adorsys.encobject.service.api.ExtendedStoreConnection;
+import org.adorsys.encobject.service.api.KeySource;
+import org.adorsys.encobject.service.api.KeyStore2KeySourceHelper;
+import org.adorsys.encobject.service.api.KeystorePersistence;
+import org.adorsys.encobject.service.impl.BlobStoreKeystorePersistenceImpl;
+import org.adorsys.encobject.service.impl.ContainerPersistenceImpl;
+import org.adorsys.encobject.service.impl.EncryptedPersistenceServiceImpl;
+import org.adorsys.encobject.service.impl.JWEncryptionServiceImpl;
+import org.adorsys.encobject.service.impl.SimplePayloadImpl;
+import org.adorsys.encobject.service.impl.SimpleStorageMetadataImpl;
 import org.adorsys.jkeygen.keystore.KeyStoreType;
 import org.junit.After;
 import org.junit.Assert;
@@ -53,7 +55,7 @@ public class CompressionTest {
     @After
     public void after() {
         try {
-            ContainerPersistence containerPersistence = new ContainerPersistence(extendedStoreConnection);
+            ContainerPersistence containerPersistence = new ContainerPersistenceImpl(extendedStoreConnection);
             for (BucketDirectory bucket : buckets) {
                 String container = bucket.getObjectHandle().getContainer();
                 LOGGER.debug("AFTER TEST: DELETE BUCKET " + container);
@@ -84,7 +86,7 @@ public class CompressionTest {
             data[i] = (byte) i;
         }
 
-        EncryptedPersistenceService encryptedPersistenceService = new EncryptedPersistenceService(extendedStoreConnection, new JWEncryptionService());
+        EncryptedPersistenceService encryptedPersistenceService = new EncryptedPersistenceServiceImpl(extendedStoreConnection, new JWEncryptionServiceImpl());
 
         SimpleStorageMetadataImpl storageMetadata = new SimpleStorageMetadataImpl();
         storageMetadata.setShouldBeCompressed(Boolean.TRUE);
@@ -94,7 +96,7 @@ public class CompressionTest {
         storageMetadata2.setShouldBeCompressed(Boolean.FALSE);
         Payload payloadWithoutCompress = new SimplePayloadImpl(storageMetadata2, data);
 
-        KeystorePersistence keystorePersistence = new BlobStoreKeystorePersistence(extendedStoreConnection);
+        KeystorePersistence keystorePersistence = new BlobStoreKeystorePersistenceImpl(extendedStoreConnection);
         KeyStoreAccess keyStoreAccess = new KeyStoreAccess(keystorePath, keyStoreAuth);
 
         KeyStore2KeySourceHelper.KeySourceAndKeyID publicKeySource = KeyStore2KeySourceHelper.getForPublicKey(keystorePersistence, keyStoreAccess);
@@ -147,7 +149,7 @@ public class CompressionTest {
             data[i] = (byte) i;
         }
 
-        EncryptedPersistenceService encryptedPersistenceService = new EncryptedPersistenceService(extendedStoreConnection, new JWEncryptionService());
+        EncryptedPersistenceService encryptedPersistenceService = new EncryptedPersistenceServiceImpl(extendedStoreConnection, new JWEncryptionServiceImpl());
 
         SimpleStorageMetadataImpl storageMetadata = new SimpleStorageMetadataImpl();
         storageMetadata.setShouldBeCompressed(Boolean.TRUE);
@@ -157,7 +159,7 @@ public class CompressionTest {
         storageMetadata2.setShouldBeCompressed(Boolean.FALSE);
         Payload payloadWithoutCompress = new SimplePayloadImpl(storageMetadata2, data);
 
-        KeystorePersistence keystorePersistence = new BlobStoreKeystorePersistence(extendedStoreConnection);
+        KeystorePersistence keystorePersistence = new BlobStoreKeystorePersistenceImpl(extendedStoreConnection);
         KeyStoreAccess keyStoreAccess = new KeyStoreAccess(keystorePath, keyStoreAuth);
 
         KeyStore2KeySourceHelper.KeySourceAndKeyID secretKeySourceAndID = KeyStore2KeySourceHelper.getForSecretKey(keystorePersistence, keyStoreAccess);

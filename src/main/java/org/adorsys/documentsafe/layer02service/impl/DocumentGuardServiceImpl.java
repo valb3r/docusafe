@@ -21,15 +21,16 @@ import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.domain.KeyStoreAccess;
 import org.adorsys.encobject.domain.Payload;
 import org.adorsys.encobject.exceptions.FileExistsException;
-import org.adorsys.encobject.keysource.KeySource;
-import org.adorsys.encobject.keysource.KeyStoreBasedSecretKeySourceImpl;
-import org.adorsys.encobject.service.BlobStoreKeystorePersistence;
-import org.adorsys.encobject.service.EncryptedPersistenceService;
-import org.adorsys.encobject.service.ExtendedStoreConnection;
-import org.adorsys.encobject.service.JWEncryptionService;
-import org.adorsys.encobject.service.KeystorePersistence;
-import org.adorsys.encobject.service.SimplePayloadImpl;
-import org.adorsys.encobject.service.SimpleStorageMetadataImpl;
+import org.adorsys.encobject.service.api.EncryptedPersistenceService;
+import org.adorsys.encobject.service.api.ExtendedStoreConnection;
+import org.adorsys.encobject.service.api.KeySource;
+import org.adorsys.encobject.service.api.KeystorePersistence;
+import org.adorsys.encobject.service.impl.BlobStoreKeystorePersistenceImpl;
+import org.adorsys.encobject.service.impl.EncryptedPersistenceServiceImpl;
+import org.adorsys.encobject.service.impl.JWEncryptionServiceImpl;
+import org.adorsys.encobject.service.impl.KeyStoreBasedSecretKeySourceImpl;
+import org.adorsys.encobject.service.impl.SimplePayloadImpl;
+import org.adorsys.encobject.service.impl.SimpleStorageMetadataImpl;
 import org.adorsys.encobject.types.KeyID;
 import org.adorsys.encobject.types.OverwriteFlag;
 import org.adorsys.jkeygen.keystore.KeyStoreType;
@@ -53,8 +54,8 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
     private DocumentGuardSerializerRegistery serializerRegistry = DocumentGuardSerializerRegistery.getInstance();
 
     public DocumentGuardServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
-        this.encryptedPersistenceUtil = new EncryptedPersistenceService(extendedStoreConnection, new JWEncryptionService());
-        this.keystorePersistence = new BlobStoreKeystorePersistence(extendedStoreConnection);
+        this.encryptedPersistenceUtil = new EncryptedPersistenceServiceImpl(extendedStoreConnection, new JWEncryptionServiceImpl());
+        this.keystorePersistence = new BlobStoreKeystorePersistenceImpl(extendedStoreConnection);
         this.bucketService = new BucketServiceImpl(extendedStoreConnection);
     }
 

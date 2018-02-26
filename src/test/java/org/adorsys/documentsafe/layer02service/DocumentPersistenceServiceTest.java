@@ -6,8 +6,8 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentBucket
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
 import org.adorsys.encobject.domain.KeyStoreAccess;
 import org.adorsys.encobject.domain.Payload;
-import org.adorsys.encobject.service.ExtendedStoreConnection;
-import org.adorsys.encobject.service.SimpleStorageMetadataImpl;
+import org.adorsys.encobject.service.api.ExtendedStoreConnection;
+import org.adorsys.encobject.service.impl.SimpleStorageMetadataImpl;
 import org.adorsys.encobject.types.OverwriteFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -8,7 +8,7 @@ import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDW
 import org.adorsys.documentsafe.layer03business.types.AccessType;
 import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
-import org.adorsys.encobject.service.ExtendedStoreConnection;
+import org.adorsys.encobject.service.api.ExtendedStoreConnection;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.adorsys.encobject.types.OverwriteFlag;
 

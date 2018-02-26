@@ -9,8 +9,9 @@ import org.adorsys.encobject.domain.KeyStoreAccess;
 import org.adorsys.encobject.domain.KeyStoreAuth;
 import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.adorsys.encobject.domain.ReadStorePassword;
-import org.adorsys.encobject.service.ContainerPersistence;
-import org.adorsys.encobject.service.ExtendedStoreConnection;
+import org.adorsys.encobject.service.api.ContainerPersistence;
+import org.adorsys.encobject.service.api.ExtendedStoreConnection;
+import org.adorsys.encobject.service.impl.ContainerPersistenceImpl;
 import org.adorsys.jkeygen.keystore.KeyStoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +44,7 @@ public class KeyStoreServiceTest {
         try {
             BucketDirectory keyStoreDirectory = new BucketDirectory(keystoreContainer);
 
-            ContainerPersistence containerPersistence = new ContainerPersistence(extendedStoreConnection);
+            ContainerPersistence containerPersistence = new ContainerPersistenceImpl(extendedStoreConnection);
             try {
                 // sollte der container exsitieren, ignorieren wir die Exception, um zu
                 // sehen, ob sich ein keystore überschreiben lässt

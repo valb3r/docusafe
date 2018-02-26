@@ -23,8 +23,9 @@ import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.domain.StorageType;
 import org.adorsys.encobject.exceptions.FileExistsException;
 import org.adorsys.encobject.filesystem.FileSystemExtendedStorageConnection;
-import org.adorsys.encobject.service.ContainerPersistence;
-import org.adorsys.encobject.service.ExtendedStoreConnection;
+import org.adorsys.encobject.service.api.ContainerPersistence;
+import org.adorsys.encobject.service.api.ExtendedStoreConnection;
+import org.adorsys.encobject.service.impl.ContainerPersistenceImpl;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.adorsys.encobject.types.OverwriteFlag;
 import org.apache.commons.io.FileUtils;
@@ -61,7 +62,7 @@ public class AllServiceTest {
     @After
     public void after() {
         try {
-            ContainerPersistence containerPersistence = new ContainerPersistence(extendedStoreConnection);
+            ContainerPersistence containerPersistence = new ContainerPersistenceImpl(extendedStoreConnection);
             for (BucketDirectory bucket : buckets) {
                 String container = bucket.getObjectHandle().getContainer();
                 LOGGER.debug("AFTER TEST: DELETE BUCKET " + container);
@@ -78,7 +79,7 @@ public class AllServiceTest {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         try {
             BucketDirectory bp = new BucketDirectory("1/2/3");
-            ContainerPersistence containerPersistence = new ContainerPersistence(extendedStoreConnection);
+            ContainerPersistence containerPersistence = new ContainerPersistenceImpl(extendedStoreConnection);
             containerPersistence.createContainer(bp.getObjectHandle().getContainer());
             buckets.add(bp);
         } catch (Exception e) {

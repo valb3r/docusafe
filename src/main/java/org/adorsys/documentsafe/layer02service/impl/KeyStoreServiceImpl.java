@@ -9,9 +9,9 @@ import org.adorsys.documentsafe.layer02service.generators.KeyStoreCreationConfig
 import org.adorsys.documentsafe.layer02service.generators.KeyStoreGenerator;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.domain.KeyStoreAuth;
-import org.adorsys.encobject.service.BlobStoreKeystorePersistence;
-import org.adorsys.encobject.service.ExtendedStoreConnection;
-import org.adorsys.encobject.service.KeystorePersistence;
+import org.adorsys.encobject.service.api.ExtendedStoreConnection;
+import org.adorsys.encobject.service.api.KeystorePersistence;
+import org.adorsys.encobject.service.impl.BlobStoreKeystorePersistenceImpl;
 import org.adorsys.jkeygen.keystore.KeyStoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +26,7 @@ public class KeyStoreServiceImpl implements KeyStoreService {
     private BucketService bucketService;
 
     public KeyStoreServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
-        this.keystorePersistence = new BlobStoreKeystorePersistence(extendedStoreConnection);
+        this.keystorePersistence = new BlobStoreKeystorePersistenceImpl(extendedStoreConnection);
         this.bucketService = new BucketServiceImpl(extendedStoreConnection);
     }
 

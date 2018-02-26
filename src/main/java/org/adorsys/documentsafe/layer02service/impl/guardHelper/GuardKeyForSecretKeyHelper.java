@@ -3,8 +3,8 @@ package org.adorsys.documentsafe.layer02service.impl.guardHelper;
 import org.adorsys.documentsafe.layer02service.types.GuardKeyID;
 import org.adorsys.documentsafe.layer02service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
 import org.adorsys.encobject.domain.KeyStoreAccess;
-import org.adorsys.encobject.keysource.KeyStore2KeySourceHelper;
-import org.adorsys.encobject.service.KeystorePersistence;
+import org.adorsys.encobject.service.api.KeyStore2KeySourceHelper;
+import org.adorsys.encobject.service.api.KeystorePersistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +18,7 @@ public class GuardKeyForSecretKeyHelper implements GuardKeyHelper{
      * Dort, wo der KeyStore liegt wird dann ein DocumentGuard erzeugt, der den verschlüsselten DocumentKey enthält.
      * Im Header des DocumentGuards steht die DocuemntKeyID.
      */
+    @Override
     public KeySourceAndGuardKeyID getKeySourceAndGuardKeyID(KeystorePersistence keystorePersistence,
                                                             KeyStoreAccess keyStoreAccess,
                                                             DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType) {
