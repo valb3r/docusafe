@@ -78,11 +78,7 @@ checkCurl 200 -f -X GET -H 'Content-Type: application/json' -H 'Accept: applicat
 print "peter saves deep document"
 checkCurl 200 -f -X PUT -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i http://localhost:8080/document --data '{
   "documentFQN": "deeper/and/deeper/README.txt",
-  "documentContent": {
-    "value": [
-    1,2,3,4,5,6,7,8
-    ]
-  }
+  "documentContent": "AFFE"
 }' 
 checkGuards peter   2
 
@@ -117,11 +113,7 @@ checkCurl 200 -X GET -H 'Content-Type: application/json' -H 'Accept: application
 print "francis tries to  save peters deeper document"
 checkCurl 403 -X PUT -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: francis' -H 'password: passWordXyZ' -i http://localhost:8080/granted/document/peter --data '{
   "documentFQN": "deeper/and/deeper/README.txt",
-  "documentContent": {
-    "value": [
-    1,2,3,4,5,6,7,8
-    ]
-  }
+  "documentContent": "AFFEFE"
 }' 
 
 print "francis liest nicht existentes Document von Peter"
@@ -138,11 +130,7 @@ checkGuards francis 2
 print "francis tries to  save peters deeper document"
 checkCurl 200 -X PUT -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: francis' -H 'password: passWordXyZ' -i http://localhost:8080/granted/document/peter --data '{
   "documentFQN": "deeper/and/deeper/README.txt",
-  "documentContent": {
-    "value": [
-    1,4,5,6,7,8
-    ]
-  }
+  "documentContent": "AFFEFE"
 }' 
 
 print "peter removes grant permsission for  deeper/and/deeper from francis"

@@ -14,8 +14,6 @@ import org.slf4j.LoggerFactory;
  */
 public class UserIDUtil {
     private final static Logger LOGGER = LoggerFactory.getLogger(UserIDUtil.class);
-    public static final String KEY_STORE_TYPE = "KeyStoreType";
-    private final static String DEFAULT_KEYSTORE_TYPE = "UBER";
 
     public static BucketDirectory getUserRootBucketDirectory(UserID userID) {
         return new BucketDirectory("BP-" + userID.getValue());
