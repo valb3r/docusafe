@@ -1,5 +1,8 @@
 package org.adorsys.documentsafe.layer04rest;
 
+import org.adorsys.cryptoutils.exceptions.BaseException;
+import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
+import org.adorsys.cryptoutils.utils.HexUtil;
 import org.adorsys.documentsafe.layer03business.DocumentSafeService;
 import org.adorsys.documentsafe.layer03business.impl.DocumentSafeServiceImpl;
 import org.adorsys.documentsafe.layer03business.types.UserID;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.HandlerMapping;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.InputStream;
 
 /**
  * Created by peter on 22.01.18 at 19:27.
@@ -32,6 +36,7 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 public class DocumentSafeController {
     private final static String JSON = "application/json";
+    private final static String OCTET_STREM = "application/octet-stream";
 
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentSafeController.class);
     private DocumentSafeService service = new DocumentSafeServiceImpl(new FileSystemExtendedStorageConnection());
@@ -68,8 +73,7 @@ public class DocumentSafeController {
     @RequestMapping(
             value = "/document",
             method = {RequestMethod.PUT},
-            consumes = {JSON},
-            produces = {JSON}
+            consumes = {JSON}
     )
     public void storeDocument(@RequestHeader("userid") String userid,
                               @RequestHeader("password") String password,
@@ -78,6 +82,33 @@ public class DocumentSafeController {
         service.storeDocument(userIDAuth, dsDocument);
     }
 
+    @RequestMapping(
+            value = "/document",
+            method = {RequestMethod.POST},
+            consumes = {OCTET_STREM}
+    )
+    public void storeDocument(@RequestHeader("userid") String userid,
+                              @RequestHeader("password") String password,
+                              @RequestBody InputStream inputStream) {
+        try {
+            UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
+            LOGGER.info("ok, receive an inputstream");
+            int available = 0;
+            int limit = 100;
+            while ((available = inputStream.available()) > 0) {
+                int min = Math.min(limit, available);
+                byte[] bytes = new byte[min];
+                int read = inputStream.read(bytes, 0, min);
+                if (read != min) {
+                    throw new BaseException("expected to read " + min + " bytes, but read " + read + " bytes");
+                }
+                LOGGER.info("READ " + min + " bytes:" + HexUtil.convertBytesToHexString(bytes));
+            }
+            LOGGER.info("finished reading");
+        } catch (Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
+    }
 
     @RequestMapping(
             value = "/document/**",
