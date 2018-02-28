@@ -89,12 +89,10 @@ public class DocumentSafeController {
     )
     public void storeDocument(@RequestHeader("userid") String userid,
                               @RequestHeader("password") String password,
-                              @RequestHeader("expectedsize") String expectedSizeString,
                               InputStream inputStream) {
         UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
-        Long expectedSize = Long.valueOf(expectedSizeString);
-        LOGGER.info("input auf document/stream1 " + expectedSize + " bytes for " + userIDAuth);
-        show(inputStream, expectedSize);
+        LOGGER.info("input auf document/stream1 for " + userIDAuth);
+        show(inputStream);
     }
 
     @RequestMapping(
@@ -220,4 +218,33 @@ public class DocumentSafeController {
             throw BaseExceptionHandler.handle(e);
         }
     }
+
+    private void show(InputStream inputStream) {
+        try {
+            LOGGER.info("ok, receive an inputstream");
+            int limit = 100;
+            byte[] data = new byte[limit];
+            int index = 0;
+            int value;
+            long sum = 0;
+            while  ((value = inputStream.read()) != -1) {
+                sum++;
+                data[index++] = (byte) value;
+                if (index == limit) {
+                    LOGGER.info("READ " + limit + " bytes:" + HexUtil.convertBytesToHexString(data));
+                    index = 0;
+                    for (int i = 0; i<limit; i++) {
+                        data[i] = 0;
+                    }
+                }
+            }
+            if (index == limit) {
+                LOGGER.info("READ " + index + " bytes:" + HexUtil.convertBytesToHexString(data));
+            }
+            LOGGER.info("finished reading " + sum + " bytes");
+        } catch (Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
+    }
+
 }
