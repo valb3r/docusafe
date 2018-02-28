@@ -2,7 +2,6 @@ package org.adorsys.documentsafe.layer04rest;
 
 import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
-import org.adorsys.cryptoutils.utils.HexUtil;
 import org.adorsys.documentsafe.layer03business.DocumentSafeService;
 import org.adorsys.documentsafe.layer03business.impl.DocumentSafeServiceImpl;
 import org.adorsys.documentsafe.layer03business.types.UserID;
@@ -196,55 +195,38 @@ public class DocumentSafeController {
     }
 
 
-    private void show(InputStream inputStream, long expectedSize) {
+    private void show(InputStream inputStream) {
         try {
             LOGGER.info("ok, receive an inputstream");
             int available = 0;
             long sum = 0;
-            int limit = 100;
-            while  (sum < expectedSize) {
+            boolean eof = false;
+            while (!eof) {
                 available = inputStream.available();
-                int min = Math.min(limit, available);
-                byte[] bytes = new byte[min];
-                int read = inputStream.read(bytes, 0, min);
-                if (read != min) {
-                    throw new BaseException("expected to read " + min + " bytes, but read " + read + " bytes");
-                }
-                sum+=read;
-                LOGGER.info("READ " + min + " bytes:" + HexUtil.convertBytesToHexString(bytes));
-            }
-            LOGGER.info("finished reading " + sum + " bytes");
-        } catch (Exception e) {
-            throw BaseExceptionHandler.handle(e);
-        }
-    }
+                if (available <= 1) {
+                    // be blocked, until unexpected EOF Exception or Data availabel of expected EOF
+                    int value = inputStream.read();
+                    eof = value == -1;
+                    if (! eof) {
+                        byte[] bytes = new byte[1];
+                        bytes[0] = (byte) value;
+                        sum++;
+                        LOGGER.info("READ 1 byte");
 
-    private void show(InputStream inputStream) {
-        try {
-            LOGGER.info("ok, receive an inputstream");
-            int limit = 100;
-            byte[] data = new byte[limit];
-            int index = 0;
-            int value;
-            long sum = 0;
-            while  ((value = inputStream.read()) != -1) {
-                sum++;
-                data[index++] = (byte) value;
-                if (index == limit) {
-                    LOGGER.info("READ " + limit + " bytes:" + HexUtil.convertBytesToHexString(data));
-                    index = 0;
-                    for (int i = 0; i<limit; i++) {
-                        data[i] = 0;
                     }
+                } else {
+                    byte[] bytes = new byte[available];
+                    int read = inputStream.read(bytes, 0, available);
+                    if (read != available) {
+                        throw new BaseException("expected to read " + available + " bytes, but read " + read + " bytes");
+                    }
+                    sum += read;
+                    LOGGER.info("READ " + available + " bytes");
                 }
-            }
-            if (index == limit) {
-                LOGGER.info("READ " + index + " bytes:" + HexUtil.convertBytesToHexString(data));
             }
             LOGGER.info("finished reading " + sum + " bytes");
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
     }
-
 }
