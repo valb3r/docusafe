@@ -35,8 +35,8 @@ import java.io.InputStream;
  */
 @RestController
 public class DocumentSafeController {
-    private final static String JSON = "application/json";
-    private final static String OCTET_STREM = "application/octet-stream";
+    private final static String APPLICATION_JSON = "application/json";
+    private final static String APPLICATION_OCTET_STREAM = "application/octet-stream";
 
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentSafeController.class);
     private DocumentSafeService service = new DocumentSafeServiceImpl(new FileSystemExtendedStorageConnection());
@@ -48,8 +48,8 @@ public class DocumentSafeController {
     @RequestMapping(
             value = "/internal/user",
             method = {RequestMethod.PUT},
-            consumes = {JSON},
-            produces = {JSON}
+            consumes = {APPLICATION_JSON},
+            produces = {APPLICATION_JSON}
     )
     public void createUser(@RequestBody UserIDAuth userIDAuth) {
         service.createUser(userIDAuth);
@@ -58,8 +58,8 @@ public class DocumentSafeController {
     @RequestMapping(
             value = "/internal/user",
             method = {RequestMethod.DELETE},
-            consumes = {JSON},
-            produces = {JSON}
+            consumes = {APPLICATION_JSON},
+            produces = {APPLICATION_JSON}
     )
     public void destroyUser(@RequestBody UserIDAuth userIDAuth) {
         service.destroyUser(userIDAuth);
@@ -73,7 +73,7 @@ public class DocumentSafeController {
     @RequestMapping(
             value = "/document",
             method = {RequestMethod.PUT},
-            consumes = {JSON}
+            consumes = {APPLICATION_JSON}
     )
     public void storeDocument(@RequestHeader("userid") String userid,
                               @RequestHeader("password") String password,
@@ -83,28 +83,29 @@ public class DocumentSafeController {
     }
 
     @RequestMapping(
-            value = "/document",
-            method = {RequestMethod.POST},
-            consumes = {OCTET_STREM}
+            value = "/document/stream1",
+            method = {RequestMethod.PUT},
+            consumes = {APPLICATION_OCTET_STREAM}
     )
     public void storeDocument(@RequestHeader("userid") String userid,
                               @RequestHeader("password") String password,
-                              @RequestBody InputStream inputStream) {
+                              InputStream inputStream) {
+        UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
+        LOGGER.info("input auf document/stream1 " + userIDAuth);
+        show(inputStream);
+    }
+
+    @RequestMapping(
+            value = "/document/stream2",
+            method = {RequestMethod.PUT}
+    )
+    public void storeDocument2(@RequestHeader("userid") String userid,
+                              @RequestHeader("password") String password,
+                              HttpServletRequest request) {
         try {
             UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
-            LOGGER.info("ok, receive an inputstream");
-            int available = 0;
-            int limit = 100;
-            while ((available = inputStream.available()) > 0) {
-                int min = Math.min(limit, available);
-                byte[] bytes = new byte[min];
-                int read = inputStream.read(bytes, 0, min);
-                if (read != min) {
-                    throw new BaseException("expected to read " + min + " bytes, but read " + read + " bytes");
-                }
-                LOGGER.info("READ " + min + " bytes:" + HexUtil.convertBytesToHexString(bytes));
-            }
-            LOGGER.info("finished reading");
+            LOGGER.info("input auf document/stream2 " + userIDAuth);
+            show(request.getInputStream());
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
@@ -113,8 +114,8 @@ public class DocumentSafeController {
     @RequestMapping(
             value = "/document/**",
             method = {RequestMethod.GET},
-            consumes = {JSON},
-            produces = {JSON}
+            consumes = {APPLICATION_JSON},
+            produces = {APPLICATION_JSON}
     )
     public
     @ResponseBody
@@ -142,8 +143,8 @@ public class DocumentSafeController {
     @RequestMapping(
             value = "/grant/document",
             method = {RequestMethod.PUT},
-            consumes = {JSON},
-            produces = {JSON}
+            consumes = {APPLICATION_JSON},
+            produces = {APPLICATION_JSON}
     )
     public void grantAccess(@RequestHeader("userid") String userid,
                             @RequestHeader("password") String password,
@@ -155,8 +156,8 @@ public class DocumentSafeController {
     @RequestMapping(
             value = "/granted/document/{ownerUserID}/**",
             method = {RequestMethod.GET},
-            consumes = {JSON},
-            produces = {JSON}
+            consumes = {APPLICATION_JSON},
+            produces = {APPLICATION_JSON}
     )
     public
     @ResponseBody
@@ -181,8 +182,8 @@ public class DocumentSafeController {
     @RequestMapping(
             value = "/granted/document/{ownerUserID}",
             method = {RequestMethod.PUT},
-            consumes = {JSON},
-            produces = {JSON}
+            consumes = {APPLICATION_JSON},
+            produces = {APPLICATION_JSON}
     )
     public void storeGrantedDocument(@RequestHeader("userid") String userid,
                                      @RequestHeader("password") String password,
@@ -200,8 +201,8 @@ public class DocumentSafeController {
     @RequestMapping(
             value = "/document/link",
             method = {RequestMethod.PUT},
-            consumes = {JSON},
-            produces = {JSON}
+            consumes = {APPLICATION_JSON},
+            produces = {APPLICATION_JSON}
     )
     public void createLink(@RequestHeader("userid") String userid,
                            @RequestHeader("password") String password,
@@ -210,4 +211,24 @@ public class DocumentSafeController {
         service.linkDocument(userIDAuth, createLinkTupel.getSource(), createLinkTupel.getDestination());
     }
 
+
+    private void show(InputStream inputStream) {
+        try {
+            LOGGER.info("ok, receive an inputstream");
+            int available = 0;
+            int limit = 100;
+            while ((available = inputStream.available()) > 0) {
+                int min = Math.min(limit, available);
+                byte[] bytes = new byte[min];
+                int read = inputStream.read(bytes, 0, min);
+                if (read != min) {
+                    throw new BaseException("expected to read " + min + " bytes, but read " + read + " bytes");
+                }
+                LOGGER.info("READ " + min + " bytes:" + HexUtil.convertBytesToHexString(bytes));
+            }
+            LOGGER.info("finished reading");
+        } catch (Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
+    }
 }
