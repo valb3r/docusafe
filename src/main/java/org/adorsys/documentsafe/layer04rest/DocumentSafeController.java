@@ -194,7 +194,6 @@ public class DocumentSafeController {
         service.linkDocument(userIDAuth, createLinkTupel.getSource(), createLinkTupel.getDestination());
     }
 
-
     private void show(InputStream inputStream) {
         try {
             LOGGER.info("ok, receive an inputstream");
@@ -212,7 +211,6 @@ public class DocumentSafeController {
                         bytes[0] = (byte) value;
                         sum++;
                         LOGGER.info("READ 1 byte");
-
                     }
                 } else {
                     byte[] bytes = new byte[available];
