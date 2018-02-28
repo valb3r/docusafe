@@ -89,26 +89,12 @@ public class DocumentSafeController {
     )
     public void storeDocument(@RequestHeader("userid") String userid,
                               @RequestHeader("password") String password,
+                              @RequestHeader("expectedsize") String expectedSizeString,
                               InputStream inputStream) {
         UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
-        LOGGER.info("input auf document/stream1 " + userIDAuth);
-        show(inputStream);
-    }
-
-    @RequestMapping(
-            value = "/document/stream2",
-            method = {RequestMethod.PUT}
-    )
-    public void storeDocument2(@RequestHeader("userid") String userid,
-                              @RequestHeader("password") String password,
-                              HttpServletRequest request) {
-        try {
-            UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
-            LOGGER.info("input auf document/stream2 " + userIDAuth);
-            show(request.getInputStream());
-        } catch (Exception e) {
-            throw BaseExceptionHandler.handle(e);
-        }
+        Long expectedSize = Long.valueOf(expectedSizeString);
+        LOGGER.info("input auf document/stream1 " + expectedSize + " bytes for " + userIDAuth);
+        show(inputStream, expectedSize);
     }
 
     @RequestMapping(
@@ -212,21 +198,24 @@ public class DocumentSafeController {
     }
 
 
-    private void show(InputStream inputStream) {
+    private void show(InputStream inputStream, long expectedSize) {
         try {
             LOGGER.info("ok, receive an inputstream");
             int available = 0;
+            long sum = 0;
             int limit = 100;
-            while ((available = inputStream.available()) > 0) {
+            while  (sum < expectedSize) {
+                available = inputStream.available();
                 int min = Math.min(limit, available);
                 byte[] bytes = new byte[min];
                 int read = inputStream.read(bytes, 0, min);
                 if (read != min) {
                     throw new BaseException("expected to read " + min + " bytes, but read " + read + " bytes");
                 }
+                sum+=read;
                 LOGGER.info("READ " + min + " bytes:" + HexUtil.convertBytesToHexString(bytes));
             }
-            LOGGER.info("finished reading");
+            LOGGER.info("finished reading " + sum + " bytes");
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
