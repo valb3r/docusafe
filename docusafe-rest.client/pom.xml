@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.adorsys</groupId>
+        <artifactId>docusafe</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>docusafe-rest.client</artifactId>
+
+    <properties>
+        <jersey.version>2.11</jersey.version>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>de.adorsys.cryptoutils</groupId>
+            <artifactId>basetypes</artifactId>
+            <version>${crypt.version}</version>
+        </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jersey.core</groupId>
+                <artifactId>jersey-client</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.media</groupId>
+                <artifactId>jersey-media-multipart</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.media</groupId>
+                <artifactId>jersey-media-json-jackson</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.media</groupId>
+                <artifactId>jersey-media-json-processing</artifactId>
+                <version>2.26</version>
+            </dependency>
+
+
+            <!-- FileUtils -->
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>1.2</version>
+            </dependency>
+
+            <!-- Tests -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>RELEASE</version>
+                <scope>test</scope>
+            </dependency>
+
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.jolira</groupId>
+                <artifactId>onejar-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <configuration>
+                            <mainClass>org.adorsys.docusafe.client.Main</mainClass>
+                            <attachToBuild>true</attachToBuild>
+                            <filename>
+                                dsc
+                            </filename>
+                        </configuration>
+                        <goals>
+                            <goal>one-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
