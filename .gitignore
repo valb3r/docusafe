@@ -3,6 +3,6 @@
 .classpath
 .settings/
 .DS_Store
-/target/
+target/
 *.log
 *.iml
