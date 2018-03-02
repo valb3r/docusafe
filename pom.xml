@@ -1,19 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
-    <groupId>org.adorsys.documentsafe</groupId>
-    <artifactId>documentsafe</artifactId>
-    <version>1.0-SNAPSHOT</version>
-
-    <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <crypt.version>0.13.0-SNAPSHOT</crypt.version>
-    </properties>
+    <groupId>org.adorsys</groupId>
+    <artifactId>docusafe</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -21,49 +12,54 @@
         <version>1.5.9.RELEASE</version>
     </parent>
 
+
+    <name>docusafe</name>
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <crypt.version>0.13.0-SNAPSHOT</crypt.version>
+        <docusafe.version>0.1.0-SNAPSHOT</docusafe.version>
+        <version.swagger>1.5.5</version.swagger>
+    </properties>
+
+
+    <url>https://github.com/adorsys/docusafe</url>
+    <packaging>pom</packaging>
+    <scm>
+        <connection>scm:git@github.com:adorsys/docusafe.git</connection>
+        <developerConnection>scm:git:git@github.com:adorsys/docusafe.git</developerConnection>
+        <url>git@github.com:adorsys/docusafe.git</url>
+        <tag>HEAD</tag>
+    </scm>
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <name>Francis Pouatcha</name>
+            <email>fpo@adorsys.de</email>
+            <organization>adorsys</organization>
+            <organizationUrl>https://adorsys.de/</organizationUrl>
+        </developer>
+        <developer>
+            <name>Peter Spiessbach</name>
+            <email>psp@adorsys.de</email>
+            <organization>adorsys</organization>
+            <organizationUrl>https://adorsys.de/</organizationUrl>
+        </developer>
+    </developers>
+
+    <modules>
+        <module>docusafe-service</module>
+        <module>docusafe-business</module>
+        <module>docusafe-rest</module>
+    </modules>
+
     <dependencies>
-        <!-- Spring boot -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-
-            <!-- ich will slf4j und nicht logback -->
-            <exclusions>
-                <exclusion>
-                    <groupId>ch.qos.logback</groupId>
-                    <artifactId>logback-classic</artifactId>
-                </exclusion>
-            </exclusions>
-
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.jayway.jsonpath</groupId>
-            <artifactId>json-path</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- JCloud not compatible wit spring-boot 1.4
-        Dependency: encobject-jcloud->filesystem->jclouds-blobstore->jclouds->core->gson
-        see: https://github.com/spring-projects/spring-boot/issues/6761
-        -->
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.8.2</version>
-        </dependency>
-
-
-        <!-- XStreamMarshaller -->
-        <dependency>
-            <groupId>org.apache.servicemix.bundles</groupId>
-            <artifactId>org.apache.servicemix.bundles.xstream-java8</artifactId>
-            <version>1.4.10_1</version>
-        </dependency>
 
         <!-- logging -->
         <!-- 2.10.0 ist leider nicht kompatibel mit spring boot -->
@@ -83,50 +79,6 @@
             <version>2.7</version>
         </dependency>
 
-        <!-- lfs -->
-        <!--
-        <dependency>
-            <groupId>com.moonlit</groupId>
-            <artifactId>lfsappenders</artifactId>
-            <version>4.4.1</version>
-        </dependency>
-        -->
-
-        <dependency>
-            <groupId>de.adorsys.cryptoutils</groupId>
-            <artifactId>basetypes</artifactId>
-            <version>${crypt.version}</version>
-        </dependency>
-
-        <!-- Encrypted object -->
-        <dependency>
-            <groupId>de.adorsys.cryptoutils</groupId>
-            <artifactId>encobject</artifactId>
-            <version>${crypt.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>de.adorsys.cryptoutils</groupId>
-            <artifactId>jkeyutils</artifactId>
-            <version>${crypt.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>de.adorsys.cryptoutils</groupId>
-            <artifactId>filesystemstoreconnection</artifactId>
-            <version>${crypt.version}</version>
-        </dependency>
-
-        <!-- bouncy castle -->
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.54</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcpkix-jdk15on</artifactId>
-            <version>1.54</version>
-        </dependency>
-
         <!-- Tests -->
         <dependency>
             <groupId>junit</groupId>
@@ -136,14 +88,4 @@
         </dependency>
 
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
-
 </project>

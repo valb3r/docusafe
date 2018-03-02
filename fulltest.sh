@@ -14,7 +14,7 @@ echo "build standalone server"
 mvn clean install -DskipTests > /dev/null
 
 echo "start standalone server"
-java -jar target/documentsafe-1.0-SNAPSHOT.jar > documentsafe.console.out.log &
+java -jar docusafe-rest/target/docusafe-rest-0.1.0-SNAPSHOT.jar > documentsafe.console.out.log &
 pid=$!
 echo "pid ist $pid"
 

@@ -1,4 +1,4 @@
-# install pip with   sudo easy_install pip
+gi# install pip with   sudo easy_install pip
 # install pyjks with sudo pip install pyjks
 # run fulltest.sh
 # unzip target/filesystemstorage//BP-francis/.KEYSTORE/KS-francis.zip 
