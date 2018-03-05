@@ -6,6 +6,7 @@ import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
+import org.adorsys.docusafe.business.types.complex.DSDocumentStream;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.rest.types.CreateLinkTupel;
@@ -86,12 +87,15 @@ public class DocumentSafeController {
             method = {RequestMethod.PUT},
             consumes = {APPLICATION_OCTET_STREAM}
     )
-    public void storeDocument(@RequestHeader("userid") String userid,
+    public void storeDocumentStream(@RequestHeader("userid") String userid,
                               @RequestHeader("password") String password,
+                              @RequestHeader("documentFQN") String documentFQNString,
                               InputStream inputStream) {
         UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
-        LOGGER.info("input auf document/stream1 for " + userIDAuth);
-        show(inputStream);
+        DocumentFQN documentFQN = new DocumentFQN(documentFQNString);
+        LOGGER.info("input auf document/stream for " + userIDAuth);
+//        show(inputStream);
+        service.storeDocumentStream(userIDAuth, new DSDocumentStream(documentFQN, inputStream));
     }
 
     @RequestMapping(

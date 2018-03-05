@@ -31,7 +31,7 @@ public class Main {
         // client.readDocument("peter", "kennwort", "README.txt");
         // client.writeDocument("peter", "kennwort", "folder1/client-1.0-SNAPSHOT.jar", getAsBytes(SMALL_DOCUMENT));
         // showInputStream(getAsInputStream("documentsafe-1.0-SNAPSHOT.jar"));
-        client.writeDocumentStream1("peter", "kennwort", filename, new SlowInputStream(getAsInputStream(filename), 1, 1024*1024), new File(filename).length());
+        client.writeDocumentStream("peter", "kennwort", filename, new SlowInputStream(getAsInputStream(filename), 1, 1024*1024), new File(filename).length());
         // client.writeDocumentStream2("peter", "kennwort", "folder1/documentsafe-1.0-SNAPSHOT.jar", getAsInputStream(LARGE_DOCUMENT));
     }
 

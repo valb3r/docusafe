@@ -1,11 +1,10 @@
 package org.adorsys.docusafe.service;
 
 import org.adorsys.docusafe.service.types.complextypes.DocumentBucketPath;
-import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.encobject.domain.KeyStoreAccess;
 import org.adorsys.encobject.domain.Payload;
-import org.adorsys.encobject.domain.StorageMetadata;
+import org.adorsys.encobject.domain.PayloadStream;
 import org.adorsys.encobject.types.OverwriteFlag;
 
 /**
@@ -15,9 +14,14 @@ public interface DocumentPersistenceService {
     void persistDocument(
             DocumentKeyIDWithKey documentKeyIDWithKey,
             DocumentBucketPath documentBucketPath,
-            DocumentContent documentContent,
             OverwriteFlag overwriteFlag,
-            StorageMetadata storageMetadata);
+            PayloadStream payloadStream);
+
+    void persistDocument(
+            DocumentKeyIDWithKey documentKeyIDWithKey,
+            DocumentBucketPath documentBucketPath,
+            OverwriteFlag overwriteFlag,
+            Payload payload);
 
     Payload loadDocument(
             KeyStoreAccess keyStoreAccess,

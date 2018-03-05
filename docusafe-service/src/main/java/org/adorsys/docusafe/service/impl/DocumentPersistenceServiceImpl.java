@@ -5,12 +5,11 @@ import org.adorsys.docusafe.service.DocumentGuardService;
 import org.adorsys.docusafe.service.DocumentPersistenceService;
 import org.adorsys.docusafe.service.keysource.DocumentGuardBasedKeySourceImpl;
 import org.adorsys.docusafe.service.keysource.DocumentKeyIDWithKeyBasedSourceImpl;
-import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.service.types.complextypes.DocumentBucketPath;
 import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.encobject.domain.KeyStoreAccess;
 import org.adorsys.encobject.domain.Payload;
-import org.adorsys.encobject.domain.StorageMetadata;
+import org.adorsys.encobject.domain.PayloadStream;
 import org.adorsys.encobject.exceptions.FileExistsException;
 import org.adorsys.encobject.service.api.ContainerPersistence;
 import org.adorsys.encobject.service.api.EncryptedPersistenceService;
@@ -19,7 +18,6 @@ import org.adorsys.encobject.service.api.KeySource;
 import org.adorsys.encobject.service.impl.ContainerPersistenceImpl;
 import org.adorsys.encobject.service.impl.EncryptedPersistenceServiceImpl;
 import org.adorsys.encobject.service.impl.JWEncryptionServiceImpl;
-import org.adorsys.encobject.service.impl.SimplePayloadImpl;
 import org.adorsys.encobject.types.KeyID;
 import org.adorsys.encobject.types.OverwriteFlag;
 import org.slf4j.Logger;
@@ -54,9 +52,8 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
     public void persistDocument(
             DocumentKeyIDWithKey documentKeyIDWithKey,
             DocumentBucketPath documentBucketPath,
-            DocumentContent documentContent,
             OverwriteFlag overwriteFlag,
-            StorageMetadata storageMetadata) {
+            Payload payload) {
 
         try {
             LOGGER.info("start persist " + documentBucketPath);
@@ -68,8 +65,36 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
             KeySource keySource = new DocumentKeyIDWithKeyBasedSourceImpl(documentKeyIDWithKey);
             LOGGER.debug("Document wird verschlüsselt mit " + documentKeyIDWithKey);
             KeyID keyID = new KeyID(documentKeyIDWithKey.getDocumentKeyID().getValue());
-            Payload payload = new SimplePayloadImpl(storageMetadata, documentContent.getValue());
             encryptedPersistenceUtil.encryptAndPersist(documentBucketPath, payload, keySource, keyID);
+            LOGGER.info("finished persist " + documentBucketPath);
+        } catch (Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
+    }
+
+    /**
+     * Verschlüsselt den DocumentContent mit dem (symmetrischen) DocumentKey. Erzeugt ein Document,
+     * dass den verschlüsselten DocumentContent enthält. Im Header dieses Documents steht die DocumentKeyID.
+     * Das Document liegt in einem Bucket mit dem Namen documentBucketPath.
+     */
+    @Override
+    public void persistDocument(
+            DocumentKeyIDWithKey documentKeyIDWithKey,
+            DocumentBucketPath documentBucketPath,
+            OverwriteFlag overwriteFlag,
+            PayloadStream payloadStream) {
+
+        try {
+            LOGGER.info("start persist stream " + documentBucketPath);
+            if (overwriteFlag.equals(OverwriteFlag.FALSE)) {
+                if (bucketService.fileExists(documentBucketPath)) {
+                    throw new FileExistsException(documentBucketPath + " existiert und overwrite flag ist false");
+                }
+            }
+            KeySource keySource = new DocumentKeyIDWithKeyBasedSourceImpl(documentKeyIDWithKey);
+            LOGGER.debug("Document wird verschlüsselt mit " + documentKeyIDWithKey);
+            KeyID keyID = new KeyID(documentKeyIDWithKey.getDocumentKeyID().getValue());
+            encryptedPersistenceUtil.encryptAndPersist(documentBucketPath, payloadStream, keySource, keyID);
             LOGGER.info("finished persist " + documentBucketPath);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);

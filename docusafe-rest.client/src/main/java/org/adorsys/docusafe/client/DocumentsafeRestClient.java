@@ -26,6 +26,7 @@ import java.io.InputStream;
 public class DocumentsafeRestClient {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentsafeRestClient.class);
     public static final int CHUNKSIZE = 1024;
+    public static final String DOCUMENT_FQN = "documentFQN";
 
     private String baseuri;
     private Client client;
@@ -34,7 +35,7 @@ public class DocumentsafeRestClient {
     private static final String PASSWORD = "password";
     private static final String USER_ID = "userID";
     private static final String WRITE_DOCUMENT = "document";
-    private static final String WRITE_DOCUMENT_STREAM1 = "document/stream1";
+    private static final String WRITE_DOCUMENT_STREAM1 = "document/stream";
 
     public DocumentsafeRestClient(String baseuri) {
         this.baseuri = baseuri;
@@ -71,7 +72,7 @@ public class DocumentsafeRestClient {
 
     }
 
-    public void writeDocumentStream1(String userID, String password, String fqn, InputStream in, long size) {
+    public void writeDocumentStream(String userID, String password, String fqn, InputStream in, long size) {
         LOGGER.info("verschicke nun " + size + " bytes");
         String contentDisposition = "attachment; filename=\"" + fqn + "\"";
         Response response = client.target(baseuri)
@@ -80,6 +81,7 @@ public class DocumentsafeRestClient {
                 .header("Content-Disposition", contentDisposition)
                 .header(USER_ID, userID)
                 .header(PASSWORD, password)
+                .header(DOCUMENT_FQN, fqn)
                 .put(Entity.entity(in, MediaType.APPLICATION_OCTET_STREAM_TYPE));
     }
 

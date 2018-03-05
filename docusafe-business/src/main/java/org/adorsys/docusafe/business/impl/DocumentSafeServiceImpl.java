@@ -1,5 +1,22 @@
 package org.adorsys.docusafe.business.impl;
 
+import org.adorsys.docusafe.business.DocumentSafeService;
+import org.adorsys.docusafe.business.exceptions.NoWriteAccessException;
+import org.adorsys.docusafe.business.exceptions.UserIDAlreadyExistsException;
+import org.adorsys.docusafe.business.exceptions.UserIDDoesNotExistException;
+import org.adorsys.docusafe.business.types.UserID;
+import org.adorsys.docusafe.business.types.complex.DSDocument;
+import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
+import org.adorsys.docusafe.business.types.complex.DSDocumentStream;
+import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
+import org.adorsys.docusafe.business.types.complex.DocumentFQN;
+import org.adorsys.docusafe.business.types.complex.DocumentLink;
+import org.adorsys.docusafe.business.types.complex.DocumentLinkAsDSDocument;
+import org.adorsys.docusafe.business.types.complex.UserIDAuth;
+import org.adorsys.docusafe.business.utils.GrantUtil;
+import org.adorsys.docusafe.business.utils.GuardUtil;
+import org.adorsys.docusafe.business.utils.LinkUtil;
+import org.adorsys.docusafe.business.utils.UserIDUtil;
 import org.adorsys.docusafe.service.BucketService;
 import org.adorsys.docusafe.service.DocumentGuardService;
 import org.adorsys.docusafe.service.DocumentPersistenceService;
@@ -13,22 +30,6 @@ import org.adorsys.docusafe.service.types.DocumentKeyID;
 import org.adorsys.docusafe.service.types.complextypes.DocumentBucketPath;
 import org.adorsys.docusafe.service.types.complextypes.DocumentGuardLocation;
 import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
-import org.adorsys.docusafe.business.exceptions.NoWriteAccessException;
-import org.adorsys.docusafe.business.exceptions.UserIDAlreadyExistsException;
-import org.adorsys.docusafe.business.exceptions.UserIDDoesNotExistException;
-import org.adorsys.docusafe.business.types.UserID;
-import org.adorsys.docusafe.business.types.complex.DSDocument;
-import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
-import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
-import org.adorsys.docusafe.business.types.complex.DocumentFQN;
-import org.adorsys.docusafe.business.types.complex.DocumentLink;
-import org.adorsys.docusafe.business.types.complex.DocumentLinkAsDSDocument;
-import org.adorsys.docusafe.business.types.complex.UserIDAuth;
-import org.adorsys.docusafe.business.utils.GrantUtil;
-import org.adorsys.docusafe.business.utils.GuardUtil;
-import org.adorsys.docusafe.business.utils.LinkUtil;
-import org.adorsys.docusafe.business.utils.UserIDUtil;
-import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.domain.KeyStoreAccess;
@@ -38,6 +39,8 @@ import org.adorsys.encobject.domain.UserMetaData;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
 import org.adorsys.encobject.service.api.KeyStoreService;
 import org.adorsys.encobject.service.impl.KeyStoreServiceImpl;
+import org.adorsys.encobject.service.impl.SimplePayloadImpl;
+import org.adorsys.encobject.service.impl.SimplePayloadStreamImpl;
 import org.adorsys.encobject.service.impl.SimpleStorageMetadataImpl;
 import org.adorsys.encobject.types.OverwriteFlag;
 import org.adorsys.jkeygen.keystore.KeyStoreType;
@@ -110,12 +113,27 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         documentPersistenceService.persistDocument(
                 documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey(),
                 documentBucketPath,
-                dsDocument.getDocumentContent(),
                 OverwriteFlag.TRUE,
-                storageMetadata);
+                new SimplePayloadImpl(storageMetadata, dsDocument.getDocumentContent().getValue()));
         LOGGER.info("finished storeDocument for " + userIDAuth + " " + dsDocument.getDocumentFQN());
     }
 
+    @Override
+    public void storeDocumentStream(UserIDAuth userIDAuth, DSDocumentStream dsDocumentStream) {
+        LOGGER.info("start storeDocumentStream for " + userIDAuth + " " + dsDocumentStream.getDocumentFQN());
+
+        SimpleStorageMetadataImpl storageMetadata = new SimpleStorageMetadataImpl();
+        storageMetadata.mergeUserMetadata(dsDocumentStream.getDsDocumentMetaInfo());
+        DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), dsDocumentStream.getDocumentFQN());
+        DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, documentBucketPath.getBucketDirectory(), AccessType.WRITE);
+        // Hier ist keine Prüfung des Schreibrechts notwendig
+        documentPersistenceService.persistDocument(
+                documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey(),
+                documentBucketPath,
+                OverwriteFlag.TRUE,
+                new SimplePayloadStreamImpl(storageMetadata, dsDocumentStream.getDocumentStream()));
+        LOGGER.info("finished storeDocument for " + userIDAuth + " " + dsDocumentStream.getDocumentFQN());
+    }
 
     @Override
     public void destroyUser(UserIDAuth userIDAuth) {
@@ -255,9 +273,8 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         documentPersistenceService.persistDocument(
                 documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey(),
                 documentBucketPath,
-                dsDocument.getDocumentContent(),
                 OverwriteFlag.TRUE,
-                storageMetadata);
+                new SimplePayloadImpl(storageMetadata, dsDocument.getDocumentContent().getValue()));
         LOGGER.info("finished storeDocument for " + userIDAuth + " " + documentOwner + " " + dsDocument.getDocumentFQN());
     }
 

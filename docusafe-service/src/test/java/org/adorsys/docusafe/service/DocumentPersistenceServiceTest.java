@@ -7,6 +7,7 @@ import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKeyAndAc
 import org.adorsys.encobject.domain.KeyStoreAccess;
 import org.adorsys.encobject.domain.Payload;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
+import org.adorsys.encobject.service.impl.SimplePayloadImpl;
 import org.adorsys.encobject.service.impl.SimpleStorageMetadataImpl;
 import org.adorsys.encobject.types.OverwriteFlag;
 import org.slf4j.Logger;
@@ -43,9 +44,8 @@ public class DocumentPersistenceServiceTest {
         documentPersistenceService.persistDocument(
                 documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey(),
                 documentBucketPath,
-                documentContent,
                 overwriteFlag,
-                new SimpleStorageMetadataImpl());
+                new SimplePayloadImpl(new SimpleStorageMetadataImpl(), true, documentContent.getValue()));
         createdBuckets.add(documentBucketPath);
         AllServiceTest.buckets.add(documentBucketPath.getBucketDirectory());
         return new DocumentStuff(documentBucketPath);
