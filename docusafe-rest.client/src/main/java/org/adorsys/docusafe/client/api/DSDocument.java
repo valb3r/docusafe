@@ -1,5 +1,7 @@
 package org.adorsys.docusafe.client.api;
 
+import java.util.HashMap;
+
 /**
  * Created by peter on 27.02.18 at 12:48.
  */
@@ -9,21 +11,17 @@ public class DSDocument {
     DocumentMetaInfo dsDocumentMetaInfo;
 
     public static class DocumentMetaInfo {
-        long size;
-
-        public long getSize() {
-            return size;
+        HashMap<String, String> map;
+        public DocumentMetaInfo() {
+            map = new HashMap<>();
         }
 
-        public void setSize(long size) {
-            this.size = size;
+        public HashMap<String, String> getMap() {
+            return map;
         }
 
-        @Override
-        public String toString() {
-            return "{" +
-                    "size=" + size +
-                    '}';
+        public void setMap(HashMap<String, String> map) {
+            this.map = map;
         }
     }
 

@@ -19,20 +19,30 @@ public class Main {
     static final String BASEURI = "http://localhost:8080";
 
     public static void main(String[] args) {
-        if (args.length == 0) {
-            LOGGER.info("no args given");
+        if (args.length < 2) {
+            LOGGER.info("Pass params: -ws file (write stream)");
+            LOGGER.info("Pass params: -wb file (write bytes)");
+            LOGGER.info("Pass params: -rb file localfilename (read bytes)");
             return;
         }
-        String filename = args[0];
+        String action = args[0];
+        String filename = args[1];
+
+
 
         System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
         DocumentsafeRestClient client = new DocumentsafeRestClient(BASEURI);
         client.createUser("peter", "kennwort");
-        // client.readDocument("peter", "kennwort", "README.txt");
-        // client.writeDocument("peter", "kennwort", "folder1/client-1.0-SNAPSHOT.jar", getAsBytes(SMALL_DOCUMENT));
-        // showInputStream(getAsInputStream("documentsafe-1.0-SNAPSHOT.jar"));
-        client.writeDocumentStream("peter", "kennwort", filename, new SlowInputStream(getAsInputStream(filename), 1, 1024*1024), new File(filename).length());
-        // client.writeDocumentStream2("peter", "kennwort", "folder1/documentsafe-1.0-SNAPSHOT.jar", getAsInputStream(LARGE_DOCUMENT));
+        if (action.equals("-wb")) {
+            client.writeDocument("peter", "kennwort", filename, getAsBytes(filename));
+        }
+        if (action.equals("-rb")) {
+            String localfilename = args[2];
+            client.readDocument("peter", "kennwort", filename, localfilename);
+        }
+        if (action.equals("-ws")) {
+            client.writeDocumentStream("peter", "kennwort", filename, new SlowInputStream(getAsInputStream(filename), 1, 1024*1024), new File(filename).length());
+        }
     }
 
     public static InputStream getAsInputStream(String filename) {

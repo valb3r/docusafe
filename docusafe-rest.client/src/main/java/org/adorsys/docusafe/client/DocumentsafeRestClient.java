@@ -1,11 +1,13 @@
 package org.adorsys.docusafe.client;
 
 
+import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.cryptoutils.utils.HexUtil;
 import org.adorsys.docusafe.client.api.CreateUserRequest;
 import org.adorsys.docusafe.client.api.DSDocument;
 import org.adorsys.docusafe.client.api.ReadDocumentResponse;
 import org.adorsys.docusafe.client.api.WriteDocumentRequest;
+import org.apache.commons.io.FileUtils;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.slf4j.Logger;
@@ -17,6 +19,8 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 
 
@@ -58,18 +62,21 @@ public class DocumentsafeRestClient {
         LOGGER.info("User " + userID + "created: " + response.getStatus());
     }
 
-    public void readDocument(String userID, String password, String fqn) {
+    public void readDocument(String userID, String password, String fqn, String filenameToSave) {
+        try {
+            ReadDocumentResponse readDocument = client.target(baseuri)
+                    .path(READ_DOCUMENT)
+                    .path("\"" + fqn + "\"")
+                    .request(MediaType.APPLICATION_JSON_TYPE)
+                    .header(USER_ID, userID)
+                    .header(PASSWORD, password)
+                    .header("Content-Type", MediaType.APPLICATION_JSON)
+                    .get(ReadDocumentResponse.class);
 
-        ReadDocumentResponse readDocument = client.target(baseuri)
-                .path(READ_DOCUMENT)
-                .path("\"" + fqn + "\"")
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .header(USER_ID, userID)
-                .header(PASSWORD, password)
-                .header("Content-Type", MediaType.APPLICATION_JSON)
-                .get(ReadDocumentResponse.class);
-        LOGGER.info("document " + fqn + " = " + readDocument.toString());
-
+            FileUtils.writeByteArrayToFile(new File(filenameToSave), HexUtil.convertHexStringToBytes(readDocument.getDocumentContent()));
+        } catch (IOException e) {
+            throw BaseExceptionHandler.handle(e);
+        }
     }
 
     public void writeDocumentStream(String userID, String password, String fqn, InputStream in, long size) {
@@ -90,7 +97,6 @@ public class DocumentsafeRestClient {
         writeDocumentRequest.setDocumentFQN(fqn);
         writeDocumentRequest.setDocumentContent(HexUtil.convertBytesToHexString(data));
         DSDocument.DocumentMetaInfo documentMetaInfo = new DSDocument.DocumentMetaInfo();
-        documentMetaInfo.setSize(data.length);
         writeDocumentRequest.setDsDocumentMetaInfo(documentMetaInfo);
 
         client.target(baseuri)
