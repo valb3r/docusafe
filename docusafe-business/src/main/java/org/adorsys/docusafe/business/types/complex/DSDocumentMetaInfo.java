@@ -1,19 +1,19 @@
 package org.adorsys.docusafe.business.types.complex;
 
-import org.adorsys.encobject.domain.StorageMetadata;
+import org.adorsys.encobject.domain.UserMetaData;
 
 /**
  * Created by peter on 23.01.18 at 18:47.
  */
-public class DSDocumentMetaInfo {
-    private Long size;
+public class DSDocumentMetaInfo extends UserMetaData {
+    public DSDocumentMetaInfo() {
 
-    public DSDocumentMetaInfo(StorageMetadata storageMetadata) {
-        this.size = storageMetadata.getSize();
     }
-
-    public Long getSize() {
-        return size;
+    public DSDocumentMetaInfo(UserMetaData otherUserMetadata) {
+        if (otherUserMetadata != null) {
+            for (String key : otherUserMetadata.keySet()) {
+                put(key, otherUserMetadata.get(key));
+            }
+        }
     }
-
 }

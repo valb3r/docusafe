@@ -82,7 +82,7 @@ public class DocumentSafeController {
     }
 
     @RequestMapping(
-            value = "/document/stream1",
+            value = "/document/stream",
             method = {RequestMethod.PUT},
             consumes = {APPLICATION_OCTET_STREAM}
     )

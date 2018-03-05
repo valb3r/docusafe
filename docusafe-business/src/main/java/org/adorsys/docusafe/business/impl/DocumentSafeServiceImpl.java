@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
  */
 public class DocumentSafeServiceImpl implements DocumentSafeService {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentSafeServiceImpl.class);
-    public static final String LINK_KEY = "LINK_KEY";
+    public static final String LINK_KEY = "DocumentSafeServiceImpl.LINK_KEY";
 
     private BucketService bucketService;
     private KeyStoreService keyStoreService;
@@ -99,6 +99,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         LOGGER.info("start storeDocument for " + userIDAuth + " " + dsDocument.getDocumentFQN());
 
         SimpleStorageMetadataImpl storageMetadata = new SimpleStorageMetadataImpl();
+        storageMetadata.mergeUserMetadata(dsDocument.getDsDocumentMetaInfo());
         if (dsDocument instanceof DocumentLinkAsDSDocument) {
             storageMetadata.getUserMetadata().put(LINK_KEY, "TRUE");
         }
@@ -147,7 +148,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
             LOGGER.info("finished load link " + documentFQN);
         }
         LOGGER.info("finished readDocument for " + userIDAuth + " " + documentFQN);
-        return new DSDocument(documentFQN, new DocumentContent(payload.getData()), new DSDocumentMetaInfo(payload.getStorageMetadata()));
+        return new DSDocument(documentFQN, new DocumentContent(payload.getData()), new DSDocumentMetaInfo(payload.getStorageMetadata().getUserMetadata()));
     }
 
     @Override
@@ -165,7 +166,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
             LOGGER.info("finished load link " + documentFQN);
         }
         LOGGER.info("finisherd readDocument for " + userIDAuth + " " + documentOwner + " " + documentFQN);
-        return new DSDocument(documentFQN, new DocumentContent(payload.getData()), new DSDocumentMetaInfo(payload.getStorageMetadata()));
+        return new DSDocument(documentFQN, new DocumentContent(payload.getData()), new DSDocumentMetaInfo(payload.getStorageMetadata().getUserMetadata()));
     }
 
     @Override
