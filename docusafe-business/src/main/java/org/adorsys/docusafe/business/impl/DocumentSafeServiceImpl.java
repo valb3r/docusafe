@@ -1,5 +1,6 @@
 package org.adorsys.docusafe.business.impl;
 
+import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.exceptions.NoWriteAccessException;
 import org.adorsys.docusafe.business.exceptions.UserIDAlreadyExistsException;
@@ -35,6 +36,7 @@ import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.domain.KeyStoreAccess;
 import org.adorsys.encobject.domain.KeyStoreAuth;
 import org.adorsys.encobject.domain.Payload;
+import org.adorsys.encobject.domain.PayloadStream;
 import org.adorsys.encobject.domain.UserMetaData;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
 import org.adorsys.encobject.service.api.KeyStoreService;
@@ -44,6 +46,7 @@ import org.adorsys.encobject.service.impl.SimplePayloadStreamImpl;
 import org.adorsys.encobject.service.impl.SimpleStorageMetadataImpl;
 import org.adorsys.encobject.types.OverwriteFlag;
 import org.adorsys.jkeygen.keystore.KeyStoreType;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -167,6 +170,28 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         }
         LOGGER.info("finished readDocument for " + userIDAuth + " " + documentFQN);
         return new DSDocument(documentFQN, new DocumentContent(payload.getData()), new DSDocumentMetaInfo(payload.getStorageMetadata().getUserMetadata()));
+    }
+
+    @Override
+    public DSDocumentStream readDocumentStream(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+        try {
+            LOGGER.info("start readDocumentStream for " + userIDAuth + " " + documentFQN);
+            DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), documentFQN);
+            KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
+            PayloadStream payloadStream = documentPersistenceService.loadDocumentStream(keyStoreAccess, documentBucketPath);
+            UserMetaData userMetaData = payloadStream.getStorageMetadata().getUserMetadata();
+            if (userMetaData.find(LINK_KEY) != null) {
+                LOGGER.info("start load link " + documentFQN);
+                DocumentLink documentLink = LinkUtil.getDocumentLink(IOUtils.toByteArray(payloadStream.openStream()));
+                DocumentBucketPath sourceDocumentBucketPath = documentLink.getSourceDocumentBucketPath();
+                payloadStream = documentPersistenceService.loadDocumentStream(keyStoreAccess, sourceDocumentBucketPath);
+                LOGGER.info("finished load link " + documentFQN);
+            }
+            LOGGER.info("finished readDocumentStream for " + userIDAuth + " " + documentFQN);
+            return new DSDocumentStream(documentFQN, payloadStream.openStream(), new DSDocumentMetaInfo(payloadStream.getStorageMetadata().getUserMetadata()));
+        } catch (Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
     }
 
     @Override

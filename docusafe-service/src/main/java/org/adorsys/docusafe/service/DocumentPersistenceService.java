@@ -26,4 +26,8 @@ public interface DocumentPersistenceService {
     Payload loadDocument(
             KeyStoreAccess keyStoreAccess,
             DocumentBucketPath documentBucketPath);
+
+    PayloadStream loadDocumentStream(
+            KeyStoreAccess keyStoreAccess,
+            DocumentBucketPath documentBucketPath);
 }

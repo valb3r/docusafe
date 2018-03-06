@@ -19,6 +19,7 @@ public interface DocumentSafeService {
     DSDocument readDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
 
     void storeDocumentStream(UserIDAuth userIDAuth, DSDocumentStream dsDocumentStream);
+    DSDocumentStream readDocumentStream(UserIDAuth userIDAuth, DocumentFQN documentFQN);
 
     void grantAccessToUserForFolder(UserIDAuth userIDAuth, UserID receiverUserID, DocumentDirectoryFQN documentDirectoryFQN, AccessType accessType);
 

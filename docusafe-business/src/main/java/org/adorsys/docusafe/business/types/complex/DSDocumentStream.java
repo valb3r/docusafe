@@ -10,10 +10,14 @@ public class DSDocumentStream {
     private InputStream documentStream;
     private DSDocumentMetaInfo dsDocumentMetaInfo;
 
-    public DSDocumentStream(DocumentFQN documentFQN, InputStream documentStream) {
+    public DSDocumentStream(DocumentFQN documentFQN, InputStream documentStream, DSDocumentMetaInfo documentMetaInfo) {
         this.documentFQN = documentFQN;
         this.documentStream = documentStream;
-        this.dsDocumentMetaInfo = new DSDocumentMetaInfo();
+        this.dsDocumentMetaInfo = documentMetaInfo;
+    }
+
+    public DSDocumentStream(DocumentFQN documentFQN, InputStream documentStream) {
+        this(documentFQN, documentStream, new DSDocumentMetaInfo());
     }
 
     public DocumentFQN getDocumentFQN() {

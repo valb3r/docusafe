@@ -20,6 +20,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -36,10 +37,11 @@ public class DocumentsafeRestClient {
     private Client client;
     private static final String CREATE_USER = "internal/user";
     private static final String READ_DOCUMENT = "document";
+    private static final String READ_DOCUMENT_STREAM = "documentstream";
     private static final String PASSWORD = "password";
     private static final String USER_ID = "userID";
     private static final String WRITE_DOCUMENT = "document";
-    private static final String WRITE_DOCUMENT_STREAM1 = "document/stream";
+    private static final String WRITE_DOCUMENT_STREAM1 = "documentstream";
 
     public DocumentsafeRestClient(String baseuri) {
         this.baseuri = baseuri;
@@ -63,6 +65,7 @@ public class DocumentsafeRestClient {
     }
 
     public void readDocument(String userID, String password, String fqn, String filenameToSave) {
+        LOGGER.info("lese nun bytes für " + fqn);
         try {
             ReadDocumentResponse readDocument = client.target(baseuri)
                     .path(READ_DOCUMENT)
@@ -74,6 +77,30 @@ public class DocumentsafeRestClient {
                     .get(ReadDocumentResponse.class);
 
             FileUtils.writeByteArrayToFile(new File(filenameToSave), HexUtil.convertHexStringToBytes(readDocument.getDocumentContent()));
+        } catch (IOException e) {
+            throw BaseExceptionHandler.handle(e);
+        }
+    }
+
+    public void readDocumentStream(String userID, String password, String fqn, String filenameToSave) {
+        LOGGER.info("lese nun stream für " + fqn);
+        try {
+            InputStream inputStream = client.target(baseuri)
+                    .path(READ_DOCUMENT_STREAM)
+                    .path("\"" + fqn + "\"")
+                    .request(MediaType.APPLICATION_OCTET_STREAM_TYPE)
+                    .header(USER_ID, userID)
+                    .header(PASSWORD, password)
+                    .get(InputStream.class);
+
+            int value = 0;
+            FileOutputStream fos = new FileOutputStream(filenameToSave);
+            byte[] bytes = new byte[1];
+            while ((value = inputStream.read()) != -1) {
+                bytes[0] = (byte) value;
+                fos.write(bytes);
+            }
+            fos.close();
         } catch (IOException e) {
             throw BaseExceptionHandler.handle(e);
         }

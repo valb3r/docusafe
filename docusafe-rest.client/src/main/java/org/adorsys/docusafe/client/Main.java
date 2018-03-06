@@ -21,6 +21,7 @@ public class Main {
     public static void main(String[] args) {
         if (args.length < 2) {
             LOGGER.info("Pass params: -ws file (write stream)");
+            LOGGER.info("Pass params: -rs file localfile (read stream)");
             LOGGER.info("Pass params: -wb file (write bytes)");
             LOGGER.info("Pass params: -rb file localfilename (read bytes)");
             return;
@@ -28,20 +29,22 @@ public class Main {
         String action = args[0];
         String filename = args[1];
 
-
-
         System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
         DocumentsafeRestClient client = new DocumentsafeRestClient(BASEURI);
         client.createUser("peter", "kennwort");
+        if (action.equals("-ws")) {
+            client.writeDocumentStream("peter", "kennwort", filename, new SlowInputStream(getAsInputStream(filename), 1, 1024*1024), new File(filename).length());
+        }
+        if (action.equals("-rs")) {
+            String localfilename = args[2];
+            client.readDocumentStream("peter", "kennwort", filename, localfilename);
+        }
         if (action.equals("-wb")) {
             client.writeDocument("peter", "kennwort", filename, getAsBytes(filename));
         }
         if (action.equals("-rb")) {
             String localfilename = args[2];
             client.readDocument("peter", "kennwort", filename, localfilename);
-        }
-        if (action.equals("-ws")) {
-            client.writeDocumentStream("peter", "kennwort", filename, new SlowInputStream(getAsInputStream(filename), 1, 1024*1024), new File(filename).length());
         }
     }
 

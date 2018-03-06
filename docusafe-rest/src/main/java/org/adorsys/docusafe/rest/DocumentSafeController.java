@@ -26,7 +26,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.HandlerMapping;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Created by peter on 22.01.18 at 19:27.
@@ -83,19 +85,60 @@ public class DocumentSafeController {
     }
 
     @RequestMapping(
-            value = "/document/stream",
+            value = "/documentstream",
             method = {RequestMethod.PUT},
             consumes = {APPLICATION_OCTET_STREAM}
     )
     public void storeDocumentStream(@RequestHeader("userid") String userid,
-                              @RequestHeader("password") String password,
-                              @RequestHeader("documentFQN") String documentFQNString,
-                              InputStream inputStream) {
+                                    @RequestHeader("password") String password,
+                                    @RequestHeader("documentFQN") String documentFQNString,
+                                    InputStream inputStream) {
         UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
         DocumentFQN documentFQN = new DocumentFQN(documentFQNString);
         LOGGER.info("input auf document/stream for " + userIDAuth);
 //        show(inputStream);
         service.storeDocumentStream(userIDAuth, new DSDocumentStream(documentFQN, inputStream));
+    }
+
+    @RequestMapping(
+            value = "/documentstream/**",
+            method = {RequestMethod.GET},
+            produces = {APPLICATION_OCTET_STREAM}
+
+    )
+    public void readDocumentStream(@RequestHeader("userid") String userid,
+                                   @RequestHeader("password") String password,
+                                   HttpServletRequest request,
+                                   HttpServletResponse response
+    ) {
+        try {
+            LOGGER.info("get stream request arrived1");
+            UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
+            DocumentFQN documentFQN = new DocumentFQN(getFQN(request));
+            LOGGER.debug("received:" + userIDAuth + " and " + documentFQN);
+            DSDocumentStream stream = service.readDocumentStream(userIDAuth, documentFQN);
+            // ResponseEntity<InputStream> responseEntity = new ResponseEntity<>(stream.getDocumentStream(), HttpStatus.ACCEPTED);
+            // show(stream.getDocumentStream());
+            InputStream is = stream.getDocumentStream();
+            OutputStream os = response.getOutputStream();
+            int value;
+            long counter = 0;
+            while ((value = is.read()) != -1) {
+                counter++;
+                os.write(value);
+            }
+            LOGGER.debug("wrote " + counter + " bytes to outputstream");
+            // responseEntity.getHeaders().set("Content-Disposition", "attachment; filename=\"" + documentFQN.getValue() + "\"");
+        } catch (Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
+    }
+
+    private String getFQN(HttpServletRequest request) {
+        final String path = request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();
+        final String bestMatchingPattern = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();
+        final String documentFQNStringWithQuotes = new AntPathMatcher().extractPathWithinPattern(bestMatchingPattern, path);
+        return documentFQNStringWithQuotes.replaceAll("\"", "");
     }
 
     @RequestMapping(
@@ -110,18 +153,12 @@ public class DocumentSafeController {
                             @RequestHeader("password") String password,
                             HttpServletRequest request
     ) {
+        LOGGER.info("get stream request arrived");
         UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
-
-        final String path = request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();
-        final String bestMatchingPattern = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();
-        final String documentFQNStringWithQuotes = new AntPathMatcher().extractPathWithinPattern(bestMatchingPattern, path);
-        final String documentFQNString = documentFQNStringWithQuotes.replaceAll("\"", "");
-
-        DocumentFQN documentFQN = new DocumentFQN(documentFQNString);
+        DocumentFQN documentFQN = new DocumentFQN(getFQN(request));
         LOGGER.debug("received:" + userIDAuth + " and " + documentFQN);
         return service.readDocument(userIDAuth, documentFQN);
     }
-
 
     /**
      * GRANT/DOCUMENT
@@ -156,10 +193,7 @@ public class DocumentSafeController {
         UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
         UserID ownerUserID = new UserID(ownerUserIDString);
 
-        final String path = request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();
-        final String bestMatchingPattern = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();
-        final String documentFQNStringWithQuotes = new AntPathMatcher().extractPathWithinPattern(bestMatchingPattern, path);
-        final String documentFQNString = documentFQNStringWithQuotes.replaceAll("\"", "");
+        final String documentFQNString = getFQN(request);
 
         DocumentFQN documentFQN = new DocumentFQN(documentFQNString);
         LOGGER.debug("received:" + userIDAuth + " and " + ownerUserID + " and " + documentFQN);
@@ -206,11 +240,12 @@ public class DocumentSafeController {
             boolean eof = false;
             while (!eof) {
                 available = inputStream.available();
+                LOGGER.info("available bytes of inputstream are " + available);
                 if (available <= 1) {
                     // be blocked, until unexpected EOF Exception or Data availabel of expected EOF
                     int value = inputStream.read();
                     eof = value == -1;
-                    if (! eof) {
+                    if (!eof) {
                         byte[] bytes = new byte[1];
                         bytes[0] = (byte) value;
                         sum++;

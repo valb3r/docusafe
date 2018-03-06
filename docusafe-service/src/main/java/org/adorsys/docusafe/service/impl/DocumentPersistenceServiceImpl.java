@@ -1,6 +1,5 @@
 package org.adorsys.docusafe.service.impl;
 
-import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.docusafe.service.DocumentGuardService;
 import org.adorsys.docusafe.service.DocumentPersistenceService;
 import org.adorsys.docusafe.service.keysource.DocumentGuardBasedKeySourceImpl;
@@ -55,21 +54,17 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
             OverwriteFlag overwriteFlag,
             Payload payload) {
 
-        try {
-            LOGGER.info("start persist " + documentBucketPath);
-            if (overwriteFlag.equals(OverwriteFlag.FALSE)) {
-                if (bucketService.fileExists(documentBucketPath)) {
-                    throw new FileExistsException(documentBucketPath + " existiert und overwrite flag ist false");
-                }
+        LOGGER.info("start persist " + documentBucketPath);
+        if (overwriteFlag.equals(OverwriteFlag.FALSE)) {
+            if (bucketService.fileExists(documentBucketPath)) {
+                throw new FileExistsException(documentBucketPath + " existiert und overwrite flag ist false");
             }
-            KeySource keySource = new DocumentKeyIDWithKeyBasedSourceImpl(documentKeyIDWithKey);
-            LOGGER.debug("Document wird verschlüsselt mit " + documentKeyIDWithKey);
-            KeyID keyID = new KeyID(documentKeyIDWithKey.getDocumentKeyID().getValue());
-            encryptedPersistenceUtil.encryptAndPersist(documentBucketPath, payload, keySource, keyID);
-            LOGGER.info("finished persist " + documentBucketPath);
-        } catch (Exception e) {
-            throw BaseExceptionHandler.handle(e);
         }
+        KeySource keySource = new DocumentKeyIDWithKeyBasedSourceImpl(documentKeyIDWithKey);
+        LOGGER.debug("Document wird verschlüsselt mit " + documentKeyIDWithKey);
+        KeyID keyID = new KeyID(documentKeyIDWithKey.getDocumentKeyID().getValue());
+        encryptedPersistenceUtil.encryptAndPersist(documentBucketPath, payload, keySource, keyID);
+        LOGGER.info("finished persist " + documentBucketPath);
     }
 
     /**
@@ -84,39 +79,37 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
             OverwriteFlag overwriteFlag,
             PayloadStream payloadStream) {
 
-        try {
-            LOGGER.info("start persist stream " + documentBucketPath);
-            if (overwriteFlag.equals(OverwriteFlag.FALSE)) {
-                if (bucketService.fileExists(documentBucketPath)) {
-                    throw new FileExistsException(documentBucketPath + " existiert und overwrite flag ist false");
-                }
+        LOGGER.info("start persist stream " + documentBucketPath);
+        if (overwriteFlag.equals(OverwriteFlag.FALSE)) {
+            if (bucketService.fileExists(documentBucketPath)) {
+                throw new FileExistsException(documentBucketPath + " existiert und overwrite flag ist false");
             }
-            KeySource keySource = new DocumentKeyIDWithKeyBasedSourceImpl(documentKeyIDWithKey);
-            LOGGER.debug("Document wird verschlüsselt mit " + documentKeyIDWithKey);
-            KeyID keyID = new KeyID(documentKeyIDWithKey.getDocumentKeyID().getValue());
-            encryptedPersistenceUtil.encryptAndPersist(documentBucketPath, payloadStream, keySource, keyID);
-            LOGGER.info("finished persist " + documentBucketPath);
-        } catch (Exception e) {
-            throw BaseExceptionHandler.handle(e);
         }
+        KeySource keySource = new DocumentKeyIDWithKeyBasedSourceImpl(documentKeyIDWithKey);
+        LOGGER.debug("Document wird verschlüsselt mit " + documentKeyIDWithKey);
+        KeyID keyID = new KeyID(documentKeyIDWithKey.getDocumentKeyID().getValue());
+        encryptedPersistenceUtil.encryptAndPersist(documentBucketPath, payloadStream, keySource, keyID);
+        LOGGER.info("finished persist " + documentBucketPath);
     }
 
-    /**
-     *
-     */
     @Override
     public Payload loadDocument(
             KeyStoreAccess keyStoreAccess,
             DocumentBucketPath documentBucketPath) {
 
-        try {
-            LOGGER.info("start load " + documentBucketPath + " " + keyStoreAccess);
-            KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess);
-            Payload payload = encryptedPersistenceUtil.loadAndDecrypt(documentBucketPath, keySource);
-            LOGGER.info("finished load " + documentBucketPath);
-            return payload;
-        } catch (Exception e) {
-            throw BaseExceptionHandler.handle(e);
-        }
+        LOGGER.info("start load " + documentBucketPath + " " + keyStoreAccess);
+        KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess);
+        Payload payload = encryptedPersistenceUtil.loadAndDecrypt(documentBucketPath, keySource);
+        LOGGER.info("finished load " + documentBucketPath);
+        return payload;
+    }
+
+    @Override
+    public PayloadStream loadDocumentStream(KeyStoreAccess keyStoreAccess, DocumentBucketPath documentBucketPath) {
+        LOGGER.info("start load stream " + documentBucketPath + " " + keyStoreAccess);
+        KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess);
+        PayloadStream payloadStream = encryptedPersistenceUtil.loadAndDecryptStream(documentBucketPath, keySource);
+        LOGGER.info("finished load " + documentBucketPath);
+        return payloadStream;
     }
 }
