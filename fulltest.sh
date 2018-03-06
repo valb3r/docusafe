@@ -10,11 +10,28 @@ function error () {
 	exit 1
 }
 
+param=""
+rm rr-*.log
+
+if [[ -z $1 ]]
+then
+	echo "STARTE SERVER NORMAL"
+else
+	if [[ $1 -eq "encoff" ]]
+	then
+		param="encoff"
+		echo "Starte Server mit abgeschalteter Encryption Policy"
+	else
+		echo "PARAMETER NICHT ERKANNT"
+		exit 1
+	fi
+fi
+
 echo "build standalone server"
 mvn clean install -DskipTests > /dev/null
 
 echo "start standalone server"
-java -jar docusafe-rest/target/docusafe-rest-0.1.0-SNAPSHOT.jar > documentsafe.console.out.log &
+java -jar docusafe-rest/target/docusafe-rest-0.1.0-SNAPSHOT.jar $param > documentsafe.console.out.log &
 pid=$!
 echo "pid ist $pid"
 
