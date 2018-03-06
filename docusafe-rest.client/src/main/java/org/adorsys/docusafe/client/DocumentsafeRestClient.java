@@ -96,11 +96,17 @@ public class DocumentsafeRestClient {
             int value = 0;
             FileOutputStream fos = new FileOutputStream(filenameToSave);
             byte[] bytes = new byte[1];
+            long counter = 0;
             while ((value = inputStream.read()) != -1) {
                 bytes[0] = (byte) value;
+                counter++;
+                if (counter % 4096 == 0) {
+                    LOGGER.debug("wrote " + counter + " bytes so far" );
+                }
                 fos.write(bytes);
             }
             fos.close();
+            LOGGER.debug("wrote " + counter + " bytes in total" );
         } catch (IOException e) {
             throw BaseExceptionHandler.handle(e);
         }
