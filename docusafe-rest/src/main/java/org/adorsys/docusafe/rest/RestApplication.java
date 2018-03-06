@@ -1,5 +1,6 @@
 package org.adorsys.docusafe.rest;
 
+import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +9,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 
+import java.lang.reflect.Field;
 import java.security.Security;
 
 /**
@@ -22,11 +24,31 @@ import java.security.Security;
  * "documentKeyID": {value": "123"} statt
  * "documentKeyID": "123"
  */
-@EnableAutoConfiguration(exclude = { JacksonAutoConfiguration.class })
+@EnableAutoConfiguration(exclude = {JacksonAutoConfiguration.class})
 public class RestApplication {
     private final static Logger LOGGER = LoggerFactory.getLogger(RestApplication.class);
 
     public static void main(String[] args) {
+        if (args.length > 0) {
+            if (args[0].equalsIgnoreCase("TurnOffEncPolicy") || args[0].equalsIgnoreCase("EncOff")) {
+                try {
+                    Field field = Class.forName("javax.crypto.JceSecurity").getDeclaredField("isRestricted");
+                    field.setAccessible(true);
+                    field.set(null, Boolean.FALSE);
+                    LOGGER.warn("************************************************");
+                    LOGGER.warn("*                                              *");
+                    LOGGER.warn("*  ******************************************  *");
+                    LOGGER.warn("*  *                                        *  *");
+                    LOGGER.warn("*  *  JAVA ENCRYPTION POLICY SWITCHED OFF   *  *");
+                    LOGGER.warn("*  *                                        *  *");
+                    LOGGER.warn("*  ******************************************  *");
+                    LOGGER.warn("*                                              *");
+                    LOGGER.warn("************************************************");
+                } catch (Exception e) {
+                    throw BaseExceptionHandler.handle(e);
+                }
+            }
+        }
         LOGGER.info("add bouncy castle provider");
         Security.addProvider(new BouncyCastleProvider());
         SpringApplication.run(RestApplication.class, args);
