@@ -13,6 +13,7 @@ import org.adorsys.docusafe.rest.types.CreateLinkTupel;
 import org.adorsys.docusafe.rest.types.GrantDocument;
 import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.adorsys.encobject.filesystem.FileSystemExtendedStorageConnection;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.AntPathMatcher;
@@ -72,6 +73,10 @@ public class DocumentSafeController {
      * DOCUMENT
      * ===========================================================================================
      */
+
+    /**
+     * -- byte orientiert --
+     */
     @RequestMapping(
             value = "/document",
             method = {RequestMethod.PUT},
@@ -84,6 +89,28 @@ public class DocumentSafeController {
         service.storeDocument(userIDAuth, dsDocument);
     }
 
+    @RequestMapping(
+            value = "/document/**",
+            method = {RequestMethod.GET},
+            consumes = {APPLICATION_JSON},
+            produces = {APPLICATION_JSON}
+    )
+    public
+    @ResponseBody
+    DSDocument readDocument(@RequestHeader("userid") String userid,
+                            @RequestHeader("password") String password,
+                            HttpServletRequest request
+    ) {
+        LOGGER.info("get stream request arrived");
+        UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
+        DocumentFQN documentFQN = new DocumentFQN(getFQN(request));
+        LOGGER.debug("received:" + userIDAuth + " and " + documentFQN);
+        return service.readDocument(userIDAuth, documentFQN);
+    }
+
+    /**
+     * -- stream orientiert --
+     */
     @RequestMapping(
             value = "/documentstream",
             method = {RequestMethod.PUT},
@@ -117,47 +144,17 @@ public class DocumentSafeController {
             DocumentFQN documentFQN = new DocumentFQN(getFQN(request));
             LOGGER.debug("received:" + userIDAuth + " and " + documentFQN);
             DSDocumentStream stream = service.readDocumentStream(userIDAuth, documentFQN);
-            // ResponseEntity<InputStream> responseEntity = new ResponseEntity<>(stream.getDocumentStream(), HttpStatus.ACCEPTED);
-            // show(stream.getDocumentStream());
             InputStream is = stream.getDocumentStream();
             OutputStream os = response.getOutputStream();
-            int value;
-            long counter = 0;
-            while ((value = is.read()) != -1) {
-                counter++;
-                os.write(value);
-            }
-            LOGGER.debug("wrote " + counter + " bytes to outputstream");
-            // responseEntity.getHeaders().set("Content-Disposition", "attachment; filename=\"" + documentFQN.getValue() + "\"");
+            LOGGER.debug("start copy imputstream to outputstream");
+            IOUtils.copy(is, os);
+            LOGGER.debug("finished copy imputstream to outputstream");
+            IOUtils.closeQuietly(is);
+            IOUtils.closeQuietly(os);
+            LOGGER.debug("return outputstream to sender");
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
-    }
-
-    private String getFQN(HttpServletRequest request) {
-        final String path = request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();
-        final String bestMatchingPattern = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();
-        final String documentFQNStringWithQuotes = new AntPathMatcher().extractPathWithinPattern(bestMatchingPattern, path);
-        return documentFQNStringWithQuotes.replaceAll("\"", "");
-    }
-
-    @RequestMapping(
-            value = "/document/**",
-            method = {RequestMethod.GET},
-            consumes = {APPLICATION_JSON},
-            produces = {APPLICATION_JSON}
-    )
-    public
-    @ResponseBody
-    DSDocument readDocument(@RequestHeader("userid") String userid,
-                            @RequestHeader("password") String password,
-                            HttpServletRequest request
-    ) {
-        LOGGER.info("get stream request arrived");
-        UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
-        DocumentFQN documentFQN = new DocumentFQN(getFQN(request));
-        LOGGER.debug("received:" + userIDAuth + " and " + documentFQN);
-        return service.readDocument(userIDAuth, documentFQN);
     }
 
     /**
@@ -178,6 +175,20 @@ public class DocumentSafeController {
     }
 
     @RequestMapping(
+            value = "/granted/document/{ownerUserID}",
+            method = {RequestMethod.PUT},
+            consumes = {APPLICATION_JSON},
+            produces = {APPLICATION_JSON}
+    )
+    public void storeGrantedDocument(@RequestHeader("userid") String userid,
+                                     @RequestHeader("password") String password,
+                                     @PathVariable("ownerUserID") String ownerUserIDString,
+                                     @RequestBody DSDocument dsDocument) {
+        UserID ownerUserID = new UserID(ownerUserIDString);
+        UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
+        service.storeGrantedDocument(userIDAuth, ownerUserID, dsDocument);
+    }
+    @RequestMapping(
             value = "/granted/document/{ownerUserID}/**",
             method = {RequestMethod.GET},
             consumes = {APPLICATION_JSON},
@@ -197,23 +208,9 @@ public class DocumentSafeController {
 
         DocumentFQN documentFQN = new DocumentFQN(documentFQNString);
         LOGGER.debug("received:" + userIDAuth + " and " + ownerUserID + " and " + documentFQN);
-        return service.readDocument(userIDAuth, ownerUserID, documentFQN);
+        return service.readGrantedDocument(userIDAuth, ownerUserID, documentFQN);
     }
 
-    @RequestMapping(
-            value = "/granted/document/{ownerUserID}",
-            method = {RequestMethod.PUT},
-            consumes = {APPLICATION_JSON},
-            produces = {APPLICATION_JSON}
-    )
-    public void storeGrantedDocument(@RequestHeader("userid") String userid,
-                                     @RequestHeader("password") String password,
-                                     @PathVariable("ownerUserID") String ownerUserIDString,
-                                     @RequestBody DSDocument dsDocument) {
-        UserID ownerUserID = new UserID(ownerUserIDString);
-        UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
-        service.storeDocument(userIDAuth, ownerUserID, dsDocument);
-    }
 
     /**
      * DOCUMENT/LINK
@@ -266,4 +263,12 @@ public class DocumentSafeController {
             throw BaseExceptionHandler.handle(e);
         }
     }
+
+    private String getFQN(HttpServletRequest request) {
+        final String path = request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();
+        final String bestMatchingPattern = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();
+        final String documentFQNStringWithQuotes = new AntPathMatcher().extractPathWithinPattern(bestMatchingPattern, path);
+        return documentFQNStringWithQuotes.replaceAll("\"", "");
+    }
+
 }

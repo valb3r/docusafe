@@ -30,21 +30,21 @@ import org.slf4j.LoggerFactory;
 public class DocumentPersistenceServiceImpl implements DocumentPersistenceService {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentPersistenceServiceImpl.class);
 
-    private EncryptedPersistenceService encryptedPersistenceUtil;
+    private EncryptedPersistenceService encryptedPersistenceService;
     private DocumentGuardService documentGuardService;
     private ContainerPersistence containerPersistence;
     private BucketServiceImpl bucketService;
 
     public DocumentPersistenceServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
         this.containerPersistence = new ContainerPersistenceImpl(extendedStoreConnection);
-        this.encryptedPersistenceUtil = new EncryptedPersistenceServiceImpl(extendedStoreConnection, new JWEncryptionServiceImpl());
+        this.encryptedPersistenceService = new EncryptedPersistenceServiceImpl(extendedStoreConnection, new JWEncryptionServiceImpl());
         this.documentGuardService = new DocumentGuardServiceImpl(extendedStoreConnection);
         this.bucketService = new BucketServiceImpl(extendedStoreConnection);
     }
 
     /**
      * Verschlüsselt den DocumentContent mit dem (symmetrischen) DocumentKey. Erzeugt ein Document,
-     * dass den verschlüsselten DocumentContent enthält. Im Header dieses Documents steht die DocumentKeyID.
+     * das den verschlüsselten DocumentContent enthält. Im Header dieses Documents steht die DocumentKeyID.
      * Das Document liegt in einem Bucket mit dem Namen documentBucketPath.
      */
     @Override
@@ -63,17 +63,24 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
         KeySource keySource = new DocumentKeyIDWithKeyBasedSourceImpl(documentKeyIDWithKey);
         LOGGER.debug("Document wird verschlüsselt mit " + documentKeyIDWithKey);
         KeyID keyID = new KeyID(documentKeyIDWithKey.getDocumentKeyID().getValue());
-        encryptedPersistenceUtil.encryptAndPersist(documentBucketPath, payload, keySource, keyID);
+        encryptedPersistenceService.encryptAndPersist(documentBucketPath, payload, keySource, keyID);
         LOGGER.info("finished persist " + documentBucketPath);
     }
 
-    /**
-     * Verschlüsselt den DocumentContent mit dem (symmetrischen) DocumentKey. Erzeugt ein Document,
-     * dass den verschlüsselten DocumentContent enthält. Im Header dieses Documents steht die DocumentKeyID.
-     * Das Document liegt in einem Bucket mit dem Namen documentBucketPath.
-     */
     @Override
-    public void persistDocument(
+    public Payload loadDocument(
+            KeyStoreAccess keyStoreAccess,
+            DocumentBucketPath documentBucketPath) {
+
+        LOGGER.info("start load " + documentBucketPath + " " + keyStoreAccess);
+        KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess);
+        Payload payload = encryptedPersistenceService.loadAndDecrypt(documentBucketPath, keySource);
+        LOGGER.info("finished load " + documentBucketPath);
+        return payload;
+    }
+
+    @Override
+    public void persistDocumentStream(
             DocumentKeyIDWithKey documentKeyIDWithKey,
             DocumentBucketPath documentBucketPath,
             OverwriteFlag overwriteFlag,
@@ -88,27 +95,15 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
         KeySource keySource = new DocumentKeyIDWithKeyBasedSourceImpl(documentKeyIDWithKey);
         LOGGER.debug("Document wird verschlüsselt mit " + documentKeyIDWithKey);
         KeyID keyID = new KeyID(documentKeyIDWithKey.getDocumentKeyID().getValue());
-        encryptedPersistenceUtil.encryptAndPersist(documentBucketPath, payloadStream, keySource, keyID);
+        encryptedPersistenceService.encryptAndPersistStream(documentBucketPath, payloadStream, keySource, keyID);
         LOGGER.info("finished persist " + documentBucketPath);
-    }
-
-    @Override
-    public Payload loadDocument(
-            KeyStoreAccess keyStoreAccess,
-            DocumentBucketPath documentBucketPath) {
-
-        LOGGER.info("start load " + documentBucketPath + " " + keyStoreAccess);
-        KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess);
-        Payload payload = encryptedPersistenceUtil.loadAndDecrypt(documentBucketPath, keySource);
-        LOGGER.info("finished load " + documentBucketPath);
-        return payload;
     }
 
     @Override
     public PayloadStream loadDocumentStream(KeyStoreAccess keyStoreAccess, DocumentBucketPath documentBucketPath) {
         LOGGER.info("start load stream " + documentBucketPath + " " + keyStoreAccess);
         KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess);
-        PayloadStream payloadStream = encryptedPersistenceUtil.loadAndDecryptStream(documentBucketPath, keySource);
+        PayloadStream payloadStream = encryptedPersistenceService.loadAndDecryptStream(documentBucketPath, keySource);
         LOGGER.info("finished load " + documentBucketPath);
         return payloadStream;
     }

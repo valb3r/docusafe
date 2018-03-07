@@ -138,10 +138,10 @@ public class BusinessTest {
 
         service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentDirectoryFQN, AccessType.WRITE);
 
-        DSDocument dsDocument = service.readDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
+        DSDocument dsDocument = service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
         Assert.assertEquals("document content ok", dsDocument1.getDocumentContent(), dsDocument.getDocumentContent());
 
-        service.storeDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), dsDocument);
+        service.storeGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), dsDocument);
     }
 
     @Test(expected = NoWriteAccessException.class)
@@ -156,10 +156,10 @@ public class BusinessTest {
 
         service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentDirectoryFQN, AccessType.READ);
 
-        DSDocument dsDocument = service.readDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
+        DSDocument dsDocument = service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
         Assert.assertEquals("document content ok", dsDocument1.getDocumentContent(), dsDocument.getDocumentContent());
 
-        service.storeDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), dsDocument);
+        service.storeGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), dsDocument);
     }
 
     // @Test
@@ -188,7 +188,7 @@ public class BusinessTest {
         // Nun darf auch Francis im Public Folder lesen
         UserIDAuth userIDAuthFrancis = createUser(new UserID("francis"), new ReadKeyPassword("keyPasswordForFrancis"));
         service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), publicFolder, AccessType.READ);
-        service.readDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), linkDocumentFQN);
+        service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), linkDocumentFQN);
 
     }
 
@@ -217,7 +217,7 @@ public class BusinessTest {
         Assert.assertEquals("Anzahl der guards", 2, getNumberOfGuards(userIDAuthFrancis.getUserID()));
         boolean noWriteAccessExceptionCaught = false;
         try {
-            service.storeDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), dsDocument);
+            service.storeGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), dsDocument);
         } catch (NoWriteAccessException e) {
             LOGGER.debug("NoWriteAccessException was expected. Now we give francis the write access");
             noWriteAccessExceptionCaught = true;
@@ -228,17 +228,17 @@ public class BusinessTest {
         Assert.assertEquals("Anzahl der guards", 2, getNumberOfGuards(userIDAuthPeter.getUserID()));
         Assert.assertEquals("Anzahl der guards", 2, getNumberOfGuards(userIDAuthFrancis.getUserID()));
 
-        service.storeDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), dsDocument);
-        service.readDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
+        service.storeGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), dsDocument);
+        service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
         service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentDirectoryFQN, AccessType.READ);
-        service.readDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
+        service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
 
         service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentDirectoryFQN, AccessType.NONE);
         Assert.assertEquals("Anzahl der guards", 2, getNumberOfGuards(userIDAuthPeter.getUserID()));
         Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuthFrancis.getUserID()));
         boolean documentGuardExists = true;
         try {
-            service.readDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
+            service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
         } catch(NoDocumentGuardExists e) {
             documentGuardExists = false;
             LOGGER.debug("Exception was expected");

@@ -11,12 +11,9 @@ import org.adorsys.encobject.types.OverwriteFlag;
  * Created by peter on 11.01.18.
  */
 public interface DocumentPersistenceService {
-    void persistDocument(
-            DocumentKeyIDWithKey documentKeyIDWithKey,
-            DocumentBucketPath documentBucketPath,
-            OverwriteFlag overwriteFlag,
-            PayloadStream payloadStream);
-
+    /**
+     * byte orientiert
+     */
     void persistDocument(
             DocumentKeyIDWithKey documentKeyIDWithKey,
             DocumentBucketPath documentBucketPath,
@@ -26,6 +23,15 @@ public interface DocumentPersistenceService {
     Payload loadDocument(
             KeyStoreAccess keyStoreAccess,
             DocumentBucketPath documentBucketPath);
+
+    /**
+     * stream orientiert
+     */
+    void persistDocumentStream(
+            DocumentKeyIDWithKey documentKeyIDWithKey,
+            DocumentBucketPath documentBucketPath,
+            OverwriteFlag overwriteFlag,
+            PayloadStream payloadStream);
 
     PayloadStream loadDocumentStream(
             KeyStoreAccess keyStoreAccess,

@@ -69,6 +69,11 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection);
     }
 
+    /**
+     * USER
+     * ===========================================================================================
+     */
+
     @Override
     public void createUser(UserIDAuth userIDAuth) {
         LOGGER.info("start create user for " + userIDAuth);
@@ -101,6 +106,30 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
     }
 
     @Override
+    public void destroyUser(UserIDAuth userIDAuth) {
+        LOGGER.info("start destroy user for " + userIDAuth);
+        BucketDirectory userRootBucketDirectory = UserIDUtil.getUserRootBucketDirectory(userIDAuth.getUserID());
+        {   // check user does not exist yet
+            if (!bucketService.bucketExists(userRootBucketDirectory)) {
+                throw new UserIDDoesNotExistException(userIDAuth.getUserID().toString());
+            }
+        }
+        {   // TODO check password is fine
+
+        }
+        bucketService.destroyBucket(userRootBucketDirectory);
+        LOGGER.info("finished destroy user for " + userIDAuth);
+    }
+
+    /**
+     * DOCUMENT
+     * ===========================================================================================
+     */
+
+    /**
+     * -- byte orientiert --
+     */
+    @Override
     public void storeDocument(UserIDAuth userIDAuth, DSDocument dsDocument) {
         LOGGER.info("start storeDocument for " + userIDAuth + " " + dsDocument.getDocumentFQN());
 
@@ -122,39 +151,6 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
     }
 
     @Override
-    public void storeDocumentStream(UserIDAuth userIDAuth, DSDocumentStream dsDocumentStream) {
-        LOGGER.info("start storeDocumentStream for " + userIDAuth + " " + dsDocumentStream.getDocumentFQN());
-
-        SimpleStorageMetadataImpl storageMetadata = new SimpleStorageMetadataImpl();
-        storageMetadata.mergeUserMetadata(dsDocumentStream.getDsDocumentMetaInfo());
-        DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), dsDocumentStream.getDocumentFQN());
-        DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, documentBucketPath.getBucketDirectory(), AccessType.WRITE);
-        // Hier ist keine Prüfung des Schreibrechts notwendig
-        documentPersistenceService.persistDocument(
-                documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey(),
-                documentBucketPath,
-                OverwriteFlag.TRUE,
-                new SimplePayloadStreamImpl(storageMetadata, dsDocumentStream.getDocumentStream()));
-        LOGGER.info("finished storeDocument for " + userIDAuth + " " + dsDocumentStream.getDocumentFQN());
-    }
-
-    @Override
-    public void destroyUser(UserIDAuth userIDAuth) {
-        LOGGER.info("start destroy user for " + userIDAuth);
-        BucketDirectory userRootBucketDirectory = UserIDUtil.getUserRootBucketDirectory(userIDAuth.getUserID());
-        {   // check user does not exist yet
-            if (!bucketService.bucketExists(userRootBucketDirectory)) {
-                throw new UserIDDoesNotExistException(userIDAuth.getUserID().toString());
-            }
-        }
-        {   // TODO check password is fine
-
-        }
-        bucketService.destroyBucket(userRootBucketDirectory);
-        LOGGER.info("finished destroy user for " + userIDAuth);
-    }
-
-    @Override
     public DSDocument readDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
         LOGGER.info("start readDocument for " + userIDAuth + " " + documentFQN);
         DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), documentFQN);
@@ -171,6 +167,28 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         LOGGER.info("finished readDocument for " + userIDAuth + " " + documentFQN);
         return new DSDocument(documentFQN, new DocumentContent(payload.getData()), new DSDocumentMetaInfo(payload.getStorageMetadata().getUserMetadata()));
     }
+
+    /**
+     * -- stream orientiert --
+     */
+    @Override
+    public void storeDocumentStream(UserIDAuth userIDAuth, DSDocumentStream dsDocumentStream) {
+        LOGGER.info("start storeDocumentStream for " + userIDAuth + " " + dsDocumentStream.getDocumentFQN());
+
+        SimpleStorageMetadataImpl storageMetadata = new SimpleStorageMetadataImpl();
+        storageMetadata.mergeUserMetadata(dsDocumentStream.getDsDocumentMetaInfo());
+        DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), dsDocumentStream.getDocumentFQN());
+        DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, documentBucketPath.getBucketDirectory(), AccessType.WRITE);
+        // Hier ist keine Prüfung des Schreibrechts notwendig
+        documentPersistenceService.persistDocumentStream(
+                documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey(),
+                documentBucketPath,
+                OverwriteFlag.TRUE,
+                new SimplePayloadStreamImpl(storageMetadata, dsDocumentStream.getDocumentStream()));
+        LOGGER.info("finished storeDocument for " + userIDAuth + " " + dsDocumentStream.getDocumentFQN());
+    }
+
+
 
     @Override
     public DSDocumentStream readDocumentStream(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
@@ -194,44 +212,10 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         }
     }
 
-    @Override
-    public DSDocument readDocument(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN) {
-        LOGGER.info("start readDocument for " + userIDAuth + " " + documentOwner + " " + documentFQN);
-        DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(documentOwner, documentFQN);
-        KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
-        Payload payload = documentPersistenceService.loadDocument(keyStoreAccess, documentBucketPath);
-        UserMetaData userMetaData = payload.getStorageMetadata().getUserMetadata();
-        if (userMetaData.find(LINK_KEY) != null) {
-            LOGGER.info("start load link " + documentFQN);
-            DocumentLink documentLink = LinkUtil.getDocumentLink(payload.getData());
-            DocumentBucketPath sourceDocumentBucketPath = documentLink.getSourceDocumentBucketPath();
-            payload = documentPersistenceService.loadDocument(keyStoreAccess, sourceDocumentBucketPath);
-            LOGGER.info("finished load link " + documentFQN);
-        }
-        LOGGER.info("finisherd readDocument for " + userIDAuth + " " + documentOwner + " " + documentFQN);
-        return new DSDocument(documentFQN, new DocumentContent(payload.getData()), new DSDocumentMetaInfo(payload.getStorageMetadata().getUserMetadata()));
-    }
-
-    @Override
-    public void linkDocument(UserIDAuth userIDAuth, DocumentFQN sourceDocumentFQN, DocumentFQN destinationDocumentFQN) {
-        LOGGER.info("start linkDocument for " + userIDAuth + " " + sourceDocumentFQN + " -> " + destinationDocumentFQN);
-
-        // Wir prüfen lediglich, ob es den source Bucket gibt und ob wir darauf Zugriff haben.
-        // Ob das Document selbset existiert, bleibt vorher ein Geheimnis
-        DocumentBucketPath sourceDocumentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), sourceDocumentFQN);
-        DocumentKeyIDWithKeyAndAccessType sourceDocumentKeyIDWithKeyAndAccessType = getDocumentKeyIDwithKeyForBucketPath(userIDAuth, sourceDocumentBucketPath.getBucketDirectory());
-
-        DocumentBucketPath destinationDocumentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), destinationDocumentFQN);
-        DocumentKeyIDWithKeyAndAccessType destinationDocumentKeyIDWithKeyAndAccessType = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, destinationDocumentBucketPath.getBucketDirectory(), AccessType.WRITE);
-
-        // TODO, die keys der destination müssen noch in das linkDocument (das faktisch ein guard ist)
-        DocumentLink documentLink = new DocumentLink(sourceDocumentBucketPath, destinationDocumentBucketPath);
-        DocumentLinkAsDSDocument dsDocumentLink = LinkUtil.createDSDocument(documentLink, destinationDocumentFQN);
-
-        storeDocument(userIDAuth, dsDocumentLink);
-        LOGGER.info("finished linkDocument for " + userIDAuth + " " + sourceDocumentFQN + " -> " + destinationDocumentFQN);
-    }
-
+    /**
+     * GRANT/DOCUMENT
+     * ===========================================================================================
+     */
     @Override
     public void grantAccessToUserForFolder(UserIDAuth userIDAuth, UserID receiverUserID,
                                            DocumentDirectoryFQN documentDirectoryFQN,
@@ -283,9 +267,8 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         LOGGER.info("finished grant access for " + userIDAuth + " to  " + receiverUserID + " for " + documentDirectoryFQN + " with " + accessType);
     }
 
-
     @Override
-    public void storeDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument) {
+    public void storeGrantedDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument) {
         LOGGER.info("start storeDocument for " + userIDAuth + " " + documentOwner + " " + dsDocument.getDocumentFQN());
 
         SimpleStorageMetadataImpl storageMetadata = new SimpleStorageMetadataImpl();
@@ -302,6 +285,49 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
                 new SimplePayloadImpl(storageMetadata, dsDocument.getDocumentContent().getValue()));
         LOGGER.info("finished storeDocument for " + userIDAuth + " " + documentOwner + " " + dsDocument.getDocumentFQN());
     }
+
+
+    @Override
+    public DSDocument readGrantedDocument(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN) {
+        LOGGER.info("start readDocument for " + userIDAuth + " " + documentOwner + " " + documentFQN);
+        DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(documentOwner, documentFQN);
+        KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
+        Payload payload = documentPersistenceService.loadDocument(keyStoreAccess, documentBucketPath);
+        UserMetaData userMetaData = payload.getStorageMetadata().getUserMetadata();
+        if (userMetaData.find(LINK_KEY) != null) {
+            LOGGER.info("start load link " + documentFQN);
+            DocumentLink documentLink = LinkUtil.getDocumentLink(payload.getData());
+            DocumentBucketPath sourceDocumentBucketPath = documentLink.getSourceDocumentBucketPath();
+            payload = documentPersistenceService.loadDocument(keyStoreAccess, sourceDocumentBucketPath);
+            LOGGER.info("finished load link " + documentFQN);
+        }
+        LOGGER.info("finisherd readDocument for " + userIDAuth + " " + documentOwner + " " + documentFQN);
+        return new DSDocument(documentFQN, new DocumentContent(payload.getData()), new DSDocumentMetaInfo(payload.getStorageMetadata().getUserMetadata()));
+    }
+
+
+
+    @Override
+    public void linkDocument(UserIDAuth userIDAuth, DocumentFQN sourceDocumentFQN, DocumentFQN destinationDocumentFQN) {
+        LOGGER.info("start linkDocument for " + userIDAuth + " " + sourceDocumentFQN + " -> " + destinationDocumentFQN);
+
+        // Wir prüfen lediglich, ob es den source Bucket gibt und ob wir darauf Zugriff haben.
+        // Ob das Document selbset existiert, bleibt vorher ein Geheimnis
+        DocumentBucketPath sourceDocumentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), sourceDocumentFQN);
+        DocumentKeyIDWithKeyAndAccessType sourceDocumentKeyIDWithKeyAndAccessType = getDocumentKeyIDwithKeyForBucketPath(userIDAuth, sourceDocumentBucketPath.getBucketDirectory());
+
+        DocumentBucketPath destinationDocumentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), destinationDocumentFQN);
+        DocumentKeyIDWithKeyAndAccessType destinationDocumentKeyIDWithKeyAndAccessType = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, destinationDocumentBucketPath.getBucketDirectory(), AccessType.WRITE);
+
+        // TODO, die keys der destination müssen noch in das linkDocument (das faktisch ein guard ist)
+        DocumentLink documentLink = new DocumentLink(sourceDocumentBucketPath, destinationDocumentBucketPath);
+        DocumentLinkAsDSDocument dsDocumentLink = LinkUtil.createDSDocument(documentLink, destinationDocumentFQN);
+
+        storeDocument(userIDAuth, dsDocumentLink);
+        LOGGER.info("finished linkDocument for " + userIDAuth + " " + sourceDocumentFQN + " -> " + destinationDocumentFQN);
+    }
+
+
 
     private DocumentKeyID createAsymmetricGuardForBucket(KeyStoreAccess keyStoreAccess,
                                                          DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType,

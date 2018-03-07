@@ -3,15 +3,14 @@
 trap error ERR
 
 function error () {
-	print "an error occured"
+	print "  A N    E R R O R    O C C U R R E D"
 	exit 1
 }
-
 function print () {
 	{
-	echo "==================================================================================="
-	echo $1
-	echo " "
+	echo "$(date) ==================================================================================="
+	echo "$(date) $1"
+	echo "$(date)  "
 	} | tee -a curl.log
 }
 

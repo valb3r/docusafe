@@ -51,6 +51,7 @@ done
 echo "server is up"
 
 ./dorest.sh
+./streamTest.sh
 
 echo "kill standalone server"
 kill $pid

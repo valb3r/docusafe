@@ -8,6 +8,7 @@ import org.adorsys.docusafe.client.api.DSDocument;
 import org.adorsys.docusafe.client.api.ReadDocumentResponse;
 import org.adorsys.docusafe.client.api.WriteDocumentRequest;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.slf4j.Logger;
@@ -93,20 +94,12 @@ public class DocumentsafeRestClient {
                     .header(PASSWORD, password)
                     .get(InputStream.class);
 
-            int value = 0;
             FileOutputStream fos = new FileOutputStream(filenameToSave);
-            byte[] bytes = new byte[1];
-            long counter = 0;
-            while ((value = inputStream.read()) != -1) {
-                bytes[0] = (byte) value;
-                counter++;
-                if (counter % 4096 == 0) {
-                    LOGGER.debug("wrote " + counter + " bytes so far" );
-                }
-                fos.write(bytes);
-            }
-            fos.close();
-            LOGGER.debug("wrote " + counter + " bytes in total" );
+            LOGGER.debug("start writing file " + filenameToSave );
+            IOUtils.copy(inputStream, fos);
+            IOUtils.closeQuietly(inputStream);
+            IOUtils.closeQuietly(fos);
+            LOGGER.debug("finished writing file " + filenameToSave );
         } catch (IOException e) {
             throw BaseExceptionHandler.handle(e);
         }

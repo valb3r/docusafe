@@ -17,34 +17,52 @@ import java.io.InputStream;
 public class Main {
     private final static Logger LOGGER = LoggerFactory.getLogger(Main.class);
     static final String BASEURI = "http://localhost:8080";
+    public static final String USER_ID = "peter";
+    public static final String PASSWORD = "rkp";
 
     public static void main(String[] args) {
-        if (args.length < 2) {
-            LOGGER.info("Pass params: -ws file (write stream)");
-            LOGGER.info("Pass params: -rs file localfile (read stream)");
-            LOGGER.info("Pass params: -wb file (write bytes)");
-            LOGGER.info("Pass params: -rb file localfilename (read bytes)");
-            return;
+        if (args.length == 0) {
+            error();
         }
         String action = args[0];
-        String filename = args[1];
 
         System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
         DocumentsafeRestClient client = new DocumentsafeRestClient(BASEURI);
-        client.createUser("peter", "kennwort");
+        if (action.equals("-cu")) {
+            if (args.length != 1) {
+                error();
+            }
+            client.createUser(USER_ID, PASSWORD);
+        }
         if (action.equals("-ws")) {
-            client.writeDocumentStream("peter", "kennwort", filename, new SlowInputStream(getAsInputStream(filename), 1, 1024*1024), new File(filename).length());
+            if (args.length != 2) {
+                error();
+            }
+            String filename = args[1];
+            client.writeDocumentStream(USER_ID, PASSWORD, filename, new SlowInputStream(getAsInputStream(filename), 1, 1024 * 1024), new File(filename).length());
         }
         if (action.equals("-rs")) {
+            if (args.length != 3) {
+                error();
+            }
+            String filename = args[1];
             String localfilename = args[2];
-            client.readDocumentStream("peter", "kennwort", filename, localfilename);
+            client.readDocumentStream(USER_ID, PASSWORD, filename, localfilename);
         }
         if (action.equals("-wb")) {
-            client.writeDocument("peter", "kennwort", filename, getAsBytes(filename));
+            if (args.length != 2) {
+                error();
+            }
+            String filename = args[1];
+            client.writeDocument(USER_ID, PASSWORD, filename, getAsBytes(filename));
         }
         if (action.equals("-rb")) {
+            if (args.length != 3) {
+                error();
+            }
             String localfilename = args[2];
-            client.readDocument("peter", "kennwort", filename, localfilename);
+            String filename = args[1];
+            client.readDocument(USER_ID, PASSWORD, filename, localfilename);
         }
     }
 
@@ -85,4 +103,14 @@ public class Main {
             throw BaseExceptionHandler.handle(e);
         }
     }
+
+    private static void error() {
+        LOGGER.info("Pass params: -cu create user");
+        LOGGER.info("Pass params: -ws file (write stream)");
+        LOGGER.info("Pass params: -rs file localfile (read stream)");
+        LOGGER.info("Pass params: -wb file (write bytes)");
+        LOGGER.info("Pass params: -rb file localfilename (read bytes)");
+        System.exit(1);
+    }
+
 }
