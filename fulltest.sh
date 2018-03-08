@@ -11,7 +11,7 @@ function error () {
 }
 
 param=""
-rm rr-*.log
+rm -f rr-*.log
 
 if [[ -z $1 ]]
 then
