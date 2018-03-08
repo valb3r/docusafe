@@ -26,7 +26,7 @@ import org.adorsys.encobject.service.api.KeySource;
 import org.adorsys.encobject.service.api.KeystorePersistence;
 import org.adorsys.encobject.service.impl.BlobStoreKeystorePersistenceImpl;
 import org.adorsys.encobject.service.impl.EncryptedPersistenceServiceImpl;
-import org.adorsys.encobject.service.impl.JWEncryptionServiceImpl;
+import org.adorsys.encobject.service.impl.JWEncryptionStreamServiceImpl;
 import org.adorsys.encobject.service.impl.KeyStoreBasedSecretKeySourceImpl;
 import org.adorsys.encobject.service.impl.SimplePayloadImpl;
 import org.adorsys.encobject.service.impl.SimpleStorageMetadataImpl;
@@ -54,7 +54,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
     private DocumentGuardSerializerRegistery serializerRegistry = DocumentGuardSerializerRegistery.getInstance();
 
     public DocumentGuardServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
-        this.encryptedPersistenceUtil = new EncryptedPersistenceServiceImpl(extendedStoreConnection, new JWEncryptionServiceImpl());
+        this.encryptedPersistenceUtil = new EncryptedPersistenceServiceImpl(extendedStoreConnection, new JWEncryptionStreamServiceImpl());
         this.keystorePersistence = new BlobStoreKeystorePersistenceImpl(extendedStoreConnection);
         this.bucketService = new BucketServiceImpl(extendedStoreConnection);
     }

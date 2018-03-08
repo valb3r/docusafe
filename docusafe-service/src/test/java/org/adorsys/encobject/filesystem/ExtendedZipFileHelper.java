@@ -21,10 +21,6 @@ public class ExtendedZipFileHelper extends ZipFileHelper {
         super(basedir);
     }
 
-    public String getCompressedKey() {
-        return FINAL_SIZE;
-    }
-
     public StorageMetadata plainReadZipMetadataOnly(BucketPath bucketPath) {
         try {
             File file = BucketPathFileHelper.getAsFile(baseDir.append(bucketPath.add(ZIP_SUFFIX)));
