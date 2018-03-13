@@ -78,9 +78,8 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
     public void createUser(UserIDAuth userIDAuth) {
         LOGGER.info("start create user for " + userIDAuth);
 
-        {   // check user does not exist yet
-            BucketDirectory userRootBucketDirectory = UserIDUtil.getUserRootBucketDirectory(userIDAuth.getUserID());
-            if (bucketService.bucketExists(userRootBucketDirectory)) {
+        {
+            if (userExists(userIDAuth.getUserID())) {
                 throw new UserIDAlreadyExistsException(userIDAuth.getUserID().toString());
             }
         }
@@ -119,6 +118,12 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         }
         bucketService.destroyBucket(userRootBucketDirectory);
         LOGGER.info("finished destroy user for " + userIDAuth);
+    }
+
+    @Override
+    public boolean userExists(UserID userID) {
+        BucketDirectory userRootBucketDirectory = UserIDUtil.getUserRootBucketDirectory(userID);
+        return bucketService.bucketExists(userRootBucketDirectory);
     }
 
     /**
@@ -217,6 +222,13 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         checkUserKeyPassword(userIDAuth);
         DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), documentFQN);
         bucketService.deletePlainFile(documentBucketPath);
+    }
+
+    @Override
+    public boolean documentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+        checkUserKeyPassword(userIDAuth);
+        DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), documentFQN);
+        return bucketService.fileExists(documentBucketPath);
     }
 
     /**

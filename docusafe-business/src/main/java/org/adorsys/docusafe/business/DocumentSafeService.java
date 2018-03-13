@@ -18,6 +18,7 @@ public interface DocumentSafeService {
     void createUser(UserIDAuth userIDAuth);
     void destroyUser(UserIDAuth userIDAuth);
 
+    boolean userExists(UserID userID);
     /**
      * Document
      */
@@ -28,6 +29,7 @@ public interface DocumentSafeService {
     DSDocumentStream readDocumentStream(UserIDAuth userIDAuth, DocumentFQN documentFQN);
 
     void deleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
+    boolean documentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN);
     /**
      * Grants
      */

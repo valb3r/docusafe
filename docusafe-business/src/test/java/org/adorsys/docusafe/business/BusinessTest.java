@@ -87,10 +87,15 @@ public class BusinessTest {
     @Test
     public void deleteDocumentTest() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
-        UserIDAuth userIDAuth = createUser();
+        UserID userID = new UserID("UserPeterDelete");
+        Assert.assertFalse(service.userExists(userID));
+        UserIDAuth userIDAuth = createUser(userID);
+        Assert.assertTrue(service.userExists(userID));
         DocumentFQN fqn = new DocumentFQN("README.txt");
         service.readDocument(userIDAuth, fqn);
+        Assert.assertTrue(service.documentExists(userIDAuth, fqn));
         service.deleteDocument(userIDAuth, fqn);
+        Assert.assertFalse(service.documentExists(userIDAuth, fqn));
         try {
             service.readDocument(userIDAuth, fqn);
         } catch (Exception e) {
@@ -282,6 +287,9 @@ public class BusinessTest {
     }
 
 
+    private UserIDAuth createUser(UserID userID) {
+        return createUser(userID, new ReadKeyPassword("peterkey"));
+    }
     private UserIDAuth createUser() {
         return createUser(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));
     }
