@@ -1,5 +1,6 @@
 package org.adorsys.docusafe.business;
 
+import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.docusafe.service.BucketService;
 import org.adorsys.docusafe.service.exceptions.NoDocumentGuardExists;
@@ -81,6 +82,22 @@ public class BusinessTest {
         UserIDAuth userIDAuth = createUser();
         checkGuardsForDocument(userIDAuth, new DocumentFQN("README.txt"), true);
         Assert.assertEquals("Anzahl der guards muss 1 betragen", 1, getNumberOfGuards(userIDAuth.getUserID()));
+    }
+
+    @Test
+    public void deleteDocumentTest() {
+        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        UserIDAuth userIDAuth = createUser();
+        DocumentFQN fqn = new DocumentFQN("README.txt");
+        service.readDocument(userIDAuth, fqn);
+        service.deleteDocument(userIDAuth, fqn);
+        try {
+            service.readDocument(userIDAuth, fqn);
+        } catch (Exception e) {
+            LOGGER.info("Exception expected! Test is fine");
+            return;
+        }
+        throw new BaseException("document is still readable:" + fqn);
     }
 
     @Test

@@ -27,6 +27,7 @@ public interface DocumentSafeService {
     void storeDocumentStream(UserIDAuth userIDAuth, DSDocumentStream dsDocumentStream);
     DSDocumentStream readDocumentStream(UserIDAuth userIDAuth, DocumentFQN documentFQN);
 
+    void deleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
     /**
      * Grants
      */

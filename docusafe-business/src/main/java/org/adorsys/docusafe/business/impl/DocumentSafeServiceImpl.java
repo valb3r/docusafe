@@ -114,8 +114,8 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
                 throw new UserIDDoesNotExistException(userIDAuth.getUserID().toString());
             }
         }
-        {   // TODO check password is fine
-
+        {
+            checkUserKeyPassword(userIDAuth);
         }
         bucketService.destroyBucket(userRootBucketDirectory);
         LOGGER.info("finished destroy user for " + userIDAuth);
@@ -210,6 +210,13 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
+    }
+
+    @Override
+    public void deleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+        checkUserKeyPassword(userIDAuth);
+        DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), documentFQN);
+        bucketService.deletePlainFile(documentBucketPath);
     }
 
     /**
@@ -409,6 +416,10 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = documentGuardService.loadDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(keyStoreAccess, documentKeyID);
         LOGGER.debug("found " + documentKeyIDWithKeyAndAccessType + " for " + documentDirectory);
         return documentKeyIDWithKeyAndAccessType;
+    }
+
+    private void checkUserKeyPassword(UserIDAuth userIDAuth) {
+        LOGGER.warn("ACHTUNG, ES WIRD NICHT GEPRÜFT, OB DER BENUTZER " + userIDAuth.getUserID() + " AUCH DAS KORREKTE PASSWORD BENUTZT");
     }
 
 
