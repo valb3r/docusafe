@@ -2,6 +2,7 @@ package org.adorsys.docusafe.rest;
 
 import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
+import org.adorsys.cryptoutils.mongodbstoreconnection.MongoDBExtendedStoreConnection;
 import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
 import org.adorsys.docusafe.business.types.UserID;
@@ -38,12 +39,26 @@ import java.io.OutputStream;
  */
 @RestController
 public class DocumentSafeController {
+    public static STORE_CONNECTION storeConnection = STORE_CONNECTION.FILESYSTEM;
     private final static String APPLICATION_JSON = "application/json";
     private final static String APPLICATION_OCTET_STREAM = "application/octet-stream";
 
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentSafeController.class);
-    private DocumentSafeService service = new DocumentSafeServiceImpl(new FileSystemExtendedStorageConnection());
+    private DocumentSafeService service;
 
+    public DocumentSafeController() {
+        switch (storeConnection) {
+            case MONGO:
+                service = new DocumentSafeServiceImpl(new MongoDBExtendedStoreConnection());
+                break;
+            case FILESYSTEM:
+                service = new DocumentSafeServiceImpl(new FileSystemExtendedStorageConnection());
+                break;
+            default:
+                throw new BaseException("missing switch");
+        }
+
+    }
     /**
      * USER
      * ===========================================================================================
@@ -271,4 +286,8 @@ public class DocumentSafeController {
         return documentFQNStringWithQuotes.replaceAll("\"", "");
     }
 
+    public static enum STORE_CONNECTION {
+        MONGO,
+        FILESYSTEM
+    }
 }

@@ -1,5 +1,6 @@
 package org.adorsys.docusafe.rest;
 
+import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
@@ -11,6 +12,7 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 
 import java.lang.reflect.Field;
 import java.security.Security;
+import java.util.Arrays;
 
 /**
  * Created by peter on 10.01.18.
@@ -29,28 +31,50 @@ public class RestApplication {
     private final static Logger LOGGER = LoggerFactory.getLogger(RestApplication.class);
 
     public static void main(String[] args) {
-        if (args.length > 0) {
-            if (args[0].equalsIgnoreCase("TurnOffEncPolicy") || args[0].equalsIgnoreCase("EncOff")) {
-                try {
-                    Field field = Class.forName("javax.crypto.JceSecurity").getDeclaredField("isRestricted");
-                    field.setAccessible(true);
-                    field.set(null, Boolean.FALSE);
-                    LOGGER.warn("************************************************");
-                    LOGGER.warn("*                                              *");
-                    LOGGER.warn("*  ******************************************  *");
-                    LOGGER.warn("*  *                                        *  *");
-                    LOGGER.warn("*  *  JAVA ENCRYPTION POLICY SWITCHED OFF   *  *");
-                    LOGGER.warn("*  *                                        *  *");
-                    LOGGER.warn("*  ******************************************  *");
-                    LOGGER.warn("*                                              *");
-                    LOGGER.warn("************************************************");
-                } catch (Exception e) {
-                    throw BaseExceptionHandler.handle(e);
+        Arrays.stream(args).forEach(arg -> {
+                    if (arg.equalsIgnoreCase("TurnOffEncPolicy") || arg.equalsIgnoreCase("EncOff")) {
+                        try {
+                            Field field = Class.forName("javax.crypto.JceSecurity").getDeclaredField("isRestricted");
+                            field.setAccessible(true);
+                            field.set(null, Boolean.FALSE);
+                            LOGGER.warn("************************************************");
+                            LOGGER.warn("*                                              *");
+                            LOGGER.warn("*  ******************************************  *");
+                            LOGGER.warn("*  *                                        *  *");
+                            LOGGER.warn("*  *  JAVA ENCRYPTION POLICY SWITCHED OFF   *  *");
+                            LOGGER.warn("*  *                                        *  *");
+                            LOGGER.warn("*  ******************************************  *");
+                            LOGGER.warn("*                                              *");
+                            LOGGER.warn("************************************************");
+                        } catch (Exception e) {
+                            throw BaseExceptionHandler.handle(e);
+                        }
+                    } else if (arg.equalsIgnoreCase("MongoDB")) {
+                        LOGGER.info("*************************************");
+                        LOGGER.info("*                                   *");
+                        LOGGER.info("*  USE MONGO DB                     *");
+                        LOGGER.info("*  (mongo db has be started first)  *");
+                        LOGGER.info("*                                   *");
+                        LOGGER.info("*************************************");
+                        DocumentSafeController.storeConnection = DocumentSafeController.STORE_CONNECTION.MONGO;
+                    } else if (arg.equalsIgnoreCase("FileSystem")) {
+                        LOGGER.info("***********************");
+                        LOGGER.info("*                     *");
+                        LOGGER.info("*  USE FILE SYSETEM   *");
+                        LOGGER.info("*                     *");
+                        LOGGER.info("***********************");
+                        DocumentSafeController.storeConnection = DocumentSafeController.STORE_CONNECTION.FILESYSTEM;
+                    } else {
+                        LOGGER.error("Parameter " + arg + " is unknown.");
+                        LOGGER.error("Knwon Parameters are: encoff, mongodb, filesystem");
+                        throw new BaseException("Parameter " + arg + " is unknown.");
+                    }
                 }
-            }
-        }
+        );
         LOGGER.info("add bouncy castle provider");
-        Security.addProvider(new BouncyCastleProvider());
+        Security.addProvider(new
+
+                BouncyCastleProvider());
         SpringApplication.run(RestApplication.class, args);
     }
 }
