@@ -1,15 +1,15 @@
 package org.adorsys.docusafe.business;
 
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
-import org.adorsys.docusafe.service.BucketService;
-import org.adorsys.docusafe.service.impl.BucketServiceImpl;
-import org.adorsys.docusafe.service.types.AccessType;
+import org.adorsys.cryptoutils.storageconnection.testsuite.ExtendedStoreConnectionFactory;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.utils.GrantUtil;
 import org.adorsys.docusafe.business.utils.UserIDUtil;
+import org.adorsys.docusafe.service.BucketService;
+import org.adorsys.docusafe.service.impl.BucketServiceImpl;
+import org.adorsys.docusafe.service.types.AccessType;
 import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
-import org.adorsys.encobject.filesystem.FileSystemExtendedStorageConnection;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.After;
@@ -28,7 +28,7 @@ import java.util.Set;
  */
 public class GrantUtilTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(GrantUtilTest.class);
-    public final static ExtendedStoreConnection extendedStoreConnection = new FileSystemExtendedStorageConnection();
+    public final static ExtendedStoreConnection extendedStoreConnection = ExtendedStoreConnectionFactory.get();
 
     public static Set<UserID> users = new HashSet<>();
 

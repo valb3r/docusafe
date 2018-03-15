@@ -2,13 +2,7 @@ package org.adorsys.docusafe.business;
 
 import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
-import org.adorsys.docusafe.service.BucketService;
-import org.adorsys.docusafe.service.exceptions.NoDocumentGuardExists;
-import org.adorsys.docusafe.service.impl.BucketServiceImpl;
-import org.adorsys.docusafe.service.types.AccessType;
-import org.adorsys.docusafe.service.types.DocumentContent;
-import org.adorsys.docusafe.service.types.DocumentKeyID;
-import org.adorsys.docusafe.service.types.complextypes.BucketContent;
+import org.adorsys.cryptoutils.storageconnection.testsuite.ExtendedStoreConnectionFactory;
 import org.adorsys.docusafe.business.exceptions.NoWriteAccessException;
 import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
 import org.adorsys.docusafe.business.types.UserID;
@@ -18,11 +12,17 @@ import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.business.utils.GuardUtil;
 import org.adorsys.docusafe.business.utils.UserIDUtil;
+import org.adorsys.docusafe.service.BucketService;
+import org.adorsys.docusafe.service.exceptions.NoDocumentGuardExists;
+import org.adorsys.docusafe.service.impl.BucketServiceImpl;
+import org.adorsys.docusafe.service.types.AccessType;
+import org.adorsys.docusafe.service.types.DocumentContent;
+import org.adorsys.docusafe.service.types.DocumentKeyID;
+import org.adorsys.docusafe.service.types.complextypes.BucketContent;
 import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.adorsys.encobject.domain.StorageMetadata;
-import org.adorsys.encobject.filesystem.FileSystemExtendedStorageConnection;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -43,7 +43,7 @@ import java.util.Set;
  */
 public class BusinessTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(BusinessTest.class);
-    public final static ExtendedStoreConnection extendedStoreConnection = new FileSystemExtendedStorageConnection();
+    public final static ExtendedStoreConnection extendedStoreConnection = ExtendedStoreConnectionFactory.get();
     private DocumentSafeService service;
 
     public static Set<UserIDAuth> users = new HashSet<>();

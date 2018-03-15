@@ -1,7 +1,7 @@
 package org.adorsys.docusafe.service;
 
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
-import org.adorsys.docusafe.service.utils.ExtendedFileSystemExtendedStorageConnection;
+import org.adorsys.cryptoutils.storageconnection.testsuite.ExtendedStoreConnectionFactory;
 import org.adorsys.docusafe.service.utils.TestKeyUtils;
 import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
@@ -10,9 +10,6 @@ import org.adorsys.encobject.domain.KeyStoreAuth;
 import org.adorsys.encobject.domain.Payload;
 import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.adorsys.encobject.domain.ReadStorePassword;
-import org.adorsys.encobject.domain.StorageMetadata;
-import org.adorsys.encobject.filesystem.ExtendedZipFileHelper;
-import org.adorsys.encobject.filesystem.FileSystemExtendedStorageConnection;
 import org.adorsys.encobject.service.api.ContainerPersistence;
 import org.adorsys.encobject.service.api.EncryptedPersistenceService;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
@@ -46,7 +43,7 @@ import java.util.Set;
 public class CompressionTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(CompressionTest.class);
     public static Set<BucketDirectory> buckets = new HashSet<>();
-    private ExtendedStoreConnection extendedStoreConnection = new FileSystemExtendedStorageConnection();
+    private ExtendedStoreConnection extendedStoreConnection = ExtendedStoreConnectionFactory.get();
 
     @Before
     public void before() {
@@ -58,8 +55,7 @@ public class CompressionTest {
     public void after() {
         try {
             ContainerPersistence containerPersistence = new ContainerPersistenceImpl(extendedStoreConnection);
-            for (BucketDirectory bucket : buckets) {
-                String container = bucket.getObjectHandle().getContainer();
+            for (BucketDirectory container : buckets) {
                 LOGGER.debug("AFTER TEST: DELETE BUCKET " + container);
                 containerPersistence.deleteContainer(container);
             }
@@ -72,6 +68,7 @@ public class CompressionTest {
     @Test
     public void testCompressionWithPrivateAndPublicKey() {
         BucketDirectory bd = new BucketDirectory("containerForCompressionTestWithPrivatePublicKeyPay");
+        extendedStoreConnection.createContainer(bd);
         buckets.add(bd);
 
         KeyStoreService keyStoreService = new KeyStoreServiceImpl(extendedStoreConnection);
@@ -118,10 +115,6 @@ public class CompressionTest {
         // TODO
         LOGGER.warn("COMPRESSION DOES NOT WORK YET");
 
-        ExtendedZipFileHelper extendedZipFileHelper = new ExtendedZipFileHelper(new ExtendedFileSystemExtendedStorageConnection().getBaseDir());
-        StorageMetadata plainStorageMetadata1 = extendedZipFileHelper.plainReadZipMetadataOnly(documentPath1);
-        StorageMetadata plainStorageMetadata2 = extendedZipFileHelper.plainReadZipMetadataOnly(documentPath2);
-
 /*
         int encryptedUncrompressedSize = Integer.parseInt(plainStorageMetadata2.getUserMetadata().get(extendedZipFileHelper.getCompressedKey()));
         int encryptedCrompressedSize = Integer.parseInt(plainStorageMetadata1.getUserMetadata().get(extendedZipFileHelper.getCompressedKey()));
@@ -138,6 +131,7 @@ public class CompressionTest {
     @Test
     public void testCompressionWithSecretKey() {
         BucketDirectory bd = new BucketDirectory("containerForCompressionTestWithSecretKey");
+        extendedStoreConnection.createContainer(bd);
         buckets.add(bd);
 
         KeyStoreService keyStoreService = new KeyStoreServiceImpl(extendedStoreConnection);
@@ -182,10 +176,7 @@ public class CompressionTest {
 
         // TODO
         LOGGER.warn("COMPRESSION DOES NOT WORK YET");
-.
-        ExtendedZipFileHelper extendedZipFileHelper = new ExtendedZipFileHelper(new ExtendedFileSystemExtendedStorageConnection().getBaseDir());
-        StorageMetadata plainStorageMetadata1 = extendedZipFileHelper.plainReadZipMetadataOnly(documentPath1);
-        StorageMetadata plainStorageMetadata2 = extendedZipFileHelper.plainReadZipMetadataOnly(documentPath2);
+
 
 /*
         int encryptedUncrompressedSize = Integer.parseInt(plainStorageMetadata2.getUserMetadata().get(extendedZipFileHelper.getCompressedKey()));

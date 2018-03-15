@@ -28,20 +28,12 @@ public class BucketServiceImpl implements BucketService {
 
     @Override
     public void createBucket(BucketDirectory bucketDirectory) {
-        try {
-            containerPersistence.createContainer(bucketDirectory.getObjectHandle().getContainer());
-        } catch (Exception e) {
-            throw BaseExceptionHandler.handle(e);
-        }
+        containerPersistence.createContainer(bucketDirectory);
     }
 
     @Override
     public void destroyBucket(BucketDirectory bucketDirectory) {
-        try {
-            containerPersistence.deleteContainer(bucketDirectory.getObjectHandle().getContainer());
-        } catch (Exception e) {
-            throw BaseExceptionHandler.handle(e);
-        }
+            containerPersistence.deleteContainer(bucketDirectory);
     }
 
     @Override
@@ -55,7 +47,7 @@ public class BucketServiceImpl implements BucketService {
     @Override
     public boolean bucketExists(BucketDirectory bucketDirectory) {
         LOGGER.info("start check bucket exsits " + bucketDirectory);
-        boolean b = extendedStoreConnection.containerExists(bucketDirectory.getObjectHandle().getContainer());
+        boolean b = extendedStoreConnection.containerExists(bucketDirectory);
         LOGGER.info("finished check bucket exsits " + bucketDirectory + " -> " + b);
         return b;
     }

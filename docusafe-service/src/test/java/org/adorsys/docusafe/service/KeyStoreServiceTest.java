@@ -49,7 +49,7 @@ public class KeyStoreServiceTest {
             try {
                 // sollte der container exsitieren, ignorieren wir die Exception, um zu
                 // sehen, ob sich ein keystore überschreiben lässt
-                containerPersistence.createContainer(keyStoreDirectory.getObjectHandle().getContainer());
+                containerPersistence.createContainer(keyStoreDirectory);
             } catch (Exception e) {
                 LOGGER.error("Exception is ignored");
             }

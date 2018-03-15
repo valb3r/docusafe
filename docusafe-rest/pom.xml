@@ -15,7 +15,7 @@
     </properties>
 
     <artifactId>docusafe-rest</artifactId>
-    
+
     <dependencies>
         <!-- Spring boot -->
         <dependency>
@@ -38,13 +38,13 @@
             <version>${springboot.version}</version>
             <scope>test</scope>
         </dependency>
-<!--
-        <dependency>
-            <groupId>com.jayway.jsonpath</groupId>
-            <artifactId>json-path</artifactId>
-            <scope>test</scope>
-        </dependency>
--->
+        <!--
+                <dependency>
+                    <groupId>com.jayway.jsonpath</groupId>
+                    <artifactId>json-path</artifactId>
+                    <scope>test</scope>
+                </dependency>
+        -->
         <!-- JCloud not compatible wit spring-boot 1.4
         Dependency: encobject-jcloud->filesystem->jclouds-blobstore->jclouds->core->gson
         see: https://github.com/spring-projects/spring-boot/issues/6761
@@ -54,7 +54,6 @@
             <artifactId>gson</artifactId>
             <version>2.8.2</version>
         </dependency>
-
 
 
         <dependency>
@@ -69,6 +68,25 @@
             <version>${docusafe.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>de.adorsys.cryptoutils</groupId>
+            <artifactId>filesystemstoreconnection</artifactId>
+            <version>${crypt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.adorsys.cryptoutils</groupId>
+            <artifactId>mongodbstoreconnection</artifactId>
+            <version>${crypt.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.adorsys.cryptoutils</groupId>
+            <artifactId>storeconnection-testsuite</artifactId>
+            <version>${crypt.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -77,6 +95,63 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+
+            <!-- START needed for mongodb TESTS -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- Exclude integation tests from standards -->
+                    <excludes>
+                        <exclude>**/*Test.java</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <!-- Define execution for integration tests. -->
+                    <execution>
+                        <id>integration-test</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <phase>integration-test</phase>
+                        <configuration>
+                            <excludes>
+                                <exclude>none</exclude>
+                            </excludes>
+                            <includes>
+                                <include>**/*Test.java</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <!-- see https://github.com/joelittlejohn/embedmongo-maven-plugin -->
+                <groupId>com.github.joelittlejohn.embedmongo</groupId>
+                <artifactId>embedmongo-maven-plugin</artifactId>
+                <version>0.3.5</version>
+                <executions>
+                    <execution>
+                        <id>start</id>
+                        <goals>
+                            <goal>start</goal>
+                        </goals>
+                        <configuration>
+                            <version>3.4.13</version>
+                            <databaseDirectory>target/mongotest</databaseDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>stop</id>
+                        <goals>
+                            <goal>stop</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- END needed for mongodb TESTS -->
+
+
         </plugins>
     </build>
 

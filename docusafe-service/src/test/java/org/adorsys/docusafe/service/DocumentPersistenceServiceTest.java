@@ -40,6 +40,7 @@ public class DocumentPersistenceServiceTest {
                                              DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType,
                                              DocumentContent documentContent,
                                              OverwriteFlag overwriteFlag) {
+        extendedStoreConnection.createContainer(documentBucketPath.getBucketDirectory());
         DocumentPersistenceService documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection);
         documentPersistenceService.persistDocument(
                 documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey(),

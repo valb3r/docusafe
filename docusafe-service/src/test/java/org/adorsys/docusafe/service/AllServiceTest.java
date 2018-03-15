@@ -2,6 +2,7 @@ package org.adorsys.docusafe.service;
 
 import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
+import org.adorsys.cryptoutils.storageconnection.testsuite.ExtendedStoreConnectionFactory;
 import org.adorsys.cryptoutils.utils.HexUtil;
 import org.adorsys.docusafe.service.types.AccessType;
 import org.adorsys.docusafe.service.types.DocumentContent;
@@ -21,7 +22,6 @@ import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.domain.StorageType;
 import org.adorsys.encobject.exceptions.FileExistsException;
 import org.adorsys.encobject.exceptions.KeyStoreExistsException;
-import org.adorsys.encobject.filesystem.FileSystemExtendedStorageConnection;
 import org.adorsys.encobject.service.api.ContainerPersistence;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
 import org.adorsys.encobject.service.impl.ContainerPersistenceImpl;
@@ -50,7 +50,7 @@ import java.util.Set;
  */
 public class AllServiceTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(AllServiceTest.class);
-    private final static ExtendedStoreConnection extendedStoreConnection = new FileSystemExtendedStorageConnection();
+    private final static ExtendedStoreConnection extendedStoreConnection = ExtendedStoreConnectionFactory.get();
     public static Set<BucketDirectory> buckets = new HashSet<>();
 
     @Before
@@ -64,9 +64,8 @@ public class AllServiceTest {
         try {
             ContainerPersistence containerPersistence = new ContainerPersistenceImpl(extendedStoreConnection);
             for (BucketDirectory bucket : buckets) {
-                String container = bucket.getObjectHandle().getContainer();
-                LOGGER.debug("AFTER TEST: DELETE BUCKET " + container);
-                containerPersistence.deleteContainer(container);
+                LOGGER.debug("AFTER TEST: DELETE BUCKET " + bucket);
+                containerPersistence.deleteContainer(bucket);
             }
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
@@ -80,7 +79,7 @@ public class AllServiceTest {
         try {
             BucketDirectory bp = new BucketDirectory("1/2/3");
             ContainerPersistence containerPersistence = new ContainerPersistenceImpl(extendedStoreConnection);
-            containerPersistence.createContainer(bp.getObjectHandle().getContainer());
+            containerPersistence.createContainer(bp);
             buckets.add(bp);
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
