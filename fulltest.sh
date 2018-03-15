@@ -5,21 +5,22 @@ function error () {
 	echo "            NOT GOOD, AN ERROR OCCURED"
 	echo "=================================================="
 	echo "an error occured"
-	echo "dont forget to kill serverproccess"
+	echo "try to kill serverproccess"
 	echo "kill -9 $pid"
+	kill -9 $pid
 	exit 1
 }
 
-param=""
-rm -f rr-*.log
+rm -f *.log
 
 echo "build standalone server"
-mvn clean install -DskipTests > /dev/null
+mvn clean package -DskipTests  > /dev/null
 
 echo "start standalone server"
 java -jar docusafe-rest/target/docusafe-rest-0.1.0-SNAPSHOT.jar $* | tee documentsafe.console.out.log &
 pid=$!
 echo "pid ist $pid"
+
 
 started=0
 while (( started == 0 ))
@@ -36,8 +37,26 @@ do
 done
 echo "server is up"
 
-./dorest.sh
+filesystem=1
+function testParams {
+	for var in "$@"
+	do
+		if [[ $var == "mongodb" ]]
+		then
+			filesystem=0
+		fi
+		if [[ $var == "filesystem" ]]
+		then
+			filesystem=1
+		fi
+	done
+}
+testParams $*
+
+echo filesystem $filesystem
+
+./dorest.sh $filesystem
 ./streamTest.sh
 
-echo "kill standalone server"
+echo "kill standalone server with pid $pid"
 kill $pid

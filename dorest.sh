@@ -15,6 +15,11 @@ function print () {
 }
 
 function checkGuards() {
+	if [[ filesystem -ne 1 ]]
+	then
+		echo "no guards check, filesystem is not active"
+		return
+	fi
 	user=$1
 	expected=$2
 
@@ -60,6 +65,13 @@ function checkCurl() {
 	fi
 }
 
+filesystem=1
+if [[ $# -eq 1 ]]
+then
+	filesystem=$1
+fi
+
+echo "DO REST FILESYSTEM ACTIVE: $filesystem"
 META="._META-INFORMATION_"
 
 rm -f curl.log
@@ -143,8 +155,11 @@ checkGuards francis 1
 print "francis tries to read deeper Document von Peter"
 checkCurl 403 -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: francis' -H 'password: passWordXyZ' -i 'http://localhost:8080/granted/document/peter/%22/deeper/and/deeper/README.txt%22' 
 
-print "check filesystem"
-find target/filesystemstorage -type f >> curl.log
+if [[ filesystem -eq 1 ]]
+then
+	print "check filesystem"
+	find target/filesystemstorage -type f >> curl.log
+fi
 
 checkGuards peter   3
 checkGuards francis 1
