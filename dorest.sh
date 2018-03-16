@@ -46,11 +46,21 @@ function checkCurl() {
 	status=$1
 	shift
 	rm -f curl.out
-	curl "$@" 2>/dev/null > curl.out 
-
-	cat curl.out >> curl.log
-	httpStatus=$(cat curl.out | head -n 1 | cut -d$' ' -f2)
+	rm -f curl.error
+	curl "$@" > curl.out 2>curl.error
+	ret=$?
+	if (( ret==0 )) 
+	then
+		cat curl.out >> curl.log
+		httpStatus=$(cat curl.out | head -n 1 | cut -d$' ' -f2)
+	else
+		cat curl.error >> curl.log
+		httpStatus=$(cat curl.error)
+                httpStatus=$(echo ${httpStatus##*The requested URL returned error: })
+	fi
 	rm -f curl.out
+	rm -f curl.error
+
 	if [[ status -eq "any" ]]
 	then
 		echo "$httpStatus is ignored" | tee -a curl.log
@@ -82,6 +92,12 @@ checkCurl any -X DELETE -H 'Content-Type: application/json' -H 'Accept: applicat
 print "create user peter"
 checkCurl 200 -f -X PUT -H 'Content-Type: application/json' -H 'Accept: application/json' -i http://localhost:8080/internal/user --data '{"userID":"peter", "readKeyPassword":"rkp"}' 
 checkGuards peter   1
+
+print "check user peter exists"
+checkCurl 200 -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -i 'http://localhost:8080/internal/user/peter'
+
+print "check user francis does not exist yet"
+checkCurl 404 -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -i 'http://localhost:8080/internal/user/francis'
 
 print "peter gets README.txt of home dir"
 checkCurl 200 -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22README.txt%22' >> curl.log
@@ -163,6 +179,16 @@ fi
 
 checkGuards peter   3
 checkGuards francis 1
+
+print "peter gets README.txt of home dir"
+checkCurl 200 -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22README.txt%22' >> curl.log
+
+print "peter deletes README.txt of home dir"
+checkCurl 200 -f -X DELETE -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22README.txt%22' >> curl.log 
+
+print "peter expetects 404 for  README.txt of home dir"
+checkCurl 404 -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22README.txt%22' >> curl.log
+
 
 print "EVERYTHING WENT FINE so FAR"
 

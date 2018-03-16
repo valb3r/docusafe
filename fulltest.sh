@@ -7,7 +7,7 @@ function error () {
 	echo "an error occured"
 	echo "try to kill serverproccess"
 	echo "kill -9 $pid"
-	kill -9 $pid
+ 	kill -9 $pid
 	exit 1
 }
 
@@ -20,7 +20,6 @@ echo "start standalone server"
 java -jar docusafe-rest/target/docusafe-rest-0.1.0-SNAPSHOT.jar $* > documentsafe.console.out.log &
 pid=$!
 echo "pid ist $pid"
-
 
 started=0
 while (( started == 0 ))

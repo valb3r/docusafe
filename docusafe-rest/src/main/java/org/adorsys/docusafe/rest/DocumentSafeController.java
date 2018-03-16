@@ -17,6 +17,8 @@ import org.adorsys.encobject.filesystem.FileSystemExtendedStorageConnection;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -59,6 +61,7 @@ public class DocumentSafeController {
         }
 
     }
+
     /**
      * USER
      * ===========================================================================================
@@ -83,6 +86,24 @@ public class DocumentSafeController {
         service.destroyUser(userIDAuth);
     }
 
+    @RequestMapping(
+            value = "/internal/user/{UserID}",
+            method = {RequestMethod.GET},
+            consumes = {APPLICATION_JSON},
+            produces = {APPLICATION_JSON}
+    )
+    public
+    @ResponseBody
+    ResponseEntity<Boolean> userExists(@PathVariable("UserID") String userIDString) {
+        UserID userID = new UserID(userIDString);
+        LOGGER.info("get user exists: " + userID);
+        if (!service.userExists(userID)) {
+            LOGGER.debug(userID + " does not exist");
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+        LOGGER.debug(userID + " exists");
+        return new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK);
+    }
 
     /**
      * DOCUMENT
@@ -112,15 +133,19 @@ public class DocumentSafeController {
     )
     public
     @ResponseBody
-    DSDocument readDocument(@RequestHeader("userid") String userid,
+    ResponseEntity<DSDocument> readDocument(@RequestHeader("userid") String userid,
                             @RequestHeader("password") String password,
                             HttpServletRequest request
     ) {
-        LOGGER.info("get stream request arrived");
+        LOGGER.info("get document request arrived");
         UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
         DocumentFQN documentFQN = new DocumentFQN(getFQN(request));
-        LOGGER.debug("received:" + userIDAuth + " and " + documentFQN);
-        return service.readDocument(userIDAuth, documentFQN);
+        if (! service.documentExists(userIDAuth, documentFQN)) {
+            LOGGER.debug("document " + documentFQN + " does not exist");
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+        LOGGER.debug("document " + documentFQN + " exists");
+        return new ResponseEntity<>(service.readDocument(userIDAuth, documentFQN), HttpStatus.OK);
     }
 
     /**
@@ -138,7 +163,6 @@ public class DocumentSafeController {
         UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
         DocumentFQN documentFQN = new DocumentFQN(documentFQNString);
         LOGGER.info("input auf document/stream for " + userIDAuth);
-//        show(inputStream);
         service.storeDocumentStream(userIDAuth, new DSDocumentStream(documentFQN, inputStream));
     }
 
@@ -173,6 +197,26 @@ public class DocumentSafeController {
     }
 
     /**
+     * -- content art unabhängig --
+     */
+    @RequestMapping(
+            value = "/document/**",
+            method = {RequestMethod.DELETE},
+            consumes = {APPLICATION_JSON},
+            produces = {APPLICATION_JSON}
+    )
+    public void destroyDocument(@RequestHeader("userid") String userid,
+                                @RequestHeader("password") String password,
+                                HttpServletRequest request
+    ) {
+        LOGGER.info("destroy document request arrived");
+        UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
+        DocumentFQN documentFQN = new DocumentFQN(getFQN(request));
+        service.deleteDocument(userIDAuth, documentFQN);
+        LOGGER.info("destroy document request finished");
+    }
+
+    /**
      * GRANT/DOCUMENT
      * ===========================================================================================
      */
@@ -203,6 +247,7 @@ public class DocumentSafeController {
         UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
         service.storeGrantedDocument(userIDAuth, ownerUserID, dsDocument);
     }
+
     @RequestMapping(
             value = "/granted/document/{ownerUserID}/**",
             method = {RequestMethod.GET},
@@ -242,41 +287,6 @@ public class DocumentSafeController {
                            @RequestBody CreateLinkTupel createLinkTupel) {
         UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
         service.linkDocument(userIDAuth, createLinkTupel.getSource(), createLinkTupel.getDestination());
-    }
-
-    private void show(InputStream inputStream) {
-        try {
-            LOGGER.info("ok, receive an inputstream");
-            int available = 0;
-            long sum = 0;
-            boolean eof = false;
-            while (!eof) {
-                available = inputStream.available();
-                LOGGER.info("available bytes of inputstream are " + available);
-                if (available <= 1) {
-                    // be blocked, until unexpected EOF Exception or Data availabel of expected EOF
-                    int value = inputStream.read();
-                    eof = value == -1;
-                    if (!eof) {
-                        byte[] bytes = new byte[1];
-                        bytes[0] = (byte) value;
-                        sum++;
-                        LOGGER.info("READ 1 byte");
-                    }
-                } else {
-                    byte[] bytes = new byte[available];
-                    int read = inputStream.read(bytes, 0, available);
-                    if (read != available) {
-                        throw new BaseException("expected to read " + available + " bytes, but read " + read + " bytes");
-                    }
-                    sum += read;
-                    LOGGER.info("READ " + available + " bytes");
-                }
-            }
-            LOGGER.info("finished reading " + sum + " bytes");
-        } catch (Exception e) {
-            throw BaseExceptionHandler.handle(e);
-        }
     }
 
     private String getFQN(HttpServletRequest request) {
