@@ -17,7 +17,7 @@ echo "build standalone server"
 mvn clean package -DskipTests  > /dev/null
 
 echo "start standalone server"
-java -jar docusafe-rest/target/docusafe-rest-0.1.0-SNAPSHOT.jar $* | tee documentsafe.console.out.log &
+java -jar docusafe-rest/target/docusafe-rest-0.1.0-SNAPSHOT.jar $* > documentsafe.console.out.log &
 pid=$!
 echo "pid ist $pid"
 
@@ -27,6 +27,8 @@ while (( started == 0 ))
 do
 	echo "$(date) wait for server to start"
 	sleep 1
+	grep "WARN" documentsafe.console.out.log | xargs echo
+	grep "ERROR" documentsafe.console.out.log | xargs echo
 	started=$(grep "Started RestApplication" documentsafe.console.out.log | wc -l)
 	failed=$(grep -i "application failed to start" documentsafe.console.out.log | wc -l)
 	if (( failed == 1 )) 

@@ -33,18 +33,17 @@
 
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <version>${springboot.version}</version>
-            <scope>test</scope>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+            <version>2.7.0</version>
         </dependency>
-        <!--
-                <dependency>
-                    <groupId>com.jayway.jsonpath</groupId>
-                    <artifactId>json-path</artifactId>
-                    <scope>test</scope>
-                </dependency>
-        -->
+
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger-ui</artifactId>
+            <version>2.7.0</version>
+        </dependency>
+
         <!-- JCloud not compatible wit spring-boot 1.4
         Dependency: encobject-jcloud->filesystem->jclouds-blobstore->jclouds->core->gson
         see: https://github.com/spring-projects/spring-boot/issues/6761

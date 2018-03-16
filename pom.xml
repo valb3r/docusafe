@@ -20,7 +20,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <crypt.version>0.14.0-SNAPSHOT</crypt.version>
         <docusafe.version>0.1.0-SNAPSHOT</docusafe.version>
-        <version.swagger>1.5.5</version.swagger>
     </properties>
 
 
