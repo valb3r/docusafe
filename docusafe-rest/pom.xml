@@ -65,7 +65,6 @@
         <dependency>
             <groupId>org.adorsys</groupId>
             <artifactId>docusafe-business</artifactId>
-            <version>${docusafe.version}</version>
         </dependency>
 
         <dependency>

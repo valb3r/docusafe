@@ -23,7 +23,6 @@
         <dependency>
             <groupId>org.adorsys</groupId>
             <artifactId>docusafe-service</artifactId>
-            <version>${docusafe.version}</version>
         </dependency>
 
 
