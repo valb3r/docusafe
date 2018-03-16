@@ -183,11 +183,17 @@ checkGuards francis 1
 print "peter gets README.txt of home dir"
 checkCurl 200 -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22README.txt%22' >> curl.log
 
+print "peter gets README.txt as a stream of home dir"
+checkCurl 200 -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/octet-stream' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/documentstream/%22README.txt%22' >> curl.log
+
 print "peter deletes README.txt of home dir"
 checkCurl 200 -f -X DELETE -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22README.txt%22' >> curl.log 
 
 print "peter expetects 404 for  README.txt of home dir"
 checkCurl 404 -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22README.txt%22' >> curl.log
+
+print "peter expects 404 for README.txt as a stream of home dir"
+checkCurl 404 -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/octet-stream' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/documentstream/%22README.txt%22' >> curl.log
 
 
 print "EVERYTHING WENT FINE so FAR"

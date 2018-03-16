@@ -172,7 +172,7 @@ public class DocumentSafeController {
             produces = {APPLICATION_OCTET_STREAM}
 
     )
-    public void readDocumentStream(@RequestHeader("userid") String userid,
+    public ResponseEntity readDocumentStream(@RequestHeader("userid") String userid,
                                    @RequestHeader("password") String password,
                                    HttpServletRequest request,
                                    HttpServletResponse response
@@ -182,6 +182,12 @@ public class DocumentSafeController {
             UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
             DocumentFQN documentFQN = new DocumentFQN(getFQN(request));
             LOGGER.debug("received:" + userIDAuth + " and " + documentFQN);
+
+            if (! service.documentExists(userIDAuth, documentFQN)) {
+                LOGGER.debug("documentstream " + documentFQN + " does not exist");
+                return new ResponseEntity(HttpStatus.NOT_FOUND);
+            }
+
             DSDocumentStream stream = service.readDocumentStream(userIDAuth, documentFQN);
             InputStream is = stream.getDocumentStream();
             OutputStream os = response.getOutputStream();
@@ -191,6 +197,7 @@ public class DocumentSafeController {
             IOUtils.closeQuietly(is);
             IOUtils.closeQuietly(os);
             LOGGER.debug("return outputstream to sender");
+            return new ResponseEntity(HttpStatus.OK);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
