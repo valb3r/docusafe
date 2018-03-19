@@ -8,10 +8,12 @@ import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentStream;
+import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.rest.types.CreateLinkTupel;
 import org.adorsys.docusafe.rest.types.GrantDocument;
+import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.adorsys.encobject.filesystem.FileSystemExtendedStorageConnection;
 import org.apache.commons.io.IOUtils;
@@ -219,9 +221,16 @@ public class DocumentSafeController {
         LOGGER.info("destroy document request arrived");
         UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
         DocumentFQN documentFQN = new DocumentFQN(getFQN(request));
-        service.deleteDocument(userIDAuth, documentFQN);
+        if (documentFQN.getValue().endsWith(BucketPath.BUCKET_SEPARATOR)) {
+            DocumentDirectoryFQN documentDirectoryFQN = new DocumentDirectoryFQN(documentFQN.getValue());
+            LOGGER.info("destroy document folder " + documentDirectoryFQN);
+            service.deleteFolder(userIDAuth, documentDirectoryFQN);
+        } else {
+            service.deleteDocument(userIDAuth, documentFQN);
+        }
         LOGGER.info("destroy document request finished");
     }
+
 
     /**
      * GRANT/DOCUMENT

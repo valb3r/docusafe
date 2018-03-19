@@ -42,11 +42,11 @@ filesystem=1
 function testParams {
 	for var in "$@"
 	do
-		if [[ $var == "mongodb" ]]
+		if [[ $var == "-mongodb" ]]
 		then
 			filesystem=0
 		fi
-		if [[ $var == "filesystem" ]]
+		if [[ $var == "-filesystem" ]]
 		then
 			filesystem=1
 		fi

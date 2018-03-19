@@ -109,6 +109,13 @@ checkCurl 200 -f -X PUT -H 'Content-Type: application/json' -H 'Accept: applicat
 }' 
 checkGuards peter   2
 
+print "peter saves another deep document"
+checkCurl 200 -f -X PUT -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i http://localhost:8080/document --data '{
+  "documentFQN": "deeper/and/deeper/README2.txt",
+  "documentContent": "AFFE1010"
+}'
+checkGuards peter   2
+
 print "peter gets deep document"
 checkCurl 200 -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22deeper/and/deeper/README.txt%22' 
 
@@ -171,6 +178,27 @@ checkGuards francis 1
 print "francis tries to read deeper Document von Peter"
 checkCurl 403 -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: francis' -H 'password: passWordXyZ' -i 'http://localhost:8080/granted/document/peter/%22/deeper/and/deeper/README.txt%22' 
 
+print "peter gets deep document 1"
+checkCurl 200 -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22deeper/and/deeper/README.txt%22'
+
+print "peter gets deep document 2"
+checkCurl 200 -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22deeper/and/deeper/README2.txt%22'
+
+print "peter deletes deep document 2"
+checkCurl 200 -f -X DELETE -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22deeper/and/deeper/README2.txt%22'
+
+print "peter trys to get deep document 2"
+checkCurl 404 -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22deeper/and/deeper/README2.txt%22'
+
+print "peter still gets deep document 1"
+checkCurl 200 -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22deeper/and/deeper/README.txt%22'
+
+print "peter deletes deep folder"
+checkCurl 200 -f -X DELETE -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22deeper/and/deeper/%22'
+
+print "peter trys to get deep document 1"
+checkCurl 404 -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22deeper/and/deeper/README.txt%22'
+
 if [[ filesystem -eq 1 ]]
 then
 	print "check filesystem"
@@ -189,7 +217,7 @@ checkCurl 200 -f -X GET -H 'Content-Type: application/json' -H 'Accept: applicat
 print "peter deletes README.txt of home dir"
 checkCurl 200 -f -X DELETE -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22README.txt%22' >> curl.log 
 
-print "peter expetects 404 for  README.txt of home dir"
+print "peter expects 404 for  README.txt of home dir"
 checkCurl 404 -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22README.txt%22' >> curl.log
 
 print "peter expects 404 for README.txt as a stream of home dir"

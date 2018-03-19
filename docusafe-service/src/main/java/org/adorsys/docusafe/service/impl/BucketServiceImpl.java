@@ -6,12 +6,15 @@ import org.adorsys.docusafe.service.types.PlainFileContent;
 import org.adorsys.docusafe.service.types.complextypes.BucketContent;
 import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
+import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.service.api.ContainerPersistence;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
 import org.adorsys.encobject.service.impl.ContainerPersistenceImpl;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * Created by peter on 17.01.18 at 16:44.
@@ -72,6 +75,18 @@ public class BucketServiceImpl implements BucketService {
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
+    }
+
+    @Override
+    public void deletePlainFolder(BucketDirectory bucketDirectory) {
+        try {
+            LOGGER.info("start delete plain directory " + bucketDirectory);
+            extendedStoreConnection.removeBlobFolder(bucketDirectory);
+            LOGGER.info("finished delete plain file " + bucketDirectory);
+        } catch (Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
+
     }
 
     @Override

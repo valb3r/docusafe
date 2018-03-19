@@ -32,7 +32,7 @@ public class RestApplication {
 
     public static void main(String[] args) {
         Arrays.stream(args).forEach(arg -> {
-                    if (arg.equalsIgnoreCase("TurnOffEncPolicy") || arg.equalsIgnoreCase("EncOff")) {
+                    if (arg.equalsIgnoreCase("-TurnOffEncPolicy") || arg.equalsIgnoreCase("-EncOff")) {
                         try {
                             Field field = Class.forName("javax.crypto.JceSecurity").getDeclaredField("isRestricted");
                             field.setAccessible(true);
@@ -49,7 +49,7 @@ public class RestApplication {
                         } catch (Exception e) {
                             throw BaseExceptionHandler.handle(e);
                         }
-                    } else if (arg.equalsIgnoreCase("MongoDB")) {
+                    } else if (arg.equalsIgnoreCase("-MongoDB")) {
                         LOGGER.info("*************************************");
                         LOGGER.info("*                                   *");
                         LOGGER.info("*  USE MONGO DB                     *");
@@ -57,7 +57,7 @@ public class RestApplication {
                         LOGGER.info("*                                   *");
                         LOGGER.info("*************************************");
                         DocumentSafeController.storeConnection = DocumentSafeController.STORE_CONNECTION.MONGO;
-                    } else if (arg.equalsIgnoreCase("FileSystem")) {
+                    } else if (arg.equalsIgnoreCase("-FileSystem")) {
                         LOGGER.info("***********************");
                         LOGGER.info("*                     *");
                         LOGGER.info("*  USE FILE SYSETEM   *");

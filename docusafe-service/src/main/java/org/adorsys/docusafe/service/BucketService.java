@@ -19,6 +19,7 @@ public interface BucketService {
     void createPlainFile(BucketPath bucketPath, PlainFileContent plainFileContent);
     PlainFileContent readPlainFile(BucketPath bucketPath);
     void deletePlainFile(BucketPath bucketPath);
+    void deletePlainFolder(BucketDirectory bucketDirectory);
 
     BucketContent readDocumentBucket(BucketDirectory bucketDirectory, ListRecursiveFlag listRecursiveFlag);
 }

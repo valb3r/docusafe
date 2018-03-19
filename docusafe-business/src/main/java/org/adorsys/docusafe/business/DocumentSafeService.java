@@ -30,6 +30,8 @@ public interface DocumentSafeService {
 
     void deleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
     boolean documentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN);
+    void deleteFolder(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN);
+
     /**
      * Grants
      */
