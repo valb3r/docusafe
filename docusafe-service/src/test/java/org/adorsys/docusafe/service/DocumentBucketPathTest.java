@@ -15,9 +15,9 @@ public class DocumentBucketPathTest {
     @Test
     public void test1() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
-        DocumentBucketPath bp=new DocumentBucketPath("a/b/c/d");
+        DocumentBucketPath bp=new DocumentBucketPath("aaa/b/c/d");
         BucketDirectory dd = bp.getBucketDirectory();
-        Assert.assertEquals("dd container", "a", dd.getObjectHandle().getContainer());
+        Assert.assertEquals("dd container", "aaa", dd.getObjectHandle().getContainer());
         Assert.assertEquals("dd name     ", "b/c", dd.getObjectHandle().getName());
     }
 

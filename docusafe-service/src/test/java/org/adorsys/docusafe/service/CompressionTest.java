@@ -67,7 +67,7 @@ public class CompressionTest {
 
     @Test
     public void testCompressionWithPrivateAndPublicKey() {
-        BucketDirectory bd = new BucketDirectory("containerForCompressionTestWithPrivatePublicKeyPay");
+        BucketDirectory bd = new BucketDirectory("containerforcompressiontestwithprivatepublickeypay");
         extendedStoreConnection.createContainer(bd);
         buckets.add(bd);
 
@@ -130,7 +130,7 @@ public class CompressionTest {
 
     @Test
     public void testCompressionWithSecretKey() {
-        BucketDirectory bd = new BucketDirectory("containerForCompressionTestWithSecretKey");
+        BucketDirectory bd = new BucketDirectory("containerforcompressiontestwithsecretkey");
         extendedStoreConnection.createContainer(bd);
         buckets.add(bd);
 

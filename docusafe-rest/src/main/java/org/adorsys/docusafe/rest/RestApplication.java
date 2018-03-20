@@ -2,6 +2,7 @@ package org.adorsys.docusafe.rest;
 
 import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
+import org.adorsys.cryptoutils.miniostoreconnection.MinioParamParser;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +30,7 @@ import java.util.Arrays;
 @EnableAutoConfiguration(exclude = {JacksonAutoConfiguration.class})
 public class RestApplication {
     private final static Logger LOGGER = LoggerFactory.getLogger(RestApplication.class);
+    public static final String MINIO_ARG_PREFIX = "-Minio=";
 
     public static void main(String[] args) {
         Arrays.stream(args).forEach(arg -> {
@@ -58,12 +60,22 @@ public class RestApplication {
                         LOGGER.info("*************************************");
                         DocumentSafeController.storeConnection = DocumentSafeController.STORE_CONNECTION.MONGO;
                     } else if (arg.equalsIgnoreCase("-FileSystem")) {
-                        LOGGER.info("***********************");
-                        LOGGER.info("*                     *");
-                        LOGGER.info("*  USE FILE SYSETEM   *");
-                        LOGGER.info("*                     *");
-                        LOGGER.info("***********************");
+                        LOGGER.info("**********************");
+                        LOGGER.info("*                    *");
+                        LOGGER.info("*  USE FILE SYSTEM   *");
+                        LOGGER.info("*                    *");
+                        LOGGER.info("**********************");
                         DocumentSafeController.storeConnection = DocumentSafeController.STORE_CONNECTION.FILESYSTEM;
+                    } else if (arg.startsWith(MINIO_ARG_PREFIX)) {
+                        String minioParams = arg.substring(MINIO_ARG_PREFIX.length());
+                        MinioParamParser minioParamParser = new MinioParamParser(minioParams);
+                        LOGGER.info("***********************");
+                        LOGGER.info("*                     *");
+                        LOGGER.info("*  USE MINIO SYSTEM   *");
+                        LOGGER.info("*                     *");
+                        LOGGER.info("***********************");
+                        DocumentSafeController.storeConnection = DocumentSafeController.STORE_CONNECTION.MINIO;
+                        DocumentSafeController.minioParams = minioParamParser;
                     } else {
                         LOGGER.error("Parameter " + arg + " is unknown.");
                         LOGGER.error("Knwon Parameters are: encoff, mongodb, filesystem");

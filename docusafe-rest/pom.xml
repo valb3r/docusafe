@@ -76,6 +76,11 @@
             <artifactId>mongodbstoreconnection</artifactId>
             <version>${crypt.version}</version>
         </dependency>
+        <dependency>
+            <groupId>de.adorsys.cryptoutils</groupId>
+            <artifactId>miniostoreconnection</artifactId>
+            <version>${crypt.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.mongodb</groupId>

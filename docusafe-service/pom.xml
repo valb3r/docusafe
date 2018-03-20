@@ -62,6 +62,12 @@
             <version>${crypt.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>de.adorsys.cryptoutils</groupId>
+            <artifactId>miniostoreconnection</artifactId>
+            <version>${crypt.version}</version>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>de.adorsys.cryptoutils</groupId>

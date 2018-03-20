@@ -2,6 +2,8 @@ package org.adorsys.docusafe.rest;
 
 import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
+import org.adorsys.cryptoutils.miniostoreconnection.MinioExtendedStoreConnection;
+import org.adorsys.cryptoutils.miniostoreconnection.MinioParamParser;
 import org.adorsys.cryptoutils.mongodbstoreconnection.MongoDBExtendedStoreConnection;
 import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
@@ -44,6 +46,7 @@ import java.io.OutputStream;
 @RestController
 public class DocumentSafeController {
     public static STORE_CONNECTION storeConnection = STORE_CONNECTION.FILESYSTEM;
+    public static MinioParamParser minioParams = null;
     private final static String APPLICATION_JSON = "application/json";
     private final static String APPLICATION_OCTET_STREAM = "application/octet-stream";
 
@@ -58,6 +61,9 @@ public class DocumentSafeController {
             case FILESYSTEM:
                 service = new DocumentSafeServiceImpl(new FileSystemExtendedStorageConnection());
                 break;
+            case MINIO:
+                service = new DocumentSafeServiceImpl(new MinioExtendedStoreConnection(minioParams.getUrl(),
+                        minioParams.getMinioAccessKey(), minioParams.getMinioSecretKey()));
             default:
                 throw new BaseException("missing switch");
         }
@@ -314,6 +320,7 @@ public class DocumentSafeController {
 
     public static enum STORE_CONNECTION {
         MONGO,
-        FILESYSTEM
+        FILESYSTEM,
+        MINIO
     }
 }

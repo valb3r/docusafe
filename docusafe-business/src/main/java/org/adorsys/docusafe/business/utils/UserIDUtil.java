@@ -16,7 +16,7 @@ public class UserIDUtil {
     private final static Logger LOGGER = LoggerFactory.getLogger(UserIDUtil.class);
 
     public static BucketDirectory getUserRootBucketDirectory(UserID userID) {
-        return new BucketDirectory("BP-" + userID.getValue());
+        return new BucketDirectory("bp-" + userID.getValue().toLowerCase());
     }
 
     public static BucketPath getKeyStorePath(UserID userID) {
@@ -28,15 +28,15 @@ public class UserIDUtil {
     }
 
     public static BucketDirectory getKeyStoreDirectory(UserID userID) {
-        return UserIDUtil.getUserRootBucketDirectory(userID).appendDirectory(".KEYSTORE");
+        return UserIDUtil.getUserRootBucketDirectory(userID).appendDirectory(".keystore");
     }
 
     public static BucketDirectory getHomeBucketDirectory(UserID userID) {
-        return UserIDUtil.getUserRootBucketDirectory(userID).appendDirectory("HOME");
+        return UserIDUtil.getUserRootBucketDirectory(userID).appendDirectory("home");
     }
 
     public static BucketDirectory getGrantBucketDirectory(UserID userID) {
-        return UserIDUtil.getUserRootBucketDirectory(userID).appendDirectory(".GRANTS");
+        return UserIDUtil.getUserRootBucketDirectory(userID).appendDirectory(".grants");
     }
 
     private static ReadStorePassword getReadStorePassword(UserID userID) {

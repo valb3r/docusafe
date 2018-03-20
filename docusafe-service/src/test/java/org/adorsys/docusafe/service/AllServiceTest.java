@@ -77,7 +77,7 @@ public class AllServiceTest {
     public void testCreateBucketPath() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         try {
-            BucketDirectory bp = new BucketDirectory("1/2/3");
+            BucketDirectory bp = new BucketDirectory("abc1/2/3");
             ContainerPersistence containerPersistence = new ContainerPersistenceImpl(extendedStoreConnection);
             containerPersistence.createContainer(bp);
             buckets.add(bp);
@@ -187,7 +187,7 @@ public class AllServiceTest {
 
     @Test
     public void testCreateKeyStoreAndDocumentGuardAndTryToLoadDocumentGuardWithWrongKey() {
-        testCreateKeyStoreAndDocumentGuardAndTryToLoadDocumentGuardWithWrongKey("testWrongKey");
+        testCreateKeyStoreAndDocumentGuardAndTryToLoadDocumentGuardWithWrongKey("testwrongkey");
     }
 
     private int testCreateKeyStoreAndDocumentGuardAndTryToLoadDocumentGuardWithWrongKey(String container) {
@@ -272,7 +272,7 @@ public class AllServiceTest {
                     documentGuardStuff.documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
             new DocumentPersistenceServiceTest(extendedStoreConnection).testPersistDocument(
                     documentGuardStuff.documentGuardService,
-                    new DocumentBucketPath("documentBucketPath1/doc1.txt"),
+                    new DocumentBucketPath("documentbucketpath1/doc1.txt"),
                     documentKeyIDWithKeyAndAccessType, documentContent);
         } catch (Exception e) {
             BaseExceptionHandler.handle(e);
@@ -295,7 +295,7 @@ public class AllServiceTest {
             DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest(extendedStoreConnection);
             DocumentPersistenceServiceTest.DocumentStuff documentStuff = new DocumentPersistenceServiceTest(extendedStoreConnection).testPersistDocument(
                     documentGuardStuff.documentGuardService,
-                    new DocumentBucketPath("documentBucketPath2/doc2.txt"),
+                    new DocumentBucketPath("documentbucketpath2/doc2.txt"),
                     documentKeyIDWithKeyAndAccessType,
                     documentContent);
             Payload payload = documentPersistenceServiceTest.testLoadDocument(documentGuardStuff.documentGuardService,
@@ -329,7 +329,7 @@ public class AllServiceTest {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         String container1 = "user1/key-store-container-for-secretkey";
         String container2 = "user2/key-store-container-for-enckey";
-        DocumentBucketPath documentBucketPath = new DocumentBucketPath("documentBucketPath3/subfolder/1/2/3");
+        DocumentBucketPath documentBucketPath = new DocumentBucketPath("documentbucketpath3/subfolder/1/2/3");
         DocumentContent documentContent = new DocumentContent("Ein Affe im Zoo ist nie allein".getBytes());
 
         try {
@@ -366,7 +366,7 @@ public class AllServiceTest {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         String container1 = "user1/key-store-container-for-secretkey";
         String container2 = "user2/key-store-container-for-enckey";
-        DocumentBucketPath documentBucketPath = new DocumentBucketPath("documentBucketPath5/1/2/3");
+        DocumentBucketPath documentBucketPath = new DocumentBucketPath("documentbucketpath5/1/2/3");
 
         DocumentContent documentContent = new DocumentContent("Ein Affe im Zoo ist nie allein".getBytes());
         try {
