@@ -64,6 +64,7 @@ public class DocumentSafeController {
             case MINIO:
                 service = new DocumentSafeServiceImpl(new MinioExtendedStoreConnection(minioParams.getUrl(),
                         minioParams.getMinioAccessKey(), minioParams.getMinioSecretKey()));
+                break;
             default:
                 throw new BaseException("missing switch");
         }

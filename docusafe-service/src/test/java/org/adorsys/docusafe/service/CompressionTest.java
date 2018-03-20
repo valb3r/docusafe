@@ -53,16 +53,15 @@ public class CompressionTest {
 
     @After
     public void after() {
-        try {
-            ContainerPersistence containerPersistence = new ContainerPersistenceImpl(extendedStoreConnection);
-            for (BucketDirectory container : buckets) {
-                LOGGER.debug("AFTER TEST: DELETE BUCKET " + container);
-                containerPersistence.deleteContainer(container);
+        ContainerPersistence containerPersistence = new ContainerPersistenceImpl(extendedStoreConnection);
+        for (BucketDirectory bucket : buckets) {
+            try {
+                LOGGER.debug("AFTER TEST: DELETE BUCKET " + bucket);
+                containerPersistence.deleteContainer(bucket);
+            } catch (Exception e) {
+                // ignore Exception
             }
-        } catch (Exception e) {
-            throw BaseExceptionHandler.handle(e);
         }
-
     }
 
     @Test

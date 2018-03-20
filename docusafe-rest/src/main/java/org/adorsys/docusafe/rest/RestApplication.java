@@ -30,10 +30,13 @@ import java.util.Arrays;
 @EnableAutoConfiguration(exclude = {JacksonAutoConfiguration.class})
 public class RestApplication {
     private final static Logger LOGGER = LoggerFactory.getLogger(RestApplication.class);
-    public static final String MINIO_ARG_PREFIX = "-Minio=";
+    public static final String MONGO_ARG_PREFIX = "-DSC-MONGO";
+    public static final String MINIO_ARG_PREFIX = "-DSC-MINIO=";
+    public static final String FILESYSTEM_ARG_PREFIX = "-DSC-FILESYSTEM";
 
     public static void main(String[] args) {
         Arrays.stream(args).forEach(arg -> {
+            LOGGER.info("Application runtime argument:" + arg);
                     if (arg.equalsIgnoreCase("-TurnOffEncPolicy") || arg.equalsIgnoreCase("-EncOff")) {
                         try {
                             Field field = Class.forName("javax.crypto.JceSecurity").getDeclaredField("isRestricted");
@@ -51,7 +54,7 @@ public class RestApplication {
                         } catch (Exception e) {
                             throw BaseExceptionHandler.handle(e);
                         }
-                    } else if (arg.equalsIgnoreCase("-MongoDB")) {
+                    } else if (arg.startsWith(MONGO_ARG_PREFIX)) {
                         LOGGER.info("*************************************");
                         LOGGER.info("*                                   *");
                         LOGGER.info("*  USE MONGO DB                     *");
@@ -59,13 +62,6 @@ public class RestApplication {
                         LOGGER.info("*                                   *");
                         LOGGER.info("*************************************");
                         DocumentSafeController.storeConnection = DocumentSafeController.STORE_CONNECTION.MONGO;
-                    } else if (arg.equalsIgnoreCase("-FileSystem")) {
-                        LOGGER.info("**********************");
-                        LOGGER.info("*                    *");
-                        LOGGER.info("*  USE FILE SYSTEM   *");
-                        LOGGER.info("*                    *");
-                        LOGGER.info("**********************");
-                        DocumentSafeController.storeConnection = DocumentSafeController.STORE_CONNECTION.FILESYSTEM;
                     } else if (arg.startsWith(MINIO_ARG_PREFIX)) {
                         String minioParams = arg.substring(MINIO_ARG_PREFIX.length());
                         MinioParamParser minioParamParser = new MinioParamParser(minioParams);
@@ -76,6 +72,13 @@ public class RestApplication {
                         LOGGER.info("***********************");
                         DocumentSafeController.storeConnection = DocumentSafeController.STORE_CONNECTION.MINIO;
                         DocumentSafeController.minioParams = minioParamParser;
+                    } else if (arg.startsWith(FILESYSTEM_ARG_PREFIX)) {
+                        LOGGER.info("**********************");
+                        LOGGER.info("*                    *");
+                        LOGGER.info("*  USE FILE SYSTEM   *");
+                        LOGGER.info("*                    *");
+                        LOGGER.info("**********************");
+                        DocumentSafeController.storeConnection = DocumentSafeController.STORE_CONNECTION.FILESYSTEM;
                     } else {
                         LOGGER.error("Parameter " + arg + " is unknown.");
                         LOGGER.error("Knwon Parameters are: encoff, mongodb, filesystem");

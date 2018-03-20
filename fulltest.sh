@@ -42,11 +42,15 @@ filesystem=1
 function testParams {
 	for var in "$@"
 	do
-		if [[ $var == "-mongodb" ]]
-		then
+		if [[ $var == -DSC-MINIO* ]] 
+		then 
 			filesystem=0
 		fi
-		if [[ $var == "-filesystem" ]]
+		if [[ $var == -DSC-MONGO* ]] 
+		then 
+			filesystem=0
+		fi
+		if [[ $var == -DSC-FILESYSTEM* ]]
 		then
 			filesystem=1
 		fi
