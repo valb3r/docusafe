@@ -21,10 +21,14 @@ import org.adorsys.docusafe.business.utils.UserIDUtil;
 import org.adorsys.docusafe.service.BucketService;
 import org.adorsys.docusafe.service.DocumentGuardService;
 import org.adorsys.docusafe.service.DocumentPersistenceService;
+import org.adorsys.docusafe.service.KeySourceService;
 import org.adorsys.docusafe.service.impl.BucketServiceImpl;
 import org.adorsys.docusafe.service.impl.DocumentGuardServiceImpl;
 import org.adorsys.docusafe.service.impl.DocumentPersistenceServiceImpl;
 import org.adorsys.docusafe.service.impl.GuardKeyType;
+import org.adorsys.docusafe.service.impl.KeySourceServiceImpl;
+import org.adorsys.docusafe.service.impl.guardHelper.GuardKeyHelper;
+import org.adorsys.docusafe.service.impl.guardHelper.GuardKeyHelperFactory;
 import org.adorsys.docusafe.service.types.AccessType;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.service.types.DocumentKeyID;
@@ -39,6 +43,7 @@ import org.adorsys.encobject.domain.Payload;
 import org.adorsys.encobject.domain.PayloadStream;
 import org.adorsys.encobject.domain.UserMetaData;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
+import org.adorsys.encobject.service.api.KeyStore2KeySourceHelper;
 import org.adorsys.encobject.service.api.KeyStoreService;
 import org.adorsys.encobject.service.impl.KeyStoreServiceImpl;
 import org.adorsys.encobject.service.impl.SimplePayloadImpl;
@@ -49,6 +54,8 @@ import org.adorsys.jkeygen.keystore.KeyStoreType;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.nimbusds.jose.jwk.JWK;
 
 /**
  * Created by peter on 19.01.18 at 14:39.
@@ -61,12 +68,14 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
     private KeyStoreService keyStoreService;
     private DocumentGuardService documentGuardService;
     private DocumentPersistenceService documentPersistenceService;
+    private KeySourceService keySourceService;
 
     public DocumentSafeServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
         bucketService = new BucketServiceImpl(extendedStoreConnection);
         keyStoreService = new KeyStoreServiceImpl(extendedStoreConnection);
         documentGuardService = new DocumentGuardServiceImpl(extendedStoreConnection);
         documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection);
+        keySourceService = new KeySourceServiceImpl(extendedStoreConnection);
     }
 
     /**
@@ -353,9 +362,13 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         LOGGER.info("finished linkDocument for " + userIDAuth + " " + sourceDocumentFQN + " -> " + destinationDocumentFQN);
     }
 
+    @Override
+	public JWK findPublicEncryptionKey(UserID userID) {
+    	KeyStoreAccess keyStoreAccess = getKeyStoreAccess(new UserIDAuth(userID, null));
+    	return keySourceService.findPublicEncryptionKey(keyStoreAccess);
+	}
 
-
-    private DocumentKeyID createAsymmetricGuardForBucket(KeyStoreAccess keyStoreAccess,
+	private DocumentKeyID createAsymmetricGuardForBucket(KeyStoreAccess keyStoreAccess,
                                                          DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType,
                                                          BucketDirectory documentDirectory,
                                                          OverwriteFlag overwriteFlag) {

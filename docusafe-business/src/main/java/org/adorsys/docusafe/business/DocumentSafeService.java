@@ -8,6 +8,8 @@ import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.service.types.AccessType;
 
+import com.nimbusds.jose.jwk.JWK;
+
 /**
  * Created by peter on 19.01.18 at 16:30.
  */
@@ -19,6 +21,12 @@ public interface DocumentSafeService {
     void destroyUser(UserIDAuth userIDAuth);
 
     boolean userExists(UserID userID);
+    
+    /**
+     * returns the user public encryption key of the given user.
+     */
+    JWK findPublicEncryptionKey(UserID userID);
+    
     /**
      * Document
      */
