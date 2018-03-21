@@ -39,7 +39,8 @@ public class Main {
                 error();
             }
             String filename = args[1];
-            client.writeDocumentStream(USER_ID, PASSWORD, filename, new SlowInputStream(getAsInputStream(filename), 1, 1024 * 1024), new File(filename).length());
+            client.writeDocumentStream(USER_ID, PASSWORD, filename, getAsInputStream(filename), new File(filename).length());
+//            client.writeDocumentStream(USER_ID, PASSWORD, filename, new SlowInputStream(getAsInputStream(filename), 1, 1024 * 1024), new File(filename).length());
         }
         if (action.equals("-rs")) {
             if (args.length != 3) {

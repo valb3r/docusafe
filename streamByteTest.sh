@@ -16,7 +16,7 @@ file=docusafe-rest.client/target/dsc
 filetosave=docusafe-rest.client/target/largefile
 rm -f $filetosave
 i="0"
-while (( i<300 ))
+while (( i<10 ))
 do
 	cat $file >> $filetosave
 	let i=i+1
@@ -26,10 +26,14 @@ size=$(ls -sk $filetosave | cut -f  2 -d " ")
 # write stream and read bytes and stream ===================
 # ==========================================================
 print "$(date) write file stream oriented with size $size"
-java -jar $file -ws $filetosave
+java -jar $file -wb $filetosave
 
 print "$(date) read file stream oriented with size $size"
 java -jar $file -rs $filetosave $file-as-stream2
 diff $filetosave $file-as-stream2
+
+print "$(date) read file byte oriented with size $size"
+java -jar $file -rb $filetosave $file-as-bytes
+diff $filetosave $file-as-bytes
 
 print "STREAM TESTING SUCCESSFULL"

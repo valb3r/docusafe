@@ -62,6 +62,7 @@ echo filesystem $filesystem
 
 ./dorest.sh $filesystem
 ./streamTest.sh
+./streamByteTest.sh
 
 echo "kill standalone server with pid $pid"
 kill $pid
