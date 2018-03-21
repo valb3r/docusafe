@@ -3,9 +3,6 @@ language: java
 jdk:
   - oraclejdk8
 
-install:
-  - mvn --settings .travis/settings.xml clean install -DskipTests -Dmaven.javadoc.skip=true -B -V
-
 script:
   - /bin/bash .travis/build.sh
 
