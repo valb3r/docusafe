@@ -1,7 +1,7 @@
 package org.adorsys.docusafe.service;
 
-import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
+import org.adorsys.cryptoutils.miniostoreconnection.MinioExtendedStoreConnection;
 import org.adorsys.cryptoutils.storageconnection.testsuite.ExtendedStoreConnectionFactory;
 import org.adorsys.cryptoutils.utils.HexUtil;
 import org.adorsys.docusafe.service.types.AccessType;
@@ -343,21 +343,24 @@ public class AllServiceTest {
      * wie der vorige Test, nur dass der SecretKey nicht gelesen werden können soll,
      * weil er nicht bekannt ist. Daher expected Excption
      */
-    @Test(expected = BaseException.class)
+    @Test
     public void testCreate_oneDocument_twoKeyStores_twoGuards_LoadDocument_with_expected_failure() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         String container1 = "user1/.keystore/key-store-container-for-secretkey";
         String container2 = "user2/.keystore/key-store-container-for-enckey";
-        DocumentBucketPath documentBucketPath = new DocumentBucketPath("documentBucketPath/4");
+        DocumentBucketPath documentBucketPath = new DocumentBucketPath("documentbucketpath/4");
 
         DocumentContent documentContent = new DocumentContent("Ein Affe im Zoo ist nie allein".getBytes());
 
-        try {
+        boolean exceptionCaught = false;
             FullStuff symmetricStuff = createKeyStoreAndDocument(container1, documentBucketPath, documentContent);
+        try {
             createPublicKeyStoreForKnownDocument(container2, documentContent, symmetricStuff.documentStuff.documentBucketPath, symmetricStuff.documentGuardStuff.documentKeyIDWithKeyAndAccessType, false);
         } catch (Exception e) {
-            BaseExceptionHandler.handle(e);
+            LOGGER.info("Exception was expected");
+            exceptionCaught = true;
         }
+        Assert.assertTrue(exceptionCaught);
     }
 
     @Test
@@ -488,6 +491,17 @@ public class AllServiceTest {
         boolean fileExsits = bucketServiceTest.fileExists(documentBucketPath);
         Assert.assertEquals("file should exist", true, fileExsits);
 
+    }
+
+
+    @Test
+    public void createManyBuckets() {
+        BucketServiceTest bucketServiceTest = new BucketServiceTest(extendedStoreConnection);
+        for (int i = 0; i<200; i++) {
+            BucketDirectory bd = new BucketDirectory("bucket" + i);
+            buckets.add(bd);
+            bucketServiceTest.createBucket(bd);
+        }
     }
 
     private void showBucketContent(BucketContent bucketContent2) {

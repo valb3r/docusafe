@@ -1,6 +1,7 @@
 package org.adorsys.docusafe.business;
 
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
+import org.adorsys.cryptoutils.miniostoreconnection.MinioExtendedStoreConnection;
 import org.adorsys.cryptoutils.storageconnection.testsuite.ExtendedStoreConnectionFactory;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.utils.GrantUtil;
@@ -45,7 +46,7 @@ public class GrantUtilTest {
             users.forEach(userID -> {
                 LOGGER.debug("AFTER TEST DESTROY " + userID.getValue());
                 BucketService service = new BucketServiceImpl(extendedStoreConnection);
-                service.destroyBucket(UserIDUtil.getHomeBucketDirectory(userID));
+                service.destroyBucket(UserIDUtil.getUserRootBucketDirectory(userID));
             });
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
@@ -61,6 +62,7 @@ public class GrantUtilTest {
         BucketService bucketService = new BucketServiceImpl(BusinessTest.extendedStoreConnection);
         bucketService.createBucket(UserIDUtil.getHomeBucketDirectory(owner));
         users.add(owner);
+        users.add(receiver);
         BucketDirectory documentDirectory = new BucketDirectory("affe/1/2/3");
         GrantUtil.saveBucketGrantFile(bucketService, documentDirectory, owner, receiver, AccessType.WRITE);
         AccessType a = GrantUtil.getAccessTypeOfBucketGrantFile(bucketService, documentDirectory, owner, receiver);
@@ -77,6 +79,7 @@ public class GrantUtilTest {
         BucketService bucketService = new BucketServiceImpl(BusinessTest.extendedStoreConnection);
         bucketService.createBucket(UserIDUtil.getHomeBucketDirectory(owner));
         users.add(owner);
+        users.add(receiver);
 
         AccessType a = GrantUtil.getAccessTypeOfBucketGrantFile(bucketService, documentDirectory, owner, receiver);
         Assert.assertEquals("accessType ", AccessType.NONE, a);
@@ -109,6 +112,8 @@ public class GrantUtilTest {
         BucketService bucketService = new BucketServiceImpl(BusinessTest.extendedStoreConnection);
         bucketService.createBucket(UserIDUtil.getHomeBucketDirectory(owner));
         users.add(owner);
+        users.add(receiver);
+
         BucketDirectory documentDirectory = new BucketDirectory(new BucketPath("affe/1/2/3"));
 
 
