@@ -1,4 +1,4 @@
-trap error ERR
+trap error ERR INT
 
 function error () {
 	echo "=================================================="
@@ -21,6 +21,8 @@ java -jar docusafe-rest/target/docusafe-rest.jar $* > documentsafe.console.out.l
 pid=$!
 echo "pid ist $pid"
 
+limit=30
+counter=0
 started=0
 while (( started == 0 ))
 do
@@ -35,6 +37,13 @@ do
 		echo "application can not start. see log file or documentsafe.console.out.log"
 		error
 	fi
+	let counter=counter+1
+	if (( counter == limit )) 
+	then
+		echo "maximale Wartezeit von $limit Sekunden ueberschritten"
+		error
+	fi
+	echo "gewartet bis jetzt $counter Sekunden"
 done
 echo "server is up"
 
