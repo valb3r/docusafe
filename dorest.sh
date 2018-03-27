@@ -23,7 +23,7 @@ function checkGuards() {
 	user=$1
 	expected=$2
 
-	guardKeys=$(find target/filesystemstorage -type f |  grep "^target/filesystemstorage/BP-$user/.KEYSTORE" | grep bucketGuardKey | grep -v $META | wc -l)
+	guardKeys=$(find target/filesystemstorage -type f |  grep "^target/filesystemstorage/bp-$user/.KEYSTORE" | grep bucketGuardKey | grep -v $META | wc -l)
 	if (( guardKeys == expected )) 
 	then
 		echo "ok Anzahl von $user GuardKeys ist $expected.  Das ist fein." | tee -a curl.log
@@ -32,7 +32,7 @@ function checkGuards() {
 		exit 1;
 	fi
 
-	guards=$(find target/filesystemstorage -type f |  grep "^target/filesystemstorage/BP-$user/.KEYSTORE/KS-$user.DK.*" | grep -v $META | wc -l)
+	guards=$(find target/filesystemstorage -type f |  grep "^target/filesystemstorage/bp-$user/.KEYSTORE/KS-$user.DK.*" | grep -v $META | wc -l)
 	if (( guards == expected )) 
 	then
 		echo "ok Anzahl von $user Guards ist $expected.  Das ist fein." | tee -a curl.log
