@@ -68,24 +68,8 @@
 
         <dependency>
             <groupId>de.adorsys.cryptoutils</groupId>
-            <artifactId>filesystemstoreconnection</artifactId>
+            <artifactId>storeconnectionfactory</artifactId>
             <version>${crypt.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>de.adorsys.cryptoutils</groupId>
-            <artifactId>mongodbstoreconnection</artifactId>
-            <version>${crypt.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>de.adorsys.cryptoutils</groupId>
-            <artifactId>miniostoreconnection</artifactId>
-            <version>${crypt.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongodb-driver</artifactId>
-            <version>3.6.3</version>
         </dependency>
 
     </dependencies>

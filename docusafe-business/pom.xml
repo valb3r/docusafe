@@ -25,35 +25,12 @@
             <artifactId>docusafe-service</artifactId>
         </dependency>
 
-
-
         <dependency>
             <groupId>de.adorsys.cryptoutils</groupId>
-            <artifactId>filesystemstoreconnection</artifactId>
+            <artifactId>storeconnectionfactory</artifactId>
             <version>${crypt.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>de.adorsys.cryptoutils</groupId>
-            <artifactId>mongodbstoreconnection</artifactId>
-            <version>${crypt.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>de.adorsys.cryptoutils</groupId>
-            <artifactId>miniostoreconnection</artifactId>
-            <version>${crypt.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>de.adorsys.cryptoutils</groupId>
-            <artifactId>storeconnection-testsuite</artifactId>
-            <version>${crypt.version}</version>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-
 
     </dependencies>
 
