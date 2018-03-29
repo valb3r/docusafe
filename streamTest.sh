@@ -16,7 +16,7 @@ file=docusafe-rest.client/target/dsc
 filetosave=docusafe-rest.client/target/largefile
 rm -f $filetosave
 i="0"
-while (( i<300 ))
+while (( i<150 ))
 do
 	cat $file >> $filetosave
 	let i=i+1
