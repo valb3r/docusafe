@@ -17,6 +17,22 @@
     <artifactId>docusafe-rest</artifactId>
 
     <dependencies>
+
+        <!-- first to make sure, the correct mongodb is included -->
+        <dependency>
+            <groupId>de.adorsys.cryptoutils</groupId>
+            <artifactId>storeconnectionfactory</artifactId>
+            <version>${crypt.version}</version>
+            <!--
+            <exclusions>
+            <exclusion>
+                <groupId>org.mongodb</groupId>
+                <artifactId>mongodb-driver</artifactId>
+            </exclusion>
+            </exclusions>
+            -->
+        </dependency>
+
         <!-- Spring boot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -64,12 +80,6 @@
         <dependency>
             <groupId>de.adorsys</groupId>
             <artifactId>docusafe-business</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>de.adorsys.cryptoutils</groupId>
-            <artifactId>storeconnectionfactory</artifactId>
-            <version>${crypt.version}</version>
         </dependency>
 
     </dependencies>

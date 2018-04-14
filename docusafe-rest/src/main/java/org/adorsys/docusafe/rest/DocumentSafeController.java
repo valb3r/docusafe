@@ -5,6 +5,7 @@ import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.cryptoutils.miniostoreconnection.MinioExtendedStoreConnection;
 import org.adorsys.cryptoutils.miniostoreconnection.MinioParamParser;
 import org.adorsys.cryptoutils.mongodbstoreconnection.MongoDBExtendedStoreConnection;
+import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
 import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
 import org.adorsys.docusafe.business.types.UserID;
@@ -45,8 +46,6 @@ import java.io.OutputStream;
  */
 @RestController
 public class DocumentSafeController {
-    public static STORE_CONNECTION storeConnection = STORE_CONNECTION.FILESYSTEM;
-    public static MinioParamParser minioParams = null;
     private final static String APPLICATION_JSON = "application/json";
     private final static String APPLICATION_OCTET_STREAM = "application/octet-stream";
 
@@ -54,21 +53,7 @@ public class DocumentSafeController {
     private DocumentSafeService service;
 
     public DocumentSafeController() {
-        switch (storeConnection) {
-            case MONGO:
-                service = new DocumentSafeServiceImpl(new MongoDBExtendedStoreConnection());
-                break;
-            case FILESYSTEM:
-                service = new DocumentSafeServiceImpl(new FileSystemExtendedStorageConnection());
-                break;
-            case MINIO:
-                service = new DocumentSafeServiceImpl(new MinioExtendedStoreConnection(minioParams.getUrl(),
-                        minioParams.getMinioAccessKey(), minioParams.getMinioSecretKey()));
-                break;
-            default:
-                throw new BaseException("missing switch");
-        }
-
+        service = new DocumentSafeServiceImpl(ExtendedStoreConnectionFactory.get());
     }
 
     /**
@@ -143,13 +128,13 @@ public class DocumentSafeController {
     public
     @ResponseBody
     ResponseEntity<DSDocument> readDocument(@RequestHeader("userid") String userid,
-                            @RequestHeader("password") String password,
-                            HttpServletRequest request
+                                            @RequestHeader("password") String password,
+                                            HttpServletRequest request
     ) {
         LOGGER.info("get document request arrived");
         UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
         DocumentFQN documentFQN = new DocumentFQN(getFQN(request));
-        if (! service.documentExists(userIDAuth, documentFQN)) {
+        if (!service.documentExists(userIDAuth, documentFQN)) {
             LOGGER.debug("document " + documentFQN + " does not exist");
             return new ResponseEntity(HttpStatus.NOT_FOUND);
         }
@@ -182,9 +167,9 @@ public class DocumentSafeController {
 
     )
     public ResponseEntity readDocumentStream(@RequestHeader("userid") String userid,
-                                   @RequestHeader("password") String password,
-                                   HttpServletRequest request,
-                                   HttpServletResponse response
+                                             @RequestHeader("password") String password,
+                                             HttpServletRequest request,
+                                             HttpServletResponse response
     ) {
         try {
             LOGGER.info("get stream request arrived1");
@@ -192,7 +177,7 @@ public class DocumentSafeController {
             DocumentFQN documentFQN = new DocumentFQN(getFQN(request));
             LOGGER.debug("received:" + userIDAuth + " and " + documentFQN);
 
-            if (! service.documentExists(userIDAuth, documentFQN)) {
+            if (!service.documentExists(userIDAuth, documentFQN)) {
                 LOGGER.debug("documentstream " + documentFQN + " does not exist");
                 return new ResponseEntity(HttpStatus.NOT_FOUND);
             }
@@ -317,11 +302,5 @@ public class DocumentSafeController {
         final String bestMatchingPattern = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();
         final String documentFQNStringWithQuotes = new AntPathMatcher().extractPathWithinPattern(bestMatchingPattern, path);
         return documentFQNStringWithQuotes.replaceAll("\"", "");
-    }
-
-    public static enum STORE_CONNECTION {
-        MONGO,
-        FILESYSTEM,
-        MINIO
     }
 }

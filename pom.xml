@@ -22,7 +22,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <crypt.version>0.18.0-SNAPSHOT</crypt.version>
+        <crypt.version>0.18.1-SNAPSHOT</crypt.version>
         <version.swagger>1.5.5</version.swagger>
         <deploy.disabled>false</deploy.disabled>
     </properties>
