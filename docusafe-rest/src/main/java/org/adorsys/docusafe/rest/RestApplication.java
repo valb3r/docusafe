@@ -63,6 +63,10 @@ public class RestApplication {
         );
         LOGGER.info("add bouncy castle provider");
         Security.addProvider(new BouncyCastleProvider());
-        SpringApplication.run(RestApplication.class, args);
+        try {
+            SpringApplication.run(RestApplication.class, args);
+        } catch (Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
     }
 }
