@@ -19,7 +19,7 @@ public class DocumentKeyIDWithKeyBasedSourceImpl implements KeySource {
 
     @Override
     public Key readKey(KeyID keyID) {
-        if (keyID.equals(documentKeyIDWithKey.getDocumentKeyID())) {
+        if (!keyID.getValue().equals(documentKeyIDWithKey.getDocumentKeyID().getValue())) {
             throw new KeySourceException("expected key id " + documentKeyIDWithKey.getDocumentKeyID() + " but got key id "+ keyID);
         }
         return documentKeyIDWithKey.getDocumentKey().getSecretKey();

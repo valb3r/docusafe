@@ -70,13 +70,6 @@
             <version>2.8.2</version>
         </dependency>
 
-
-        <dependency>
-            <groupId>de.adorsys.cryptoutils</groupId>
-            <artifactId>basetypes</artifactId>
-            <version>${crypt.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>de.adorsys</groupId>
             <artifactId>docusafe-business</artifactId>
