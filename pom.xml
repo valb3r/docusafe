@@ -8,13 +8,6 @@
     <version>0.3.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.5.9.RELEASE</version>
-    </parent>
-
-
     <name>docusafe</name>
     <url>https://github.com/adorsys/docusafe</url>
 
@@ -25,6 +18,7 @@
         <crypt.version>0.18.1-SNAPSHOT</crypt.version>
         <version.swagger>1.5.5</version.swagger>
         <deploy.disabled>false</deploy.disabled>
+        <spring-boot.version>2.0.1.RELEASE</spring-boot.version>
     </properties>
 
     <scm>
