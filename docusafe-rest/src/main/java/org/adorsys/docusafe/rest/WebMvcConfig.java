@@ -21,6 +21,8 @@ import org.adorsys.docusafe.rest.adapter.UserIDJsonAdapter;
 import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.adorsys.encobject.types.BucketName;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
+import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -45,7 +47,7 @@ import java.util.List;
 /**
  * Created by peter on 13.01.18 at 22:28.
  */
-@SpringBootApplication
+@SpringBootApplication(exclude = {JacksonAutoConfiguration.class, MongoAutoConfiguration.class})
 @Configuration
 @EnableWebMvc
 public class WebMvcConfig extends WebMvcConfigurerAdapter {

@@ -10,6 +10,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
+import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 
 import java.lang.reflect.Field;
 import java.security.Security;
@@ -19,7 +20,7 @@ import java.util.Arrays;
  * Created by peter on 10.01.18.
  */
 
-@SpringBootApplication
+@SpringBootApplication(exclude = {JacksonAutoConfiguration.class, MongoAutoConfiguration.class})
 /**
  * Die EnableAutoConfiguration(exclude jackson) Annotion ist sehr wichtig, denn sonst
  * ziehen die TypeAdapter für Json nicht.
@@ -27,7 +28,7 @@ import java.util.Arrays;
  * "documentKeyID": {value": "123"} statt
  * "documentKeyID": "123"
  */
-@EnableAutoConfiguration(exclude = {JacksonAutoConfiguration.class})
+@EnableAutoConfiguration(exclude = {JacksonAutoConfiguration.class, MongoAutoConfiguration.class})
 public class RestApplication {
     private final static Logger LOGGER = LoggerFactory.getLogger(RestApplication.class);
 
