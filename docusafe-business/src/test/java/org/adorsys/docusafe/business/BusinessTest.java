@@ -29,6 +29,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +48,14 @@ public class BusinessTest {
     private DocumentSafeService service;
 
     public static Set<UserIDAuth> users = new HashSet<>();
+
+    @BeforeClass
+    static public void beforeClass() {
+        LOGGER.info("add bouncy castle provider");
+        Security.addProvider(new BouncyCastleProvider());
+        LOGGER.info("clear whole database");
+        extendedStoreConnection.listAllBuckets().forEach(bucket -> extendedStoreConnection.deleteContainer(bucket));
+    }
 
     @Before
     public void before() {
