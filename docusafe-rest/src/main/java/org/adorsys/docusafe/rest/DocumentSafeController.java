@@ -279,24 +279,6 @@ public class DocumentSafeController {
         return service.readGrantedDocument(userIDAuth, ownerUserID, documentFQN);
     }
 
-
-    /**
-     * DOCUMENT/LINK
-     * ===========================================================================================
-     */
-    @RequestMapping(
-            value = "/document/link",
-            method = {RequestMethod.PUT},
-            consumes = {APPLICATION_JSON},
-            produces = {APPLICATION_JSON}
-    )
-    public void createLink(@RequestHeader("userid") String userid,
-                           @RequestHeader("password") String password,
-                           @RequestBody CreateLinkTupel createLinkTupel) {
-        UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
-        service.linkDocument(userIDAuth, createLinkTupel.getSource(), createLinkTupel.getDestination());
-    }
-
     private String getFQN(HttpServletRequest request) {
         final String path = request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();
         final String bestMatchingPattern = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();

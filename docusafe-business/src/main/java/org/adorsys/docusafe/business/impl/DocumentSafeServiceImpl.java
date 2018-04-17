@@ -1,5 +1,6 @@
 package org.adorsys.docusafe.business.impl;
 
+import com.nimbusds.jose.jwk.JWK;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.exceptions.NoWriteAccessException;
@@ -11,12 +12,9 @@ import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DSDocumentStream;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
-import org.adorsys.docusafe.business.types.complex.DocumentLink;
-import org.adorsys.docusafe.business.types.complex.DocumentLinkAsDSDocument;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.business.utils.GrantUtil;
 import org.adorsys.docusafe.business.utils.GuardUtil;
-import org.adorsys.docusafe.business.utils.LinkUtil;
 import org.adorsys.docusafe.business.utils.UserIDUtil;
 import org.adorsys.docusafe.service.BucketService;
 import org.adorsys.docusafe.service.DocumentGuardService;
@@ -27,8 +25,6 @@ import org.adorsys.docusafe.service.impl.DocumentGuardServiceImpl;
 import org.adorsys.docusafe.service.impl.DocumentPersistenceServiceImpl;
 import org.adorsys.docusafe.service.impl.GuardKeyType;
 import org.adorsys.docusafe.service.impl.KeySourceServiceImpl;
-import org.adorsys.docusafe.service.impl.guardHelper.GuardKeyHelper;
-import org.adorsys.docusafe.service.impl.guardHelper.GuardKeyHelperFactory;
 import org.adorsys.docusafe.service.types.AccessType;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.service.types.DocumentKeyID;
@@ -43,7 +39,6 @@ import org.adorsys.encobject.domain.Payload;
 import org.adorsys.encobject.domain.PayloadStream;
 import org.adorsys.encobject.domain.UserMetaData;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
-import org.adorsys.encobject.service.api.KeyStore2KeySourceHelper;
 import org.adorsys.encobject.service.api.KeyStoreService;
 import org.adorsys.encobject.service.impl.KeyStoreServiceImpl;
 import org.adorsys.encobject.service.impl.SimplePayloadImpl;
@@ -51,18 +46,14 @@ import org.adorsys.encobject.service.impl.SimplePayloadStreamImpl;
 import org.adorsys.encobject.service.impl.SimpleStorageMetadataImpl;
 import org.adorsys.encobject.types.OverwriteFlag;
 import org.adorsys.jkeygen.keystore.KeyStoreType;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.nimbusds.jose.jwk.JWK;
 
 /**
  * Created by peter on 19.01.18 at 14:39.
  */
 public class DocumentSafeServiceImpl implements DocumentSafeService {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentSafeServiceImpl.class);
-    public static final String LINK_KEY = "DocumentSafeServiceImpl.LINK_KEY";
 
     private BucketService bucketService;
     private KeyStoreService keyStoreService;
@@ -149,9 +140,6 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
 
         SimpleStorageMetadataImpl storageMetadata = new SimpleStorageMetadataImpl();
         storageMetadata.mergeUserMetadata(dsDocument.getDsDocumentMetaInfo());
-        if (dsDocument instanceof DocumentLinkAsDSDocument) {
-            storageMetadata.getUserMetadata().put(LINK_KEY, "TRUE");
-        }
         storageMetadata.setSize(new Long(dsDocument.getDocumentContent().getValue().length));
         DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), dsDocument.getDocumentFQN());
         DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, documentBucketPath.getBucketDirectory(), AccessType.WRITE);
@@ -171,13 +159,6 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
         Payload payload = documentPersistenceService.loadDocument(keyStoreAccess, documentBucketPath);
         UserMetaData userMetaData = payload.getStorageMetadata().getUserMetadata();
-        if (userMetaData.find(LINK_KEY) != null) {
-            LOGGER.info("start load link " + documentFQN);
-            DocumentLink documentLink = LinkUtil.getDocumentLink(payload.getData());
-            DocumentBucketPath sourceDocumentBucketPath = documentLink.getSourceDocumentBucketPath();
-            payload = documentPersistenceService.loadDocument(keyStoreAccess, sourceDocumentBucketPath);
-            LOGGER.info("finished load link " + documentFQN);
-        }
         LOGGER.info("finished readDocument for " + userIDAuth + " " + documentFQN);
         return new DSDocument(documentFQN, new DocumentContent(payload.getData()), new DSDocumentMetaInfo(payload.getStorageMetadata().getUserMetadata()));
     }
@@ -212,13 +193,6 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
             KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
             PayloadStream payloadStream = documentPersistenceService.loadDocumentStream(keyStoreAccess, documentBucketPath);
             UserMetaData userMetaData = payloadStream.getStorageMetadata().getUserMetadata();
-            if (userMetaData.find(LINK_KEY) != null) {
-                LOGGER.info("start load link " + documentFQN);
-                DocumentLink documentLink = LinkUtil.getDocumentLink(IOUtils.toByteArray(payloadStream.openStream()));
-                DocumentBucketPath sourceDocumentBucketPath = documentLink.getSourceDocumentBucketPath();
-                payloadStream = documentPersistenceService.loadDocumentStream(keyStoreAccess, sourceDocumentBucketPath);
-                LOGGER.info("finished load link " + documentFQN);
-            }
             LOGGER.info("finished readDocumentStream for " + userIDAuth + " " + documentFQN);
             return new DSDocumentStream(documentFQN, payloadStream.openStream(), new DSDocumentMetaInfo(payloadStream.getStorageMetadata().getUserMetadata()));
         } catch (Exception e) {
@@ -329,37 +303,8 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
         Payload payload = documentPersistenceService.loadDocument(keyStoreAccess, documentBucketPath);
         UserMetaData userMetaData = payload.getStorageMetadata().getUserMetadata();
-        if (userMetaData.find(LINK_KEY) != null) {
-            LOGGER.info("start load link " + documentFQN);
-            DocumentLink documentLink = LinkUtil.getDocumentLink(payload.getData());
-            DocumentBucketPath sourceDocumentBucketPath = documentLink.getSourceDocumentBucketPath();
-            payload = documentPersistenceService.loadDocument(keyStoreAccess, sourceDocumentBucketPath);
-            LOGGER.info("finished load link " + documentFQN);
-        }
         LOGGER.info("finisherd readDocument for " + userIDAuth + " " + documentOwner + " " + documentFQN);
         return new DSDocument(documentFQN, new DocumentContent(payload.getData()), new DSDocumentMetaInfo(payload.getStorageMetadata().getUserMetadata()));
-    }
-
-
-
-    @Override
-    public void linkDocument(UserIDAuth userIDAuth, DocumentFQN sourceDocumentFQN, DocumentFQN destinationDocumentFQN) {
-        LOGGER.info("start linkDocument for " + userIDAuth + " " + sourceDocumentFQN + " -> " + destinationDocumentFQN);
-
-        // Wir prüfen lediglich, ob es den source Bucket gibt und ob wir darauf Zugriff haben.
-        // Ob das Document selbset existiert, bleibt vorher ein Geheimnis
-        DocumentBucketPath sourceDocumentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), sourceDocumentFQN);
-        DocumentKeyIDWithKeyAndAccessType sourceDocumentKeyIDWithKeyAndAccessType = getDocumentKeyIDwithKeyForBucketPath(userIDAuth, sourceDocumentBucketPath.getBucketDirectory());
-
-        DocumentBucketPath destinationDocumentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), destinationDocumentFQN);
-        DocumentKeyIDWithKeyAndAccessType destinationDocumentKeyIDWithKeyAndAccessType = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, destinationDocumentBucketPath.getBucketDirectory(), AccessType.WRITE);
-
-        // TODO, die keys der destination müssen noch in das linkDocument (das faktisch ein guard ist)
-        DocumentLink documentLink = new DocumentLink(sourceDocumentBucketPath, destinationDocumentBucketPath);
-        DocumentLinkAsDSDocument dsDocumentLink = LinkUtil.createDSDocument(documentLink, destinationDocumentFQN);
-
-        storeDocument(userIDAuth, dsDocumentLink);
-        LOGGER.info("finished linkDocument for " + userIDAuth + " " + sourceDocumentFQN + " -> " + destinationDocumentFQN);
     }
 
     @Override

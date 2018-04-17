@@ -121,15 +121,6 @@ checkGuards peter   2
 print "peter gets deep document"
 checkCurl 200 -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22deeper/and/deeper/README.txt%22' 
 
-print "peter links deep document"
-checkCurl 200 -f -X PUT -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i http://localhost:8080/document/link --data '{
-  "source": "deeper/and/deeper/README.txt",
-  "destination": "green/bucket/README.txt"
-}' 
-
-print "peter gets linked document"
-checkCurl 200 -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22green/bucket/README.txt%22' 
-checkGuards peter   3
 
 print "create user francis"
 checkCurl 200 -X PUT -H 'Content-Type: application/json' -H 'Accept: application/json' -i http://localhost:8080/internal/user --data '{"userID":"francis", "readKeyPassword":"passWordXyZ"}' 
@@ -207,7 +198,7 @@ then
 	find target/filesystemstorage -type f >> curl.log
 fi
 
-checkGuards peter   3
+checkGuards peter   2
 checkGuards francis 1
 
 print "peter gets README.txt of home dir"

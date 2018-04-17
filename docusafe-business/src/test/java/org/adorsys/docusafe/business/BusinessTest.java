@@ -133,30 +133,6 @@ public class BusinessTest {
         Assert.assertEquals("Anzahl der guards", 2, getNumberOfGuards(userIDAuth.getUserID()));
     }
 
-
-    @Test
-    public void linkDocument() {
-        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
-        UserIDAuth userIDAuth = createUser();
-
-        DocumentFQN documentFQN = new DocumentFQN("first/next/a-new-document.txt");
-        checkGuardsForDocument(userIDAuth, documentFQN, false);
-        Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
-        DSDocument dsDocument = createDocument(userIDAuth, documentFQN);
-        checkGuardsForDocument(userIDAuth, documentFQN, true);
-        Assert.assertEquals("Anzahl der guards", 2, getNumberOfGuards(userIDAuth.getUserID()));
-
-        DocumentFQN linkDocumentFQN = new DocumentFQN("newBucket/a-new-document.txt");
-        checkGuardsForDocument(userIDAuth, linkDocumentFQN, false);
-        service.linkDocument(userIDAuth, documentFQN, linkDocumentFQN);
-        checkGuardsForDocument(userIDAuth, linkDocumentFQN, true);
-        Assert.assertEquals("Anzahl der guards", 3, getNumberOfGuards(userIDAuth.getUserID()));
-
-        readDocument(userIDAuth, linkDocumentFQN, dsDocument.getDocumentContent());
-
-        Assert.assertEquals("Anzahl der guards", 3, getNumberOfGuards(userIDAuth.getUserID()));
-    }
-
     @Test
     public void grantAccessToFolder() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
@@ -191,36 +167,6 @@ public class BusinessTest {
         Assert.assertEquals("document content ok", dsDocument1.getDocumentContent(), dsDocument.getDocumentContent());
 
         service.storeGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), dsDocument);
-    }
-
-    // @Test
-    // Scheitert noch, da LinkGuard keinen Key enthält
-    public void grantReadAccessToFolderWithLinkedDocument() {
-        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
-        // Anlegen eines Documents
-        UserIDAuth userIDAuthPeter = createUser(new UserID("peter"), new ReadKeyPassword("keyPasswordForPeter"));
-        DocumentFQN documentFQN = new DocumentFQN("privateFolder/a-new-document.txt");
-        DSDocument dsDocument1 = createDocument(userIDAuthPeter, documentFQN);
-
-        // Linken des Documents in einen weiteren folder
-        DocumentDirectoryFQN publicFolder = new DocumentDirectoryFQN("publicFolder");
-        DocumentFQN linkDocumentFQN = publicFolder.addName("a-new-document.txt");
-        service.linkDocument(userIDAuthPeter, documentFQN, linkDocumentFQN);
-
-        // Lesen beider Documente
-        DSDocument dsDocumentFromPrivateFolder = service.readDocument(userIDAuthPeter, documentFQN);
-        DSDocument dsDocumentFromPublicFolder = service.readDocument(userIDAuthPeter, linkDocumentFQN);
-
-        // Vergleichen der gelesenen Inhalate mit den verschickten Inhalten
-        Assert.assertTrue(Arrays.equals(dsDocumentFromPrivateFolder.getDocumentContent().getValue(), dsDocument1.getDocumentContent().getValue()));
-        Assert.assertTrue(Arrays.equals(dsDocumentFromPublicFolder.getDocumentContent().getValue(), dsDocument1.getDocumentContent().getValue()));
-
-
-        // Nun darf auch Francis im Public Folder lesen
-        UserIDAuth userIDAuthFrancis = createUser(new UserID("francis"), new ReadKeyPassword("keyPasswordForFrancis"));
-        service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), publicFolder, AccessType.READ);
-        service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), linkDocumentFQN);
-
     }
 
     /**
