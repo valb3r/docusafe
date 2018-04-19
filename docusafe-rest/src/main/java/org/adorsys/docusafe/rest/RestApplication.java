@@ -3,6 +3,7 @@ package org.adorsys.docusafe.rest;
 import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
+import org.adorsys.cryptoutils.utils.ShowProperties;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +63,7 @@ public class RestApplication {
         );
         LOGGER.info("add bouncy castle provider");
         Security.addProvider(new BouncyCastleProvider());
+        ShowProperties.log();
         try {
             SpringApplication.run(RestApplication.class, args);
         } catch (Exception e) {
