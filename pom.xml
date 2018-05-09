@@ -10,6 +10,7 @@
 
     <name>docusafe</name>
     <url>https://github.com/adorsys/docusafe</url>
+    <description>adorsys docusafe modules</description>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
