@@ -5,6 +5,7 @@
 .DS_Store
 target/
 *.log
+*.log.gz
 *.iml
 *.versionBackup
 *.versionsBackup
