@@ -8,7 +8,6 @@
 # *************************************************
 set -e
 
-
 # Hook method to format your release tag
 # Parameter $1 - version as text
 # Returns tag as text
