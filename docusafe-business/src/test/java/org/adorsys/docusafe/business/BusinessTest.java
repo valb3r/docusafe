@@ -4,6 +4,7 @@ import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
 import org.adorsys.docusafe.business.exceptions.NoWriteAccessException;
+import org.adorsys.docusafe.business.exceptions.WrongPasswordException;
 import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
@@ -216,7 +217,7 @@ public class BusinessTest {
         boolean documentGuardExists = true;
         try {
             service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
-        } catch(NoDocumentGuardExists e) {
+        } catch (NoDocumentGuardExists e) {
             documentGuardExists = false;
             LOGGER.debug("Exception was expected");
         }
@@ -224,6 +225,24 @@ public class BusinessTest {
 
         DSDocument dsDocument1 = service.readDocument(userIDAuthPeter, documentFQN);
         service.storeDocument(userIDAuthPeter, dsDocument1);
+    }
+
+    @Test
+    public void tryToDeleteUserWithWrongPassword() {
+        UserIDAuth userIDAuthPeter = createUser(new UserID("peter"), new ReadKeyPassword("keyPasswordForPeter"));
+        UserIDAuth wrongUserIDAuthPeter = new UserIDAuth(userIDAuthPeter.getUserID(), new ReadKeyPassword("WRONGPASSWORD"));
+        boolean exceptionRaised = false;
+        try {
+            service.destroyUser(wrongUserIDAuthPeter);
+        } catch (WrongPasswordException e) {
+            LOGGER.debug("THIS EXCEPTION WAS EXPECTED");
+            LOGGER.info("caught exception");
+            exceptionRaised = true;
+        }
+        Assert.assertTrue(exceptionRaised);
+        service.destroyUser(userIDAuthPeter);
+        users.clear();
+
     }
 
 
@@ -238,13 +257,13 @@ public class BusinessTest {
             }
         }
         return count;
-
     }
 
 
     private UserIDAuth createUser(UserID userID) {
         return createUser(userID, new ReadKeyPassword("peterkey"));
     }
+
     private UserIDAuth createUser() {
         return createUser(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));
     }

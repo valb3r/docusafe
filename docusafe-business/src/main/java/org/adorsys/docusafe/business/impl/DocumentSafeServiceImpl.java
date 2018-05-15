@@ -1,11 +1,13 @@
 package org.adorsys.docusafe.business.impl;
 
 import com.nimbusds.jose.jwk.JWK;
+import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.exceptions.NoWriteAccessException;
 import org.adorsys.docusafe.business.exceptions.UserIDAlreadyExistsException;
 import org.adorsys.docusafe.business.exceptions.UserIDDoesNotExistException;
+import org.adorsys.docusafe.business.exceptions.WrongPasswordException;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
@@ -48,6 +50,8 @@ import org.adorsys.encobject.types.OverwriteFlag;
 import org.adorsys.jkeygen.keystore.KeyStoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.security.UnrecoverableEntryException;
 
 /**
  * Created by peter on 19.01.18 at 14:39.
@@ -396,7 +400,16 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
     }
 
     private void checkUserKeyPassword(UserIDAuth userIDAuth) {
-        LOGGER.warn("ACHTUNG, ES WIRD NICHT GEPRÜFT, OB DER BENUTZER " + userIDAuth.getUserID() + " AUCH DAS KORREKTE PASSWORD BENUTZT");
+        KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
+        BucketDirectory documentDirectory = UserIDUtil.getHomeBucketDirectory(userIDAuth.getUserID());
+        DocumentKeyID documentKeyID = GuardUtil.loadBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStorePath().getBucketDirectory(), documentDirectory);
+        try {
+            documentGuardService.loadDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(keyStoreAccess, documentKeyID);
+        } catch (BaseException e) {
+            if (e.getCause() instanceof UnrecoverableEntryException) {
+                throw new WrongPasswordException(userIDAuth.getUserID());
+            }
+        }
     }
 
 
