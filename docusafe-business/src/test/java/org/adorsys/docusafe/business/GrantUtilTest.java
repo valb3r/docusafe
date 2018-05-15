@@ -34,7 +34,7 @@ public class GrantUtilTest {
 
     @Before
     public void before() {
-        LOGGER.info("add bouncy castle provider");
+        LOGGER.debug("add bouncy castle provider");
         Security.addProvider(new BouncyCastleProvider());
         users.clear();
     }

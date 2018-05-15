@@ -76,13 +76,13 @@ public class SlowInputStream extends InputStream {
     }
 
     private void sleep(int secs) {
-        LOGGER.info("sleep for " + secs + " secs");
+        LOGGER.debug("sleep for " + secs + " secs");
         try {
             Thread.currentThread().sleep(secs * 1000);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
-        LOGGER.info("finished sleep for " + secs + " secs");
+        LOGGER.debug("finished sleep for " + secs + " secs");
     }
 
 }

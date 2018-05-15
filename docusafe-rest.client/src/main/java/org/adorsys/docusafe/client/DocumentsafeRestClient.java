@@ -62,11 +62,11 @@ public class DocumentsafeRestClient {
                 .path(CREATE_USER)
                 .request()
                 .put(Entity.entity(createUserRequest, MediaType.APPLICATION_JSON_TYPE));
-        LOGGER.info("User " + userID + "created: " + response.getStatus());
+        LOGGER.debug("User " + userID + "created: " + response.getStatus());
     }
 
     public void readDocument(String userID, String password, String fqn, String filenameToSave) {
-        LOGGER.info("lese nun bytes für " + fqn);
+        LOGGER.debug("lese nun bytes für " + fqn);
         try {
             ReadDocumentResponse readDocument = client.target(baseuri)
                     .path(READ_DOCUMENT)
@@ -84,7 +84,7 @@ public class DocumentsafeRestClient {
     }
 
     public void readDocumentStream(String userID, String password, String fqn, String filenameToSave) {
-        LOGGER.info("lese nun stream für " + fqn);
+        LOGGER.debug("lese nun stream für " + fqn);
         try {
             InputStream inputStream = client.target(baseuri)
                     .path(READ_DOCUMENT_STREAM)
@@ -106,7 +106,7 @@ public class DocumentsafeRestClient {
     }
 
     public void writeDocumentStream(String userID, String password, String fqn, InputStream in, long size) {
-        LOGGER.info("verschicke nun " + size + " bytes");
+        LOGGER.debug("verschicke nun " + size + " bytes");
         String contentDisposition = "attachment; filename=\"" + fqn + "\"";
         Response response = client.target(baseuri)
                 .path(WRITE_DOCUMENT_STREAM1)
@@ -132,7 +132,7 @@ public class DocumentsafeRestClient {
                 .header(PASSWORD, password)
                 .put(Entity.entity(writeDocumentRequest, MediaType.APPLICATION_JSON_TYPE));
 
-        LOGGER.info("document " + fqn + " verschickt");
+        LOGGER.debug("document " + fqn + " verschickt");
     }
 
 

@@ -36,7 +36,7 @@ public class RestApplication {
     public static void main(String[] origargs) {
         String[] args = ExtendedStoreConnectionFactory.readArguments(origargs);
         Arrays.stream(args).forEach(arg -> {
-                    LOGGER.info("Application runtime argument:" + arg);
+                    LOGGER.debug("Application runtime argument:" + arg);
                     if (arg.equalsIgnoreCase("-TurnOffEncPolicy") || arg.equalsIgnoreCase("-EncOff")) {
                         try {
                             Field field = Class.forName("javax.crypto.JceSecurity").getDeclaredField("isRestricted");
@@ -61,7 +61,7 @@ public class RestApplication {
                     }
                 }
         );
-        LOGGER.info("add bouncy castle provider");
+        LOGGER.debug("add bouncy castle provider");
         Security.addProvider(new BouncyCastleProvider());
         ShowProperties.log();
         try {

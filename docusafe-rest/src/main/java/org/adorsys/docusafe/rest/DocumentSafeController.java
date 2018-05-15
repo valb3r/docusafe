@@ -90,7 +90,7 @@ public class DocumentSafeController {
     @ResponseBody
     ResponseEntity<Boolean> userExists(@PathVariable("UserID") String userIDString) {
         UserID userID = new UserID(userIDString);
-        LOGGER.info("get user exists: " + userID);
+        LOGGER.debug("get user exists: " + userID);
         if (!service.userExists(userID)) {
             LOGGER.debug(userID + " does not exist");
             return new ResponseEntity(HttpStatus.NOT_FOUND);
@@ -131,7 +131,7 @@ public class DocumentSafeController {
                                             @RequestHeader("password") String password,
                                             HttpServletRequest request
     ) {
-        LOGGER.info("get document request arrived");
+        LOGGER.debug("get document request arrived");
         UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
         DocumentFQN documentFQN = new DocumentFQN(getFQN(request));
         if (!service.documentExists(userIDAuth, documentFQN)) {
@@ -156,7 +156,7 @@ public class DocumentSafeController {
                                     InputStream inputStream) {
         UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
         DocumentFQN documentFQN = new DocumentFQN(documentFQNString);
-        LOGGER.info("input auf document/stream for " + userIDAuth);
+        LOGGER.debug("input auf document/stream for " + userIDAuth);
         service.storeDocumentStream(userIDAuth, new DSDocumentStream(documentFQN, inputStream));
     }
 
@@ -172,7 +172,7 @@ public class DocumentSafeController {
                                              HttpServletResponse response
     ) {
         try {
-            LOGGER.info("get stream request arrived1");
+            LOGGER.debug("get stream request arrived1");
             UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
             DocumentFQN documentFQN = new DocumentFQN(getFQN(request));
             LOGGER.debug("received:" + userIDAuth + " and " + documentFQN);
@@ -210,17 +210,17 @@ public class DocumentSafeController {
                                 @RequestHeader("password") String password,
                                 HttpServletRequest request
     ) {
-        LOGGER.info("destroy document request arrived");
+        LOGGER.debug("destroy document request arrived");
         UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
         DocumentFQN documentFQN = new DocumentFQN(getFQN(request));
         if (documentFQN.getValue().endsWith(BucketPath.BUCKET_SEPARATOR)) {
             DocumentDirectoryFQN documentDirectoryFQN = new DocumentDirectoryFQN(documentFQN.getValue());
-            LOGGER.info("destroy document folder " + documentDirectoryFQN);
+            LOGGER.debug("destroy document folder " + documentDirectoryFQN);
             service.deleteFolder(userIDAuth, documentDirectoryFQN);
         } else {
             service.deleteDocument(userIDAuth, documentFQN);
         }
-        LOGGER.info("destroy document request finished");
+        LOGGER.debug("destroy document request finished");
     }
 
 

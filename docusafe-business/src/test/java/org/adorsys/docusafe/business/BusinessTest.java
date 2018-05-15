@@ -51,15 +51,15 @@ public class BusinessTest {
 
     @BeforeClass
     static public void beforeClass() {
-        LOGGER.info("add bouncy castle provider");
+        LOGGER.debug("add bouncy castle provider");
         Security.addProvider(new BouncyCastleProvider());
-        LOGGER.info("clear whole database");
+        LOGGER.debug("clear whole database");
         extendedStoreConnection.listAllBuckets().forEach(bucket -> extendedStoreConnection.deleteContainer(bucket));
     }
 
     @Before
     public void before() {
-        LOGGER.info("add bouncy castle provider");
+        LOGGER.debug("add bouncy castle provider");
         Security.addProvider(new BouncyCastleProvider());
         users.clear();
         service = new DocumentSafeServiceImpl(extendedStoreConnection);
@@ -108,7 +108,7 @@ public class BusinessTest {
         try {
             service.readDocument(userIDAuth, fqn);
         } catch (Exception e) {
-            LOGGER.info("Exception expected! Test is fine");
+            LOGGER.debug("Exception expected! Test is fine");
             return;
         }
         throw new BaseException("document is still readable:" + fqn);
@@ -307,7 +307,7 @@ public class BusinessTest {
 
     private static void sleep(int secs) {
         try {
-            LOGGER.info("SLEEP FOR " + secs + " secs");
+            LOGGER.debug("SLEEP FOR " + secs + " secs");
             Thread.sleep(secs * 1000);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);

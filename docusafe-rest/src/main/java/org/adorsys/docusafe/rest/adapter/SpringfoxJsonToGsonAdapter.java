@@ -31,7 +31,7 @@ public class SpringfoxJsonToGsonAdapter implements JsonSerializer<Json> {
     @Override
     public JsonElement serialize(Json json, Type type, JsonSerializationContext context) {
         final JsonParser parser = new JsonParser();
-        LOGGER.info("PARSE:" + json.value());
+        LOGGER.debug("PARSE:" + json.value());
         return parser.parse(json.value());
     }
 

@@ -143,7 +143,7 @@ public class AllServiceTest {
     @Test
     public void testWrongKeyLoop() {
         if (System.getProperty("loop") == null) {
-            LOGGER.info("TEST WRONG LOOP IGNROED. PLEASE RUN WITH -Dloop");
+            LOGGER.debug("TEST WRONG LOOP IGNROED. PLEASE RUN WITH -Dloop");
             return;
         }
         try {
@@ -156,9 +156,9 @@ public class AllServiceTest {
                 int e = testCreateKeyStoreAndDocumentGuardAndTryToLoadDocumentGuardWithWrongKey("loop" + i);
                 if (e == 1) {
                     if (!foundFirstException) {
-                        LOGGER.info("========================================");
-                        LOGGER.info("FOUND EXCEPTION 1 WITH CONTAINERID " + i);
-                        LOGGER.info("========================================");
+                        LOGGER.debug("========================================");
+                        LOGGER.debug("FOUND EXCEPTION 1 WITH CONTAINERID " + i);
+                        LOGGER.debug("========================================");
                         foundFirstException = true;
                     } else {
                         after();
@@ -166,9 +166,9 @@ public class AllServiceTest {
                 }
                 if (e == 2) {
                     if (!foundSecondException) {
-                        LOGGER.info("========================================");
-                        LOGGER.info("FOUND EXCEPTION 2 WITH CONTAINERID " + i);
-                        LOGGER.info("========================================");
+                        LOGGER.debug("========================================");
+                        LOGGER.debug("FOUND EXCEPTION 2 WITH CONTAINERID " + i);
+                        LOGGER.debug("========================================");
                         foundSecondException = true;
                     } else {
                         after();
@@ -356,7 +356,7 @@ public class AllServiceTest {
         try {
             createPublicKeyStoreForKnownDocument(container2, documentContent, symmetricStuff.documentStuff.documentBucketPath, symmetricStuff.documentGuardStuff.documentKeyIDWithKeyAndAccessType, false);
         } catch (Exception e) {
-            LOGGER.info("Exception was expected");
+            LOGGER.debug("Exception was expected");
             exceptionCaught = true;
         }
         Assert.assertTrue(exceptionCaught);

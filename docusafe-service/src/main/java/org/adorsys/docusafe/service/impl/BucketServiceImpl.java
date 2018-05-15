@@ -41,26 +41,26 @@ public class BucketServiceImpl implements BucketService {
 
     @Override
     public BucketContent readDocumentBucket(BucketDirectory bucketDirectory, ListRecursiveFlag listRecursiveFlag) {
-        LOGGER.info("start read document bucket " + bucketDirectory);
+        LOGGER.debug("start read document bucket " + bucketDirectory);
         BucketContent bucketContent = new BucketContent(bucketDirectory, extendedStoreConnection.list(bucketDirectory, listRecursiveFlag));
-        LOGGER.info("finished read document bucket " + bucketDirectory + " -> " + bucketContent.getContent().size());
+        LOGGER.debug("finished read document bucket " + bucketDirectory + " -> " + bucketContent.getContent().size());
         return bucketContent;
     }
 
     @Override
     public boolean bucketExists(BucketDirectory bucketDirectory) {
-        LOGGER.info("start check bucket exsits " + bucketDirectory);
+        LOGGER.debug("start check bucket exsits " + bucketDirectory);
         boolean b = extendedStoreConnection.containerExists(bucketDirectory);
-        LOGGER.info("finished check bucket exsits " + bucketDirectory + " -> " + b);
+        LOGGER.debug("finished check bucket exsits " + bucketDirectory + " -> " + b);
         return b;
     }
 
     @Override
     public void createPlainFile(BucketPath bucketPath, PlainFileContent plainFileContent) {
         try {
-            LOGGER.info("start create plain file " + bucketPath);
+            LOGGER.debug("start create plain file " + bucketPath);
             extendedStoreConnection.putBlob(bucketPath, plainFileContent.getValue());
-            LOGGER.info("finished create plain file " + bucketPath);
+            LOGGER.debug("finished create plain file " + bucketPath);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
@@ -69,9 +69,9 @@ public class BucketServiceImpl implements BucketService {
     @Override
     public void deletePlainFile(BucketPath bucketPath) {
         try {
-            LOGGER.info("start delete plain file " + bucketPath);
+            LOGGER.debug("start delete plain file " + bucketPath);
             extendedStoreConnection.removeBlob(bucketPath);
-            LOGGER.info("finished delete plain file " + bucketPath);
+            LOGGER.debug("finished delete plain file " + bucketPath);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
@@ -80,9 +80,9 @@ public class BucketServiceImpl implements BucketService {
     @Override
     public void deletePlainFolder(BucketDirectory bucketDirectory) {
         try {
-            LOGGER.info("start delete plain directory " + bucketDirectory);
+            LOGGER.debug("start delete plain directory " + bucketDirectory);
             extendedStoreConnection.removeBlobFolder(bucketDirectory);
-            LOGGER.info("finished delete plain file " + bucketDirectory);
+            LOGGER.debug("finished delete plain file " + bucketDirectory);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
@@ -92,9 +92,9 @@ public class BucketServiceImpl implements BucketService {
     @Override
     public PlainFileContent readPlainFile(BucketPath bucketPath) {
         try {
-            LOGGER.info("start read plain file " + bucketPath);
+            LOGGER.debug("start read plain file " + bucketPath);
             PlainFileContent plainFileContent = new PlainFileContent(extendedStoreConnection.getBlob(bucketPath).getData());
-            LOGGER.info("finished read plain file " + bucketPath);
+            LOGGER.debug("finished read plain file " + bucketPath);
             return plainFileContent;
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
@@ -103,9 +103,9 @@ public class BucketServiceImpl implements BucketService {
 
     @Override
     public boolean fileExists(BucketPath bucketPath) {
-        LOGGER.info("start file exists " + bucketPath);
+        LOGGER.debug("start file exists " + bucketPath);
         boolean blobExists = extendedStoreConnection.blobExists(bucketPath);
-        LOGGER.info("finished file exists " + bucketPath);
+        LOGGER.debug("finished file exists " + bucketPath);
         return blobExists;
     }
 

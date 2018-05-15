@@ -107,8 +107,8 @@ public class CompressionTest {
         Assert.assertTrue(Arrays.equals(loadedPayloadWithCompress.getData(), data));
         Assert.assertTrue(Arrays.equals(loadedPayloadWithoutCompress.getData(), data));
 
-        LOGGER.info("size compressed:" + loadedPayloadWithCompress.getStorageMetadata().getSize());
-        LOGGER.info("size uncompressed:" + loadedPayloadWithoutCompress.getStorageMetadata().getSize());
+        LOGGER.debug("size compressed:" + loadedPayloadWithCompress.getStorageMetadata().getSize());
+        LOGGER.debug("size uncompressed:" + loadedPayloadWithoutCompress.getStorageMetadata().getSize());
 
         // TODO
         LOGGER.warn("COMPRESSION DOES NOT WORK YET");
@@ -117,9 +117,9 @@ public class CompressionTest {
         int encryptedUncrompressedSize = Integer.parseInt(plainStorageMetadata2.getUserMetadata().get(extendedZipFileHelper.getCompressedKey()));
         int encryptedCrompressedSize = Integer.parseInt(plainStorageMetadata1.getUserMetadata().get(extendedZipFileHelper.getCompressedKey()));
         int diff = encryptedUncrompressedSize - encryptedCrompressedSize;
-        LOGGER.info("encrypted size compressed:" + encryptedCrompressedSize);
-        LOGGER.info("encrypted size uncompressed:" + encryptedUncrompressedSize);
-        LOGGER.info("compression saves bytes:" + diff);
+        LOGGER.debug("encrypted size compressed:" + encryptedCrompressedSize);
+        LOGGER.debug("encrypted size uncompressed:" + encryptedUncrompressedSize);
+        LOGGER.debug("compression saves bytes:" + diff);
 */
 
         // Assert.assertTrue(diff > 0);
@@ -169,8 +169,8 @@ public class CompressionTest {
         Assert.assertTrue(Arrays.equals(loadedPayloadWithCompress.getData(), data));
         Assert.assertTrue(Arrays.equals(loadedPayloadWithoutCompress.getData(), data));
 
-        LOGGER.info("size compressed:" + loadedPayloadWithCompress.getStorageMetadata().getSize());
-        LOGGER.info("size uncompressed:" + loadedPayloadWithoutCompress.getStorageMetadata().getSize());
+        LOGGER.debug("size compressed:" + loadedPayloadWithCompress.getStorageMetadata().getSize());
+        LOGGER.debug("size uncompressed:" + loadedPayloadWithoutCompress.getStorageMetadata().getSize());
 
         // TODO
         LOGGER.warn("COMPRESSION DOES NOT WORK YET");
@@ -180,9 +180,9 @@ public class CompressionTest {
         int encryptedUncrompressedSize = Integer.parseInt(plainStorageMetadata2.getUserMetadata().get(extendedZipFileHelper.getCompressedKey()));
         int encryptedCrompressedSize = Integer.parseInt(plainStorageMetadata1.getUserMetadata().get(extendedZipFileHelper.getCompressedKey()));
         int diff = encryptedUncrompressedSize - encryptedCrompressedSize;
-        LOGGER.info("encrypted size compressed:" + encryptedCrompressedSize);
-        LOGGER.info("encrypted size uncompressed:" + encryptedUncrompressedSize);
-        LOGGER.info("compression saves bytes:" + diff);
+        LOGGER.debug("encrypted size compressed:" + encryptedCrompressedSize);
+        LOGGER.debug("encrypted size uncompressed:" + encryptedUncrompressedSize);
+        LOGGER.debug("compression saves bytes:" + diff);
 */
         // Assert.assertTrue(diff > 0);
     }

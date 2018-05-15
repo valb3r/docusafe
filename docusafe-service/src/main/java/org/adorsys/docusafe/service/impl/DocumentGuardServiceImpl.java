@@ -79,11 +79,11 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
                                        KeyStoreAccess keyStoreAccess,
                                        DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType,
                                        OverwriteFlag overwriteFlag) {
-        LOGGER.info("start create document guard for " + documentKeyIDWithKeyAndAccessType + " at " + keyStoreAccess.getKeyStorePath());
+        LOGGER.debug("start create document guard for " + documentKeyIDWithKeyAndAccessType + " at " + keyStoreAccess.getKeyStorePath());
         GuardKeyHelper helper = GuardKeyHelperFactory.getHelper(guardKeyType);
         KeySourceAndGuardKeyID keySourceAndGuardKeyID = helper.getKeySourceAndGuardKeyID(keystorePersistence, keyStoreAccess, documentKeyIDWithKeyAndAccessType);
         createDocumentGuard(keyStoreAccess, documentKeyIDWithKeyAndAccessType, keySourceAndGuardKeyID, overwriteFlag);
-        LOGGER.info("finished create document guard for " + documentKeyIDWithKeyAndAccessType + " at " + keyStoreAccess.getKeyStorePath());
+        LOGGER.debug("finished create document guard for " + documentKeyIDWithKeyAndAccessType + " at " + keyStoreAccess.getKeyStorePath());
     }
 
 
@@ -92,7 +92,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
      */
     @Override
     public DocumentKeyIDWithKeyAndAccessType loadDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(KeyStoreAccess keyStoreAccess, DocumentKeyID documentKeyID) {
-        LOGGER.info("start load " + documentKeyID + " from document guard at " + keyStoreAccess.getKeyStorePath());
+        LOGGER.debug("start load " + documentKeyID + " from document guard at " + keyStoreAccess.getKeyStorePath());
 
         KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStorePath().getObjectHandle(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
 
@@ -119,7 +119,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
         DocumentGuardSerializer serializer = serializerRegistry.getSerializer(serializerId);
         DocumentKey documentKey = serializer.deserializeSecretKey(payload.getData(), keyStoreType);
 
-        LOGGER.info("finished load " + documentKeyID + " from document guard at " + keyStoreAccess.getKeyStorePath());
+        LOGGER.debug("finished load " + documentKeyID + " from document guard at " + keyStoreAccess.getKeyStorePath());
         return new DocumentKeyIDWithKeyAndAccessType(new DocumentKeyIDWithKey(documentKeyID, documentKey), accessType);
     }
 
@@ -128,7 +128,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
                                      DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType,
                                      KeySourceAndGuardKeyID keySourceAndGuardKeyID,
                                      OverwriteFlag overwriteFlag) {
-        LOGGER.info("start persist document guard for " + documentKeyIDWithKeyAndAccessType + " at " + keyStoreAccess.getKeyStorePath());
+        LOGGER.debug("start persist document guard for " + documentKeyIDWithKeyAndAccessType + " at " + keyStoreAccess.getKeyStorePath());
         KeyStoreType keyStoreType = KeyStoreType.DEFAULT;
         BucketPath documentGuardBucketPath = DocumentGuardLocation.getBucketPathOfGuard(keyStoreAccess.getKeyStorePath(),
                 documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
@@ -152,7 +152,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
         encryptedPersistenceUtil.encryptAndPersist(documentGuardBucketPath, payload, keySourceAndGuardKeyID.keySource,
                 new KeyID(keySourceAndGuardKeyID.guardKeyID.getValue()));
         // TODO OverwriteFlag
-        LOGGER.info("finished persist document guard for " + documentKeyIDWithKeyAndAccessType + " at " + keyStoreAccess.getKeyStorePath());
+        LOGGER.debug("finished persist document guard for " + documentKeyIDWithKeyAndAccessType + " at " + keyStoreAccess.getKeyStorePath());
     }
 
 

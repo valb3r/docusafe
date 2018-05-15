@@ -76,7 +76,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
 
     @Override
     public void createUser(UserIDAuth userIDAuth) {
-        LOGGER.info("start create user for " + userIDAuth);
+        LOGGER.debug("start create user for " + userIDAuth);
 
         {
             if (userExists(userIDAuth.getUserID())) {
@@ -101,12 +101,12 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
             storeDocument(userIDAuth, createWelcomeDocument());
         }
 
-        LOGGER.info("finished create user for " + userIDAuth);
+        LOGGER.debug("finished create user for " + userIDAuth);
     }
 
     @Override
     public void destroyUser(UserIDAuth userIDAuth) {
-        LOGGER.info("start destroy user for " + userIDAuth);
+        LOGGER.debug("start destroy user for " + userIDAuth);
         BucketDirectory userRootBucketDirectory = UserIDUtil.getUserRootBucketDirectory(userIDAuth.getUserID());
         {   // check user does not exist yet
             if (!bucketService.bucketExists(userRootBucketDirectory)) {
@@ -117,7 +117,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
             checkUserKeyPassword(userIDAuth);
         }
         bucketService.destroyBucket(userRootBucketDirectory);
-        LOGGER.info("finished destroy user for " + userIDAuth);
+        LOGGER.debug("finished destroy user for " + userIDAuth);
     }
 
     @Override
@@ -136,7 +136,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
      */
     @Override
     public void storeDocument(UserIDAuth userIDAuth, DSDocument dsDocument) {
-        LOGGER.info("start storeDocument for " + userIDAuth + " " + dsDocument.getDocumentFQN());
+        LOGGER.debug("start storeDocument for " + userIDAuth + " " + dsDocument.getDocumentFQN());
 
         SimpleStorageMetadataImpl storageMetadata = new SimpleStorageMetadataImpl();
         storageMetadata.mergeUserMetadata(dsDocument.getDsDocumentMetaInfo());
@@ -149,17 +149,17 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
                 documentBucketPath,
                 OverwriteFlag.TRUE,
                 new SimplePayloadImpl(storageMetadata, dsDocument.getDocumentContent().getValue()));
-        LOGGER.info("finished storeDocument for " + userIDAuth + " " + dsDocument.getDocumentFQN());
+        LOGGER.debug("finished storeDocument for " + userIDAuth + " " + dsDocument.getDocumentFQN());
     }
 
     @Override
     public DSDocument readDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
-        LOGGER.info("start readDocument for " + userIDAuth + " " + documentFQN);
+        LOGGER.debug("start readDocument for " + userIDAuth + " " + documentFQN);
         DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), documentFQN);
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
         Payload payload = documentPersistenceService.loadDocument(keyStoreAccess, documentBucketPath);
         UserMetaData userMetaData = payload.getStorageMetadata().getUserMetadata();
-        LOGGER.info("finished readDocument for " + userIDAuth + " " + documentFQN);
+        LOGGER.debug("finished readDocument for " + userIDAuth + " " + documentFQN);
         return new DSDocument(documentFQN, new DocumentContent(payload.getData()), new DSDocumentMetaInfo(payload.getStorageMetadata().getUserMetadata()));
     }
 
@@ -168,7 +168,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
      */
     @Override
     public void storeDocumentStream(UserIDAuth userIDAuth, DSDocumentStream dsDocumentStream) {
-        LOGGER.info("start storeDocumentStream for " + userIDAuth + " " + dsDocumentStream.getDocumentFQN());
+        LOGGER.debug("start storeDocumentStream for " + userIDAuth + " " + dsDocumentStream.getDocumentFQN());
 
         SimpleStorageMetadataImpl storageMetadata = new SimpleStorageMetadataImpl();
         storageMetadata.mergeUserMetadata(dsDocumentStream.getDsDocumentMetaInfo());
@@ -180,7 +180,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
                 documentBucketPath,
                 OverwriteFlag.TRUE,
                 new SimplePayloadStreamImpl(storageMetadata, dsDocumentStream.getDocumentStream()));
-        LOGGER.info("finished storeDocument for " + userIDAuth + " " + dsDocumentStream.getDocumentFQN());
+        LOGGER.debug("finished storeDocument for " + userIDAuth + " " + dsDocumentStream.getDocumentFQN());
     }
 
 
@@ -188,12 +188,12 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
     @Override
     public DSDocumentStream readDocumentStream(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
         try {
-            LOGGER.info("start readDocumentStream for " + userIDAuth + " " + documentFQN);
+            LOGGER.debug("start readDocumentStream for " + userIDAuth + " " + documentFQN);
             DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), documentFQN);
             KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
             PayloadStream payloadStream = documentPersistenceService.loadDocumentStream(keyStoreAccess, documentBucketPath);
             UserMetaData userMetaData = payloadStream.getStorageMetadata().getUserMetadata();
-            LOGGER.info("finished readDocumentStream for " + userIDAuth + " " + documentFQN);
+            LOGGER.debug("finished readDocumentStream for " + userIDAuth + " " + documentFQN);
             return new DSDocumentStream(documentFQN, payloadStream.openStream(), new DSDocumentMetaInfo(payloadStream.getStorageMetadata().getUserMetadata()));
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
@@ -229,7 +229,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
     public void grantAccessToUserForFolder(UserIDAuth userIDAuth, UserID receiverUserID,
                                            DocumentDirectoryFQN documentDirectoryFQN,
                                            AccessType accessType) {
-        LOGGER.info("start grant access for " + userIDAuth + " to  " + receiverUserID + " for " + documentDirectoryFQN + " with " + accessType);
+        LOGGER.debug("start grant access for " + userIDAuth + " to  " + receiverUserID + " for " + documentDirectoryFQN + " with " + accessType);
 
         {
             BucketDirectory userRootBucketDirectory = UserIDUtil.getUserRootBucketDirectory(userIDAuth.getUserID());
@@ -273,12 +273,12 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
             GrantUtil.saveBucketGrantFile(bucketService, documentBucketDirectory, userIDAuth.getUserID(), receiverUserID, accessType);
         }
 
-        LOGGER.info("finished grant access for " + userIDAuth + " to  " + receiverUserID + " for " + documentDirectoryFQN + " with " + accessType);
+        LOGGER.debug("finished grant access for " + userIDAuth + " to  " + receiverUserID + " for " + documentDirectoryFQN + " with " + accessType);
     }
 
     @Override
     public void storeGrantedDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument) {
-        LOGGER.info("start storeDocument for " + userIDAuth + " " + documentOwner + " " + dsDocument.getDocumentFQN());
+        LOGGER.debug("start storeDocument for " + userIDAuth + " " + documentOwner + " " + dsDocument.getDocumentFQN());
 
         SimpleStorageMetadataImpl storageMetadata = new SimpleStorageMetadataImpl();
         storageMetadata.setSize(new Long(dsDocument.getDocumentContent().getValue().length));
@@ -292,18 +292,18 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
                 documentBucketPath,
                 OverwriteFlag.TRUE,
                 new SimplePayloadImpl(storageMetadata, dsDocument.getDocumentContent().getValue()));
-        LOGGER.info("finished storeDocument for " + userIDAuth + " " + documentOwner + " " + dsDocument.getDocumentFQN());
+        LOGGER.debug("finished storeDocument for " + userIDAuth + " " + documentOwner + " " + dsDocument.getDocumentFQN());
     }
 
 
     @Override
     public DSDocument readGrantedDocument(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN) {
-        LOGGER.info("start readDocument for " + userIDAuth + " " + documentOwner + " " + documentFQN);
+        LOGGER.debug("start readDocument for " + userIDAuth + " " + documentOwner + " " + documentFQN);
         DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(documentOwner, documentFQN);
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
         Payload payload = documentPersistenceService.loadDocument(keyStoreAccess, documentBucketPath);
         UserMetaData userMetaData = payload.getStorageMetadata().getUserMetadata();
-        LOGGER.info("finisherd readDocument for " + userIDAuth + " " + documentOwner + " " + documentFQN);
+        LOGGER.debug("finisherd readDocument for " + userIDAuth + " " + documentOwner + " " + documentFQN);
         return new DSDocument(documentFQN, new DocumentContent(payload.getData()), new DSDocumentMetaInfo(payload.getStorageMetadata().getUserMetadata()));
     }
 
