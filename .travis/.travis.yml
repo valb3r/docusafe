@@ -1,8 +1,8 @@
 notifications:
-	email:
-		recipients:
-			- pspex@adorsys.de
+  email:
+    recipients:
+      - pspex@adorsys.de
 notifications:
-	slack:
-		recipients:
-			- pspex
+  slack:
+    recipients:
+      - pspex
