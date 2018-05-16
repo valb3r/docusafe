@@ -22,3 +22,13 @@ deploy:
       tags: true
       # matches: vX.Y.Z, vX.Y.Z-A, vX.Y.Z-RCA, vX.Y.Z-A-B.C.D, vX.Y.Z-A-B.C.D-E, vX.Y.Z-RCA-B.C.D-E
       condition: "$TRAVIS_TAG =~ ^v([[:digit:]]+\\.)+[[:digit:]]+(-(RC)?[[:digit:]]+)?(-([[:digit:]]+\\.)+[[:digit:]]+(-[[:digit:]]+)?)?$"
+
+
+notifications:
+  email:
+    recipients:
+      - pspex@adorsys.de
+notifications:
+  slack:
+    recipients:
+      - pspex

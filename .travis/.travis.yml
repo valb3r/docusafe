@@ -1,8 +1,0 @@
-notifications:
-  email:
-    recipients:
-      - pspex@adorsys.de
-notifications:
-  slack:
-    recipients:
-      - pspex
