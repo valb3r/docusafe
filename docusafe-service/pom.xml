@@ -13,7 +13,6 @@
     <artifactId>docusafe-service</artifactId>
 
     <dependencies>
-
         <dependency>
             <groupId>de.adorsys.cryptoutils</groupId>
             <artifactId>basetypes</artifactId>
@@ -55,8 +54,6 @@
             <version>${crypt.version}</version>
             <scope>test</scope>
         </dependency>
-
-
     </dependencies>
 
     <build>

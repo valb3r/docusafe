@@ -23,6 +23,7 @@
         <dependency>
             <groupId>de.adorsys</groupId>
             <artifactId>docusafe-service</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>

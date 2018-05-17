@@ -40,15 +40,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
             <version>${spring-boot.version}</version>
-
-            <!-- ich will slf4j und nicht logback -->
-            <exclusions>
-                <exclusion>
-                    <groupId>ch.qos.logback</groupId>
-                    <artifactId>logback-classic</artifactId>
-                </exclusion>
-            </exclusions>
-
         </dependency>
         <dependency>
             <groupId>io.springfox</groupId>
@@ -75,6 +66,7 @@
         <dependency>
             <groupId>de.adorsys</groupId>
             <artifactId>docusafe-business</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
