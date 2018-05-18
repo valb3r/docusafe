@@ -20,6 +20,7 @@
         <version.swagger>1.5.5</version.swagger>
         <deploy.disabled>false</deploy.disabled>
         <spring-boot.version>2.0.1.RELEASE</spring-boot.version>
+        <slf4j-simple.version>1.7.25</slf4j-simple.version>
     </properties>
 
     <scm>
@@ -67,7 +68,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>1.7.25</version>
+            <version>${slf4j-simple.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
