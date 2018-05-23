@@ -37,7 +37,12 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
 
     public DocumentPersistenceServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
         this.containerPersistence = new ContainerPersistenceImpl(extendedStoreConnection);
-        this.encryptedPersistenceService = new EncryptedPersistenceServiceImpl(extendedStoreConnection, new AESEncryptionStreamServiceImpl());
+        if (System.getProperty("UGLY_NO_ENCRYPTION") != null) {
+            LOGGER.info("ACHTUNG, NO ENCRYPTION");
+            this.encryptedPersistenceService = new EncryptedPersistenceServiceImpl(extendedStoreConnection, new NoEncryptionStreamServiceImpl());
+        } else {
+            this.encryptedPersistenceService = new EncryptedPersistenceServiceImpl(extendedStoreConnection, new AESEncryptionStreamServiceImpl());
+        }
         this.documentGuardService = new DocumentGuardServiceImpl(extendedStoreConnection);
         this.bucketService = new BucketServiceImpl(extendedStoreConnection);
     }
