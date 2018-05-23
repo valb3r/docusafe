@@ -30,7 +30,7 @@ public class NoEncryptionStreamServiceImpl implements EncryptionStreamService {
     }
 
     private static class WriteKeyFirstInputStream extends InputStream {
-        private final static Logger LOGGER = LoggerFactory.getLogger(WriteKeyFirstInputStream.class);
+        // private final static Logger LOGGER = LoggerFactory.getLogger(WriteKeyFirstInputStream.class);
 
         private final InputStream origInputStream;
         private String keyString;
@@ -43,28 +43,28 @@ public class NoEncryptionStreamServiceImpl implements EncryptionStreamService {
             this.keyStringLength = keyString.length();
             this.keyStringIndex = 0;
             this.origInputStream = origInputStream;
-            LOGGER.debug("create NO ENCRYPTION with key " + keyString);
+            // LOGGER.debug("create NO ENCRYPTION with key " + keyString);
         }
 
         @Override
         public int read() throws IOException {
-            LOGGER.debug("read");
+            //    LOGGER.debug("read");
             if (keyWritten) {
-                LOGGER.debug("return real read");
+                //        LOGGER.debug("return real read");
                 return origInputStream.read();
             }
-            LOGGER.debug("return postion " + keyStringIndex + " + of key " + new String(keyString));
+            //   LOGGER.debug("return postion " + keyStringIndex + " + of key " + new String(keyString));
             char i = keyString.charAt(keyStringIndex++);
             if (keyStringIndex == keyStringLength) {
                 keyWritten = true;
             }
-            LOGGER.debug("returend value for read is " + i);
+            //    LOGGER.debug("returend value for read is " + i);
             return i;
         }
     }
 
     private static class ReadKeyFirstInputStream extends InputStream {
-        private final static Logger LOGGER = LoggerFactory.getLogger(ReadKeyFirstInputStream.class);
+        //    private final static Logger LOGGER = LoggerFactory.getLogger(ReadKeyFirstInputStream.class);
 
         private final InputStream origInputStream;
         private String keyString;
@@ -77,14 +77,14 @@ public class NoEncryptionStreamServiceImpl implements EncryptionStreamService {
             this.keyStringLength = keyString.length();
             this.keyStringIndex = 0;
             this.origInputStream = origInputStream;
-            LOGGER.debug("create NO DECRYPTION with key " + keyString);
+            //    LOGGER.debug("create NO DECRYPTION with key " + keyString);
         }
 
         @Override
         public int read() throws IOException {
-            LOGGER.debug("read");
+            //         LOGGER.debug("read");
             while (!keyRead) {
-                LOGGER.debug("check postion " + keyStringIndex + " + of key " + keyString);
+                //         LOGGER.debug("check postion " + keyStringIndex + " + of key " + keyString);
                 char i1 = keyString.charAt(keyStringIndex++);
                 char i2 = (char) origInputStream.read();
                 if (i1 != i2) {
@@ -94,7 +94,7 @@ public class NoEncryptionStreamServiceImpl implements EncryptionStreamService {
                     keyRead = true;
                 }
             }
-            LOGGER.debug("return real read");
+            //        LOGGER.debug("return real read");
             return origInputStream.read();
         }
     }
