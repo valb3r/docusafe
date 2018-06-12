@@ -55,6 +55,7 @@
         <module>docusafe-business</module>
         <module>docusafe-rest</module>
         <module>docusafe-rest.client</module>
+        <module>docusafe-transactional</module>
     </modules>
 
     <dependencies>
