@@ -55,6 +55,8 @@ public class TxIDHashMap {
                 map.lastCommitedTxID = new LastCommitedTxID(map.currentTxID.getValue());
                 map.currentTxID = currentTxID;
                 map.beginTx = beginTxDate;
+                map.endTx = null;
+                return map;
             }
 
             throw new RuntimeException("Can not find a HashMap " + file.getValue() + " though last commitedTxID seems to be " + lastKnownCommitedTxID);
@@ -103,5 +105,9 @@ public class TxIDHashMap {
 
     public void setEndTransactionDate(Date endTransactionDate) {
         endTx = endTransactionDate;
+    }
+
+    public void transactionIsOver(DocumentSafeService documentSafeService, UserIDAuth userIDAuth) {
+        TxIDLog.saveJustFinishedTx(documentSafeService, userIDAuth, beginTx, endTx, new LastCommitedTxID(currentTxID.getValue()));
     }
 }

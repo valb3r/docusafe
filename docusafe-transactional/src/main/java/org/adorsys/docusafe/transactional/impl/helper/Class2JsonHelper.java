@@ -15,6 +15,7 @@ import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.transactional.impl.LastCommitedTxID;
 import org.adorsys.docusafe.transactional.impl.TxIDHashMap;
+import org.adorsys.docusafe.transactional.impl.TxIDLog;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +53,26 @@ public class Class2JsonHelper {
         try {
             String s = gson.toJson(txIDHashMap);
             LOGGER.debug("hashmap to content:" + s);
+            return new DocumentContent(s.getBytes(CHARSET));
+        } catch (Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
+    }
+
+    public TxIDLog txidLogFromContent(DocumentContent documentContent) {
+        try {
+            String jsonString = new String(documentContent.getValue(), CHARSET);
+            LOGGER.debug("content to txidlog:" + jsonString);
+            return gson.fromJson(jsonString, TxIDLog.class);
+        } catch (Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
+    }
+
+    public DocumentContent txidLogToContent(TxIDLog txidLog) {
+        try {
+            String s = gson.toJson(txidLog);
+            LOGGER.debug("txidlog to content:" + s);
             return new DocumentContent(s.getBytes(CHARSET));
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);

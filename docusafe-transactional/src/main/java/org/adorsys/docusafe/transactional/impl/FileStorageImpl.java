@@ -1,5 +1,6 @@
 package org.adorsys.docusafe.transactional.impl;
 
+import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
@@ -18,7 +19,7 @@ import java.util.Date;
  */
 public class FileStorageImpl implements FileStorage {
     private final static Logger LOGGER = LoggerFactory.getLogger(FileStorageImpl.class);
-    final static DocumentDirectoryFQN txdir = new DocumentDirectoryFQN(FileStorage.class.getPackage().toString());
+    final static DocumentDirectoryFQN txdir = new DocumentDirectoryFQN(FileStorage.class.getPackage().getName().toString());
 
     private DocumentSafeService documentSafeService;
 
@@ -81,18 +82,22 @@ public class FileStorageImpl implements FileStorage {
 
     @Override
     public void endTransaction(TxID txid, UserIDAuth userIDAuth) {
-        LOGGER.debug("endTransaction " + txid.getValue());
+        LOGGER.debug("transactionIsOver " + txid.getValue());
         TxIDHashMap txIDHashMap = TxIDHashMap.getCurrentFile(documentSafeService, userIDAuth, txid);
         txIDHashMap.setEndTransactionDate(new Date());
         txIDHashMap.save(documentSafeService, userIDAuth);
+        txIDHashMap.transactionIsOver(documentSafeService, userIDAuth);
     }
 
 
     private DSDocument modify(DSDocument dsDocument, TxID txid) {
         return new DSDocument(
-                TxIDVersionHelper.get(dsDocument.getDocumentFQN(), txid),
+                modify(dsDocument.getDocumentFQN(), txid),
                 dsDocument.getDocumentContent(),
                 dsDocument.getDsDocumentMetaInfo());
     }
 
+    private DocumentFQN modify(DocumentFQN documentFQN, TxID txid) {
+        return TxIDVersionHelper.get(documentFQN, txid);
+    }
 }
