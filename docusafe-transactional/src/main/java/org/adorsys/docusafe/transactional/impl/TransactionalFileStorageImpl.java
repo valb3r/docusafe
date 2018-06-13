@@ -1,12 +1,11 @@
 package org.adorsys.docusafe.transactional.impl;
 
-import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
-import org.adorsys.docusafe.transactional.FileStorage;
+import org.adorsys.docusafe.transactional.TransactionalFileStorage;
 import org.adorsys.docusafe.transactional.impl.helper.TxIDVersionHelper;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.slf4j.Logger;
@@ -17,14 +16,14 @@ import java.util.Date;
 /**
  * Created by peter on 11.06.18 at 15:01.
  */
-public class FileStorageImpl implements FileStorage {
-    private final static Logger LOGGER = LoggerFactory.getLogger(FileStorageImpl.class);
-    final static DocumentDirectoryFQN txdir = new DocumentDirectoryFQN(FileStorage.class.getPackage().getName().toString());
+public class TransactionalFileStorageImpl implements TransactionalFileStorage {
+    private final static Logger LOGGER = LoggerFactory.getLogger(TransactionalFileStorageImpl.class);
+    final static DocumentDirectoryFQN txdir = new DocumentDirectoryFQN(TransactionalFileStorage.class.getPackage().getName().toString());
 
     private DocumentSafeService documentSafeService;
 
-    public FileStorageImpl(DocumentSafeService documentSafeService) {
-        LOGGER.debug("new Instance of FileStorageImpl");
+    public TransactionalFileStorageImpl(DocumentSafeService documentSafeService) {
+        LOGGER.debug("new Instance of TransactionalFileStorageImpl");
         this.documentSafeService = documentSafeService;
     }
 

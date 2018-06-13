@@ -7,11 +7,9 @@ import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.transactional.impl.helper.Class2JsonHelper;
-import org.adorsys.docusafe.transactional.types.TxID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -22,7 +20,7 @@ import java.util.List;
 public class TxIDLog {
     private final static Logger LOGGER = LoggerFactory.getLogger(TxIDLog.class);
     private static String LOG_FILE_NAME = "LastCommitedTxID.txt";
-    private static DocumentFQN txidLogFilename = FileStorageImpl.txdir.addName(LOG_FILE_NAME);
+    private static DocumentFQN txidLogFilename = TransactionalFileStorageImpl.txdir.addName(LOG_FILE_NAME);
 
     public static LastCommitedTxID findLastCommitedTxID(DocumentSafeService documentSafeService, UserIDAuth userIDAuth) {
         if (documentSafeService.documentExists(userIDAuth, txidLogFilename)) {

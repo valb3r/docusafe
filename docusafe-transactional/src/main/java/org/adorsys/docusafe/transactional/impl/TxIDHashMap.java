@@ -24,7 +24,7 @@ import java.util.List;
 public class TxIDHashMap {
     private final static Logger LOGGER = LoggerFactory.getLogger(TxIDHashMap.class);
     private final static String HASHMAP_BASE_FILE_NAME = "TransactionalHashMap.txt";
-    private final static DocumentFQN filenamebase = FileStorageImpl.txdir.addName(HASHMAP_BASE_FILE_NAME);
+    private final static DocumentFQN filenamebase = TransactionalFileStorageImpl.txdir.addName(HASHMAP_BASE_FILE_NAME);
 
     private LastCommitedTxID lastCommitedTxID;
     private TxID currentTxID;

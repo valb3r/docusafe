@@ -9,7 +9,7 @@ import org.adorsys.docusafe.transactional.types.TxID;
 /**
  * Created by peter on 11.06.18 at 14:56.
  */
-public interface FileStorage {
+public interface TransactionalFileStorage {
     TxID beginTransaction(UserIDAuth userIDAuth);
 
     void storeDocument(TxID txid, UserIDAuth userIDAuth, DSDocument dsDocument);
