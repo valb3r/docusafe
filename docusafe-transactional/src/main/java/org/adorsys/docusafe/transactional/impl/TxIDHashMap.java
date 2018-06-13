@@ -7,6 +7,7 @@ import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.service.types.DocumentContent;
+import org.adorsys.docusafe.transactional.exceptions.TxAlreadyClosedException;
 import org.adorsys.docusafe.transactional.impl.helper.Class2JsonHelper;
 import org.adorsys.docusafe.transactional.impl.helper.TxIDVersionHelper;
 import org.adorsys.docusafe.transactional.types.TxID;
@@ -42,30 +43,34 @@ public class TxIDHashMap {
     }
 
     public static TxIDHashMap fromPreviousFileOrNew(DocumentSafeService documentSafeService, UserIDAuth userIDAuth, TxID currentTxID, Date beginTxDate) {
-            LastCommitedTxID lastKnownCommitedTxID = TxIDLog.findLastCommitedTxID(documentSafeService, userIDAuth);
+        LastCommitedTxID lastKnownCommitedTxID = TxIDLog.findLastCommitedTxID(documentSafeService, userIDAuth);
 
-            if (lastKnownCommitedTxID == null) {
-                return new TxIDHashMap(lastKnownCommitedTxID, currentTxID, beginTxDate);
-            }
+        if (lastKnownCommitedTxID == null) {
+            return new TxIDHashMap(lastKnownCommitedTxID, currentTxID, beginTxDate);
+        }
 
-            DocumentFQN file = TxIDVersionHelper.get(filenamebase, lastKnownCommitedTxID);
-            if (documentSafeService.documentExists(userIDAuth, file)) {
-                DSDocument dsDocument = documentSafeService.readDocument(userIDAuth, file);
-                TxIDHashMap map = new Class2JsonHelper().txidHashMapFromContent(dsDocument.getDocumentContent());
-                map.lastCommitedTxID = new LastCommitedTxID(map.currentTxID.getValue());
-                map.currentTxID = currentTxID;
-                map.beginTx = beginTxDate;
-                map.endTx = null;
-                return map;
-            }
+        DocumentFQN file = TxIDVersionHelper.get(filenamebase, lastKnownCommitedTxID);
+        if (documentSafeService.documentExists(userIDAuth, file)) {
+            DSDocument dsDocument = documentSafeService.readDocument(userIDAuth, file);
+            TxIDHashMap map = new Class2JsonHelper().txidHashMapFromContent(dsDocument.getDocumentContent());
+            map.lastCommitedTxID = new LastCommitedTxID(map.currentTxID.getValue());
+            map.currentTxID = currentTxID;
+            map.beginTx = beginTxDate;
+            map.endTx = null;
+            return map;
+        }
 
-            throw new RuntimeException("Can not find a HashMap " + file.getValue() + " though last commitedTxID seems to be " + lastKnownCommitedTxID);
+        throw new RuntimeException("Can not find a HashMap " + file.getValue() + " though last commitedTxID seems to be " + lastKnownCommitedTxID);
     }
 
     public static TxIDHashMap getCurrentFile(DocumentSafeService documentSafeService, UserIDAuth userIDAuth, TxID currentTxID) {
-            DocumentFQN file = TxIDVersionHelper.get(filenamebase, currentTxID);
-            DSDocument dsDocument = documentSafeService.readDocument(userIDAuth, file);
-            return new Class2JsonHelper().txidHashMapFromContent(dsDocument.getDocumentContent());
+        DocumentFQN file = TxIDVersionHelper.get(filenamebase, currentTxID);
+        DSDocument dsDocument = documentSafeService.readDocument(userIDAuth, file);
+        TxIDHashMap txIDHashMap = new Class2JsonHelper().txidHashMapFromContent(dsDocument.getDocumentContent());
+        if (txIDHashMap.endTx != null) {
+            throw new TxAlreadyClosedException(currentTxID);
+        }
+        return txIDHashMap;
     }
 
     public void save(DocumentSafeService documentSafeService, UserIDAuth userIDAuth) {

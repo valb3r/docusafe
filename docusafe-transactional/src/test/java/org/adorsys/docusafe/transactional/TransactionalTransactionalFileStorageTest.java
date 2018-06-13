@@ -10,6 +10,7 @@ import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.service.types.DocumentContent;
+import org.adorsys.docusafe.transactional.exceptions.TxAlreadyClosedException;
 import org.adorsys.docusafe.transactional.impl.TransactionalFileStorageImpl;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.domain.ReadKeyPassword;
@@ -28,23 +29,21 @@ import java.security.Security;
  */
 public class TransactionalTransactionalFileStorageTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(TransactionalTransactionalFileStorageTest.class);
-    private ExtendedStoreConnection esc = ExtendedStoreConnectionFactory.get();
-    private DocumentSafeService documentSafeService = new DocumentSafeServiceImpl(esc);
-    private TransactionalFileStorage transactionalFileStorage = new TransactionalFileStorageImpl(new DocumentSafeServiceImpl(esc));
+    private TransactionalFileStorage transactionalFileStorage = new TransactionalFileStorageImpl(new DocumentSafeServiceImpl(ExtendedStoreConnectionFactory.get()));
     private UserIDAuth userIDAuth = new UserIDAuth(new UserID("peter"), new ReadKeyPassword("password"));
 
     @Before
     public void preTest() {
         Security.addProvider(new BouncyCastleProvider());
-        if (documentSafeService.userExists(userIDAuth.getUserID())) {
-            documentSafeService.destroyUser(userIDAuth);
+        if (transactionalFileStorage.userExists(userIDAuth.getUserID())) {
+            transactionalFileStorage.destroyUser(userIDAuth);
         }
     }
 
     @Test
     @SuppressWarnings("Duplicates")
     public void testCreateAndChange() {
-        documentSafeService.createUser(userIDAuth);
+        transactionalFileStorage.createUser(userIDAuth);
         DocumentFQN documentFQN = new DocumentFQN("peter/first.txt");
         DocumentContent documentContent1 = new DocumentContent("very first".getBytes());
         DocumentContent documentContent2 = new DocumentContent("second".getBytes());
@@ -97,7 +96,7 @@ public class TransactionalTransactionalFileStorageTest {
     @Test
     @SuppressWarnings("Duplicates")
     public void testDelete() {
-        documentSafeService.createUser(userIDAuth);
+        transactionalFileStorage.createUser(userIDAuth);
         TxID firstTxID = transactionalFileStorage.beginTransaction(userIDAuth);
 
         int N = 5;
@@ -151,4 +150,14 @@ public class TransactionalTransactionalFileStorageTest {
         }
     }
 
+    @Test (expected = TxAlreadyClosedException.class)
+    @SuppressWarnings("Duplicates")
+    public void testEndTxTwice() {
+        transactionalFileStorage.createUser(userIDAuth);
+        TxID firstTxID = transactionalFileStorage.beginTransaction(userIDAuth);
+        transactionalFileStorage.endTransaction(firstTxID, userIDAuth);
+        transactionalFileStorage.endTransaction(firstTxID, userIDAuth);
+    }
 }
+
+

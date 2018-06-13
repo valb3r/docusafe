@@ -1,6 +1,7 @@
 package org.adorsys.docusafe.transactional.impl;
 
 import org.adorsys.docusafe.business.DocumentSafeService;
+import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
@@ -25,6 +26,21 @@ public class TransactionalFileStorageImpl implements TransactionalFileStorage {
     public TransactionalFileStorageImpl(DocumentSafeService documentSafeService) {
         LOGGER.debug("new Instance of TransactionalFileStorageImpl");
         this.documentSafeService = documentSafeService;
+    }
+
+    @Override
+    public void createUser(UserIDAuth userIDAuth) {
+        documentSafeService.createUser(userIDAuth);
+    }
+
+    @Override
+    public void destroyUser(UserIDAuth userIDAuth) {
+        documentSafeService.destroyUser(userIDAuth);
+    }
+
+    @Override
+    public boolean userExists(UserID userID) {
+        return documentSafeService.userExists(userID);
     }
 
     @Override
