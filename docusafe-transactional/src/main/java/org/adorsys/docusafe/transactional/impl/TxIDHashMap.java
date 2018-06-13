@@ -8,6 +8,7 @@ import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.transactional.exceptions.TxAlreadyClosedException;
+import org.adorsys.docusafe.transactional.exceptions.TxNotFoundException;
 import org.adorsys.docusafe.transactional.impl.helper.Class2JsonHelper;
 import org.adorsys.docusafe.transactional.impl.helper.TxIDVersionHelper;
 import org.adorsys.docusafe.transactional.types.TxID;
@@ -60,7 +61,7 @@ public class TxIDHashMap {
             return map;
         }
 
-        throw new RuntimeException("Can not find a HashMap " + file.getValue() + " though last commitedTxID seems to be " + lastKnownCommitedTxID);
+        throw new TxNotFoundException(file, lastKnownCommitedTxID);
     }
 
     public static TxIDHashMap getCurrentFile(DocumentSafeService documentSafeService, UserIDAuth userIDAuth, TxID currentTxID) {
