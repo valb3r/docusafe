@@ -29,7 +29,7 @@ import java.util.Date;
 public class Class2JsonHelper {
     private final static Logger LOGGER = LoggerFactory.getLogger(Class2JsonHelper.class);
     private final static String CHARSET = "UTF-8";
-    public static final String DATE_FORMAT_STRING = "yyyy-MM-dd-HH:mm:ss.SSS";
+    public static final String DATE_FORMAT_STRING = "yyyy-MM-dd HH:mm:ss.SSS";
 
     private Gson gson = new GsonBuilder().setPrettyPrinting()
             .enableComplexMapKeySerialization()

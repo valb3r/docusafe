@@ -7,6 +7,7 @@ import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.transactional.impl.helper.Class2JsonHelper;
+import org.adorsys.docusafe.transactional.types.TxID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,16 +33,16 @@ public class TxIDLog {
             int size = txIDLog.txidList.size();
             if (size > 5) {
                 for (int i = 0; i<10; i++) {
-                    LOGGER.info("zeit im logfile aufzuräumen:" + txidLogFilename + " hat bereits " + size + " Einträge");
+                    LOGGER.debug("zeit im logfile aufzuräumen:" + txidLogFilename + " hat bereits " + size + " Einträge");
                 }
             }
-            Tripple lastTripple = txIDLog.txidList.get(size - 1);
-            return lastTripple.txid;
+            Tuple lastTuple = txIDLog.txidList.get(size - 1);
+            return new LastCommitedTxID(lastTuple.currentTxID.getValue());
         }
         return null;
     }
 
-    public static void saveJustFinishedTx(DocumentSafeService documentSafeService, UserIDAuth userIDAuth, Date start, Date finished, LastCommitedTxID lastCommitedTxID) {
+    public static void saveJustFinishedTx(DocumentSafeService documentSafeService, UserIDAuth userIDAuth, Date start, Date finished, LastCommitedTxID previousTxID, TxID currentTxID) {
         TxIDLog txIDLog = new TxIDLog();
         DSDocumentMetaInfo metaInfo = new DSDocumentMetaInfo();
         if (documentSafeService.documentExists(userIDAuth, txidLogFilename)) {
@@ -49,23 +50,25 @@ public class TxIDLog {
             txIDLog = new Class2JsonHelper().txidLogFromContent(dsDocument.getDocumentContent());
             metaInfo = dsDocument.getDsDocumentMetaInfo();
         }
-        txIDLog.txidList.add(new Tripple(start, finished, lastCommitedTxID));
+        txIDLog.txidList.add(new Tuple(start, finished, previousTxID, currentTxID));
         DSDocument document = new DSDocument(txidLogFilename, new Class2JsonHelper().txidLogToContent(txIDLog), metaInfo);
         documentSafeService.storeDocument(userIDAuth, document);
-        LOGGER.info("successfully wrote new Version to " + txidLogFilename);
+        LOGGER.debug("successfully wrote new Version to " + txidLogFilename);
     }
 
-    private List<Tripple> txidList = new ArrayList<>();
+    private List<Tuple> txidList = new ArrayList<>();
 
-    private final static class Tripple {
+    private final static class Tuple {
         private Date txDateFrom;
         private Date txDateUntil;
-        private LastCommitedTxID txid;
+        private LastCommitedTxID previousTxID;
+        private TxID currentTxID;
 
-        public Tripple(Date txDateFrom, Date txDateUntil, LastCommitedTxID txid) {
+        public Tuple(Date txDateFrom, Date txDateUntil, LastCommitedTxID previousTxID, TxID currentTxID) {
             this.txDateFrom = txDateFrom;
             this.txDateUntil = txDateUntil;
-            this.txid = txid;
+            this.previousTxID = previousTxID;
+            this.currentTxID = currentTxID;
         }
     }
 }

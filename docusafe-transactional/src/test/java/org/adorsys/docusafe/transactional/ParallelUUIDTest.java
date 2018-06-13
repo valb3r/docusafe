@@ -14,8 +14,8 @@ import java.util.concurrent.Semaphore;
 /**
  * Created by peter on 13.06.18 at 08:39.
  */
-public class ParallelTest {
-    private final static Logger LOGGER = LoggerFactory.getLogger(ParallelTest.class);
+public class ParallelUUIDTest {
+    private final static Logger LOGGER = LoggerFactory.getLogger(ParallelUUIDTest.class);
     private final static int PARALLEL_INSTANCES = 100;
 
     @Test
@@ -31,7 +31,7 @@ public class ParallelTest {
                 instances[i].start();
             }
             Thread.currentThread().sleep(2000);
-            LOGGER.info("start " + PARALLEL_INSTANCES + " threads concurrently now");
+            LOGGER.debug("start " + PARALLEL_INSTANCES + " threads concurrently now");
             semaphore.release(PARALLEL_INSTANCES);
             Thread.currentThread().sleep(2000);
             Set<UUID> uuids = new HashSet<>();
@@ -43,7 +43,7 @@ public class ParallelTest {
             uuids.add(uuids.stream().findFirst().get());
             Assert.assertEquals(PARALLEL_INSTANCES, uuids.size());
 
-            LOGGER.info("finished " + PARALLEL_INSTANCES + " threads in parallel created " + PARALLEL_INSTANCES + " different uuids");
+            LOGGER.debug("finished " + PARALLEL_INSTANCES + " threads in parallel created " + PARALLEL_INSTANCES + " different uuids");
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }

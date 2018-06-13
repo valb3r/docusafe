@@ -70,7 +70,7 @@ public class TxIDHashMap {
 
     public void save(DocumentSafeService documentSafeService, UserIDAuth userIDAuth) {
         DocumentFQN file = TxIDVersionHelper.get(filenamebase, currentTxID);
-        LOGGER.info("save " + file.getValue());
+        LOGGER.debug("save " + file.getValue());
         DocumentContent documentContent = new Class2JsonHelper().txidHashMapToContent(this);
         DSDocument dsDocument = new DSDocument(file, documentContent, new DSDocumentMetaInfo());
         documentSafeService.storeDocument(userIDAuth, dsDocument);
@@ -108,6 +108,6 @@ public class TxIDHashMap {
     }
 
     public void transactionIsOver(DocumentSafeService documentSafeService, UserIDAuth userIDAuth) {
-        TxIDLog.saveJustFinishedTx(documentSafeService, userIDAuth, beginTx, endTx, new LastCommitedTxID(currentTxID.getValue()));
+        TxIDLog.saveJustFinishedTx(documentSafeService, userIDAuth, beginTx, endTx, lastCommitedTxID, currentTxID);
     }
 }
