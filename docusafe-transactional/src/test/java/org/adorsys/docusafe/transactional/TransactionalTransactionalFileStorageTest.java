@@ -43,7 +43,7 @@ public class TransactionalTransactionalFileStorageTest {
 
     @Test
     @SuppressWarnings("Duplicates")
-    public void test() {
+    public void testCreateAndChange() {
         documentSafeService.createUser(userIDAuth);
         DocumentFQN documentFQN = new DocumentFQN("peter/first.txt");
         DocumentContent documentContent1 = new DocumentContent("very first".getBytes());
@@ -92,9 +92,13 @@ public class TransactionalTransactionalFileStorageTest {
             DSDocument dsDocument = transactionalFileStorage.readDocument(fourthTx, userIDAuth, documentFQN);
             Assert.assertEquals(new String(documentContent2.getValue()), new String(dsDocument.getDocumentContent().getValue()));
         }
-        {
-            transactionalFileStorage.endTransaction(thirdTx, userIDAuth);
-        }
+    }
+
+    @Test
+    @SuppressWarnings("Duplicates")
+    public void testDelete() {
+        documentSafeService.createUser(userIDAuth);
+        TxID firstTxID = transactionalFileStorage.beginTransaction(userIDAuth);
 
         int N = 5;
         {
@@ -104,27 +108,27 @@ public class TransactionalTransactionalFileStorageTest {
                 DocumentContent docContent = new DocumentContent(("Content_" + i).getBytes());
                 DSDocumentMetaInfo docMetaInfo = new DSDocumentMetaInfo();
                 DSDocument doc = new DSDocument(docFQN, docContent, docMetaInfo);
-                transactionalFileStorage.storeDocument(fourthTx, userIDAuth, doc);
+                transactionalFileStorage.storeDocument(firstTxID, userIDAuth, doc);
             }
-            transactionalFileStorage.endTransaction(fourthTx, userIDAuth);
+            transactionalFileStorage.endTransaction(firstTxID, userIDAuth);
         }
 
-        TxID fifthsTxID;
-        TxID sixthTxID;
-        TxID seventhTxID;
+        TxID secondTxID;
+        TxID thirdTxID;
+        TxID fourthTxID;
         {
             // Nun löschen der N verschiedenen Dateien in einer Transaktion
-            fifthsTxID = transactionalFileStorage.beginTransaction(userIDAuth);
-            sixthTxID = transactionalFileStorage.beginTransaction(userIDAuth);
-            seventhTxID = transactionalFileStorage.beginTransaction(userIDAuth);
+            secondTxID = transactionalFileStorage.beginTransaction(userIDAuth);
+            thirdTxID = transactionalFileStorage.beginTransaction(userIDAuth);
+            fourthTxID = transactionalFileStorage.beginTransaction(userIDAuth);
             // Nun erzeuge N verschiedene Datein in einem Verzeichnis
             for (int i = 0; i < N; i++) {
                 DocumentFQN docFQN = new DocumentFQN("folder1/file_" + i + ".txt");
-                Assert.assertTrue(transactionalFileStorage.documentExists(fifthsTxID, userIDAuth, docFQN));
-                transactionalFileStorage.deleteDocument(fifthsTxID, userIDAuth, docFQN);
-                Assert.assertFalse(transactionalFileStorage.documentExists(fifthsTxID, userIDAuth, docFQN));
+                Assert.assertTrue(transactionalFileStorage.documentExists(secondTxID, userIDAuth, docFQN));
+                transactionalFileStorage.deleteDocument(secondTxID, userIDAuth, docFQN);
+                Assert.assertFalse(transactionalFileStorage.documentExists(secondTxID, userIDAuth, docFQN));
             }
-            transactionalFileStorage.endTransaction(fifthsTxID, userIDAuth);
+            transactionalFileStorage.endTransaction(secondTxID, userIDAuth);
         }
 
         {
@@ -132,16 +136,19 @@ public class TransactionalTransactionalFileStorageTest {
             // da sie zum Zeitpunkt des Öffnens der TX noch exisitierten
             for (int i = 0; i < N; i++) {
                 DocumentFQN docFQN = new DocumentFQN("folder1/file_" + i + ".txt");
-                Assert.assertTrue(transactionalFileStorage.documentExists(sixthTxID, userIDAuth, docFQN));
-                Assert.assertTrue(transactionalFileStorage.documentExists(seventhTxID, userIDAuth, docFQN));
+                Assert.assertTrue(transactionalFileStorage.documentExists(thirdTxID, userIDAuth, docFQN));
+                Assert.assertTrue(transactionalFileStorage.documentExists(fourthTxID, userIDAuth, docFQN));
             }
-            transactionalFileStorage.deleteFolder(sixthTxID, userIDAuth, new DocumentDirectoryFQN("folder1"));
+            transactionalFileStorage.deleteFolder(thirdTxID, userIDAuth, new DocumentDirectoryFQN("folder1"));
+            // Nun sind alle Dateien in der thirdTx weg, in der fourthTx aber noch da
             for (int i = 0; i < N; i++) {
                 DocumentFQN docFQN = new DocumentFQN("folder1/file_" + i + ".txt");
-                Assert.assertFalse(transactionalFileStorage.documentExists(sixthTxID, userIDAuth, docFQN));
-                Assert.assertTrue(transactionalFileStorage.documentExists(seventhTxID, userIDAuth, docFQN));
+                Assert.assertFalse(transactionalFileStorage.documentExists(thirdTxID, userIDAuth, docFQN));
+                Assert.assertTrue(transactionalFileStorage.documentExists(fourthTxID, userIDAuth, docFQN));
             }
-            transactionalFileStorage.endTransaction(fifthsTxID, userIDAuth);
+            transactionalFileStorage.endTransaction(thirdTxID, userIDAuth);
+            transactionalFileStorage.endTransaction(fourthTxID, userIDAuth);
         }
     }
+
 }
