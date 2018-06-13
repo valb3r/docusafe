@@ -6,9 +6,12 @@ import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
+import org.adorsys.docusafe.service.types.AccessType;
 import org.adorsys.docusafe.transactional.TransactionalFileStorage;
+import org.adorsys.docusafe.transactional.exceptions.TxGrantedDocumentMustNotContainFolderException;
 import org.adorsys.docusafe.transactional.impl.helper.TxIDVersionHelper;
 import org.adorsys.docusafe.transactional.types.TxID;
+import org.adorsys.encobject.complextypes.BucketPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,11 +24,18 @@ public class TransactionalFileStorageImpl implements TransactionalFileStorage {
     private final static Logger LOGGER = LoggerFactory.getLogger(TransactionalFileStorageImpl.class);
     final static DocumentDirectoryFQN txdir = new DocumentDirectoryFQN(TransactionalFileStorage.class.getPackage().getName().toString());
 
+
     private DocumentSafeService documentSafeService;
+    private DocumentDirectoryFQN inboxFolder;
 
     public TransactionalFileStorageImpl(DocumentSafeService documentSafeService) {
+        this(documentSafeService, new DocumentDirectoryFQN("INBOX"));
+    }
+
+    public TransactionalFileStorageImpl(DocumentSafeService documentSafeService, DocumentDirectoryFQN inboxFolder) {
         LOGGER.debug("new Instance of TransactionalFileStorageImpl");
         this.documentSafeService = documentSafeService;
+        this.inboxFolder = inboxFolder;
     }
 
     @Override
@@ -41,6 +51,23 @@ public class TransactionalFileStorageImpl implements TransactionalFileStorage {
     @Override
     public boolean userExists(UserID userID) {
         return documentSafeService.userExists(userID);
+    }
+
+    @Override
+    public void grantAccessToUserForInboxFolder(UserIDAuth userIDAuth, UserID receiverUserID) {
+        LOGGER.debug("grant write access from " + userIDAuth.getUserID() + " to " + receiverUserID + " for " + inboxFolder);
+        documentSafeService.grantAccessToUserForFolder(userIDAuth, receiverUserID, inboxFolder, AccessType.WRITE);
+    }
+
+    @Override
+    public void storeDocumentInInputFolder(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument) {
+        String file = dsDocument.getDocumentFQN().getValue();
+        if (file.indexOf(BucketPath.BUCKET_SEPARATOR) != -1) {
+            throw new TxGrantedDocumentMustNotContainFolderException(dsDocument.getDocumentFQN());
+        }
+        DocumentFQN userSpecificFQN = inboxFolder.addName(file);
+        LOGGER.debug("store document " + file + " in folder " + inboxFolder + " of user " + documentOwner);
+        documentSafeService.storeGrantedDocument(userIDAuth, documentOwner, new DSDocument(userSpecificFQN, dsDocument.getDocumentContent(), dsDocument.getDsDocumentMetaInfo()));
     }
 
     @Override
