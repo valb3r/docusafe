@@ -5,7 +5,6 @@ import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
-import org.adorsys.docusafe.service.types.AccessType;
 import org.adorsys.docusafe.transactional.types.TxID;
 
 /**

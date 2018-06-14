@@ -2,19 +2,17 @@ package org.adorsys.docusafe.service.impl;
 
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.docusafe.service.BucketService;
+import org.adorsys.docusafe.service.types.BucketContent;
 import org.adorsys.docusafe.service.types.PlainFileContent;
-import org.adorsys.docusafe.service.types.complextypes.BucketContent;
+import org.adorsys.docusafe.service.types.complextypes.BucketContentImpl;
 import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
-import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.service.api.ContainerPersistence;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
 import org.adorsys.encobject.service.impl.ContainerPersistenceImpl;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 /**
  * Created by peter on 17.01.18 at 16:44.
@@ -42,7 +40,7 @@ public class BucketServiceImpl implements BucketService {
     @Override
     public BucketContent readDocumentBucket(BucketDirectory bucketDirectory, ListRecursiveFlag listRecursiveFlag) {
         LOGGER.debug("start read document bucket " + bucketDirectory);
-        BucketContent bucketContent = new BucketContent(bucketDirectory, extendedStoreConnection.list(bucketDirectory, listRecursiveFlag));
+        BucketContentImpl bucketContent = new BucketContentImpl(bucketDirectory, extendedStoreConnection.list(bucketDirectory, listRecursiveFlag));
         LOGGER.debug("finished read document bucket " + bucketDirectory + " -> " + bucketContent.getContent().size());
         return bucketContent;
     }

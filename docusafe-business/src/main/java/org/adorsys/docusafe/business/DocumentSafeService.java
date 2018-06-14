@@ -1,14 +1,15 @@
 package org.adorsys.docusafe.business;
 
+import com.nimbusds.jose.jwk.JWK;
 import org.adorsys.docusafe.business.types.UserID;
+import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentStream;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.service.types.AccessType;
-
-import com.nimbusds.jose.jwk.JWK;
+import org.adorsys.encobject.types.ListRecursiveFlag;
 
 /**
  * Created by peter on 19.01.18 at 16:30.
@@ -40,6 +41,8 @@ public interface DocumentSafeService {
     boolean documentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN);
     void deleteFolder(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN);
 
+    BucketContentFQN list(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag);
+
     /**
      * Grants
      */
@@ -47,4 +50,6 @@ public interface DocumentSafeService {
 
     void storeGrantedDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument);
     DSDocument readGrantedDocument(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN);
+
+
 }

@@ -1,7 +1,7 @@
 package org.adorsys.docusafe.service;
 
+import org.adorsys.docusafe.service.types.BucketContent;
 import org.adorsys.docusafe.service.types.PlainFileContent;
-import org.adorsys.docusafe.service.types.complextypes.BucketContent;
 import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.types.ListRecursiveFlag;

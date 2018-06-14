@@ -9,12 +9,14 @@ import org.adorsys.docusafe.business.exceptions.UserIDAlreadyExistsException;
 import org.adorsys.docusafe.business.exceptions.UserIDDoesNotExistException;
 import org.adorsys.docusafe.business.exceptions.WrongPasswordException;
 import org.adorsys.docusafe.business.types.UserID;
+import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DSDocumentStream;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
+import org.adorsys.docusafe.business.utils.BucketPath2FQNHelper;
 import org.adorsys.docusafe.business.utils.GrantUtil;
 import org.adorsys.docusafe.business.utils.GuardUtil;
 import org.adorsys.docusafe.business.utils.UserIDUtil;
@@ -28,6 +30,7 @@ import org.adorsys.docusafe.service.impl.DocumentPersistenceServiceImpl;
 import org.adorsys.docusafe.service.impl.GuardKeyType;
 import org.adorsys.docusafe.service.impl.KeySourceServiceImpl;
 import org.adorsys.docusafe.service.types.AccessType;
+import org.adorsys.docusafe.service.types.BucketContent;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.service.types.DocumentKeyID;
 import org.adorsys.docusafe.service.types.complextypes.DocumentBucketPath;
@@ -46,6 +49,7 @@ import org.adorsys.encobject.service.impl.KeyStoreServiceImpl;
 import org.adorsys.encobject.service.impl.SimplePayloadImpl;
 import org.adorsys.encobject.service.impl.SimplePayloadStreamImpl;
 import org.adorsys.encobject.service.impl.SimpleStorageMetadataImpl;
+import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.adorsys.encobject.types.OverwriteFlag;
 import org.adorsys.jkeygen.keystore.KeyStoreType;
 import org.slf4j.Logger;
@@ -188,7 +192,6 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
     }
 
 
-
     @Override
     public DSDocumentStream readDocumentStream(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
         try {
@@ -223,6 +226,31 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         BucketDirectory homeBucketDirectory = UserIDUtil.getHomeBucketDirectory(userIDAuth.getUserID());
         BucketDirectory documentBucketDirectory = homeBucketDirectory.append(new BucketDirectory(documentDirectoryFQN.getValue()));
         bucketService.deletePlainFolder(documentBucketDirectory);
+    }
+
+    @Override
+    public BucketContentFQN list(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
+        LOGGER.debug("list directroy " + documentDirectoryFQN + " for " + userIDAuth.getUserID());
+        checkUserKeyPassword(userIDAuth);
+        BucketDirectory homeBucketDirectory = UserIDUtil.getHomeBucketDirectory(userIDAuth.getUserID());
+        BucketDirectory bucketDirectory = homeBucketDirectory.appendDirectory(documentDirectoryFQN.getValue());
+        BucketContentFQNImpl ret = new BucketContentFQNImpl();
+        BucketContent bucketContent = bucketService.readDocumentBucket(bucketDirectory, recursiveFlag);
+        bucketContent.getFiles().forEach(bucketPath ->
+                ret.getFiles().add(BucketPath2FQNHelper.path2FQN(homeBucketDirectory, bucketPath)));
+
+        // Filtere das eigene directroy raus.
+        DocumentDirectoryFQN dir = documentDirectoryFQN.getValue().startsWith(BucketPath.BUCKET_SEPARATOR) ?
+                documentDirectoryFQN :
+                new DocumentDirectoryFQN(BucketPath.BUCKET_SEPARATOR + documentDirectoryFQN.getValue());
+        bucketContent.getSubdirectories().forEach(subdirectory -> {
+            DocumentDirectoryFQN dirFQN = BucketPath2FQNHelper.directory2FQN(homeBucketDirectory, subdirectory);
+            if (!dirFQN.equals(dir)) {
+                ret.getDirectories().add(dirFQN);
+            }
+        });
+
+        return ret;
     }
 
     /**
@@ -312,12 +340,12 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
     }
 
     @Override
-	public JWK findPublicEncryptionKey(UserID userID) {
-    	KeyStoreAccess keyStoreAccess = getKeyStoreAccess(new UserIDAuth(userID, null));
-    	return keySourceService.findPublicEncryptionKey(keyStoreAccess);
-	}
+    public JWK findPublicEncryptionKey(UserID userID) {
+        KeyStoreAccess keyStoreAccess = getKeyStoreAccess(new UserIDAuth(userID, null));
+        return keySourceService.findPublicEncryptionKey(keyStoreAccess);
+    }
 
-	private DocumentKeyID createAsymmetricGuardForBucket(KeyStoreAccess keyStoreAccess,
+    private DocumentKeyID createAsymmetricGuardForBucket(KeyStoreAccess keyStoreAccess,
                                                          DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType,
                                                          BucketDirectory documentDirectory,
                                                          OverwriteFlag overwriteFlag) {

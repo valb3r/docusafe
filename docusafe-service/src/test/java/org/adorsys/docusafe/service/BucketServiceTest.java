@@ -2,8 +2,8 @@ package org.adorsys.docusafe.service;
 
 import org.adorsys.docusafe.service.impl.BucketServiceImpl;
 import org.adorsys.docusafe.service.types.AccessType;
+import org.adorsys.docusafe.service.types.BucketContent;
 import org.adorsys.docusafe.service.types.DocumentContent;
-import org.adorsys.docusafe.service.types.complextypes.BucketContent;
 import org.adorsys.docusafe.service.types.complextypes.DocumentBucketPath;
 import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
 import org.adorsys.encobject.complextypes.BucketDirectory;

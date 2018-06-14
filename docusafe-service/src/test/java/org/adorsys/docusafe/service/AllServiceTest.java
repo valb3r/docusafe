@@ -4,8 +4,9 @@ import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
 import org.adorsys.cryptoutils.utils.HexUtil;
 import org.adorsys.docusafe.service.types.AccessType;
+import org.adorsys.docusafe.service.types.BucketContent;
 import org.adorsys.docusafe.service.types.DocumentContent;
-import org.adorsys.docusafe.service.types.complextypes.BucketContent;
+import org.adorsys.docusafe.service.types.complextypes.BucketContentImpl;
 import org.adorsys.docusafe.service.types.complextypes.DocumentBucketPath;
 import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
 import org.adorsys.docusafe.service.utils.ShowKeyStore;
@@ -503,7 +504,7 @@ public class AllServiceTest {
         }
     }
 
-    private void showBucketContent(BucketContent bucketContent2) {
+    private void showBucketContent(BucketContentImpl bucketContent2) {
         for (StorageMetadata meta : bucketContent2.getContent()) {
             LOGGER.debug("name: " + meta.getName());
             LOGGER.debug("size: " + meta.getSize());

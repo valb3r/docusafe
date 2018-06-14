@@ -7,6 +7,7 @@ import org.adorsys.docusafe.business.exceptions.NoWriteAccessException;
 import org.adorsys.docusafe.business.exceptions.WrongPasswordException;
 import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
 import org.adorsys.docusafe.business.types.UserID;
+import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
@@ -17,9 +18,9 @@ import org.adorsys.docusafe.service.BucketService;
 import org.adorsys.docusafe.service.exceptions.NoDocumentGuardExists;
 import org.adorsys.docusafe.service.impl.BucketServiceImpl;
 import org.adorsys.docusafe.service.types.AccessType;
+import org.adorsys.docusafe.service.types.BucketContent;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.service.types.DocumentKeyID;
-import org.adorsys.docusafe.service.types.complextypes.BucketContent;
 import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.domain.ReadKeyPassword;
@@ -36,7 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.security.Security;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -245,6 +245,41 @@ public class BusinessTest {
 
     }
 
+    @Test
+    public void checkDirectoryListings() {
+        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        UserIDAuth userIDAuth = createUser();
+        DocumentDirectoryFQN dir = new DocumentDirectoryFQN("many/deeper/and/deeper");
+        createDirectoryWithSubdirectories(3, userIDAuth, dir, 3, 3);
+        {
+            BucketContentFQN list = service.list(userIDAuth, dir, ListRecursiveFlag.FALSE);
+            list.getDirectories().forEach(sdir -> LOGGER.debug("found dir " + sdir));
+            list.getFiles().forEach(file -> LOGGER.debug("found file " + file));
+            Assert.assertEquals(3, list.getDirectories().size());
+            Assert.assertEquals(3, list.getFiles().size());
+        }
+        {
+            BucketContentFQN list = service.list(userIDAuth, dir, ListRecursiveFlag.TRUE);
+            list.getDirectories().forEach(sdir -> LOGGER.debug("found dir " + sdir));
+            list.getFiles().forEach(file -> LOGGER.debug("found file " + file));
+            Assert.assertEquals(12, list.getDirectories().size());
+            Assert.assertEquals(39, list.getFiles().size());
+        }
+    }
+
+    private void createDirectoryWithSubdirectories(int depth, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, int numSubdires, int numFiles) {
+        if (depth == 0) {
+            return;
+        }
+        for (int i = 0; i<numFiles; i++) {
+            DocumentFQN documentFQN = documentDirectoryFQN.addName("file_" + i);
+            createDocument(userIDAuth, documentFQN);
+        }
+        for (int i = 0; i<numSubdires; i++) {
+            DocumentDirectoryFQN subdir = documentDirectoryFQN.addDirectory("dir_" + i);
+            createDirectoryWithSubdirectories(depth -1, userIDAuth, subdir, numSubdires, numFiles);
+        }
+    }
 
     private int getNumberOfGuards(UserID userID) {
         BucketService bucketService = new BucketServiceImpl(extendedStoreConnection);
