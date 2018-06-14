@@ -267,6 +267,28 @@ public class BusinessTest {
         }
     }
 
+    @Test
+    public void checkRootDirectoryListings() {
+        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        UserIDAuth userIDAuth = createUser();
+        DocumentDirectoryFQN dir = new DocumentDirectoryFQN("/");
+        createDirectoryWithSubdirectories(2, userIDAuth, dir, 1, 1);
+        {
+            BucketContentFQN list = service.list(userIDAuth, dir, ListRecursiveFlag.FALSE);
+            list.getDirectories().forEach(sdir -> LOGGER.debug("found dir " + sdir));
+            list.getFiles().forEach(file -> LOGGER.debug("found file " + file));
+            Assert.assertEquals(1, list.getDirectories().size());
+            Assert.assertEquals(2, list.getFiles().size());
+        }
+        {
+            BucketContentFQN list = service.list(userIDAuth, dir, ListRecursiveFlag.TRUE);
+            list.getDirectories().forEach(sdir -> LOGGER.debug("found dir " + sdir));
+            list.getFiles().forEach(file -> LOGGER.debug("found file " + file));
+            Assert.assertEquals(1, list.getDirectories().size());
+            Assert.assertEquals(3, list.getFiles().size());
+        }
+    }
+
     private void createDirectoryWithSubdirectories(int depth, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, int numSubdires, int numFiles) {
         if (depth == 0) {
             return;

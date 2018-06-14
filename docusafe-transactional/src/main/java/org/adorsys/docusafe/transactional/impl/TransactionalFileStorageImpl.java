@@ -1,7 +1,10 @@
 package org.adorsys.docusafe.transactional.impl;
 
+import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.docusafe.business.DocumentSafeService;
+import org.adorsys.docusafe.business.impl.BucketContentFQNImpl;
 import org.adorsys.docusafe.business.types.UserID;
+import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
@@ -12,10 +15,12 @@ import org.adorsys.docusafe.transactional.exceptions.TxGrantedDocumentMustNotCon
 import org.adorsys.docusafe.transactional.impl.helper.TxIDVersionHelper;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.complextypes.BucketPath;
+import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Date;
+import java.util.stream.Collectors;
 
 /**
  * Created by peter on 11.06.18 at 15:01.
@@ -62,9 +67,6 @@ public class TransactionalFileStorageImpl implements TransactionalFileStorage {
     @Override
     public void storeDocumentInInputFolder(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument) {
         String file = dsDocument.getDocumentFQN().getValue();
-        if (file.indexOf(BucketPath.BUCKET_SEPARATOR) != -1) {
-            throw new TxGrantedDocumentMustNotContainFolderException(dsDocument.getDocumentFQN());
-        }
         DocumentFQN userSpecificFQN = inboxFolder.addName(file);
         LOGGER.debug("store document " + file + " in folder " + inboxFolder + " of user " + documentOwner);
         documentSafeService.storeGrantedDocument(userIDAuth, documentOwner, new DSDocument(userSpecificFQN, dsDocument.getDocumentContent(), dsDocument.getDsDocumentMetaInfo()));
@@ -129,6 +131,47 @@ public class TransactionalFileStorageImpl implements TransactionalFileStorage {
         txIDHashMap.setEndTransactionDate(new Date());
         txIDHashMap.save(documentSafeService, userIDAuth);
         txIDHashMap.transactionIsOver(documentSafeService, userIDAuth);
+    }
+
+    @Override
+    public BucketContentFQN list(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
+        if (documentDirectoryFQN.getValue().startsWith(inboxFolder.getValue())) {
+            // list physical files
+            return filterTxDir(documentSafeService.list(userIDAuth, documentDirectoryFQN, recursiveFlag));
+        }
+        if (documentDirectoryFQN.getValue().length() > 1) {
+            // return HashMap Only
+            TxIDHashMap txIDHashMap = TxIDHashMap.getCurrentFile(documentSafeService, userIDAuth, txid);
+            return txIDHashMap.list(documentDirectoryFQN, recursiveFlag);
+        }
+
+        if (documentDirectoryFQN.getValue().length() == 1) {
+            // nun also die Summe aus inbox und hashMap
+            BucketContentFQN bucketContentFQNInbox = filterTxDir(documentSafeService.list(userIDAuth, inboxFolder, recursiveFlag));
+
+            TxIDHashMap txIDHashMap = TxIDHashMap.getCurrentFile(documentSafeService, userIDAuth, txid);
+            BucketContentFQN bucketContentFQNHashMap = txIDHashMap.list(documentDirectoryFQN, recursiveFlag);
+
+            BucketContentFQN sum = new BucketContentFQNImpl();
+            sum.getFiles().addAll(bucketContentFQNInbox.getFiles());
+            sum.getFiles().addAll(bucketContentFQNHashMap.getFiles());
+            sum.getDirectories().addAll(bucketContentFQNInbox.getDirectories());
+            sum.getDirectories().addAll(bucketContentFQNHashMap.getDirectories());
+            return sum;
+        }
+
+        throw new BaseException("Programming Error. Did not expect this " + documentDirectoryFQN);
+    }
+
+    private BucketContentFQN filterTxDir(BucketContentFQN list) {
+        BucketContentFQN filtered = new BucketContentFQNImpl();
+        filtered.getDirectories().addAll(
+                list.getDirectories().stream().filter(
+                        dir -> ! dir.getValue().startsWith(txdir.getValue())).collect(Collectors.toList()));
+        filtered.getFiles().addAll(
+                list.getFiles().stream().filter(
+                        file -> ! file.getValue().startsWith(txdir.getValue())).collect(Collectors.toList()));
+        return filtered;
     }
 
 

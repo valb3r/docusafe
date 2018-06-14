@@ -1,6 +1,8 @@
 package org.adorsys.docusafe.transactional.impl;
 
 import org.adorsys.docusafe.business.DocumentSafeService;
+import org.adorsys.docusafe.business.impl.BucketContentFQNImpl;
+import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
@@ -9,16 +11,22 @@ import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.transactional.exceptions.TxAlreadyClosedException;
 import org.adorsys.docusafe.transactional.exceptions.TxNotFoundException;
+import org.adorsys.docusafe.transactional.impl.helper.BucketContentFromHashMapHelper;
 import org.adorsys.docusafe.transactional.impl.helper.Class2JsonHelper;
 import org.adorsys.docusafe.transactional.impl.helper.TxIDVersionHelper;
 import org.adorsys.docusafe.transactional.types.TxID;
+import org.adorsys.encobject.complextypes.BucketPath;
+import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 /**
  * Created by peter on 11.06.18 at 15:12.
@@ -115,5 +123,9 @@ public class TxIDHashMap {
 
     public void transactionIsOver(DocumentSafeService documentSafeService, UserIDAuth userIDAuth) {
         TxIDLog.saveJustFinishedTx(documentSafeService, userIDAuth, beginTx, endTx, lastCommitedTxID, currentTxID);
+    }
+
+    public BucketContentFQN list(DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
+        return BucketContentFromHashMapHelper.list(map.keySet(), documentDirectoryFQN, recursiveFlag);
     }
 }

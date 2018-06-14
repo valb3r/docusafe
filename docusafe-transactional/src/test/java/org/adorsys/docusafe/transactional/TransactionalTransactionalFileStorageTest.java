@@ -4,6 +4,7 @@ import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFac
 import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
 import org.adorsys.docusafe.business.types.UserID;
+import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
@@ -14,7 +15,7 @@ import org.adorsys.docusafe.transactional.exceptions.TxAlreadyClosedException;
 import org.adorsys.docusafe.transactional.impl.TransactionalFileStorageImpl;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.domain.ReadKeyPassword;
-import org.adorsys.encobject.service.api.ExtendedStoreConnection;
+import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Assert;
 import org.junit.Before;
@@ -41,7 +42,6 @@ public class TransactionalTransactionalFileStorageTest {
     }
 
     @Test
-    @SuppressWarnings("Duplicates")
     public void testCreateAndChange() {
         transactionalFileStorage.createUser(userIDAuth);
         DocumentFQN documentFQN = new DocumentFQN("peter/first.txt");
@@ -91,10 +91,14 @@ public class TransactionalTransactionalFileStorageTest {
             DSDocument dsDocument = transactionalFileStorage.readDocument(fourthTx, userIDAuth, documentFQN);
             Assert.assertEquals(new String(documentContent2.getValue()), new String(dsDocument.getDocumentContent().getValue()));
         }
+        BucketContentFQN list = transactionalFileStorage.list(fourthTx, userIDAuth, new DocumentDirectoryFQN("/"), ListRecursiveFlag.TRUE);
+        list.getDirectories().forEach(dir -> LOGGER.debug("directory : " + dir));
+        list.getFiles().forEach(file -> LOGGER.debug("file:" + file));
+        Assert.assertEquals(1, list.getFiles().size());
+        Assert.assertEquals(1, list.getDirectories().size());
     }
 
     @Test
-    @SuppressWarnings("Duplicates")
     public void testDelete() {
         transactionalFileStorage.createUser(userIDAuth);
         TxID firstTxID = transactionalFileStorage.beginTransaction(userIDAuth);
@@ -151,7 +155,6 @@ public class TransactionalTransactionalFileStorageTest {
     }
 
     @Test (expected = TxAlreadyClosedException.class)
-    @SuppressWarnings("Duplicates")
     public void testEndTxTwice() {
         transactionalFileStorage.createUser(userIDAuth);
         TxID firstTxID = transactionalFileStorage.beginTransaction(userIDAuth);

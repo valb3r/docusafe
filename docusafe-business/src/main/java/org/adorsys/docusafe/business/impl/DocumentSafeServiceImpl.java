@@ -233,7 +233,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         LOGGER.debug("list directroy " + documentDirectoryFQN + " for " + userIDAuth.getUserID());
         checkUserKeyPassword(userIDAuth);
         BucketDirectory homeBucketDirectory = UserIDUtil.getHomeBucketDirectory(userIDAuth.getUserID());
-        BucketDirectory bucketDirectory = homeBucketDirectory.appendDirectory(documentDirectoryFQN.getValue());
+        BucketDirectory bucketDirectory = documentDirectoryFQN.prepend(homeBucketDirectory);
         BucketContentFQNImpl ret = new BucketContentFQNImpl();
         BucketContent bucketContent = bucketService.readDocumentBucket(bucketDirectory, recursiveFlag);
         bucketContent.getFiles().forEach(bucketPath ->
