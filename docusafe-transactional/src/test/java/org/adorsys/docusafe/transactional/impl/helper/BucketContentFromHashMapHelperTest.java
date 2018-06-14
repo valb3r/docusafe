@@ -68,8 +68,7 @@ public class BucketContentFromHashMapHelperTest {
         Assert.assertEquals(1, a.getDirectories().size());
     }
 
-    // @Test
-    // TODO UNBEDINGT NOCH FIXEN
+    @Test
     public void testNonRecursiveWithRoot() {
         BucketContentFQN a = BucketContentFromHashMapHelper.list(keys, new DocumentDirectoryFQN("/"), ListRecursiveFlag.FALSE);
         a.getFiles().forEach(file -> LOGGER.debug("file: " + file));

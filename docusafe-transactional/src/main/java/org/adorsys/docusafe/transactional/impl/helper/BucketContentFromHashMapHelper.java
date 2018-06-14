@@ -77,12 +77,12 @@ public class BucketContentFromHashMapHelper {
 
         HashSet<DocumentDirectoryFQN> dirs = new HashSet<>();
         dirCandidates.forEach(dirCandidate -> {
-            String remainder = dirCandidate.getValue().substring(documentDirectoryFQN.getValue().length());
+            DocumentDirectoryFQN remainder = new DocumentDirectoryFQN(dirCandidate.getValue().substring(documentDirectoryFQN.getValue().length()));
             // dirCandidate /a/b/c
             // search       /a
             // remainder      /b/c
-            if (remainder.lastIndexOf(BucketPath.BUCKET_SEPARATOR) == 0) {
-                dirs.add(new DocumentDirectoryFQN(remainder));
+            if (remainder.getValue().lastIndexOf(BucketPath.BUCKET_SEPARATOR) == 0) {
+                dirs.add(remainder);
             }
         });
         dirs.forEach(dir -> bucketContentFQN.getDirectories().add(dir));
