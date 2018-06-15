@@ -21,7 +21,7 @@ import java.util.List;
 public class TxIDLog {
     private final static Logger LOGGER = LoggerFactory.getLogger(TxIDLog.class);
     private static String LOG_FILE_NAME = "LastCommitedTxID.txt";
-    private static DocumentFQN txidLogFilename = TransactionalFileStorageImpl.txdir.addName(LOG_FILE_NAME);
+    private static DocumentFQN txidLogFilename = TransactionalFileStorageImpl.txMeta.addName(LOG_FILE_NAME);
 
     public static LastCommitedTxID findLastCommitedTxID(DocumentSafeService documentSafeService, UserIDAuth userIDAuth) {
         if (documentSafeService.documentExists(userIDAuth, txidLogFilename)) {

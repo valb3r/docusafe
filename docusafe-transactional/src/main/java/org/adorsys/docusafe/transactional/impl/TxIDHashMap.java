@@ -1,7 +1,6 @@
 package org.adorsys.docusafe.transactional.impl;
 
 import org.adorsys.docusafe.business.DocumentSafeService;
-import org.adorsys.docusafe.business.impl.BucketContentFQNImpl;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
@@ -13,9 +12,7 @@ import org.adorsys.docusafe.transactional.exceptions.TxAlreadyClosedException;
 import org.adorsys.docusafe.transactional.exceptions.TxNotFoundException;
 import org.adorsys.docusafe.transactional.impl.helper.BucketContentFromHashMapHelper;
 import org.adorsys.docusafe.transactional.impl.helper.Class2JsonHelper;
-import org.adorsys.docusafe.transactional.impl.helper.TxIDVersionHelper;
 import org.adorsys.docusafe.transactional.types.TxID;
-import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,18 +20,14 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.StringTokenizer;
 
 /**
  * Created by peter on 11.06.18 at 15:12.
  */
 public class TxIDHashMap {
     private final static Logger LOGGER = LoggerFactory.getLogger(TxIDHashMap.class);
-    private final static String HASHMAP_BASE_FILE_NAME = "TransactionalHashMap.txt";
-    private final static DocumentFQN filenamebase = TransactionalFileStorageImpl.txdir.addName(HASHMAP_BASE_FILE_NAME);
+    private final static DocumentFQN filenamebase = new DocumentFQN("TransactionalHashMap.txt");
 
     private LastCommitedTxID lastCommitedTxID;
     private TxID currentTxID;
@@ -58,7 +51,7 @@ public class TxIDHashMap {
             return new TxIDHashMap(lastKnownCommitedTxID, currentTxID, beginTxDate);
         }
 
-        DocumentFQN file = TxIDVersionHelper.get(filenamebase, lastKnownCommitedTxID);
+        DocumentFQN file = TransactionalFileStorageImpl.modifyTxMetaDocumentName(filenamebase, lastKnownCommitedTxID);
         if (documentSafeService.documentExists(userIDAuth, file)) {
             DSDocument dsDocument = documentSafeService.readDocument(userIDAuth, file);
             TxIDHashMap map = new Class2JsonHelper().txidHashMapFromContent(dsDocument.getDocumentContent());
@@ -73,7 +66,7 @@ public class TxIDHashMap {
     }
 
     public static TxIDHashMap getCurrentFile(DocumentSafeService documentSafeService, UserIDAuth userIDAuth, TxID currentTxID) {
-        DocumentFQN file = TxIDVersionHelper.get(filenamebase, currentTxID);
+        DocumentFQN file = TransactionalFileStorageImpl.modifyTxMetaDocumentName(filenamebase, currentTxID);
         DSDocument dsDocument = documentSafeService.readDocument(userIDAuth, file);
         TxIDHashMap txIDHashMap = new Class2JsonHelper().txidHashMapFromContent(dsDocument.getDocumentContent());
         if (txIDHashMap.endTx != null) {
@@ -83,7 +76,7 @@ public class TxIDHashMap {
     }
 
     public void save(DocumentSafeService documentSafeService, UserIDAuth userIDAuth) {
-        DocumentFQN file = TxIDVersionHelper.get(filenamebase, currentTxID);
+        DocumentFQN file = TransactionalFileStorageImpl.modifyTxMetaDocumentName(filenamebase, currentTxID);
         LOGGER.debug("save " + file.getValue());
         DocumentContent documentContent = new Class2JsonHelper().txidHashMapToContent(this);
         DSDocument dsDocument = new DSDocument(file, documentContent, new DSDocumentMetaInfo());

@@ -22,6 +22,12 @@ public class DocumentFQN extends BaseTypeString {
         return new DocumentDirectoryFQN(value.substring(0, lastIndex));
     }
 
+    // Nur der Name, dennoch beginnt dieser auch mit einem Slash
+    public DocumentFQN getPlainNameWithoutPath() {
+        String fqn = getValue();
+        return new DocumentFQN(fqn.substring(fqn.lastIndexOf(BucketPath.BUCKET_SEPARATOR )));
+    }
+
     private static String prependStartingSeparator(String s) {
         if (s.startsWith(BucketPath.BUCKET_SEPARATOR)) {
             return s;

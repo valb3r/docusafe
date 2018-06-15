@@ -1,7 +1,6 @@
 package org.adorsys.docusafe.transactional;
 
 import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
-import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
@@ -28,8 +27,8 @@ import java.security.Security;
 /**
  * Created by peter on 12.06.18 at 08:44.
  */
-public class TransactionalTransactionalFileStorageTest {
-    private final static Logger LOGGER = LoggerFactory.getLogger(TransactionalTransactionalFileStorageTest.class);
+public class TransactionalFileStorageTest {
+    private final static Logger LOGGER = LoggerFactory.getLogger(TransactionalFileStorageTest.class);
     private TransactionalFileStorage transactionalFileStorage = new TransactionalFileStorageImpl(new DocumentSafeServiceImpl(ExtendedStoreConnectionFactory.get()));
     private UserIDAuth userIDAuth = new UserIDAuth(new UserID("peter"), new ReadKeyPassword("password"));
 
@@ -44,7 +43,7 @@ public class TransactionalTransactionalFileStorageTest {
     @Test
     public void testCreateAndChange() {
         transactionalFileStorage.createUser(userIDAuth);
-        DocumentFQN documentFQN = new DocumentFQN("peter/first.txt");
+        DocumentFQN documentFQN = new DocumentFQN("testxTFolder/first.txt");
         DocumentContent documentContent1 = new DocumentContent("very first".getBytes());
         DocumentContent documentContent2 = new DocumentContent("second".getBytes());
         DSDocumentMetaInfo documentMetaInfo = new DSDocumentMetaInfo();
@@ -91,7 +90,7 @@ public class TransactionalTransactionalFileStorageTest {
             DSDocument dsDocument = transactionalFileStorage.readDocument(fourthTx, userIDAuth, documentFQN);
             Assert.assertEquals(new String(documentContent2.getValue()), new String(dsDocument.getDocumentContent().getValue()));
         }
-        BucketContentFQN list = transactionalFileStorage.list(fourthTx, userIDAuth, new DocumentDirectoryFQN("/"), ListRecursiveFlag.TRUE);
+        BucketContentFQN list = transactionalFileStorage.listDocuments(fourthTx, userIDAuth, new DocumentDirectoryFQN("/"), ListRecursiveFlag.TRUE);
         list.getDirectories().forEach(dir -> LOGGER.debug("directory : " + dir));
         list.getFiles().forEach(file -> LOGGER.debug("file:" + file));
         Assert.assertEquals(1, list.getFiles().size());

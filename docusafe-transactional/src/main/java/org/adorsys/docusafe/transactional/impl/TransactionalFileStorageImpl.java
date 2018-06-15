@@ -1,6 +1,5 @@
 package org.adorsys.docusafe.transactional.impl;
 
-import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.impl.BucketContentFQNImpl;
 import org.adorsys.docusafe.business.types.UserID;
@@ -11,38 +10,31 @@ import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.service.types.AccessType;
 import org.adorsys.docusafe.transactional.TransactionalFileStorage;
-import org.adorsys.docusafe.transactional.exceptions.TxGrantedDocumentMustNotContainFolderException;
-import org.adorsys.docusafe.transactional.impl.helper.TxIDVersionHelper;
 import org.adorsys.docusafe.transactional.types.TxID;
-import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Date;
-import java.util.stream.Collectors;
 
 /**
  * Created by peter on 11.06.18 at 15:01.
  */
 public class TransactionalFileStorageImpl implements TransactionalFileStorage {
     private final static Logger LOGGER = LoggerFactory.getLogger(TransactionalFileStorageImpl.class);
-    final static DocumentDirectoryFQN txdir = new DocumentDirectoryFQN(TransactionalFileStorage.class.getPackage().getName().toString());
-
-
+    final static DocumentDirectoryFQN txMeta = new DocumentDirectoryFQN("meta.tx");
+    final static DocumentDirectoryFQN txContent = new DocumentDirectoryFQN("tx");
+    final static DocumentDirectoryFQN nonTxContent = new DocumentDirectoryFQN("nonttx");
     private DocumentSafeService documentSafeService;
-    private DocumentDirectoryFQN inboxFolder;
 
     public TransactionalFileStorageImpl(DocumentSafeService documentSafeService) {
-        this(documentSafeService, new DocumentDirectoryFQN("INBOX"));
-    }
-
-    public TransactionalFileStorageImpl(DocumentSafeService documentSafeService, DocumentDirectoryFQN inboxFolder) {
         LOGGER.debug("new Instance of TransactionalFileStorageImpl");
         this.documentSafeService = documentSafeService;
-        this.inboxFolder = inboxFolder;
     }
 
+    // ============================================================================================
+    // NON-TRANSACTIONAL
+    // ============================================================================================
     @Override
     public void createUser(UserIDAuth userIDAuth) {
         documentSafeService.createUser(userIDAuth);
@@ -59,18 +51,39 @@ public class TransactionalFileStorageImpl implements TransactionalFileStorage {
     }
 
     @Override
-    public void grantAccessToUserForInboxFolder(UserIDAuth userIDAuth, UserID receiverUserID) {
-        LOGGER.debug("grant write access from " + userIDAuth.getUserID() + " to " + receiverUserID + " for " + inboxFolder);
-        documentSafeService.grantAccessToUserForFolder(userIDAuth, receiverUserID, inboxFolder, AccessType.WRITE);
+    public void grantAccess(UserIDAuth userIDAuth, UserID receiverUserID) {
+        LOGGER.debug("grant write access from " + userIDAuth.getUserID() + " to " + receiverUserID + " for " + nonTxContent);
+        documentSafeService.grantAccessToUserForFolder(userIDAuth, receiverUserID, nonTxContent, AccessType.WRITE);
     }
 
     @Override
-    public void storeDocumentInInputFolder(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument) {
-        String file = dsDocument.getDocumentFQN().getValue();
-        DocumentFQN userSpecificFQN = inboxFolder.addName(file);
-        LOGGER.debug("store document " + file + " in folder " + inboxFolder + " of user " + documentOwner);
-        documentSafeService.storeGrantedDocument(userIDAuth, documentOwner, new DSDocument(userSpecificFQN, dsDocument.getDocumentContent(), dsDocument.getDsDocumentMetaInfo()));
+    public void storeDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument) {
+        LOGGER.debug("store document " + dsDocument.getDocumentFQN() + " in folder " + nonTxContent + " of user " + documentOwner);
+        documentSafeService.storeGrantedDocument(userIDAuth, documentOwner, modifyNonTxDocument(dsDocument));
     }
+
+
+    @Override
+    public DSDocument readDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+        LOGGER.debug("read document " + documentFQN + " from folder " + nonTxContent + " of user " + userIDAuth.getUserID());
+        return documentSafeService.readDocument(userIDAuth, modifyNonTxDocumentName(documentFQN));
+    }
+
+    @Override
+    public void deleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+        LOGGER.debug("delete document " + documentFQN + " from folder " + nonTxContent + " of user " + userIDAuth.getUserID());
+        documentSafeService.deleteDocument(userIDAuth, modifyNonTxDocumentName(documentFQN));
+    }
+
+    @Override
+    public BucketContentFQN listDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
+        LOGGER.debug("list documents " + documentDirectoryFQN + " from folder " + nonTxContent + " of user " + userIDAuth.getUserID());
+        return filterNonTxPrefix(documentSafeService.list(userIDAuth, documentDirectoryFQN, recursiveFlag));
+    }
+
+    // ============================================================================================
+    // TRANSACTIONAL
+    // ============================================================================================
 
     @Override
     public TxID beginTransaction(UserIDAuth userIDAuth) {
@@ -86,7 +99,7 @@ public class TransactionalFileStorageImpl implements TransactionalFileStorage {
     public void storeDocument(TxID txid, UserIDAuth userIDAuth, DSDocument dsDocument) {
         LOGGER.debug("storeDocument " + dsDocument.getDocumentFQN().getValue() + " " + txid.getValue());
         TxIDHashMap txIDHashMap = TxIDHashMap.getCurrentFile(documentSafeService, userIDAuth, txid);
-        documentSafeService.storeDocument(userIDAuth, modify(dsDocument, txid));
+        documentSafeService.storeDocument(userIDAuth, modifyTxDocument(dsDocument, txid));
         txIDHashMap.storeDocument(dsDocument.getDocumentFQN());
         txIDHashMap.save(documentSafeService, userIDAuth);
     }
@@ -97,7 +110,7 @@ public class TransactionalFileStorageImpl implements TransactionalFileStorage {
         LOGGER.debug("readDocument " + documentFQN.getValue() + " " + txid.getValue());
         TxIDHashMap txIDHashMap = TxIDHashMap.getCurrentFile(documentSafeService, userIDAuth, txid);
         TxID txidOfDocument = txIDHashMap.readDocument(documentFQN);
-        return documentSafeService.readDocument(userIDAuth, TxIDVersionHelper.get(documentFQN, txidOfDocument));
+        return documentSafeService.readDocument(userIDAuth, modifyTxDocumentName(documentFQN, txidOfDocument));
     }
 
     @Override
@@ -107,6 +120,12 @@ public class TransactionalFileStorageImpl implements TransactionalFileStorage {
         txIDHashMap.save(documentSafeService, userIDAuth);
         txIDHashMap.deleteDocument(documentFQN);
         txIDHashMap.save(documentSafeService, userIDAuth);
+    }
+
+    @Override
+    public BucketContentFQN listDocuments(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
+        TxIDHashMap txIDHashMap = TxIDHashMap.getCurrentFile(documentSafeService, userIDAuth, txid);
+        return txIDHashMap.list(documentDirectoryFQN, recursiveFlag);
     }
 
     @Override
@@ -133,56 +152,42 @@ public class TransactionalFileStorageImpl implements TransactionalFileStorage {
         txIDHashMap.transactionIsOver(documentSafeService, userIDAuth);
     }
 
-    @Override
-    public BucketContentFQN list(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
-        if (documentDirectoryFQN.getValue().startsWith(inboxFolder.getValue())) {
-            // list physical files
-            return filterTxDir(documentSafeService.list(userIDAuth, documentDirectoryFQN, recursiveFlag));
-        }
-        if (documentDirectoryFQN.getValue().length() > 1) {
-            // return HashMap Only
-            TxIDHashMap txIDHashMap = TxIDHashMap.getCurrentFile(documentSafeService, userIDAuth, txid);
-            return txIDHashMap.list(documentDirectoryFQN, recursiveFlag);
-        }
-
-        if (documentDirectoryFQN.getValue().length() == 1) {
-            // nun also die Summe aus inbox und hashMap
-            BucketContentFQN bucketContentFQNInbox = filterTxDir(documentSafeService.list(userIDAuth, inboxFolder, recursiveFlag));
-
-            TxIDHashMap txIDHashMap = TxIDHashMap.getCurrentFile(documentSafeService, userIDAuth, txid);
-            BucketContentFQN bucketContentFQNHashMap = txIDHashMap.list(documentDirectoryFQN, recursiveFlag);
-
-            BucketContentFQN sum = new BucketContentFQNImpl();
-            sum.getFiles().addAll(bucketContentFQNInbox.getFiles());
-            sum.getFiles().addAll(bucketContentFQNHashMap.getFiles());
-            sum.getDirectories().addAll(bucketContentFQNInbox.getDirectories());
-            sum.getDirectories().addAll(bucketContentFQNHashMap.getDirectories());
-            return sum;
-        }
-
-        throw new BaseException("Programming Error. Did not expect this " + documentDirectoryFQN);
-    }
-
-    private BucketContentFQN filterTxDir(BucketContentFQN list) {
+    // Der echte Pfad soll für den Benutzer transparant sein, daher wird er weggeschnitten
+    private BucketContentFQN filterNonTxPrefix(BucketContentFQN list) {
         BucketContentFQN filtered = new BucketContentFQNImpl();
-        filtered.getDirectories().addAll(
-                list.getDirectories().stream().filter(
-                        dir -> ! dir.getValue().startsWith(txdir.getValue())).collect(Collectors.toList()));
-        filtered.getFiles().addAll(
-                list.getFiles().stream().filter(
-                        file -> ! file.getValue().startsWith(txdir.getValue())).collect(Collectors.toList()));
+        list.getDirectories().forEach(dir -> {
+            filtered.getDirectories().add(new DocumentDirectoryFQN(dir.getValue().substring(nonTxContent.getValue().length())));
+        });
+        list.getFiles().forEach(dir -> {
+            filtered.getFiles().add(new DocumentFQN(dir.getValue().substring(nonTxContent.getValue().length())));
+        });
         return filtered;
     }
 
-
-    private DSDocument modify(DSDocument dsDocument, TxID txid) {
+    public static DSDocument modifyTxDocument(DSDocument dsDocument, TxID txid) {
         return new DSDocument(
-                modify(dsDocument.getDocumentFQN(), txid),
+                modifyTxDocumentName(dsDocument.getDocumentFQN(), txid),
                 dsDocument.getDocumentContent(),
                 dsDocument.getDsDocumentMetaInfo());
     }
 
-    private DocumentFQN modify(DocumentFQN documentFQN, TxID txid) {
-        return TxIDVersionHelper.get(documentFQN, txid);
+    public static DocumentFQN modifyTxDocumentName(DocumentFQN origName, TxID txid) {
+        return txContent.addName(origName.getValue() + "." + txid.getValue());
+    }
+
+    public static DocumentFQN modifyTxMetaDocumentName(DocumentFQN origName, TxID txid) {
+        return txMeta.addName(origName.getValue() + "." + txid.getValue());
+    }
+
+
+    private DSDocument modifyNonTxDocument(DSDocument dsDocument) {
+        return new DSDocument(
+                modifyNonTxDocumentName(dsDocument.getDocumentFQN()),
+                dsDocument.getDocumentContent(),
+                dsDocument.getDsDocumentMetaInfo());
+    }
+
+    private DocumentFQN modifyNonTxDocumentName(DocumentFQN origName) {
+        return nonTxContent.addName(origName);
     }
 }

@@ -13,23 +13,28 @@ import org.adorsys.encobject.types.ListRecursiveFlag;
  * Created by peter on 11.06.18 at 14:56.
  */
 public interface TransactionalFileStorage {
-    // transaction independant
+
+    // NON-TRANSACTIONAL
     void createUser(UserIDAuth userIDAuth);
     void destroyUser(UserIDAuth userIDAuth);
     boolean userExists(UserID userID);
-    void grantAccessToUserForInboxFolder(UserIDAuth userIDAuth, UserID receiverUserID);
-    void storeDocumentInInputFolder(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument);
+    void grantAccess(UserIDAuth userIDAuth, UserID receiverUserID);
 
-    // transactional
+    void storeDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument);
+    DSDocument readDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
+    void deleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
+    BucketContentFQN listDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag);
+
+    // TRANSACTIONAL
     TxID beginTransaction(UserIDAuth userIDAuth);
 
     void storeDocument(TxID txid, UserIDAuth userIDAuth, DSDocument dsDocument);
     DSDocument readDocument(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN);
     void deleteDocument(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN);
+    BucketContentFQN listDocuments(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag);
+
     boolean documentExists(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN);
     void deleteFolder(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN);
 
     void endTransaction(TxID txid, UserIDAuth userIDAuth);
-
-    BucketContentFQN list(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag);
 }

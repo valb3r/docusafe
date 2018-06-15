@@ -27,6 +27,13 @@ public class DocumentDirectoryFQN extends BaseTypeString {
         return new DocumentFQN(getValue() + BucketPath.BUCKET_SEPARATOR + value);
     }
 
+    public DocumentFQN addName(DocumentFQN fqn) {
+        if (getValue().length() == 1) {
+            return fqn;
+        }
+        return new DocumentFQN(getValue() + fqn.getValue());
+    }
+
     public DocumentDirectoryFQN addDirectory(String value) {
         if (getValue().length() == 1) {
             return new DocumentDirectoryFQN(BucketPath.BUCKET_SEPARATOR + value);

@@ -9,7 +9,6 @@ import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.transactional.impl.TransactionalFileStorageImpl;
-import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Before;
@@ -44,13 +43,13 @@ public class FileToInputBoxTest {
     public void testCreateUsersAndSendOneDocument() {
         transactionalFileStorage.createUser(userIDAuth);
         transactionalFileStorage.createUser(systemUserIDAuth);
-        transactionalFileStorage.grantAccessToUserForInboxFolder(userIDAuth, systemUserIDAuth.getUserID());
+        transactionalFileStorage.grantAccess(userIDAuth, systemUserIDAuth.getUserID());
 
         DocumentFQN documentFQN = new DocumentFQN("first.txt");
         DocumentContent documentContent = new DocumentContent("content for in put box".getBytes());
         DSDocumentMetaInfo documentMetaInfo = new DSDocumentMetaInfo();
         DSDocument document = new DSDocument(documentFQN, documentContent, documentMetaInfo);
 
-        transactionalFileStorage.storeDocumentInInputFolder(systemUserIDAuth, userIDAuth.getUserID(), document);
+        transactionalFileStorage.storeDocument(systemUserIDAuth, userIDAuth.getUserID(), document);
     }
 }
