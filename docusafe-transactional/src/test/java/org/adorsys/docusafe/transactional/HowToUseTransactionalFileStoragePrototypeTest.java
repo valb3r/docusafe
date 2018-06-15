@@ -21,9 +21,9 @@ import org.slf4j.LoggerFactory;
  *
  */
 // @SuppressWarnings("Duplicates")
-public class HowToUserTransactionalFileStoragePrototypeTest extends TransactionFileStorageBaseTest{
+public class HowToUseTransactionalFileStoragePrototypeTest extends TransactionFileStorageBaseTest{
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(HowToUserTransactionalFileStoragePrototypeTest.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(HowToUseTransactionalFileStoragePrototypeTest.class);
 
     @Test
     public void a() {
@@ -85,6 +85,13 @@ public class HowToUserTransactionalFileStoragePrototypeTest extends TransactionF
         });
 
         transactionalFileStorage.endTransaction(txID, userIDAuth);
+
+        // Zu diesem Zeitpunkt enthält das Filesystem physisch foldgende Dateien:
+        //
+        // bp-peter/home/meta.tx/LastCommitedTxID.txt.zip
+        // bp-peter/home/meta.tx/TransactionalHashMap.txt.3fa48f05-e00c-469a-a9e1-bfd4002fb23c.zip
+        // bp-peter/home/nonttx/file1.zip
+        // bp-peter/home/tx/file1.3fa48f05-e00c-469a-a9e1-bfd4002fb23c.zip
 
         // Jetzt müssen im Nachgang die zuvor sicher kopierten Dateien gelöscht werden, damit sie nicht
         // erneut verarbeitet werden.

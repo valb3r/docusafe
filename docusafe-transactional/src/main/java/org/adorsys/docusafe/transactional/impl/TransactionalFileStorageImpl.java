@@ -1,5 +1,6 @@
 package org.adorsys.docusafe.transactional.impl;
 
+import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.impl.BucketContentFQNImpl;
 import org.adorsys.docusafe.business.types.UserID;
@@ -66,7 +67,7 @@ public class TransactionalFileStorageImpl implements TransactionalFileStorage {
     @Override
     public DSDocument readDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
         LOGGER.debug("read document " + documentFQN + " from folder " + nonTxContent + " of user " + userIDAuth.getUserID());
-        return documentSafeService.readDocument(userIDAuth, modifyNonTxDocumentName(documentFQN));
+        return unmodifyNonTxDocument(documentSafeService.readDocument(userIDAuth, modifyNonTxDocumentName(documentFQN)));
     }
 
     @Override
@@ -157,12 +158,9 @@ public class TransactionalFileStorageImpl implements TransactionalFileStorage {
         list.getDirectories().forEach(dir -> LOGGER.debug("before filter:" + dir));
         list.getFiles().forEach(file -> LOGGER.debug("before filter:" + file));
         BucketContentFQN filtered = new BucketContentFQNImpl();
-        list.getDirectories().forEach(dir -> {
-            filtered.getDirectories().add(new DocumentDirectoryFQN(dir.getValue().substring(nonTxContent.getValue().length())));
-        });
-        list.getFiles().forEach(dir -> {
-            filtered.getFiles().add(new DocumentFQN(dir.getValue().substring(nonTxContent.getValue().length())));
-        });
+        list.getDirectories().forEach(dir ->
+            filtered.getDirectories().add(unmodifyNonTxDocumentDirName(dir)));
+        list.getFiles().forEach(file -> filtered.getFiles().add(unmodifyNonTxDocumentName(file)));
         filtered.getDirectories().forEach(dir -> LOGGER.debug("after filter:" + dir));
         filtered.getFiles().forEach(file -> LOGGER.debug("after filter:" + file));
         return filtered;
@@ -189,6 +187,27 @@ public class TransactionalFileStorageImpl implements TransactionalFileStorage {
                 modifyNonTxDocumentName(dsDocument.getDocumentFQN()),
                 dsDocument.getDocumentContent(),
                 dsDocument.getDsDocumentMetaInfo());
+    }
+
+    private DSDocument unmodifyNonTxDocument(DSDocument dsDocument) {
+        return new DSDocument(
+                unmodifyNonTxDocumentName(dsDocument.getDocumentFQN()),
+                dsDocument.getDocumentContent(),
+                dsDocument.getDsDocumentMetaInfo());
+    }
+
+    private DocumentFQN unmodifyNonTxDocumentName(DocumentFQN origName) {
+        if (origName.getValue().startsWith(nonTxContent.getValue())) {
+            return new DocumentFQN(origName.getValue().substring(nonTxContent.getValue().length()));
+        }
+        throw new BaseException("expected " + origName + " to start with " + nonTxContent.getValue());
+    }
+
+    private DocumentDirectoryFQN unmodifyNonTxDocumentDirName(DocumentDirectoryFQN origName) {
+        if (origName.getValue().startsWith(nonTxContent.getValue())) {
+            return new DocumentDirectoryFQN(origName.getValue().substring(nonTxContent.getValue().length()));
+        }
+        throw new BaseException("expected " + origName + " to start with " + nonTxContent.getValue());
     }
 
     private DocumentFQN modifyNonTxDocumentName(DocumentFQN origName) {
