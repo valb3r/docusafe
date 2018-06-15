@@ -78,7 +78,7 @@ public class TransactionalFileStorageImpl implements TransactionalFileStorage {
     @Override
     public BucketContentFQN listDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
         LOGGER.debug("list documents " + documentDirectoryFQN + " from folder " + nonTxContent + " of user " + userIDAuth.getUserID());
-        return filterNonTxPrefix(documentSafeService.list(userIDAuth, documentDirectoryFQN, recursiveFlag));
+        return filterNonTxPrefix(documentSafeService.list(userIDAuth, modifyNonTxDirectoryName(documentDirectoryFQN), recursiveFlag));
     }
 
     // ============================================================================================
@@ -154,6 +154,8 @@ public class TransactionalFileStorageImpl implements TransactionalFileStorage {
 
     // Der echte Pfad soll für den Benutzer transparant sein, daher wird er weggeschnitten
     private BucketContentFQN filterNonTxPrefix(BucketContentFQN list) {
+        list.getDirectories().forEach(dir -> LOGGER.debug("before filter:" + dir));
+        list.getFiles().forEach(file -> LOGGER.debug("before filter:" + file));
         BucketContentFQN filtered = new BucketContentFQNImpl();
         list.getDirectories().forEach(dir -> {
             filtered.getDirectories().add(new DocumentDirectoryFQN(dir.getValue().substring(nonTxContent.getValue().length())));
@@ -161,6 +163,8 @@ public class TransactionalFileStorageImpl implements TransactionalFileStorage {
         list.getFiles().forEach(dir -> {
             filtered.getFiles().add(new DocumentFQN(dir.getValue().substring(nonTxContent.getValue().length())));
         });
+        filtered.getDirectories().forEach(dir -> LOGGER.debug("after filter:" + dir));
+        filtered.getFiles().forEach(file -> LOGGER.debug("after filter:" + file));
         return filtered;
     }
 
@@ -189,5 +193,9 @@ public class TransactionalFileStorageImpl implements TransactionalFileStorage {
 
     private DocumentFQN modifyNonTxDocumentName(DocumentFQN origName) {
         return nonTxContent.addName(origName);
+    }
+
+    private DocumentDirectoryFQN modifyNonTxDirectoryName(DocumentDirectoryFQN origName) {
+        return nonTxContent.addDirectory(origName);
     }
 }

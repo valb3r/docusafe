@@ -13,7 +13,7 @@ import org.adorsys.encobject.complextypes.BucketPath;
  */
 public class DocumentFQN extends BaseTypeString {
     public DocumentFQN(String value) {
-        super(prependStartingSeparator(value));
+        super(check(prependStartingSeparator(value)));
     }
 
     public DocumentDirectoryFQN getDocumentDirectory() {
@@ -33,6 +33,16 @@ public class DocumentFQN extends BaseTypeString {
             return s;
         }
         return BucketPath.BUCKET_SEPARATOR + s;
+    }
+
+    public static String check(String s) {
+        if (s.length() > 1 && s.endsWith(BucketPath.BUCKET_SEPARATOR)) {
+            throw new BaseException(s + " must not end with a slash");
+        }
+        if (s.contains("//")) {
+            throw new BaseException(s + " must not contain dobule slashes");
+        }
+        return s;
     }
 
 }

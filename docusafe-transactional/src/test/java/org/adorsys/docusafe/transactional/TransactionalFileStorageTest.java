@@ -1,44 +1,24 @@
 package org.adorsys.docusafe.transactional;
 
-import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
-import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
-import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
-import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.transactional.exceptions.TxAlreadyClosedException;
-import org.adorsys.docusafe.transactional.impl.TransactionalFileStorageImpl;
 import org.adorsys.docusafe.transactional.types.TxID;
-import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.adorsys.encobject.types.ListRecursiveFlag;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.security.Security;
-
 /**
  * Created by peter on 12.06.18 at 08:44.
  */
-public class TransactionalFileStorageTest {
+public class TransactionalFileStorageTest extends TransactionFileStorageBaseTest{
     private final static Logger LOGGER = LoggerFactory.getLogger(TransactionalFileStorageTest.class);
-    private TransactionalFileStorage transactionalFileStorage = new TransactionalFileStorageImpl(new DocumentSafeServiceImpl(ExtendedStoreConnectionFactory.get()));
-    private UserIDAuth userIDAuth = new UserIDAuth(new UserID("peter"), new ReadKeyPassword("password"));
-
-    @Before
-    public void preTest() {
-        Security.addProvider(new BouncyCastleProvider());
-        if (transactionalFileStorage.userExists(userIDAuth.getUserID())) {
-            transactionalFileStorage.destroyUser(userIDAuth);
-        }
-    }
 
     @Test
     public void testCreateAndChange() {

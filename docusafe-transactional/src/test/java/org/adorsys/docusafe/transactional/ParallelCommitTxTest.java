@@ -28,23 +28,11 @@ import java.util.concurrent.Semaphore;
 /**
  * Created by peter on 13.06.18 at 11:38.
  */
-public class ParallelCommitTxTest {
+// @SuppressWarnings("Duplicates")
+public class ParallelCommitTxTest extends TransactionFileStorageBaseTest{
     private final static Logger LOGGER = LoggerFactory.getLogger(ParallelCommitTxTest.class);
-    private final static int PARALLEL_INSTANCES = 10;
-    public static final String FILENAME = "peter/first.txt";
-
-    ExtendedStoreConnection esc = ExtendedStoreConnectionFactory.get();
-    DocumentSafeService documentSafeService = new DocumentSafeServiceImpl(esc);
-    TransactionalFileStorage transactionalFileStorage = new TransactionalFileStorageImpl(new DocumentSafeServiceImpl(esc));
-    UserIDAuth userIDAuth = new UserIDAuth(new UserID("peter"), new ReadKeyPassword("password"));
-
-    @Before
-    public void preTest() {
-        Security.addProvider(new BouncyCastleProvider());
-        if (documentSafeService.userExists(userIDAuth.getUserID())) {
-            documentSafeService.destroyUser(userIDAuth);
-        }
-    }
+    private final static int PARALLEL_INSTANCES = 5;
+    private final static String FILENAME = "paralleltest.txt";
 
     @Test
     public void parallelCommits() {
@@ -62,7 +50,7 @@ public class ParallelCommitTxTest {
             Thread.currentThread().sleep(2000);
             // Lege erste Version von first.txt an
             {
-                documentSafeService.createUser(userIDAuth);
+                transactionalFileStorage.createUser(userIDAuth);
 
                 DocumentFQN documentFQN = new DocumentFQN(FILENAME);
                 DocumentContent documentContent = new DocumentContent("very first".getBytes());

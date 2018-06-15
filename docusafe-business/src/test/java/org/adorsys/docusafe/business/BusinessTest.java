@@ -43,6 +43,7 @@ import java.util.Set;
 /**
  * Created by peter on 19.01.18 at 16:25.
  */
+@SuppressWarnings("Duplicates")
 public class BusinessTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(BusinessTest.class);
     public final static ExtendedStoreConnection extendedStoreConnection = ExtendedStoreConnectionFactory.get();
@@ -289,17 +290,59 @@ public class BusinessTest {
         }
     }
 
+    @Test
+    public void checkRootDirectoryListingVerySimple() {
+        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        UserIDAuth userIDAuth = createUser();
+        DocumentDirectoryFQN dir = new DocumentDirectoryFQN("/");
+        DocumentFQN documentFQN = new DocumentFQN("/affe.txt");
+        createDocument(userIDAuth, documentFQN);
+
+        BucketContentFQN list = service.list(userIDAuth, dir, ListRecursiveFlag.FALSE);
+        list.getDirectories().forEach(sdir -> LOGGER.debug("found dir " + sdir));
+        list.getFiles().forEach(file -> LOGGER.debug("found file " + file));
+        Assert.assertEquals(0, list.getDirectories().size());
+        Assert.assertEquals(2, list.getFiles().size());
+
+        list = service.list(userIDAuth, dir, ListRecursiveFlag.TRUE);
+        list.getDirectories().forEach(sdir -> LOGGER.debug("found dir " + sdir));
+        list.getFiles().forEach(file -> LOGGER.debug("found file " + file));
+        Assert.assertEquals(0, list.getDirectories().size());
+        Assert.assertEquals(2, list.getFiles().size());
+    }
+
+    @Test
+    public void checkRootDirectoryListingSimple() {
+        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        UserIDAuth userIDAuth = createUser();
+        DocumentDirectoryFQN dir = new DocumentDirectoryFQN("/anyfolder");
+        DocumentFQN documentFQN = new DocumentFQN("/anyfolder/affe.txt");
+        createDocument(userIDAuth, documentFQN);
+
+        BucketContentFQN list = service.list(userIDAuth, dir, ListRecursiveFlag.FALSE);
+        list.getDirectories().forEach(sdir -> LOGGER.debug("found dir " + sdir));
+        list.getFiles().forEach(file -> LOGGER.debug("found file " + file));
+        Assert.assertEquals(0, list.getDirectories().size());
+        Assert.assertEquals(1, list.getFiles().size());
+
+        list = service.list(userIDAuth, dir, ListRecursiveFlag.TRUE);
+        list.getDirectories().forEach(sdir -> LOGGER.debug("found dir " + sdir));
+        list.getFiles().forEach(file -> LOGGER.debug("found file " + file));
+        Assert.assertEquals(0, list.getDirectories().size());
+        Assert.assertEquals(1, list.getFiles().size());
+    }
+
     private void createDirectoryWithSubdirectories(int depth, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, int numSubdires, int numFiles) {
         if (depth == 0) {
             return;
         }
-        for (int i = 0; i<numFiles; i++) {
+        for (int i = 0; i < numFiles; i++) {
             DocumentFQN documentFQN = documentDirectoryFQN.addName("file_" + i);
             createDocument(userIDAuth, documentFQN);
         }
-        for (int i = 0; i<numSubdires; i++) {
+        for (int i = 0; i < numSubdires; i++) {
             DocumentDirectoryFQN subdir = documentDirectoryFQN.addDirectory("dir_" + i);
-            createDirectoryWithSubdirectories(depth -1, userIDAuth, subdir, numSubdires, numFiles);
+            createDirectoryWithSubdirectories(depth - 1, userIDAuth, subdir, numSubdires, numFiles);
         }
     }
 

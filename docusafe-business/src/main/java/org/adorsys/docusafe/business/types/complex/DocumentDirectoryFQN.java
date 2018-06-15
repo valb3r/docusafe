@@ -17,14 +17,14 @@ import org.adorsys.encobject.complextypes.BucketPath;
  */
 public class DocumentDirectoryFQN extends BaseTypeString {
     public DocumentDirectoryFQN(String value) {
-        super(prependStartingSeparator(value));
+        super(DocumentFQN.check(prependStartingSeparator(value)));
     }
 
     public DocumentFQN addName(String value) {
         if (getValue().length() == 1) {
-            return new DocumentFQN(BucketPath.BUCKET_SEPARATOR + value);
+            return new DocumentFQN(value);
         }
-        return new DocumentFQN(getValue() + BucketPath.BUCKET_SEPARATOR + value);
+        return addName(new DocumentFQN(value));
     }
 
     public DocumentFQN addName(DocumentFQN fqn) {
@@ -36,9 +36,19 @@ public class DocumentDirectoryFQN extends BaseTypeString {
 
     public DocumentDirectoryFQN addDirectory(String value) {
         if (getValue().length() == 1) {
-            return new DocumentDirectoryFQN(BucketPath.BUCKET_SEPARATOR + value);
+            return new DocumentDirectoryFQN(value);
         }
-        return new DocumentDirectoryFQN(getValue() + BucketPath.BUCKET_SEPARATOR + value);
+        return addDirectory(new DocumentDirectoryFQN(value));
+    }
+
+    public DocumentDirectoryFQN addDirectory(DocumentDirectoryFQN value) {
+        if (getValue().length() == 1) {
+            return value;
+        }
+        if (value.getValue().length() == 1) {
+            return new DocumentDirectoryFQN(getValue());
+        }
+        return new DocumentDirectoryFQN(getValue() + value.getValue());
     }
 
     public BucketDirectory prepend(BucketDirectory bucketDirectory) {
