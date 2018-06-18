@@ -11,29 +11,52 @@ import org.adorsys.encobject.types.OverwriteFlag;
  * Created by peter on 11.01.18.
  */
 public interface DocumentPersistenceService {
+    public final static String NO_ENCRYPTION = "NO_ENCRYPTION";
+
     /**
      * byte orientiert
      */
-    void persistDocument(
+
+    // store encrypted document
+    void encryptAndPersistDocument(
             DocumentKeyIDWithKey documentKeyIDWithKey,
             DocumentBucketPath documentBucketPath,
             OverwriteFlag overwriteFlag,
             Payload payload);
 
-    Payload loadDocument(
+    // store unencrypted document
+    void persistDocument(
+            DocumentBucketPath documentBucketPath,
+            OverwriteFlag overwriteFlag,
+            Payload payload);
+
+    // load document, if necessary, decrypt it
+    Payload loadDecryptedDocument(
             KeyStoreAccess keyStoreAccess,
             DocumentBucketPath documentBucketPath);
+
 
     /**
      * stream orientiert
      */
-    void persistDocumentStream(
+
+    // store encrypted document stream
+    void encryptAndPersistDocumentStream(
             DocumentKeyIDWithKey documentKeyIDWithKey,
             DocumentBucketPath documentBucketPath,
             OverwriteFlag overwriteFlag,
             PayloadStream payloadStream);
 
-    PayloadStream loadDocumentStream(
+    // store unencrypted document stream
+    void persistDocumentStream(
+            DocumentBucketPath documentBucketPath,
+            OverwriteFlag overwriteFlag,
+            PayloadStream payloadStream);
+
+    // load document stream, if necessary, decrypt it
+    PayloadStream loadDecryptedDocumentStream(
             KeyStoreAccess keyStoreAccess,
             DocumentBucketPath documentBucketPath);
+
+
 }

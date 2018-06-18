@@ -150,14 +150,22 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         storageMetadata.mergeUserMetadata(dsDocument.getDsDocumentMetaInfo());
         storageMetadata.setSize(new Long(dsDocument.getDocumentContent().getValue().length));
         DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), dsDocument.getDocumentFQN());
+        if (dsDocument.getDsDocumentMetaInfo().isNotEncrypted()) {
+            documentPersistenceService.persistDocument(
+                    documentBucketPath,
+                    OverwriteFlag.TRUE,
+                    new SimplePayloadImpl(storageMetadata, dsDocument.getDocumentContent().getValue()));
+            LOGGER.debug("finished storeDocument unencrypted document for " + userIDAuth + " " + dsDocument.getDocumentFQN());
+            return;
+        }
+
         DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, documentBucketPath.getBucketDirectory(), AccessType.WRITE);
-        // Hier ist keine Prüfung des Schreibrechts notwendig
-        documentPersistenceService.persistDocument(
+        documentPersistenceService.encryptAndPersistDocument(
                 documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey(),
                 documentBucketPath,
                 OverwriteFlag.TRUE,
                 new SimplePayloadImpl(storageMetadata, dsDocument.getDocumentContent().getValue()));
-        LOGGER.debug("finished storeDocument for " + userIDAuth + " " + dsDocument.getDocumentFQN());
+        LOGGER.debug("finished storeDocument encrypted document for " + userIDAuth + " " + dsDocument.getDocumentFQN());
     }
 
     @Override
@@ -165,8 +173,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         LOGGER.debug("start readDocument for " + userIDAuth + " " + documentFQN);
         DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), documentFQN);
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
-        Payload payload = documentPersistenceService.loadDocument(keyStoreAccess, documentBucketPath);
-        UserMetaData userMetaData = payload.getStorageMetadata().getUserMetadata();
+        Payload payload = documentPersistenceService.loadDecryptedDocument(keyStoreAccess, documentBucketPath);
         LOGGER.debug("finished readDocument for " + userIDAuth + " " + documentFQN);
         return new DSDocument(documentFQN, new DocumentContent(payload.getData()), new DSDocumentMetaInfo(payload.getStorageMetadata().getUserMetadata()));
     }
@@ -181,14 +188,22 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         SimpleStorageMetadataImpl storageMetadata = new SimpleStorageMetadataImpl();
         storageMetadata.mergeUserMetadata(dsDocumentStream.getDsDocumentMetaInfo());
         DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), dsDocumentStream.getDocumentFQN());
+        if (dsDocumentStream.getDsDocumentMetaInfo().isNotEncrypted()) {
+            documentPersistenceService.persistDocumentStream(
+                    documentBucketPath,
+                    OverwriteFlag.TRUE,
+                    new SimplePayloadStreamImpl(storageMetadata, dsDocumentStream.getDocumentStream()));
+            LOGGER.debug("finished store and unencrypted document stream for " + userIDAuth + " " + dsDocumentStream.getDocumentFQN());
+            return;
+        }
+
         DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, documentBucketPath.getBucketDirectory(), AccessType.WRITE);
-        // Hier ist keine Prüfung des Schreibrechts notwendig
-        documentPersistenceService.persistDocumentStream(
+        documentPersistenceService.encryptAndPersistDocumentStream(
                 documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey(),
                 documentBucketPath,
                 OverwriteFlag.TRUE,
                 new SimplePayloadStreamImpl(storageMetadata, dsDocumentStream.getDocumentStream()));
-        LOGGER.debug("finished storeDocument for " + userIDAuth + " " + dsDocumentStream.getDocumentFQN());
+        LOGGER.debug("finished storeDocument encrypted document stream for " + userIDAuth + " " + dsDocumentStream.getDocumentFQN());
     }
 
 
@@ -198,8 +213,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
             LOGGER.debug("start readDocumentStream for " + userIDAuth + " " + documentFQN);
             DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), documentFQN);
             KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
-            PayloadStream payloadStream = documentPersistenceService.loadDocumentStream(keyStoreAccess, documentBucketPath);
-            UserMetaData userMetaData = payloadStream.getStorageMetadata().getUserMetadata();
+            PayloadStream payloadStream = documentPersistenceService.loadDecryptedDocumentStream(keyStoreAccess, documentBucketPath);
             LOGGER.debug("finished readDocumentStream for " + userIDAuth + " " + documentFQN);
             return new DSDocumentStream(documentFQN, payloadStream.openStream(), new DSDocumentMetaInfo(payloadStream.getStorageMetadata().getUserMetadata()));
         } catch (Exception e) {
@@ -319,7 +333,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         if (!documentKeyIDWithKeyAndAccessType.getAccessType().equals(AccessType.WRITE)) {
             throw new NoWriteAccessException(userIDAuth.getUserID(), documentOwner, dsDocument.getDocumentFQN());
         }
-        documentPersistenceService.persistDocument(
+        documentPersistenceService.encryptAndPersistDocument(
                 documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey(),
                 documentBucketPath,
                 OverwriteFlag.TRUE,
@@ -333,7 +347,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         LOGGER.debug("start readDocument for " + userIDAuth + " " + documentOwner + " " + documentFQN);
         DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(documentOwner, documentFQN);
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
-        Payload payload = documentPersistenceService.loadDocument(keyStoreAccess, documentBucketPath);
+        Payload payload = documentPersistenceService.loadDecryptedDocument(keyStoreAccess, documentBucketPath);
         UserMetaData userMetaData = payload.getStorageMetadata().getUserMetadata();
         LOGGER.debug("finisherd readDocument for " + userIDAuth + " " + documentOwner + " " + documentFQN);
         return new DSDocument(documentFQN, new DocumentContent(payload.getData()), new DSDocumentMetaInfo(payload.getStorageMetadata().getUserMetadata()));

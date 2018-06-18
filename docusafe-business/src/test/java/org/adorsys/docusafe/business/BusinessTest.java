@@ -9,6 +9,7 @@ import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
+import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
@@ -133,6 +134,35 @@ public class BusinessTest {
         readDocument(userIDAuth, dsDocument2.getDocumentFQN(), dsDocument2.getDocumentContent());
         checkGuardsForDocument(userIDAuth, documentFQN, true);
         Assert.assertEquals("Anzahl der guards", 2, getNumberOfGuards(userIDAuth.getUserID()));
+    }
+
+    @Test
+    public void storeUnencryptedDSDocumentInANewFolder() {
+        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        UserIDAuth userIDAuth = createUser();
+        Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
+
+        DocumentFQN documentFQN = new DocumentFQN("first/next/a-new-document.txt");
+        checkGuardsForDocument(userIDAuth, documentFQN, false);
+        DSDocumentMetaInfo mi = new DSDocumentMetaInfo();
+        mi.setNoEncryption();
+        DSDocument dsDocument1 = createDocument(userIDAuth, documentFQN, mi);
+        checkGuardsForDocument(userIDAuth, documentFQN, false);
+
+        // Hier gibt es jetzt immer noch nur einen guard, weil ja nichts
+        // verschlüsselt wurde
+        Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
+
+        // Um zu prüfen, ob das Document wirklich unverschlüsselt auf der Platte liegt, lesen wir es mit einem
+        // falschen Kennwort
+        UserIDAuth wrongPassword = new UserIDAuth(userIDAuth.getUserID(), new ReadKeyPassword("total falsch und anders"));
+        readDocument(wrongPassword, documentFQN, dsDocument1.getDocumentContent(), false);
+        Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
+
+        // Nun das Document überschreiben, aber verschlüsselt
+        DSDocument dsDocument2 = createDocument(userIDAuth, documentFQN, null);
+        Assert.assertEquals("Anzahl der guards", 2, getNumberOfGuards(userIDAuth.getUserID()));
+
     }
 
     @Test
@@ -377,23 +407,33 @@ public class BusinessTest {
     }
 
     private DSDocument createDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
-        DSDocument dsDocument;
-        {
-            DocumentContent documentContent = new DocumentContent("Einfach nur a bisserl Text".getBytes());
-            dsDocument = new DSDocument(documentFQN, documentContent, null);
+        return createDocument(userIDAuth, documentFQN, null);
 
-            // check, there exists no guard yet
-            LOGGER.debug("check no bucket guard exists yet for " + dsDocument.getDocumentFQN());
-            service.storeDocument(userIDAuth, dsDocument);
-        }
+    }
+
+    private DSDocument createDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN, DSDocumentMetaInfo mi) {
+        DSDocument dsDocument;
+        DocumentContent documentContent = new DocumentContent("Einfach nur a bisserl Text".getBytes());
+        dsDocument = new DSDocument(documentFQN, documentContent, mi);
+
+        // check, there exists no guard yet
+        LOGGER.debug("check no bucket guard exists yet for " + dsDocument.getDocumentFQN());
+        service.storeDocument(userIDAuth, dsDocument);
         return dsDocument;
     }
 
     private DSDocument readDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN, DocumentContent documentContent) {
+        return readDocument(userIDAuth, documentFQN, documentContent, true);
+    }
+
+    private DSDocument readDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN, DocumentContent documentContent, boolean checkGuards) {
         DSDocument dsDocument1Result = service.readDocument(userIDAuth, documentFQN);
         LOGGER.debug("original  document:" + new String(documentContent.getValue()));
         LOGGER.debug("retrieved document:" + new String(dsDocument1Result.getDocumentContent().getValue()));
         Assert.assertEquals("document content ok", documentContent, dsDocument1Result.getDocumentContent());
+        if (!checkGuards) {
+            return dsDocument1Result;
+        }
 
         // check, there guards
         BucketDirectory homeBucketDirectory = UserIDUtil.getHomeBucketDirectory(userIDAuth.getUserID());

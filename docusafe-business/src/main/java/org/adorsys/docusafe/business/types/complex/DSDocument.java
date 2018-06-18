@@ -26,6 +26,9 @@ public class DSDocument {
     }
 
     public DSDocumentMetaInfo getDsDocumentMetaInfo() {
+        if (dsDocumentMetaInfo == null) {
+            dsDocumentMetaInfo = new DSDocumentMetaInfo();
+        }
         return dsDocumentMetaInfo;
     }
 }

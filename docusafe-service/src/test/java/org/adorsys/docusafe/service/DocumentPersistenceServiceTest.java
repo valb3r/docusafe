@@ -42,7 +42,7 @@ public class DocumentPersistenceServiceTest {
                                              OverwriteFlag overwriteFlag) {
         extendedStoreConnection.createContainer(documentBucketPath.getBucketDirectory());
         DocumentPersistenceService documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection);
-        documentPersistenceService.persistDocument(
+        documentPersistenceService.encryptAndPersistDocument(
                 documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey(),
                 documentBucketPath,
                 overwriteFlag,
@@ -56,7 +56,7 @@ public class DocumentPersistenceServiceTest {
                                  KeyStoreAccess keyStoreAccess,
                                  DocumentBucketPath documentBucketPath) {
         DocumentPersistenceService documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection);
-        Payload payload = documentPersistenceService.loadDocument(
+        Payload payload = documentPersistenceService.loadDecryptedDocument(
                 keyStoreAccess,
                 documentBucketPath);
         LOGGER.debug("Gelesenes Document enthält:" + payload.getData() + " bzw " + new String(payload.getData()));

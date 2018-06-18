@@ -6,9 +6,11 @@ import org.adorsys.docusafe.service.keysource.DocumentGuardBasedKeySourceImpl;
 import org.adorsys.docusafe.service.keysource.DocumentKeyIDWithKeyBasedSourceImpl;
 import org.adorsys.docusafe.service.types.complextypes.DocumentBucketPath;
 import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKey;
+import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.domain.KeyStoreAccess;
 import org.adorsys.encobject.domain.Payload;
 import org.adorsys.encobject.domain.PayloadStream;
+import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.exceptions.FileExistsException;
 import org.adorsys.encobject.service.api.ContainerPersistence;
 import org.adorsys.encobject.service.api.EncryptedPersistenceService;
@@ -28,21 +30,18 @@ import org.slf4j.LoggerFactory;
  * @author fpo
  */
 public class DocumentPersistenceServiceImpl implements DocumentPersistenceService {
+
+
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentPersistenceServiceImpl.class);
 
     private EncryptedPersistenceService encryptedPersistenceService;
     private DocumentGuardService documentGuardService;
-    private ContainerPersistence containerPersistence;
+    private ExtendedStoreConnection extendedStoreConnection;
     private BucketServiceImpl bucketService;
 
     public DocumentPersistenceServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
-        this.containerPersistence = new ContainerPersistenceImpl(extendedStoreConnection);
-        if (System.getProperty("UGLY_NO_ENCRYPTION") != null) {
-            LOGGER.info("ACHTUNG, NO ENCRYPTION");
-            this.encryptedPersistenceService = new EncryptedPersistenceServiceImpl(extendedStoreConnection, new NoEncryptionStreamServiceImpl());
-        } else {
-            this.encryptedPersistenceService = new EncryptedPersistenceServiceImpl(extendedStoreConnection, new AESEncryptionStreamServiceImpl());
-        }
+        this.extendedStoreConnection = extendedStoreConnection;
+        this.encryptedPersistenceService = new EncryptedPersistenceServiceImpl(extendedStoreConnection, new AESEncryptionStreamServiceImpl());
         this.documentGuardService = new DocumentGuardServiceImpl(extendedStoreConnection);
         this.bucketService = new BucketServiceImpl(extendedStoreConnection);
     }
@@ -53,13 +52,13 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
      * Das Document liegt in einem Bucket mit dem Namen documentBucketPath.
      */
     @Override
-    public void persistDocument(
+    public void encryptAndPersistDocument(
             DocumentKeyIDWithKey documentKeyIDWithKey,
             DocumentBucketPath documentBucketPath,
             OverwriteFlag overwriteFlag,
             Payload payload) {
 
-        LOGGER.debug("start persist " + documentBucketPath);
+        LOGGER.debug("start encrypt and persist " + documentBucketPath);
         if (overwriteFlag.equals(OverwriteFlag.FALSE)) {
             if (bucketService.fileExists(documentBucketPath)) {
                 throw new FileExistsException(documentBucketPath + " existiert und overwrite flag ist false");
@@ -69,29 +68,53 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
         LOGGER.debug("Document wird verschlüsselt mit " + documentKeyIDWithKey);
         KeyID keyID = new KeyID(documentKeyIDWithKey.getDocumentKeyID().getValue());
         encryptedPersistenceService.encryptAndPersist(documentBucketPath, payload, keySource, keyID);
-        LOGGER.debug("finished persist " + documentBucketPath);
+        LOGGER.debug("finished encrypt and persist " + documentBucketPath);
     }
 
     @Override
-    public Payload loadDocument(
+    public Payload loadDecryptedDocument(
             KeyStoreAccess keyStoreAccess,
             DocumentBucketPath documentBucketPath) {
 
-        LOGGER.debug("start load " + documentBucketPath + " " + keyStoreAccess);
+        LOGGER.debug("start load document " + documentBucketPath + " " + keyStoreAccess);
+        StorageMetadata storageMetadata = extendedStoreConnection.getStorageMetadata(documentBucketPath);
+        String value = null;
+        if ((value = storageMetadata.getUserMetadata().find(DocumentPersistenceService.NO_ENCRYPTION)) != null &&
+                value.equalsIgnoreCase("TRUE")) {
+            LOGGER.debug("start load unencrypted Document " + documentBucketPath);
+            Payload blob = extendedStoreConnection.getBlob(documentBucketPath);
+            LOGGER.debug("finished load unencrypted Document " + documentBucketPath);
+            return blob;
+        }
+
+        LOGGER.debug("start load and decrypt Document " + documentBucketPath);
         KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess);
         Payload payload = encryptedPersistenceService.loadAndDecrypt(documentBucketPath, keySource);
-        LOGGER.debug("finished load " + documentBucketPath);
+        LOGGER.debug("finished load and decrypt " + documentBucketPath);
         return payload;
     }
 
     @Override
-    public void persistDocumentStream(
+    public void persistDocument(DocumentBucketPath documentBucketPath, OverwriteFlag overwriteFlag, Payload payload) {
+        LOGGER.debug("start persist " + documentBucketPath);
+        if (overwriteFlag.equals(OverwriteFlag.FALSE)) {
+            if (bucketService.fileExists(documentBucketPath)) {
+                throw new FileExistsException(documentBucketPath + " existiert und overwrite flag ist false");
+            }
+        }
+
+        extendedStoreConnection.putBlob(documentBucketPath, payload);
+        LOGGER.debug("finished persist " + documentBucketPath);
+    }
+
+    @Override
+    public void encryptAndPersistDocumentStream(
             DocumentKeyIDWithKey documentKeyIDWithKey,
             DocumentBucketPath documentBucketPath,
             OverwriteFlag overwriteFlag,
             PayloadStream payloadStream) {
 
-        LOGGER.debug("start persist stream " + documentBucketPath);
+        LOGGER.debug("start encrypt and persist stream " + documentBucketPath);
         if (overwriteFlag.equals(OverwriteFlag.FALSE)) {
             if (bucketService.fileExists(documentBucketPath)) {
                 throw new FileExistsException(documentBucketPath + " existiert und overwrite flag ist false");
@@ -101,15 +124,39 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
         LOGGER.debug("Document wird verschlüsselt mit " + documentKeyIDWithKey);
         KeyID keyID = new KeyID(documentKeyIDWithKey.getDocumentKeyID().getValue());
         encryptedPersistenceService.encryptAndPersistStream(documentBucketPath, payloadStream, keySource, keyID);
-        LOGGER.debug("finished persist " + documentBucketPath);
+        LOGGER.debug("finished encrypt and persist " + documentBucketPath);
     }
 
     @Override
-    public PayloadStream loadDocumentStream(KeyStoreAccess keyStoreAccess, DocumentBucketPath documentBucketPath) {
+    public PayloadStream loadDecryptedDocumentStream(KeyStoreAccess keyStoreAccess, DocumentBucketPath documentBucketPath) {
         LOGGER.debug("start load stream " + documentBucketPath + " " + keyStoreAccess);
+        StorageMetadata storageMetadata = extendedStoreConnection.getStorageMetadata(documentBucketPath);
+        String value = null;
+        if ((value = storageMetadata.getUserMetadata().find(DocumentPersistenceService.NO_ENCRYPTION)) != null &&
+                value.equalsIgnoreCase("TRUE")) {
+            LOGGER.debug("start load unencrypted stream " + documentBucketPath);
+            PayloadStream payloadStream = extendedStoreConnection.getBlobStream(documentBucketPath);
+            LOGGER.debug("finished load unencrypted stream " + documentBucketPath);
+            return payloadStream;
+        }
+
+        LOGGER.debug("start load and decrypt stream " + documentBucketPath + " " + keyStoreAccess);
         KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess);
         PayloadStream payloadStream = encryptedPersistenceService.loadAndDecryptStream(documentBucketPath, keySource);
-        LOGGER.debug("finished load " + documentBucketPath);
+        LOGGER.debug("finished load and decrypt stream " + documentBucketPath);
         return payloadStream;
+    }
+
+    @Override
+    public void persistDocumentStream(DocumentBucketPath documentBucketPath, OverwriteFlag overwriteFlag, PayloadStream payloadStream) {
+        LOGGER.debug("start persist stream " + documentBucketPath);
+        if (overwriteFlag.equals(OverwriteFlag.FALSE)) {
+            if (bucketService.fileExists(documentBucketPath)) {
+                throw new FileExistsException(documentBucketPath + " existiert und overwrite flag ist false");
+            }
+        }
+        extendedStoreConnection.putBlobStream(documentBucketPath, payloadStream);
+        LOGGER.debug("finished persist " + documentBucketPath);
+
     }
 }
