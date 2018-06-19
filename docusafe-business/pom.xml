@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>docusafe-business</artifactId>
-    
+
     <dependencies>
 
         <dependency>
@@ -30,6 +30,22 @@
             <groupId>de.adorsys.cryptoutils</groupId>
             <artifactId>storeconnectionfactory</artifactId>
             <version>${crypt.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- extra logback, weil bei einem Test die Logausgaben geprüft werden
+        das ist mit dem simpleLogger nicht moeglich, da der nur nach standard out schreibt
+        -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.1.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>1.1.2</version>
             <scope>test</scope>
         </dependency>
 

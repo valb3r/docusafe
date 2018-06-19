@@ -37,9 +37,13 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.Security;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by peter on 19.01.18 at 16:25.
@@ -138,31 +142,60 @@ public class BusinessTest {
 
     @Test
     public void storeUnencryptedDSDocumentInANewFolder() {
-        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
-        UserIDAuth userIDAuth = createUser();
-        Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
+        try {
+            LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+            UserIDAuth userIDAuth = createUser();
+            Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
 
-        DocumentFQN documentFQN = new DocumentFQN("first/next/a-new-document.txt");
-        checkGuardsForDocument(userIDAuth, documentFQN, false);
-        DSDocumentMetaInfo mi = new DSDocumentMetaInfo();
-        mi.setNoEncryption();
-        DSDocument dsDocument1 = createDocument(userIDAuth, documentFQN, mi);
-        checkGuardsForDocument(userIDAuth, documentFQN, false);
+            DocumentFQN documentFQN = new DocumentFQN("first/next/a-new-document.txt");
+            Thread.currentThread().sleep(1000); // give the logfile time
+            int count1 = countReadMetaData(documentFQN);
+            checkGuardsForDocument(userIDAuth, documentFQN, false);
+            DSDocumentMetaInfo mi = new DSDocumentMetaInfo();
+            mi.setNoEncryption();
+            DSDocument dsDocument1 = createDocument(userIDAuth, documentFQN, mi);
+            checkGuardsForDocument(userIDAuth, documentFQN, false);
 
-        // Hier gibt es jetzt immer noch nur einen guard, weil ja nichts
-        // verschlüsselt wurde
-        Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
+            // Hier gibt es jetzt immer noch nur einen guard, weil ja nichts
+            // verschlüsselt wurde
+            Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
 
-        // Um zu prüfen, ob das Document wirklich unverschlüsselt auf der Platte liegt, lesen wir es mit einem
-        // falschen Kennwort
-        UserIDAuth wrongPassword = new UserIDAuth(userIDAuth.getUserID(), new ReadKeyPassword("total falsch und anders"));
-        readDocument(wrongPassword, documentFQN, dsDocument1.getDocumentContent(), false);
-        Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
+            // Um zu prüfen, ob das Document wirklich unverschlüsselt auf der Platte liegt, lesen wir es mit einem
+            // falschen Kennwort
+            UserIDAuth wrongPassword = new UserIDAuth(userIDAuth.getUserID(), new ReadKeyPassword("total falsch und anders"));
+            readDocument(wrongPassword, documentFQN, dsDocument1.getDocumentContent(), false);
+            Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
 
-        // Nun das Document überschreiben, aber verschlüsselt
-        DSDocument dsDocument2 = createDocument(userIDAuth, documentFQN, null);
-        Assert.assertEquals("Anzahl der guards", 2, getNumberOfGuards(userIDAuth.getUserID()));
+            // Nun das Document überschreiben, aber verschlüsselt
+            DSDocument dsDocument2 = createDocument(userIDAuth, documentFQN, null);
+            Assert.assertEquals("Anzahl der guards", 2, getNumberOfGuards(userIDAuth.getUserID()));
+            Thread.currentThread().sleep(1000); // give the logfile time
+            int count2 = countReadMetaData(documentFQN);
+            Assert.assertEquals(count1 + 1, count2);
+            LOGGER.debug("found " + count2 + " lines :-)");
+        } catch (Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
+    }
 
+    private int countReadMetaData(DocumentFQN documentFQN) {
+        try {
+
+            String logfilename = "./business-test-log-file.log";
+            if (!new File(logfilename).exists()) {
+                throw new BaseException("logfile " + logfilename + " not found. I am in "
+                        +  new java.io.File( "." ).getCanonicalPath()
+                        + "This tests requires the logfilefile to succeed.");
+            }
+            String searchname = documentFQN.getPlainNameWithoutPath().getValue();
+            return Files.lines(Paths.get(logfilename))
+                    .filter(line -> line.indexOf("readmetadata") != -1)
+                    .filter(line -> line.indexOf(searchname) != -1)
+                    .collect(Collectors.toSet())
+                    .size();
+        } catch (Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
     }
 
     @Test
