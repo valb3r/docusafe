@@ -180,13 +180,13 @@ checkCurl 200 -f -X GET -H 'Content-Type: application/json' -H 'Accept: applicat
 print "peter deletes deep document 2"
 checkCurl 200 -f -X DELETE -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22deeper/and/deeper/README2.txt%22'
 
-print "peter trys to get deep document 2"
+print "peter tries to get deep document 2"
 checkCurl 404 -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22deeper/and/deeper/README2.txt%22'
 
 print "peter still gets deep document 1"
 checkCurl 200 -f -X GET -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22deeper/and/deeper/README.txt%22'
 
-print "peter deletes deep folder"
+print "peter deletes deep folder" 
 checkCurl 200 -f -X DELETE -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'userid: peter' -H 'password: rkp' -i 'http://localhost:8080/document/%22deeper/and/deeper/%22'
 
 print "peter trys to get deep document 1"

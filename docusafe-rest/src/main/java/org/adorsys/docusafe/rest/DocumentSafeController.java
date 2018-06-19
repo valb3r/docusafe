@@ -212,13 +212,13 @@ public class DocumentSafeController {
     ) {
         LOGGER.debug("destroy document request arrived");
         UserIDAuth userIDAuth = new UserIDAuth(new UserID(userid), new ReadKeyPassword(password));
-        DocumentFQN documentFQN = new DocumentFQN(getFQN(request));
-        if (documentFQN.getValue().endsWith(BucketPath.BUCKET_SEPARATOR)) {
-            DocumentDirectoryFQN documentDirectoryFQN = new DocumentDirectoryFQN(documentFQN.getValue());
+        String pathToDelete = getFQN(request);
+        if (pathToDelete.endsWith(BucketPath.BUCKET_SEPARATOR)) {
+            DocumentDirectoryFQN documentDirectoryFQN = new DocumentDirectoryFQN(pathToDelete.substring(0,pathToDelete.length()-1));
             LOGGER.debug("destroy document folder " + documentDirectoryFQN);
             service.deleteFolder(userIDAuth, documentDirectoryFQN);
         } else {
-            service.deleteDocument(userIDAuth, documentFQN);
+            service.deleteDocument(userIDAuth, new DocumentFQN(pathToDelete));
         }
         LOGGER.debug("destroy document request finished");
     }
