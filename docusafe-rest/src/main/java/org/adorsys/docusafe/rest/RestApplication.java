@@ -4,6 +4,7 @@ import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
 import org.adorsys.cryptoutils.utils.ShowProperties;
+import org.adorsys.encobject.service.api.ExtendedStoreConnection;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,8 +34,7 @@ import java.util.Arrays;
 public class RestApplication {
     private final static Logger LOGGER = LoggerFactory.getLogger(RestApplication.class);
 
-    public static void main(String[] origargs) {
-        String[] args = ExtendedStoreConnectionFactory.readArguments(origargs);
+    public static void main(String[] args) {
         Arrays.stream(args).forEach(arg -> {
                     LOGGER.debug("Application runtime argument:" + arg);
                     if (arg.equalsIgnoreCase("-TurnOffEncPolicy") || arg.equalsIgnoreCase("-EncOff")) {
@@ -54,6 +54,18 @@ public class RestApplication {
                         } catch (Exception e) {
                             throw BaseExceptionHandler.handle(e);
                         }
+                    } else if (arg.equalsIgnoreCase("ERASE_DATABASE")) {
+                        LOGGER.warn("***************************");
+                        LOGGER.warn("*                         *");
+                        LOGGER.warn("*  *********************  *");
+                        LOGGER.warn("*  *                   *  *");
+                        LOGGER.warn("*  *  DATABASE ERASED  *  *");
+                        LOGGER.warn("*  *                   *  *");
+                        LOGGER.warn("*  *********************  *");
+                        LOGGER.warn("*                         *");
+                        LOGGER.warn("***************************");
+                        ExtendedStoreConnection extendedStoreConnection = ExtendedStoreConnectionFactory.get();
+                        extendedStoreConnection.listAllBuckets().forEach(c -> extendedStoreConnection.deleteContainer(c));
                     } else {
                         LOGGER.error("Parameter " + arg + " is unknown.");
                         LOGGER.error("Knwon Parameters are: encoff, mongodb, filesystem");

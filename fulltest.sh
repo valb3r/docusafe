@@ -17,7 +17,7 @@ echo "build standalone server"
 mvn clean package -DskipTests  > /dev/null
 
 echo "start standalone server"
-java -jar docusafe-rest/target/docusafe-rest.jar $* > documentsafe.console.out.log &
+java -jar docusafe-rest/target/docusafe-rest.jar ERASE_DATABASE $* > documentsafe.console.out.log &
 pid=$!
 echo "pid ist $pid"
 
