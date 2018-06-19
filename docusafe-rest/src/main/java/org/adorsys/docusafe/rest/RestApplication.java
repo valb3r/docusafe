@@ -34,7 +34,8 @@ import java.util.Arrays;
 public class RestApplication {
     private final static Logger LOGGER = LoggerFactory.getLogger(RestApplication.class);
 
-    public static void main(String[] args) {
+    public static void main(String[] origargs) {
+        String[] args = ExtendedStoreConnectionFactory.readArguments(origargs);
         Arrays.stream(args).forEach(arg -> {
                     LOGGER.debug("Application runtime argument:" + arg);
                     if (arg.equalsIgnoreCase("-TurnOffEncPolicy") || arg.equalsIgnoreCase("-EncOff")) {
