@@ -6,6 +6,7 @@ import org.adorsys.docusafe.service.types.complextypes.DocumentBucketPath;
 import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
 import org.adorsys.encobject.domain.KeyStoreAccess;
 import org.adorsys.encobject.domain.Payload;
+import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
 import org.adorsys.encobject.service.impl.SimplePayloadImpl;
 import org.adorsys.encobject.service.impl.SimpleStorageMetadataImpl;
@@ -56,7 +57,12 @@ public class DocumentPersistenceServiceTest {
                                  KeyStoreAccess keyStoreAccess,
                                  DocumentBucketPath documentBucketPath) {
         DocumentPersistenceService documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection);
-        Payload payload = documentPersistenceService.loadDecryptedDocument(
+        StorageMetadata storageMetadata = extendedStoreConnection.getStorageMetadata(documentBucketPath);
+        if (DocumentPersistenceService.isNotEncrypted(storageMetadata.getUserMetadata())) {
+            return documentPersistenceService.loadDocument(storageMetadata, documentBucketPath);
+        }
+        Payload payload = documentPersistenceService.loadAndDecryptDocument(
+                storageMetadata,
                 keyStoreAccess,
                 documentBucketPath);
         LOGGER.debug("Gelesenes Document enthält:" + payload.getData() + " bzw " + new String(payload.getData()));

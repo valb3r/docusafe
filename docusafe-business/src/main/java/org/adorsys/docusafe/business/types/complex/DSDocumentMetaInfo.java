@@ -20,18 +20,10 @@ public class DSDocumentMetaInfo extends UserMetaData {
     }
 
     public void setNoEncryption() {
-        put(DocumentPersistenceService.NO_ENCRYPTION, "true");
-    }
-
-    public void unsetNoEncryption() {
-        remove(DocumentPersistenceService.NO_ENCRYPTION);
+        DocumentPersistenceService.setNotEncrypted(this);
     }
 
     public boolean isNotEncrypted() {
-        if (find(DocumentPersistenceService.NO_ENCRYPTION) != null) {
-            String value = get(DocumentPersistenceService.NO_ENCRYPTION);
-            return value.equalsIgnoreCase("TRUE");
-        }
-        return false;
+        return DocumentPersistenceService.isNotEncrypted(this);
     }
 }

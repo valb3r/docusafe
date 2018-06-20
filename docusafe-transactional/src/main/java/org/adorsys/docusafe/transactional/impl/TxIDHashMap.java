@@ -80,6 +80,7 @@ public class TxIDHashMap {
         LOGGER.debug("save " + file.getValue());
         DocumentContent documentContent = new Class2JsonHelper().txidHashMapToContent(this);
         DSDocument dsDocument = new DSDocument(file, documentContent, new DSDocumentMetaInfo());
+        dsDocument.getDsDocumentMetaInfo().setNoEncryption();
         documentSafeService.storeDocument(userIDAuth, dsDocument);
     }
 

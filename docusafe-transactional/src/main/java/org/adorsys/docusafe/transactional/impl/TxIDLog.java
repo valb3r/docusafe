@@ -45,6 +45,7 @@ public class TxIDLog {
     public static void saveJustFinishedTx(DocumentSafeService documentSafeService, UserIDAuth userIDAuth, Date start, Date finished, LastCommitedTxID previousTxID, TxID currentTxID) {
         TxIDLog txIDLog = new TxIDLog();
         DSDocumentMetaInfo metaInfo = new DSDocumentMetaInfo();
+        metaInfo.setNoEncryption();
         if (documentSafeService.documentExists(userIDAuth, txidLogFilename)) {
             DSDocument dsDocument = documentSafeService.readDocument(userIDAuth, txidLogFilename);
             txIDLog = new Class2JsonHelper().txidLogFromContent(dsDocument.getDocumentContent());

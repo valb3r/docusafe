@@ -5,13 +5,15 @@ import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.encobject.domain.KeyStoreAccess;
 import org.adorsys.encobject.domain.Payload;
 import org.adorsys.encobject.domain.PayloadStream;
+import org.adorsys.encobject.domain.StorageMetadata;
+import org.adorsys.encobject.domain.UserMetaData;
 import org.adorsys.encobject.types.OverwriteFlag;
 
 /**
  * Created by peter on 11.01.18.
  */
 public interface DocumentPersistenceService {
-    public final static String NO_ENCRYPTION = "NO_ENCRYPTION";
+
 
     /**
      * byte orientiert
@@ -30,11 +32,16 @@ public interface DocumentPersistenceService {
             OverwriteFlag overwriteFlag,
             Payload payload);
 
-    // load document, if necessary, decrypt it
-    Payload loadDecryptedDocument(
+    // read encrypted document
+    Payload loadAndDecryptDocument(
+            StorageMetadata storageMetadata,
             KeyStoreAccess keyStoreAccess,
             DocumentBucketPath documentBucketPath);
 
+    // read unencrypted document
+    Payload loadDocument(
+            StorageMetadata storageMetadata,
+            DocumentBucketPath documentBucketPath);
 
     /**
      * stream orientiert
@@ -53,10 +60,26 @@ public interface DocumentPersistenceService {
             OverwriteFlag overwriteFlag,
             PayloadStream payloadStream);
 
-    // load document stream, if necessary, decrypt it
-    PayloadStream loadDecryptedDocumentStream(
+    // read encrypted document stream
+    PayloadStream loadAndDecryptDocumentStream(
+            StorageMetadata storageMetadata,
             KeyStoreAccess keyStoreAccess,
             DocumentBucketPath documentBucketPath);
 
+    // read unencrypted document stream
+    PayloadStream loadDocumentStream(
+            StorageMetadata storageMetadata,
+            DocumentBucketPath documentBucketPath);
 
+
+    static boolean isNotEncrypted(UserMetaData userMetaData) {
+        String value = null;
+        if ((value = userMetaData.find("NO_ENCRYPTION")) != null) {
+            return (value.equalsIgnoreCase("TRUE"));
+        }
+        return false;
+    }
+    static void setNotEncrypted(UserMetaData userMetaData) {
+        userMetaData.put("NO_ENCRYPTION", "TRUE");
+    }
 }

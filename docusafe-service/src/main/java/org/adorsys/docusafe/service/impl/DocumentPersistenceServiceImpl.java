@@ -72,26 +72,27 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
     }
 
     @Override
-    public Payload loadDecryptedDocument(
+    public Payload loadAndDecryptDocument(
+            StorageMetadata storageMetadata,
             KeyStoreAccess keyStoreAccess,
             DocumentBucketPath documentBucketPath) {
 
-        LOGGER.debug("start load document " + documentBucketPath + " " + keyStoreAccess);
-        StorageMetadata storageMetadata = extendedStoreConnection.getStorageMetadata(documentBucketPath);
-        String value = null;
-        if ((value = storageMetadata.getUserMetadata().find(DocumentPersistenceService.NO_ENCRYPTION)) != null &&
-                value.equalsIgnoreCase("TRUE")) {
-            LOGGER.debug("start load unencrypted Document " + documentBucketPath);
-            Payload blob = extendedStoreConnection.getBlob(documentBucketPath, storageMetadata);
-            LOGGER.debug("finished load unencrypted Document " + documentBucketPath);
-            return blob;
-        }
-
-        LOGGER.debug("start load and decrypt Document " + documentBucketPath);
+        LOGGER.debug("start load and decrypt document " + documentBucketPath + " " + keyStoreAccess);
         KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess);
         Payload payload = encryptedPersistenceService.loadAndDecrypt(documentBucketPath, keySource, storageMetadata);
         LOGGER.debug("finished load and decrypt " + documentBucketPath);
         return payload;
+    }
+
+    @Override
+    public Payload loadDocument(
+            StorageMetadata storageMetadata,
+            DocumentBucketPath documentBucketPath) {
+
+        LOGGER.debug("start load document " + documentBucketPath);
+        Payload blob = extendedStoreConnection.getBlob(documentBucketPath, storageMetadata);
+        LOGGER.debug("finished load unencrypted Document " + documentBucketPath);
+        return blob;
     }
 
     @Override
@@ -128,22 +129,24 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
     }
 
     @Override
-    public PayloadStream loadDecryptedDocumentStream(KeyStoreAccess keyStoreAccess, DocumentBucketPath documentBucketPath) {
-        LOGGER.debug("start load stream " + documentBucketPath + " " + keyStoreAccess);
-        StorageMetadata storageMetadata = extendedStoreConnection.getStorageMetadata(documentBucketPath);
-        String value = null;
-        if ((value = storageMetadata.getUserMetadata().find(DocumentPersistenceService.NO_ENCRYPTION)) != null &&
-                value.equalsIgnoreCase("TRUE")) {
-            LOGGER.debug("start load unencrypted stream " + documentBucketPath);
-            PayloadStream payloadStream = extendedStoreConnection.getBlobStream(documentBucketPath);
-            LOGGER.debug("finished load unencrypted stream " + documentBucketPath);
-            return payloadStream;
-        }
-
+    public PayloadStream loadAndDecryptDocumentStream(
+            StorageMetadata storageMetadata,
+            KeyStoreAccess keyStoreAccess,
+            DocumentBucketPath documentBucketPath) {
         LOGGER.debug("start load and decrypt stream " + documentBucketPath + " " + keyStoreAccess);
         KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess);
         PayloadStream payloadStream = encryptedPersistenceService.loadAndDecryptStream(documentBucketPath, keySource, storageMetadata);
         LOGGER.debug("finished load and decrypt stream " + documentBucketPath);
+        return payloadStream;
+    }
+
+    @Override
+    public PayloadStream loadDocumentStream(
+            StorageMetadata storageMetadata,
+            DocumentBucketPath documentBucketPath) {
+        LOGGER.debug("start load stream " + documentBucketPath);
+        PayloadStream payloadStream = extendedStoreConnection.getBlobStream(documentBucketPath);
+        LOGGER.debug("finished load unencrypted stream " + documentBucketPath);
         return payloadStream;
     }
 
