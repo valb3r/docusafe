@@ -23,7 +23,7 @@ public class TransactionFileStorageBaseTest {
         ExtendedStoreConnection esc = ExtendedStoreConnectionFactory.get();
         esc.listAllBuckets().forEach(b -> esc.deleteContainer(b));
 
-        transactionalFileStorage = new TransactionalFileStorageImpl(new DocumentSafeServiceImpl(ExtendedStoreConnectionFactory.get()));
+        transactionalFileStorage = new TransactionalFileStorageImpl(ExtendedStoreConnectionFactory.get());
         userIDAuth = new UserIDAuth(new UserID("peter"), new ReadKeyPassword("password"));
         systemUserIDAuth = new UserIDAuth(new UserID("system"), new ReadKeyPassword("systemPassword"));
     }

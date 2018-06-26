@@ -3,6 +3,7 @@ package org.adorsys.docusafe.transactional.impl;
 import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.impl.BucketContentFQNImpl;
+import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
@@ -12,6 +13,7 @@ import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.service.types.AccessType;
 import org.adorsys.docusafe.transactional.TransactionalFileStorage;
 import org.adorsys.docusafe.transactional.types.TxID;
+import org.adorsys.encobject.service.api.ExtendedStoreConnection;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,9 +30,9 @@ public class TransactionalFileStorageImpl implements TransactionalFileStorage {
     final static DocumentDirectoryFQN nonTxContent = new DocumentDirectoryFQN("nonttx");
     private DocumentSafeService documentSafeService;
 
-    public TransactionalFileStorageImpl(DocumentSafeService documentSafeService) {
+    public TransactionalFileStorageImpl(ExtendedStoreConnection extendedStoreConnection) {
         LOGGER.debug("new Instance of TransactionalFileStorageImpl");
-        this.documentSafeService = documentSafeService;
+        documentSafeService = new DocumentSafeServiceImpl(extendedStoreConnection);
     }
 
     // ============================================================================================

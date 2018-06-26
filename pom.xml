@@ -56,6 +56,7 @@
         <module>docusafe-rest</module>
         <module>docusafe-rest.client</module>
         <module>docusafe-transactional</module>
+        <module>docusafe-cached-transactional</module>
     </modules>
 
     <dependencies>

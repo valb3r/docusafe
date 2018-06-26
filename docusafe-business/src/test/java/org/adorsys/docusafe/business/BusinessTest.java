@@ -55,6 +55,13 @@ public class BusinessTest extends BusinessTestBase {
     private final static Logger LOGGER = LoggerFactory.getLogger(BusinessTest.class);
 
     @Test
+    public void sequenceDiagramTest () {
+        UserIDAuth userIDAuth = new UserIDAuth(new UserID("user1"), new ReadKeyPassword("password1"));
+        users.add(userIDAuth);
+        service.createUser(userIDAuth);
+    }
+
+    @Test
     public void testCreateUser() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         UserIDAuth userIDAuth = createUser();
