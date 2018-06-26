@@ -61,7 +61,7 @@ public class BusinessTest extends BusinessTestBase {
         service.setMemoryContext(new SimpleMemoryContextImpl());
         try {
             int REPEATS = 10;
-            int i = 30;
+            int i = 0;
 
             UserIDAuth userIDAuth = createUser();
             Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
