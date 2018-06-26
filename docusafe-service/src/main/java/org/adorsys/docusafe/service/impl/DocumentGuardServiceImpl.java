@@ -1,6 +1,7 @@
 package org.adorsys.docusafe.service.impl;
 
 import org.adorsys.cryptoutils.exceptions.BaseException;
+import org.adorsys.docusafe.business.types.MemoryContext;
 import org.adorsys.docusafe.service.BucketService;
 import org.adorsys.docusafe.service.DocumentGuardService;
 import org.adorsys.docusafe.service.exceptions.NoDocumentGuardExists;
@@ -39,16 +40,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.security.KeyStore;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.UUID;
 
 public class DocumentGuardServiceImpl implements DocumentGuardService {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentGuardServiceImpl.class);
     private final static String ACCESS_TYPE = "AccessType";
     private final static String KEYSTORE_TYPE = "KeyStoreType";
+    public static final String GUARD_MAP = "GUARD_MAP";
 
     private KeystorePersistence keystorePersistence;
     private EncryptedPersistenceService encryptedPersistenceUtil;
     private BucketService bucketService;
+    private MemoryContext memoryContext = null;
 
 
     private DocumentGuardSerializerRegistery serializerRegistry = DocumentGuardSerializerRegistery.getInstance();
@@ -92,7 +97,14 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
      */
     @Override
     public DocumentKeyIDWithKeyAndAccessType loadDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(KeyStoreAccess keyStoreAccess, DocumentKeyID documentKeyID) {
+        GuardMap guardMap = memoryContext != null ? (GuardMap) memoryContext.get(GUARD_MAP) : null;
         LOGGER.debug("start load " + documentKeyID + " from document guard at " + keyStoreAccess.getKeyStorePath());
+        if (guardMap != null) {
+            String cacheKey = GuardMap.cacheKeyToString(keyStoreAccess, documentKeyID);
+            if (guardMap.containsKey(cacheKey)) {
+                return guardMap.get(cacheKey);
+            }
+        }
 
         KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStorePath().getObjectHandle(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
 
@@ -120,7 +132,20 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
         DocumentKey documentKey = serializer.deserializeSecretKey(payload.getData(), keyStoreType);
 
         LOGGER.debug("finished load " + documentKeyID + " from document guard at " + keyStoreAccess.getKeyStorePath());
-        return new DocumentKeyIDWithKeyAndAccessType(new DocumentKeyIDWithKey(documentKeyID, documentKey), accessType);
+        DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = new DocumentKeyIDWithKeyAndAccessType(new DocumentKeyIDWithKey(documentKeyID, documentKey), accessType);
+        if (guardMap != null) {
+            String cacheKey = GuardMap.cacheKeyToString(keyStoreAccess, documentKeyID);
+            guardMap.put(cacheKey, documentKeyIDWithKeyAndAccessType);
+        }
+        return documentKeyIDWithKeyAndAccessType;
+    }
+
+    @Override
+    public void setMemoryContext(MemoryContext memoryContext) {
+        this.memoryContext = memoryContext;
+        if (this.memoryContext != null) {
+            this.memoryContext.put(GUARD_MAP, new GuardMap());
+        }
     }
 
 
@@ -154,6 +179,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
         // TODO OverwriteFlag
         LOGGER.debug("finished persist document guard for " + documentKeyIDWithKeyAndAccessType + " at " + keyStoreAccess.getKeyStorePath());
     }
+
 
 
 }

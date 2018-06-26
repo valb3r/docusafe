@@ -1,5 +1,6 @@
 package org.adorsys.docusafe.service;
 
+import org.adorsys.docusafe.business.types.MemoryContext;
 import org.adorsys.docusafe.service.impl.DocumentPersistenceServiceImpl;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.service.types.complextypes.DocumentBucketPath;
@@ -24,6 +25,7 @@ public class DocumentPersistenceServiceTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentPersistenceServiceTest.class);
 
     private ExtendedStoreConnection extendedStoreConnection;
+    private MemoryContext memoryContext = null;
     private Set<DocumentBucketPath> createdBuckets = new HashSet<>();
 
     public DocumentPersistenceServiceTest(ExtendedStoreConnection extendedStoreConnection) {

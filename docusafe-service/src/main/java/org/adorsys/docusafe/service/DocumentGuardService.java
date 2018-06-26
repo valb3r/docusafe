@@ -1,5 +1,6 @@
 package org.adorsys.docusafe.service;
 
+import org.adorsys.docusafe.business.types.MemoryContext;
 import org.adorsys.docusafe.service.impl.GuardKeyType;
 import org.adorsys.docusafe.service.types.DocumentKeyID;
 import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKey;
@@ -19,4 +20,10 @@ public interface DocumentGuardService {
 
     DocumentKeyIDWithKeyAndAccessType loadDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(KeyStoreAccess keyStoreAccess,
                                                                                              DocumentKeyID documentKeyID);
+
+    /**
+     * Caching
+     */
+    void setMemoryContext(MemoryContext memoryContext);
+
 }
