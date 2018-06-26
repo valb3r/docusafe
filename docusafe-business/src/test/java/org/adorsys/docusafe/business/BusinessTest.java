@@ -60,7 +60,7 @@ public class BusinessTest extends BusinessTestBase {
     public void performanceTest_DOC_29() {
         service.setMemoryContext(new SimpleMemoryContextImpl());
         try {
-            int REPEATS = 10;
+            int REPEATS = 1;
             int i = 0;
 
             UserIDAuth userIDAuth = createUser();
