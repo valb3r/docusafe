@@ -54,6 +54,39 @@ import java.util.stream.Collectors;
 public class BusinessTest extends BusinessTestBase {
     private final static Logger LOGGER = LoggerFactory.getLogger(BusinessTest.class);
 
+
+    @Test
+    public void performanceTest_DOC_27() {
+        int REPEATS = 10;
+        int i = 0;
+
+        UserIDAuth userIDAuth = createUser();
+        Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
+
+
+        while (i > 0) {
+            LOGGER.info("wait for visualVM profiler " + i);
+            try {
+                Thread.currentThread().sleep(1000);
+            } catch (Exception e) {
+            }
+            i--;
+        }
+
+        for (int j = 0; j < REPEATS; j++) {
+            DocumentFQN documentFQN = new DocumentFQN("first/next/document" + j + ".txt");
+            Assert.assertFalse(service.documentExists(userIDAuth, documentFQN));
+            DocumentContent documentContent = new DocumentContent(("Einfach nur a bisserl Text" + j).getBytes());
+            DSDocument dsDocument = new DSDocument(documentFQN, documentContent, new DSDocumentMetaInfo());
+            service.storeDocument(userIDAuth, dsDocument);
+            Assert.assertTrue(service.documentExists(userIDAuth, documentFQN));
+            DSDocument dsDocumentResult = service.readDocument(userIDAuth, documentFQN);
+            LOGGER.debug("original  document:" + new String(documentContent.getValue()));
+            LOGGER.debug("retrieved document:" + new String(dsDocumentResult.getDocumentContent().getValue()));
+            Assert.assertEquals("document content ok", documentContent, dsDocumentResult.getDocumentContent());
+        }
+    }
+
     @Test
     public void testCreateUser() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());

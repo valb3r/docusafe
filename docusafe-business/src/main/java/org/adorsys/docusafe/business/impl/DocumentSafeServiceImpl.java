@@ -43,8 +43,8 @@ import org.adorsys.encobject.domain.KeyStoreAccess;
 import org.adorsys.encobject.domain.KeyStoreAuth;
 import org.adorsys.encobject.domain.Payload;
 import org.adorsys.encobject.domain.PayloadStream;
+import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.adorsys.encobject.domain.StorageMetadata;
-import org.adorsys.encobject.domain.UserMetaData;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
 import org.adorsys.encobject.service.api.KeyStoreService;
 import org.adorsys.encobject.service.impl.KeyStoreServiceImpl;
@@ -58,6 +58,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.security.UnrecoverableEntryException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by peter on 19.01.18 at 14:39.
@@ -71,6 +73,8 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
     private DocumentPersistenceService documentPersistenceService;
     private KeySourceService keySourceService;
     private ExtendedStoreConnection extendedStoreConnection;
+    // das ist nur ein work around, muss in den usercontext
+    private static Map<UserID, ReadKeyPassword> userAuthCache = new HashMap<>();
 
     public DocumentSafeServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
         this.extendedStoreConnection = extendedStoreConnection;
@@ -494,11 +498,19 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
     }
 
     private void checkUserKeyPassword(UserIDAuth userIDAuth) {
+        if (userAuthCache.containsKey(userIDAuth.getUserID())) {
+            ReadKeyPassword expected = userAuthCache.get(userIDAuth.getUserID());
+            if (expected.equals(userIDAuth.getReadKeyPassword())) {
+                return;
+            }
+            throw new WrongPasswordException(userIDAuth.getUserID());
+        }
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
         BucketDirectory documentDirectory = UserIDUtil.getHomeBucketDirectory(userIDAuth.getUserID());
         DocumentKeyID documentKeyID = GuardUtil.loadBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStorePath().getBucketDirectory(), documentDirectory);
         try {
             documentGuardService.loadDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(keyStoreAccess, documentKeyID);
+            userAuthCache.put(userIDAuth.getUserID(), userIDAuth.getReadKeyPassword());
         } catch (BaseException e) {
             if (e.getCause() instanceof UnrecoverableEntryException) {
                 throw new WrongPasswordException(userIDAuth.getUserID());
