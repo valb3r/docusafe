@@ -1,5 +1,6 @@
 package org.adorsys.docusafe.service;
 
+import org.adorsys.docusafe.business.types.MemoryContext;
 import org.adorsys.docusafe.service.types.complextypes.DocumentBucketPath;
 import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.encobject.domain.KeyStoreAccess;
@@ -72,6 +73,11 @@ public interface DocumentPersistenceService {
             DocumentBucketPath documentBucketPath);
 
 
+    /**
+     * Caching
+     */
+    void setMemoryContext(MemoryContext memoryContext);
+
     static boolean isNotEncrypted(UserMetaData userMetaData) {
         String value = null;
         if ((value = userMetaData.find("NO_ENCRYPTION")) != null) {
@@ -82,4 +88,6 @@ public interface DocumentPersistenceService {
     static void setNotEncrypted(UserMetaData userMetaData) {
         userMetaData.put("NO_ENCRYPTION", "TRUE");
     }
+
+
 }

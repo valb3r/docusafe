@@ -1,5 +1,6 @@
 package org.adorsys.docusafe.service.impl;
 
+import org.adorsys.docusafe.business.types.MemoryContext;
 import org.adorsys.docusafe.service.DocumentGuardService;
 import org.adorsys.docusafe.service.DocumentPersistenceService;
 import org.adorsys.docusafe.service.keysource.DocumentGuardBasedKeySourceImpl;
@@ -37,7 +38,7 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
     private EncryptedPersistenceService encryptedPersistenceService;
     private DocumentGuardService documentGuardService;
     private ExtendedStoreConnection extendedStoreConnection;
-    private BucketServiceImpl bucketService;
+    private BucketServiceImpl bucketService = null;
 
     public DocumentPersistenceServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
         this.extendedStoreConnection = extendedStoreConnection;
@@ -148,6 +149,11 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
         PayloadStream payloadStream = extendedStoreConnection.getBlobStream(documentBucketPath);
         LOGGER.debug("finished load unencrypted stream " + documentBucketPath);
         return payloadStream;
+    }
+
+    @Override
+    public void setMemoryContext(MemoryContext memoryContext) {
+        documentGuardService.setMemoryContext(memoryContext);
     }
 
     @Override

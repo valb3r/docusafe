@@ -6,6 +6,7 @@ import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFac
 import org.adorsys.docusafe.business.exceptions.NoWriteAccessException;
 import org.adorsys.docusafe.business.exceptions.WrongPasswordException;
 import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
+import org.adorsys.docusafe.business.impl.SimpleMemoryContextImpl;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
@@ -56,34 +57,39 @@ public class BusinessTest extends BusinessTestBase {
 
 
     @Test
-    public void performanceTest_DOC_27() {
-        int REPEATS = 10;
-        int i = 0;
+    public void performanceTest_DOC_29() {
+        service.setMemoryContext(new SimpleMemoryContextImpl());
+        try {
+            int REPEATS = 10;
+            int i = 30;
 
-        UserIDAuth userIDAuth = createUser();
-        Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
+            UserIDAuth userIDAuth = createUser();
+            Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
 
 
-        while (i > 0) {
-            LOGGER.info("wait for visualVM profiler " + i);
-            try {
-                Thread.currentThread().sleep(1000);
-            } catch (Exception e) {
+            while (i > 0) {
+                LOGGER.info("wait for visualVM profiler " + i);
+                try {
+                    Thread.currentThread().sleep(1000);
+                } catch (Exception e) {
+                }
+                i--;
             }
-            i--;
-        }
 
-        for (int j = 0; j < REPEATS; j++) {
-            DocumentFQN documentFQN = new DocumentFQN("first/next/document" + j + ".txt");
-            Assert.assertFalse(service.documentExists(userIDAuth, documentFQN));
-            DocumentContent documentContent = new DocumentContent(("Einfach nur a bisserl Text" + j).getBytes());
-            DSDocument dsDocument = new DSDocument(documentFQN, documentContent, new DSDocumentMetaInfo());
-            service.storeDocument(userIDAuth, dsDocument);
-            Assert.assertTrue(service.documentExists(userIDAuth, documentFQN));
-            DSDocument dsDocumentResult = service.readDocument(userIDAuth, documentFQN);
-            LOGGER.debug("original  document:" + new String(documentContent.getValue()));
-            LOGGER.debug("retrieved document:" + new String(dsDocumentResult.getDocumentContent().getValue()));
-            Assert.assertEquals("document content ok", documentContent, dsDocumentResult.getDocumentContent());
+            for (int j = 0; j < REPEATS; j++) {
+                DocumentFQN documentFQN = new DocumentFQN("first/next/document" + j + ".txt");
+                Assert.assertFalse(service.documentExists(userIDAuth, documentFQN));
+                DocumentContent documentContent = new DocumentContent(("Einfach nur a bisserl Text" + j).getBytes());
+                DSDocument dsDocument = new DSDocument(documentFQN, documentContent, new DSDocumentMetaInfo());
+                service.storeDocument(userIDAuth, dsDocument);
+                Assert.assertTrue(service.documentExists(userIDAuth, documentFQN));
+                DSDocument dsDocumentResult = service.readDocument(userIDAuth, documentFQN);
+                LOGGER.debug("original  document:" + new String(documentContent.getValue()));
+                LOGGER.debug("retrieved document:" + new String(dsDocumentResult.getDocumentContent().getValue()));
+                Assert.assertEquals("document content ok", documentContent, dsDocumentResult.getDocumentContent());
+            }
+        } finally {
+            service.setMemoryContext(null);
         }
     }
 

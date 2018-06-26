@@ -9,6 +9,7 @@ import org.adorsys.docusafe.business.exceptions.NoWriteAccessException;
 import org.adorsys.docusafe.business.exceptions.UserIDAlreadyExistsException;
 import org.adorsys.docusafe.business.exceptions.UserIDDoesNotExistException;
 import org.adorsys.docusafe.business.exceptions.WrongPasswordException;
+import org.adorsys.docusafe.business.types.MemoryContext;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
@@ -66,6 +67,7 @@ import java.util.Map;
  */
 public class DocumentSafeServiceImpl implements DocumentSafeService {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentSafeServiceImpl.class);
+    public static final String USER_AUTH_CACHE = "userAuthCache";
 
     private BucketService bucketService;
     private KeyStoreService keyStoreService;
@@ -73,16 +75,15 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
     private DocumentPersistenceService documentPersistenceService;
     private KeySourceService keySourceService;
     private ExtendedStoreConnection extendedStoreConnection;
-    // das ist nur ein work around, muss in den usercontext
-    private static Map<UserID, ReadKeyPassword> userAuthCache = new HashMap<>();
+    private MemoryContext memoryContext = null;
 
     public DocumentSafeServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
         this.extendedStoreConnection = extendedStoreConnection;
-        bucketService = new BucketServiceImpl(extendedStoreConnection);
-        keyStoreService = new KeyStoreServiceImpl(extendedStoreConnection);
-        documentGuardService = new DocumentGuardServiceImpl(extendedStoreConnection);
-        documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection);
-        keySourceService = new KeySourceServiceImpl(extendedStoreConnection);
+        this.bucketService = new BucketServiceImpl(extendedStoreConnection);
+        this.keyStoreService = new KeyStoreServiceImpl(extendedStoreConnection);
+        this.documentGuardService = new DocumentGuardServiceImpl(extendedStoreConnection);
+        this.documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection);
+        this.keySourceService = new KeySourceServiceImpl(extendedStoreConnection);
     }
 
     /**
@@ -410,6 +411,17 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
     }
 
     @Override
+    public void setMemoryContext(MemoryContext memoryContext) {
+        this.memoryContext = memoryContext;
+        if (this.memoryContext != null) {
+            this.memoryContext.put(USER_AUTH_CACHE, new UserAuthCache());
+            LOGGER.info("MemoryContext will be used");
+        }
+        this.documentGuardService.setMemoryContext(memoryContext);
+        this.documentPersistenceService.setMemoryContext(memoryContext);
+    }
+
+    @Override
     public JWK findPublicEncryptionKey(UserID userID) {
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(new UserIDAuth(userID, null));
         return keySourceService.findPublicEncryptionKey(keyStoreAccess);
@@ -498,25 +510,32 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
     }
 
     private void checkUserKeyPassword(UserIDAuth userIDAuth) {
-        if (userAuthCache.containsKey(userIDAuth.getUserID())) {
-            ReadKeyPassword expected = userAuthCache.get(userIDAuth.getUserID());
-            if (expected.equals(userIDAuth.getReadKeyPassword())) {
-                return;
+        UserAuthCache userAuthCache = memoryContext != null ? (UserAuthCache) memoryContext.get(USER_AUTH_CACHE) : null;
+        if (userAuthCache != null) {
+            LOGGER.info("MemoryContext is used");
+
+            if (userAuthCache.containsKey(userIDAuth.getUserID())) {
+                ReadKeyPassword expected = userAuthCache.get(userIDAuth.getUserID());
+                if (expected.equals(userIDAuth.getReadKeyPassword())) {
+                    LOGGER.info("MemoryContext successful for " + userIDAuth.getUserID());
+                    return;
+                }
+                throw new WrongPasswordException(userIDAuth.getUserID());
             }
-            throw new WrongPasswordException(userIDAuth.getUserID());
         }
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
         BucketDirectory documentDirectory = UserIDUtil.getHomeBucketDirectory(userIDAuth.getUserID());
         DocumentKeyID documentKeyID = GuardUtil.loadBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStorePath().getBucketDirectory(), documentDirectory);
         try {
             documentGuardService.loadDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(keyStoreAccess, documentKeyID);
-            userAuthCache.put(userIDAuth.getUserID(), userIDAuth.getReadKeyPassword());
+            if (userAuthCache != null) {
+                userAuthCache.put(userIDAuth.getUserID(), userIDAuth.getReadKeyPassword());
+            }
         } catch (BaseException e) {
             if (e.getCause() instanceof UnrecoverableEntryException) {
                 throw new WrongPasswordException(userIDAuth.getUserID());
             }
         }
     }
-
 
 }
