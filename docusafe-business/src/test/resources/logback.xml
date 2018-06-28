@@ -15,7 +15,7 @@
             <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</Pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <FileNamePattern>c:/jcg.%i.log.zip</FileNamePattern>
+            <FileNamePattern>%i.log.zip</FileNamePattern>
             <MinIndex>1</MinIndex>
             <MaxIndex>10</MaxIndex>
         </rollingPolicy>
@@ -37,7 +37,7 @@
         <appender-ref ref="FILE" />
     </logger>
 
-    <logger name="org.adorsys.docusafe.business.BusinessTestUnencrypted" level="DEBUG" additivity="false">
+    <logger name="org.adorsys.docusafe.business.BusinessUnencryptedTest" level="DEBUG" additivity="false">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />
     </logger>

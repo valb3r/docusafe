@@ -1,11 +1,8 @@
 package org.adorsys.docusafe.business;
 
-import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
 import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
-import org.adorsys.docusafe.business.impl.SimpleMemoryContextImpl;
-import org.adorsys.docusafe.business.types.MemoryContext;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
@@ -36,15 +33,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.Security;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Created by peter on 20.06.18 at 10:06.
@@ -55,7 +48,6 @@ public class BusinessTestBase {
     protected DocumentSafeService service;
 
     public static Set<UserIDAuth> users = new HashSet<>();
-    private MemoryContext mc;
 
     @BeforeClass
     static public void beforeClass() {
@@ -71,8 +63,6 @@ public class BusinessTestBase {
         Security.addProvider(new BouncyCastleProvider());
         users.clear();
         service = new DocumentSafeServiceImpl(extendedStoreConnection);
-        mc = new SimpleMemoryContextImpl();
-        service.setMemoryContext(mc);
     }
 
     @After
@@ -84,9 +74,6 @@ public class BusinessTestBase {
             });
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
-        } finally {
-            LOGGER.info(SimpleMemoryContextImpl.toString(mc));
-            mc = null;
         }
 
     }
