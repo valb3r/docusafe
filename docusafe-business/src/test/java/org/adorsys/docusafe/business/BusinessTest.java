@@ -58,7 +58,7 @@ public class BusinessTest extends BusinessTestBase {
 
     @Test
     public void performanceTest_DOC_29() {
-        service.setMemoryContext(new SimpleMemoryContextImpl());
+        // service.setMemoryContext(new SimpleMemoryContextImpl());
         try {
             int REPEATS = 1;
             int i = 0;
@@ -89,7 +89,7 @@ public class BusinessTest extends BusinessTestBase {
                 Assert.assertEquals("document content ok", documentContent, dsDocumentResult.getDocumentContent());
             }
         } finally {
-            service.setMemoryContext(null);
+            // service.setMemoryContext(null);
         }
     }
 
@@ -193,6 +193,16 @@ public class BusinessTest extends BusinessTestBase {
         try {
             service.storeGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), dsDocument);
         } catch (NoWriteAccessException e) {
+            catched = true;
+        }
+        Assert.assertTrue(catched);
+        service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
+
+        service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentDirectoryFQN, AccessType.NONE);
+        catched = false;
+        try {
+            service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
+        } catch (NoDocumentGuardExists e) {
             catched = true;
         }
         Assert.assertTrue(catched);

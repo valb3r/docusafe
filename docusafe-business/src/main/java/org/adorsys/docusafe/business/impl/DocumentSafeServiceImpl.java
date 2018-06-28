@@ -345,6 +345,9 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
             KeyStoreAccess receiverKeyStoreAccess = getKeyStoreAccess(receiverUserIDAuth);
             if (AccessType.NONE.equals(accessType)) {
                 deleteGuardForBucket(receiverKeyStoreAccess, receiversDocumentKeyWithIDAndAccessType, documentBucketDirectory);
+                // userIDAuth;
+                ((DocumentGuardServiceImpl) documentGuardService).deleteCacheKey(receiverKeyStoreAccess, receiversDocumentKeyWithIDAndAccessType);
+
             } else {
                 createAsymmetricGuardForBucket(receiverKeyStoreAccess, receiversDocumentKeyWithIDAndAccessType, documentBucketDirectory, OverwriteFlag.TRUE);
             }

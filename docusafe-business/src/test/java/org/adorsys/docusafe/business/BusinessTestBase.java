@@ -4,6 +4,8 @@ import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
 import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
+import org.adorsys.docusafe.business.impl.SimpleMemoryContextImpl;
+import org.adorsys.docusafe.business.types.MemoryContext;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
@@ -53,6 +55,7 @@ public class BusinessTestBase {
     protected DocumentSafeService service;
 
     public static Set<UserIDAuth> users = new HashSet<>();
+    private MemoryContext mc;
 
     @BeforeClass
     static public void beforeClass() {
@@ -68,6 +71,8 @@ public class BusinessTestBase {
         Security.addProvider(new BouncyCastleProvider());
         users.clear();
         service = new DocumentSafeServiceImpl(extendedStoreConnection);
+        mc = new SimpleMemoryContextImpl();
+        service.setMemoryContext(mc);
     }
 
     @After
@@ -79,7 +84,11 @@ public class BusinessTestBase {
             });
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
+        } finally {
+            LOGGER.info(SimpleMemoryContextImpl.toString(mc));
+            mc = null;
         }
+
     }
 
 
