@@ -174,6 +174,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
         DocumentGuardSerializer documentGuardSerializer = serializerRegistry.defaultSerializer();
         storageMetadata.getUserMetadata().put(serializerRegistry.SERIALIZER_HEADER_KEY, documentGuardSerializer.getSerializerID());
         storageMetadata.getUserMetadata().put(ACCESS_TYPE, documentKeyIDWithKeyAndAccessType.getAccessType().toString());
+        // TODO DOC-31
         storageMetadata.getUserMetadata().put(KEYSTORE_TYPE, keyStoreType.getValue());
         GuardKey guardKey = new GuardKey(documentGuardSerializer.serializeSecretKey(
                 documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKey(), keyStoreType));
