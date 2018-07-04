@@ -550,7 +550,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
             if (guardMap.containsKey(cacheKey)) {
                 PasswordAndDocumentKeyIDWithKeyAndAccessType passwordAndDocumentKeyIDWithKeyAndAccessType = guardMap.get(cacheKey);
                 if (passwordAndDocumentKeyIDWithKeyAndAccessType.getReadKeyPassword().equals(keyStoreAccess.getKeyStoreAuth().getReadKeyPassword())) {
-                    LOGGER.info("AAA return document key for cache key " + cacheKey);
+                    LOGGER.debug("AAA return document key for cache key " + cacheKey);
                     return guardMap.get(cacheKey).getDocumentKeyIDWithKeyAndAccessType();
                 }
                 // Password war falsch, wir lassen den Aufrufer abtauchen und die original Exception erhalten
@@ -562,7 +562,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         if (guardMap != null) {
             String cacheKey = GuardMap.cacheKeyToString(keyStoreAccess, documentKeyID);
             guardMap.put(cacheKey, new PasswordAndDocumentKeyIDWithKeyAndAccessType(keyStoreAccess.getKeyStoreAuth().getReadKeyPassword(), documentKeyIDWithKeyAndAccessType));
-            LOGGER.info("AAA insert document key for cache key " + cacheKey);
+            LOGGER.debug("AAA insert document key for cache key " + cacheKey);
         }
 
         return documentKeyIDWithKeyAndAccessType;
