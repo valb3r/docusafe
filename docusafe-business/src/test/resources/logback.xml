@@ -24,26 +24,26 @@
         </triggeringPolicy>
     </appender>
 
-    <logger name="org.adorsys.cryptoutils.mongodbstoreconnection" level="INFO" additivity="false">
-        <appender-ref ref="STDOUT" />
-        <appender-ref ref="FILE" />
-    </logger>
-    <logger name="org.adorsys.cryptoutils.miniostoreconnection" level="INFO" additivity="false">
-        <appender-ref ref="STDOUT" />
-        <appender-ref ref="FILE" />
-    </logger>
-    <logger name="org.adorsys.encobject.filesystem" level="INFO" additivity="false">
-        <appender-ref ref="STDOUT" />
-        <appender-ref ref="FILE" />
-    </logger>
-
-    <!-- please do not change, because it is required for the tests -->
+    <!-- please do not remove the following 4 loggers, because it is required for the tests -->
     <logger name="org.adorsys.docusafe.business.BusinessUnencryptedTest" level="DEBUG" additivity="false">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />
     </logger>
 
-    <!-- By default, the level of the root level is set to DEBUG -->
+    <logger name="org.adorsys.cryptoutils.mongodbstoreconnection.MongoDBExtendedStoreConnection" level="DEBUG" additivity="false">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE" />
+    </logger>
+    <logger name="org.adorsys.cryptoutils.miniostoreconnection.MinioExtendedStoreConnection" level="DEBUG" additivity="false">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE" />
+    </logger>
+    <logger name="org.adorsys.encobject.filesystem.ZipFileHelper" level="DEBUG" additivity="false">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE" />
+    </logger>
+
+
     <root level="INFO">
         <appender-ref ref="STDOUT" />
     </root>
