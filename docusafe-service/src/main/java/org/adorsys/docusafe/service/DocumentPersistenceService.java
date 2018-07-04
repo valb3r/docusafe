@@ -72,12 +72,6 @@ public interface DocumentPersistenceService {
             StorageMetadata storageMetadata,
             DocumentBucketPath documentBucketPath);
 
-
-    /**
-     * Caching
-     */
-    void setMemoryContext(MemoryContext memoryContext);
-
     static boolean isNotEncrypted(UserMetaData userMetaData) {
         String value = null;
         if ((value = userMetaData.find("NO_ENCRYPTION")) != null) {

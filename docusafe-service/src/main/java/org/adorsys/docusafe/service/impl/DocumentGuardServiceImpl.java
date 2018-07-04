@@ -48,7 +48,6 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentGuardServiceImpl.class);
     private final static String ACCESS_TYPE = "AccessType";
     private final static String KEYSTORE_TYPE = "KeyStoreType";
-    public static final String GUARD_MAP = "GUARD_MAP";
 
     private KeystorePersistence keystorePersistence;
     private EncryptedPersistenceService encryptedPersistenceUtil;
@@ -89,8 +88,6 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
         KeySourceAndGuardKeyID keySourceAndGuardKeyID = helper.getKeySourceAndGuardKeyID(keystorePersistence, keyStoreAccess, documentKeyIDWithKeyAndAccessType);
         createDocumentGuard(keyStoreAccess, documentKeyIDWithKeyAndAccessType, keySourceAndGuardKeyID, overwriteFlag);
         LOGGER.debug("finished create document guard for " + documentKeyIDWithKeyAndAccessType + " at " + keyStoreAccess.getKeyStorePath());
-
-        deleteCacheKey(keyStoreAccess, documentKeyIDWithKeyAndAccessType);
     }
 
     /**
@@ -98,19 +95,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
      */
     @Override
     public DocumentKeyIDWithKeyAndAccessType loadDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(KeyStoreAccess keyStoreAccess, DocumentKeyID documentKeyID) {
-        GuardMap guardMap = memoryContext != null ? (GuardMap) memoryContext.get(GUARD_MAP) : null;
         LOGGER.debug("start load " + documentKeyID + " from document guard at " + keyStoreAccess.getKeyStorePath());
-        if (guardMap != null) {
-            String cacheKey = GuardMap.cacheKeyToString(keyStoreAccess, documentKeyID);
-            if (guardMap.containsKey(cacheKey)) {
-                PasswordAndDocumentKeyIDWithKeyAndAccessType passwordAndDocumentKeyIDWithKeyAndAccessType = guardMap.get(cacheKey);
-                if (passwordAndDocumentKeyIDWithKeyAndAccessType.getReadKeyPassword().equals(keyStoreAccess.getKeyStoreAuth().getReadKeyPassword())) {
-                    return guardMap.get(cacheKey).getDocumentKeyIDWithKeyAndAccessType();
-                }
-                // Password war falsch, wir lassen den Aufrufer abtauchen und die original Exception erhalten
-            }
-        }
-
         KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStorePath().getObjectHandle(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
 
         // load guard file
@@ -138,22 +123,8 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
 
         LOGGER.debug("finished load " + documentKeyID + " from document guard at " + keyStoreAccess.getKeyStorePath());
         DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = new DocumentKeyIDWithKeyAndAccessType(new DocumentKeyIDWithKey(documentKeyID, documentKey), accessType);
-        if (guardMap != null) {
-            String cacheKey = GuardMap.cacheKeyToString(keyStoreAccess, documentKeyID);
-            guardMap.put(cacheKey, new PasswordAndDocumentKeyIDWithKeyAndAccessType(keyStoreAccess.getKeyStoreAuth().getReadKeyPassword(), documentKeyIDWithKeyAndAccessType));
-            LOGGER.info("AAA insert cache key " + cacheKey);
-        }
         return documentKeyIDWithKeyAndAccessType;
     }
-
-    @Override
-    public void setMemoryContext(MemoryContext memoryContext) {
-        this.memoryContext = memoryContext;
-        if (this.memoryContext != null) {
-            this.memoryContext.put(GUARD_MAP, new GuardMap());
-        }
-    }
-
 
     private void createDocumentGuard(KeyStoreAccess keyStoreAccess,
                                      DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType,
@@ -186,17 +157,4 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
         // TODO OverwriteFlag
         LOGGER.debug("finished persist document guard for " + documentKeyIDWithKeyAndAccessType + " at " + keyStoreAccess.getKeyStorePath());
     }
-
-    public void deleteCacheKey(KeyStoreAccess keyStoreAccess, DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType) {
-        GuardMap guardMap = memoryContext != null ? (GuardMap) memoryContext.get(GUARD_MAP) : null;
-        if (guardMap != null) {
-            String cacheKey = GuardMap.cacheKeyToString(keyStoreAccess, documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
-            guardMap.remove(cacheKey);
-            LOGGER.info("AAA delete cache key " + cacheKey);
-        }
-    }
-
-
-
-
 }

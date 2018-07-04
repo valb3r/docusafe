@@ -30,7 +30,9 @@ import org.adorsys.docusafe.service.impl.BucketServiceImpl;
 import org.adorsys.docusafe.service.impl.DocumentGuardServiceImpl;
 import org.adorsys.docusafe.service.impl.DocumentPersistenceServiceImpl;
 import org.adorsys.docusafe.service.impl.GuardKeyType;
+import org.adorsys.docusafe.service.impl.GuardMap;
 import org.adorsys.docusafe.service.impl.KeySourceServiceImpl;
+import org.adorsys.docusafe.service.impl.PasswordAndDocumentKeyIDWithKeyAndAccessType;
 import org.adorsys.docusafe.service.types.AccessType;
 import org.adorsys.docusafe.service.types.BucketContent;
 import org.adorsys.docusafe.service.types.DocumentContent;
@@ -68,6 +70,8 @@ import java.util.Map;
 public class DocumentSafeServiceImpl implements DocumentSafeService {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentSafeServiceImpl.class);
     public static final String USER_AUTH_CACHE = "userAuthCache";
+    // public static final String GUARD_MAP = "GUARD_MAP";
+
 
     private BucketService bucketService;
     private KeyStoreService keyStoreService;
@@ -346,9 +350,11 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
             if (AccessType.NONE.equals(accessType)) {
                 deleteGuardForBucket(receiverKeyStoreAccess, receiversDocumentKeyWithIDAndAccessType, documentBucketDirectory);
                 // userIDAuth;
-                ((DocumentGuardServiceImpl) documentGuardService).deleteCacheKey(receiverKeyStoreAccess, receiversDocumentKeyWithIDAndAccessType);
+                deleteCacheKey(receiverKeyStoreAccess, receiversDocumentKeyWithIDAndAccessType);
 
             } else {
+                CACHE
+
                 createAsymmetricGuardForBucket(receiverKeyStoreAccess, receiversDocumentKeyWithIDAndAccessType, documentBucketDirectory, OverwriteFlag.TRUE);
             }
         }
@@ -418,10 +424,9 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         this.memoryContext = memoryContext;
         if (this.memoryContext != null) {
             this.memoryContext.put(USER_AUTH_CACHE, new UserAuthCache());
+            this.memoryContext.put(GUARD_MAP, new GuardMap());
             LOGGER.info("MemoryContext will be used");
         }
-        this.documentGuardService.setMemoryContext(memoryContext);
-        this.documentPersistenceService.setMemoryContext(memoryContext);
     }
 
     @Override
@@ -486,6 +491,9 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
                 keyStoreAccess.getKeyStorePath().getBucketDirectory(),
                 documentDirectory, documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
         LOGGER.debug("finished create new guard for " + documentDirectory);
+
+        deleteCacheKey(keyStoreAccess, documentKeyIDWithKeyAndAccessType);
+
         return documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID();
     }
 
@@ -507,9 +515,38 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         LOGGER.debug("get key for " + documentDirectory);
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
         DocumentKeyID documentKeyID = GuardUtil.loadBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStorePath().getBucketDirectory(), documentDirectory);
+
+        GuardMap guardMap = memoryContext != null ? (GuardMap) memoryContext.get(GUARD_MAP) : null;
+        if (guardMap != null) {
+            String cacheKey = GuardMap.cacheKeyToString(keyStoreAccess, documentKeyID);
+            if (guardMap.containsKey(cacheKey)) {
+                PasswordAndDocumentKeyIDWithKeyAndAccessType passwordAndDocumentKeyIDWithKeyAndAccessType = guardMap.get(cacheKey);
+                if (passwordAndDocumentKeyIDWithKeyAndAccessType.getReadKeyPassword().equals(keyStoreAccess.getKeyStoreAuth().getReadKeyPassword())) {
+                    LOGGER.info("AAA return document key for cache key " + cacheKey);
+                    return guardMap.get(cacheKey).getDocumentKeyIDWithKeyAndAccessType();
+                }
+                // Password war falsch, wir lassen den Aufrufer abtauchen und die original Exception erhalten
+            }
+        }
         DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = documentGuardService.loadDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(keyStoreAccess, documentKeyID);
+
+        if (guardMap != null) {
+            String cacheKey = GuardMap.cacheKeyToString(keyStoreAccess, documentKeyID);
+            guardMap.put(cacheKey, new PasswordAndDocumentKeyIDWithKeyAndAccessType(keyStoreAccess.getKeyStoreAuth().getReadKeyPassword(), documentKeyIDWithKeyAndAccessType));
+            LOGGER.info("AAA insert document key for cache key " + cacheKey);
+        }
+
         LOGGER.debug("found " + documentKeyIDWithKeyAndAccessType + " for " + documentDirectory);
         return documentKeyIDWithKeyAndAccessType;
+    }
+
+    public void deleteCacheKey(KeyStoreAccess keyStoreAccess, DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType) {
+        GuardMap guardMap = memoryContext != null ? (GuardMap) memoryContext.get(GUARD_MAP) : null;
+        if (guardMap != null) {
+            String cacheKey = GuardMap.cacheKeyToString(keyStoreAccess, documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
+            guardMap.remove(cacheKey);
+            LOGGER.info("AAA delete cache key " + cacheKey);
+        }
     }
 
     private void checkUserKeyPassword(UserIDAuth userIDAuth) {

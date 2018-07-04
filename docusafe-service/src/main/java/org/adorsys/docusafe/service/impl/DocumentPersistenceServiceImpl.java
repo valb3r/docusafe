@@ -152,11 +152,6 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
     }
 
     @Override
-    public void setMemoryContext(MemoryContext memoryContext) {
-        documentGuardService.setMemoryContext(memoryContext);
-    }
-
-    @Override
     public void persistDocumentStream(DocumentBucketPath documentBucketPath, OverwriteFlag overwriteFlag, PayloadStream payloadStream) {
         LOGGER.debug("start persist stream " + documentBucketPath);
         if (overwriteFlag.equals(OverwriteFlag.FALSE)) {

@@ -44,7 +44,7 @@ public class SimpleMemoryContextImpl implements MemoryContext {
         StringBuilder sb = new StringBuilder();
         sb.append("CACHE");
         sb.append("\n");
-        sb.append(showMap(mc.get(DocumentGuardServiceImpl.GUARD_MAP)));
+        sb.append(showMap(mc.get(DocumentSafeServiceImpl.GUARD_MAP)));
         sb.append(showMap(mc.get(DocumentSafeServiceImpl.USER_AUTH_CACHE)));
         return sb.toString();
     }

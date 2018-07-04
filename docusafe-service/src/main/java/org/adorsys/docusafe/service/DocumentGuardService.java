@@ -20,10 +20,4 @@ public interface DocumentGuardService {
 
     DocumentKeyIDWithKeyAndAccessType loadDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(KeyStoreAccess keyStoreAccess,
                                                                                              DocumentKeyID documentKeyID);
-
-    /**
-     * Caching
-     */
-    void setMemoryContext(MemoryContext memoryContext);
-
 }
