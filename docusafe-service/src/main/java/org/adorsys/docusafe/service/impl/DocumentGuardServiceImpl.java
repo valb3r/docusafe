@@ -1,6 +1,7 @@
 package org.adorsys.docusafe.service.impl;
 
 import org.adorsys.cryptoutils.exceptions.BaseException;
+import org.adorsys.docusafe.business.types.MemoryContext;
 import org.adorsys.docusafe.service.BucketService;
 import org.adorsys.docusafe.service.DocumentGuardService;
 import org.adorsys.docusafe.service.exceptions.NoDocumentGuardExists;
@@ -39,6 +40,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.security.KeyStore;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.UUID;
 
 public class DocumentGuardServiceImpl implements DocumentGuardService {
@@ -49,6 +52,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
     private KeystorePersistence keystorePersistence;
     private EncryptedPersistenceService encryptedPersistenceUtil;
     private BucketService bucketService;
+    private MemoryContext memoryContext = null;
 
 
     private DocumentGuardSerializerRegistery serializerRegistry = DocumentGuardSerializerRegistery.getInstance();
@@ -86,14 +90,12 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
         LOGGER.debug("finished create document guard for " + documentKeyIDWithKeyAndAccessType + " at " + keyStoreAccess.getKeyStorePath());
     }
 
-
     /**
      * Loading the secret key from the guard.
      */
     @Override
     public DocumentKeyIDWithKeyAndAccessType loadDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(KeyStoreAccess keyStoreAccess, DocumentKeyID documentKeyID) {
         LOGGER.debug("start load " + documentKeyID + " from document guard at " + keyStoreAccess.getKeyStorePath());
-
         KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStorePath().getObjectHandle(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
 
         // load guard file
@@ -120,9 +122,9 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
         DocumentKey documentKey = serializer.deserializeSecretKey(payload.getData(), keyStoreType);
 
         LOGGER.debug("finished load " + documentKeyID + " from document guard at " + keyStoreAccess.getKeyStorePath());
-        return new DocumentKeyIDWithKeyAndAccessType(new DocumentKeyIDWithKey(documentKeyID, documentKey), accessType);
+        DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = new DocumentKeyIDWithKeyAndAccessType(new DocumentKeyIDWithKey(documentKeyID, documentKey), accessType);
+        return documentKeyIDWithKeyAndAccessType;
     }
-
 
     private void createDocumentGuard(KeyStoreAccess keyStoreAccess,
                                      DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType,
@@ -143,6 +145,7 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
         DocumentGuardSerializer documentGuardSerializer = serializerRegistry.defaultSerializer();
         storageMetadata.getUserMetadata().put(serializerRegistry.SERIALIZER_HEADER_KEY, documentGuardSerializer.getSerializerID());
         storageMetadata.getUserMetadata().put(ACCESS_TYPE, documentKeyIDWithKeyAndAccessType.getAccessType().toString());
+        // TODO DOC-31
         storageMetadata.getUserMetadata().put(KEYSTORE_TYPE, keyStoreType.getValue());
         GuardKey guardKey = new GuardKey(documentGuardSerializer.serializeSecretKey(
                 documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKey(), keyStoreType));
@@ -154,6 +157,4 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
         // TODO OverwriteFlag
         LOGGER.debug("finished persist document guard for " + documentKeyIDWithKeyAndAccessType + " at " + keyStoreAccess.getKeyStorePath());
     }
-
-
 }

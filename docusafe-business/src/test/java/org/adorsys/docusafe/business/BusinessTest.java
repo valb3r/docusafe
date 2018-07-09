@@ -6,6 +6,7 @@ import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFac
 import org.adorsys.docusafe.business.exceptions.NoWriteAccessException;
 import org.adorsys.docusafe.business.exceptions.WrongPasswordException;
 import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
+import org.adorsys.docusafe.business.impl.SimpleMemoryContextImpl;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
@@ -54,6 +55,39 @@ import java.util.stream.Collectors;
 public class BusinessTest extends BusinessTestBase {
     private final static Logger LOGGER = LoggerFactory.getLogger(BusinessTest.class);
 
+
+    @Test
+    public void performanceTest_DOC_29() {
+        int REPEATS = 1;
+        int i = 0;
+
+        UserIDAuth userIDAuth = createUser();
+        Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
+
+
+        while (i > 0) {
+            LOGGER.info("wait for visualVM profiler " + i);
+            try {
+                Thread.currentThread().sleep(1000);
+            } catch (Exception e) {
+            }
+            i--;
+        }
+
+        for (int j = 0; j < REPEATS; j++) {
+            DocumentFQN documentFQN = new DocumentFQN("first/next/document" + j + ".txt");
+            Assert.assertFalse(service.documentExists(userIDAuth, documentFQN));
+            DocumentContent documentContent = new DocumentContent(("Einfach nur a bisserl Text" + j).getBytes());
+            DSDocument dsDocument = new DSDocument(documentFQN, documentContent, new DSDocumentMetaInfo());
+            service.storeDocument(userIDAuth, dsDocument);
+            Assert.assertTrue(service.documentExists(userIDAuth, documentFQN));
+            DSDocument dsDocumentResult = service.readDocument(userIDAuth, documentFQN);
+            LOGGER.debug("original  document:" + new String(documentContent.getValue()));
+            LOGGER.debug("retrieved document:" + new String(dsDocumentResult.getDocumentContent().getValue()));
+            Assert.assertEquals("document content ok", documentContent, dsDocumentResult.getDocumentContent());
+        }
+    }
+
     @Test
     public void sequenceDiagramTest () {
         UserIDAuth userIDAuth = new UserIDAuth(new UserID("user1"), new ReadKeyPassword("password1"));
@@ -72,9 +106,22 @@ public class BusinessTest extends BusinessTestBase {
     @Test
     public void loadDSDocument() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
-        UserIDAuth userIDAuth = createUser();
-        checkGuardsForDocument(userIDAuth, new DocumentFQN("README.txt"), true);
+        UserIDAuth userIDAuth = createUser(new UserID("affe"), new ReadKeyPassword("ab_irgendwas_cd"));
+        DocumentFQN fqn = new DocumentFQN("README.txt");
+        checkGuardsForDocument(userIDAuth, fqn, true);
         Assert.assertEquals("Anzahl der guards muss 1 betragen", 1, getNumberOfGuards(userIDAuth.getUserID()));
+        // Dieser Read muss ok sein
+        service.readDocument(userIDAuth, fqn);
+        userIDAuth = new UserIDAuth(new UserID("affe"), new ReadKeyPassword("ab_123456789_cd"));
+        Boolean catched = false;
+        try {
+            // Dieser Read muss fehlschlagen. Es gab einen Bug im Cache, wo statt des ReadKeyPassword der toString Text benutzt wurde.
+            // Dieser ist aber mit **** ausgegraut, so dass alle Passworte bis auf Anfang und Ende gleich sind !!!
+            service.readDocument(userIDAuth, fqn);
+        } catch (BaseException e) {
+            catched = true;
+        }
+        Assert.assertTrue(catched);
     }
 
     @Test
@@ -161,6 +208,16 @@ public class BusinessTest extends BusinessTestBase {
         try {
             service.storeGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), dsDocument);
         } catch (NoWriteAccessException e) {
+            catched = true;
+        }
+        Assert.assertTrue(catched);
+        service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
+
+        service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentDirectoryFQN, AccessType.NONE);
+        catched = false;
+        try {
+            service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
+        } catch (NoDocumentGuardExists e) {
             catched = true;
         }
         Assert.assertTrue(catched);

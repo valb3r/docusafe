@@ -2,6 +2,7 @@ package org.adorsys.docusafe.service;
 
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.cryptoutils.utils.HexUtil;
+import org.adorsys.docusafe.business.types.MemoryContext;
 import org.adorsys.docusafe.service.impl.DocumentGuardServiceImpl;
 import org.adorsys.docusafe.service.impl.GuardKeyType;
 import org.adorsys.docusafe.service.types.AccessType;
@@ -21,6 +22,7 @@ import org.slf4j.LoggerFactory;
 public class DocumentGuardServiceTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentGuardServiceTest.class);
     private ExtendedStoreConnection extendedStoreConnection;
+    private MemoryContext memoryContext = null;
 
     public DocumentGuardServiceTest(ExtendedStoreConnection extendedStoreConnection) {
         this.extendedStoreConnection = extendedStoreConnection;

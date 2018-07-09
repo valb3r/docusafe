@@ -26,8 +26,8 @@ import java.util.stream.Collectors;
  * Created by peter on 20.06.18 at 10:04.
  */
 @SuppressWarnings("Duplicates")
-public class BusinessTestUnencrypted extends BusinessTestBase {
-    private final static Logger LOGGER = LoggerFactory.getLogger(BusinessTestUnencrypted.class);
+public class BusinessUnencryptedTest extends BusinessTestBase {
+    private final static Logger LOGGER = LoggerFactory.getLogger(BusinessUnencryptedTest.class);
 
     /**
      * Achtung, dieser Test möchte sicherstellen, dass in Cryptoutils die Methode zum Lesen der StorageMetadata

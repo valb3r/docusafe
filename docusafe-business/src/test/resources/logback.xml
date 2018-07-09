@@ -15,7 +15,7 @@
             <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</Pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <FileNamePattern>c:/jcg.%i.log.zip</FileNamePattern>
+            <FileNamePattern>%i.log.zip</FileNamePattern>
             <MinIndex>1</MinIndex>
             <MaxIndex>10</MaxIndex>
         </rollingPolicy>
@@ -24,25 +24,26 @@
         </triggeringPolicy>
     </appender>
 
-    <logger name="org.adorsys.cryptoutils.mongodbstoreconnection" level="DEBUG" additivity="false">
-        <appender-ref ref="STDOUT" />
-        <appender-ref ref="FILE" />
-    </logger>
-    <logger name="org.adorsys.cryptoutils.miniostoreconnection" level="DEBUG" additivity="false">
-        <appender-ref ref="STDOUT" />
-        <appender-ref ref="FILE" />
-    </logger>
-    <logger name="org.adorsys.encobject.filesystem" level="DEBUG" additivity="false">
+    <!-- please do not remove the following 4 loggers, because it is required for the tests -->
+    <logger name="org.adorsys.docusafe.business.BusinessUnencryptedTest" level="DEBUG" additivity="false">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />
     </logger>
 
-    <logger name="org.adorsys.docusafe.business.BusinessTestUnencrypted" level="DEBUG" additivity="false">
+    <logger name="org.adorsys.cryptoutils.mongodbstoreconnection.MongoDBExtendedStoreConnection" level="DEBUG" additivity="false">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE" />
+    </logger>
+    <logger name="org.adorsys.cryptoutils.miniostoreconnection.MinioExtendedStoreConnection" level="DEBUG" additivity="false">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE" />
+    </logger>
+    <logger name="org.adorsys.encobject.filesystem.ZipFileHelper" level="DEBUG" additivity="false">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />
     </logger>
 
-    <!-- By default, the level of the root level is set to DEBUG -->
+
     <root level="INFO">
         <appender-ref ref="STDOUT" />
     </root>
