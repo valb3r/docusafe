@@ -11,6 +11,7 @@ import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.service.types.AccessType;
+import org.adorsys.docusafe.transactional.RequestMemoryContext;
 import org.adorsys.docusafe.transactional.TransactionalFileStorage;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
@@ -29,11 +30,15 @@ public class TransactionalFileStorageImpl implements TransactionalFileStorage {
     final static DocumentDirectoryFQN txContent = new DocumentDirectoryFQN("tx");
     final static DocumentDirectoryFQN nonTxContent = new DocumentDirectoryFQN("nonttx");
     private DocumentSafeService documentSafeService;
+    private RequestMemoryContext requestMemoryContext;
 
-    public TransactionalFileStorageImpl(ExtendedStoreConnection extendedStoreConnection) {
+    public TransactionalFileStorageImpl(RequestMemoryContext requestMemoryContext, DocumentSafeService documentSafeService) {
         LOGGER.debug("new Instance of TransactionalFileStorageImpl");
-        documentSafeService = new DocumentSafeServiceImpl(extendedStoreConnection);
+        this.documentSafeService = documentSafeService;
+        this.requestMemoryContext = requestMemoryContext;
     }
+
+
 
     // ============================================================================================
     // NON-TRANSACTIONAL

@@ -7,7 +7,7 @@
     <parent>
         <groupId>de.adorsys</groupId>
         <artifactId>docusafe</artifactId>
-        <version>0.3.9-SNAPSHOT</version>
+        <version>0.3.11-SNAPSHOT</version>
     </parent>
 
     <artifactId>docusafe-cached-transactional</artifactId>
@@ -16,7 +16,7 @@
         <dependency>
             <groupId>de.adorsys</groupId>
             <artifactId>docusafe-transactional</artifactId>
-            <version>0.3.9-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -24,7 +24,6 @@
             <version>${slf4j-simple.version}</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <build>

@@ -1,6 +1,6 @@
 package org.adorsys.docusafe.cached.transactional.impl;
 
-import org.adorsys.docusafe.business.impl.BucketContentFQNImpl;
+import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
@@ -9,21 +9,11 @@ import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.cached.transactional.CachedTransactionalFileStorage;
 import org.adorsys.docusafe.cached.transactional.exceptions.CacheException;
-import org.adorsys.docusafe.service.types.BucketContent;
+import org.adorsys.docusafe.transactional.RequestMemoryContext;
 import org.adorsys.docusafe.transactional.TransactionalFileStorage;
-import org.adorsys.docusafe.transactional.impl.TransactionalFileStorageImpl;
-import org.adorsys.docusafe.transactional.types.TxID;
-import org.adorsys.encobject.complextypes.BucketPath;
-import org.adorsys.encobject.service.api.ExtendedStoreConnection;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.HashSet;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.UUID;
 
 /**
  * Created by peter on 21.06.18 at 11:51.
@@ -40,20 +30,13 @@ import java.util.UUID;
  */
 public class CachedTransactionalFileStorageImpl implements CachedTransactionalFileStorage {
     private final static Logger LOGGER = LoggerFactory.getLogger(CachedTransactionalFileStorageImpl.class);
+    public static final String USER_CONTEXT = "USER_CONTEXT";
     private TransactionalFileStorage transactionalFileStorage;
-    private String id = UUID.randomUUID().toString() + " ";
-    private TxID txid = null;
-    private UserIDAuth userIDAuth = null;
-    private Map<DocumentFQN, DSDocument> mapToStore;
-    private Map<DocumentFQN, DSDocument> mapToRead;
-    private Set<DocumentFQN> setToDelete;
-    private int totalReadsSaved;
-    private int totalWritesSaved;
-    private BucketContentFQN bucketContent;
+    private RequestMemoryContext requestContext;
 
-    public CachedTransactionalFileStorageImpl(ExtendedStoreConnection extendedStoreConnection) {
-        LOGGER.debug(id + "create");
-        transactionalFileStorage = new TransactionalFileStorageImpl(extendedStoreConnection);
+    public CachedTransactionalFileStorageImpl(RequestMemoryContext requestContext, TransactionalFileStorage transactionalFileStorage) {
+        this.transactionalFileStorage = transactionalFileStorage;
+        this.requestContext = requestContext;
     }
 
     @Override
@@ -99,109 +82,62 @@ public class CachedTransactionalFileStorageImpl implements CachedTransactionalFi
 
     @Override
     public void beginTransaction(UserIDAuth userIDAuth) {
-        if (txid != null) {
-            throw new CacheException(id + " beginTransaction not allowed due to pending tx " + txid);
-        }
-        this.userIDAuth = userIDAuth;
-        txid = transactionalFileStorage.beginTransaction(userIDAuth);
-        initTx();
+        createTransactionalContext().beginTransaction(userIDAuth);
     }
 
     @Override
     public void txStoreDocument(DSDocument dsDocument) {
-        setToDelete.remove(dsDocument.getDocumentFQN());
-        mapToStore.put(dsDocument.getDocumentFQN(), dsDocument);
-        mapToRead.put(dsDocument.getDocumentFQN(), dsDocument);
-        totalWritesSaved++;
+        getTransactionalContext().txStoreDocument(dsDocument);
     }
 
     @Override
     public DSDocument txReadDocument(DocumentFQN documentFQN) {
-        if (mapToRead.containsKey(documentFQN)) {
-            totalReadsSaved++;
-            return mapToRead.get(documentFQN);
-        }
-        if (setToDelete.contains(documentFQN)) {
-            throw new CacheException("document " + documentFQN + " has been deleted before. can not be read");
-        }
-        if (! bucketContent.getFiles().contains(documentFQN)) {
-            throw new CacheException("document " + documentFQN + " does not exist");
-        }
-        DSDocument dsDocument = transactionalFileStorage.readDocument(txid, userIDAuth, documentFQN);
-        mapToRead.put(dsDocument.getDocumentFQN(), dsDocument);
-        return dsDocument;
+        return getTransactionalContext().txReadDocument(documentFQN);
     }
 
     @Override
     public void txDeleteDocument(DocumentFQN documentFQN) {
-        setToDelete.add(documentFQN);
-        mapToStore.remove(documentFQN);
-        mapToRead.remove(documentFQN);
+        getTransactionalContext().txDeleteDocument(documentFQN);
     }
 
     @Override
     public BucketContentFQN txListDocuments(DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
-        BucketContentFQN ret = new BucketContentFQNImpl();
-        bucketContent.getFiles().forEach( file -> {
-            if (file.getValue().startsWith(documentDirectoryFQN.getValue())) {
-                if ( recursiveFlag.equals(ListRecursiveFlag.TRUE)) {
-                    ret.getFiles().add(file);
-                } else {
-                    String fileWithoutRoot = file.getValue().substring(documentDirectoryFQN.getValue().length());
-                    if (fileWithoutRoot.lastIndexOf(BucketPath.BUCKET_SEPARATOR) == 0) {
-                        ret.getFiles().add(file);
-                    }
-                }
-            }
-        });
-        bucketContent.getDirectories().forEach( dir -> {
-            if (dir.getValue().startsWith(documentDirectoryFQN.getValue())) {
-                if ( recursiveFlag.equals(ListRecursiveFlag.TRUE)) {
-                    ret.getDirectories().add(dir);
-                } else {
-                    String dirWithoutRoot = dir.getValue().substring(documentDirectoryFQN.getValue().length());
-                    if (dirWithoutRoot.lastIndexOf(BucketPath.BUCKET_SEPARATOR) == 0) {
-                        ret.getDirectories().add(dir);
-                    }
-                }
-            }
-        });
-        bucketContent.getFiles().removeAll(setToDelete);
-
-        return null;
-
-
+        return getTransactionalContext().txListDocuments(documentDirectoryFQN, recursiveFlag);
     }
 
     @Override
     public boolean txDocumentExists(DocumentFQN documentFQN) {
-        return false;
+        return getTransactionalContext().txDocumentExists(documentFQN);
     }
 
     @Override
     public void txDeleteFolder(DocumentDirectoryFQN documentDirectoryFQN) {
+        throw new BaseException("Who needs this interface");
 
     }
 
     @Override
     public void endTransaction() {
+        getTransactionalContext().endTransaction();
 
     }
 
-    private void initTx() {
-        mapToStore = new HashMap<>();
-        mapToRead = new HashMap<>();
-        setToDelete = new HashSet<>();
-        totalReadsSaved = 0;
-        totalWritesSaved = 0;
-        bucketContent = transactionalFileStorage.listDocuments(txid, userIDAuth, new DocumentDirectoryFQN("/"), ListRecursiveFlag.TRUE);
-    }
-
-    private void checkRunningTx() {
-        if (txid == null) {
-            throw new CacheException(id + " no transaction running");
+    private CachedTransactionalContext createTransactionalContext() {
+        Object o = requestContext.get(USER_CONTEXT);
+        if (o != null) {
+            throw new CacheException("RequestContext has Transactional Object. New Transaction can not be started");
         }
 
+        CachedTransactionalContext cachedTransactionalContext = new CachedTransactionalContext(transactionalFileStorage);
+        requestContext.put(USER_CONTEXT, cachedTransactionalContext);
+        return cachedTransactionalContext;
     }
 
+    private CachedTransactionalContext getTransactionalContext() {
+        CachedTransactionalContext cachedTransactionalContext = (CachedTransactionalContext) requestContext.get(USER_CONTEXT);
+        if (cachedTransactionalContext == null) {
+            throw new CacheException("RequestContext has no Transactional Object.");
+        }
+        return cachedTransactionalContext;
+    }
 }

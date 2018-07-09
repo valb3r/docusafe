@@ -17,13 +17,14 @@ public class TransactionFileStorageBaseTest {
     TransactionalFileStorage transactionalFileStorage = null;
     UserIDAuth userIDAuth = null;
     UserIDAuth systemUserIDAuth = null;
+    RequestMemoryContext requestMemoryContext = new SimpleRequestMemoryContextImpl();
 
     @Before
     public void preTest() {
         ExtendedStoreConnection esc = ExtendedStoreConnectionFactory.get();
         esc.listAllBuckets().forEach(b -> esc.deleteContainer(b));
 
-        transactionalFileStorage = new TransactionalFileStorageImpl(ExtendedStoreConnectionFactory.get());
+        transactionalFileStorage = new TransactionalFileStorageImpl(requestMemoryContext, new DocumentSafeServiceImpl(ExtendedStoreConnectionFactory.get()));
         userIDAuth = new UserIDAuth(new UserID("peter"), new ReadKeyPassword("password"));
         systemUserIDAuth = new UserIDAuth(new UserID("system"), new ReadKeyPassword("systemPassword"));
     }
