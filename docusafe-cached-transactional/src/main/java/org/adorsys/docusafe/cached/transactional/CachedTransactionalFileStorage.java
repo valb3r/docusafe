@@ -19,8 +19,13 @@ public interface CachedTransactionalFileStorage {
     void destroyUser(UserIDAuth userIDAuth);
     boolean userExists(UserID userID);
     void grantAccess(UserIDAuth userIDAuth, UserID receiverUserID);
+
+    void storeDocument(UserIDAuth userIDAuth, DSDocument dsDocument);
     void storeDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument);
+    DSDocument readDocument(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN);
     DSDocument readDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
+    boolean documentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN);
+    boolean documentExists(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN);
     void deleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
     BucketContentFQN listDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag);
 

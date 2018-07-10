@@ -1,5 +1,6 @@
 package org.adorsys.docusafe.business;
 
+import com.googlecode.catchexception.CatchException;
 import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
@@ -183,6 +184,7 @@ public class BusinessTest extends BusinessTestBase {
         service.storeGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), dsDocument);
     }
 
+    // Hier speichert Benuzter B etwas für Benutzer A und will es anschliessend lesen
     @Test
     public void grantReadAccessToFolder() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
@@ -223,6 +225,24 @@ public class BusinessTest extends BusinessTestBase {
         Assert.assertTrue(catched);
 
     }
+
+    // Hier speichert Benuzter A etwas für Benutzer A (also sich selbst) und will es anschliessend Benutzer B lesen lassen
+    @Test
+    public void grantReadAccessToFolderForOwnDocuments() {
+        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        UserIDAuth userIDAuthPeter = createUser(new UserID("peter"), new ReadKeyPassword("keyPasswordForPeter"));
+        UserIDAuth userIDAuthFrancis = createUser(new UserID("francis"), new ReadKeyPassword("keyPasswordForFrancis"));
+        DocumentFQN documentFQN = new DocumentFQN("first/next/a-new-document.txt");
+        DSDocument dsDocument1 = createDocument(userIDAuthPeter, documentFQN);
+
+        CatchException.catchException(() -> service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN));
+        Assert.assertNotNull(CatchException.caughtException());
+
+        service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentFQN.getDocumentDirectory(), AccessType.WRITE);
+        service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
+        service.readDocument(userIDAuthPeter, documentFQN);
+    }
+
 
     /**
      * Zunächst erstellt peter ein document.

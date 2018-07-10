@@ -30,7 +30,7 @@ public class HowToUseTransactionalFileStoragePrototypeTest extends TransactionFi
     private final static Logger LOGGER = LoggerFactory.getLogger(HowToUseTransactionalFileStoragePrototypeTest.class);
 
     @Test
-    public void a() {
+    public void pseudoMain() {
         LOGGER.info("create System User");
         transactionalFileStorage.createUser(systemUserIDAuth);
 
@@ -80,7 +80,7 @@ public class HowToUseTransactionalFileStoragePrototypeTest extends TransactionFi
     // returns the number of files that have been imported
     private int checkForNewInFiles() {
         LOGGER.info("check for new files in non transactional folder");
-        // listDocuments (ohne txId) ist transaktionslos und bezieht sich damit immer
+        // txListDocuments (ohne txId) ist transaktionslos und bezieht sich damit immer
         // auf die inbox. Wenn man nur bestimmte Documente sehen möchte, dann man
         // das DocumentDirectoryFQN anpasen
         BucketContentFQN list = transactionalFileStorage.listDocuments(userIDAuth, new DocumentDirectoryFQN("/"), ListRecursiveFlag.TRUE);
@@ -106,7 +106,7 @@ public class HowToUseTransactionalFileStoragePrototypeTest extends TransactionFi
             // Namensraum abgelegt. Daher kann der Name identisch sein!
 
             // Speichere das Document MIT TRANSAKTION
-            transactionalFileStorage.storeDocument(txID, userIDAuth, dsDocument);
+            transactionalFileStorage.txStoreDocument(txID, userIDAuth, dsDocument);
         });
 
         transactionalFileStorage.endTransaction(txID, userIDAuth);

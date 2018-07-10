@@ -64,7 +64,7 @@ class CachedTransactionalContext {
         if (setToDelete.contains(documentFQN)) {
             throw new CacheException("document " + documentFQN + " has been deleted before. can not be read");
         }
-        DSDocument dsDocument = transactionalFileStorage.readDocument(txid, userIDAuth, documentFQN);
+        DSDocument dsDocument = transactionalFileStorage.txReadDocument(txid, userIDAuth, documentFQN);
         mapToRead.put(dsDocument.getDocumentFQN(), dsDocument);
         return dsDocument;
 
@@ -81,7 +81,7 @@ class CachedTransactionalContext {
     public BucketContentFQN txListDocuments(DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
         assertTxRunning();
         if (bucketContent == null) {
-            bucketContent = transactionalFileStorage.listDocuments(txid, userIDAuth, new DocumentDirectoryFQN("/"), ListRecursiveFlag.TRUE);
+            bucketContent = transactionalFileStorage.txListDocuments(txid, userIDAuth, new DocumentDirectoryFQN("/"), ListRecursiveFlag.TRUE);
         }
 
         BucketContentFQN ret = new BucketContentFQNImpl();
@@ -140,12 +140,12 @@ class CachedTransactionalContext {
         if (mapToStore.containsKey(documentFQN)) {
             return true;
         }
-        return (transactionalFileStorage.documentExists(txid, userIDAuth, documentFQN));
+        return (transactionalFileStorage.txDocumentExists(txid, userIDAuth, documentFQN));
     }
 
     public void endTransaction() {
-        setToDelete.forEach(documentFQN -> transactionalFileStorage.deleteDocument(txid, userIDAuth, documentFQN));
-        mapToStore.keySet().forEach(documentFQN ->  transactionalFileStorage.storeDocument(txid, userIDAuth, mapToStore.get(documentFQN)));
+        setToDelete.forEach(documentFQN -> transactionalFileStorage.txDeleteDocument(txid, userIDAuth, documentFQN));
+        mapToStore.keySet().forEach(documentFQN ->  transactionalFileStorage.txStoreDocument(txid, userIDAuth, mapToStore.get(documentFQN)));
         transactionalFileStorage.endTransaction(txid, userIDAuth);
         txid = null;
         userIDAuth = null;

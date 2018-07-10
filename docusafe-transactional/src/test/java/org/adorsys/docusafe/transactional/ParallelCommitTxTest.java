@@ -1,27 +1,17 @@
 package org.adorsys.docusafe.transactional;
 
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
-import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
-import org.adorsys.docusafe.business.DocumentSafeService;
-import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
-import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.service.types.DocumentContent;
-import org.adorsys.docusafe.transactional.impl.TransactionalFileStorageImpl;
 import org.adorsys.docusafe.transactional.types.TxID;
-import org.adorsys.encobject.domain.ReadKeyPassword;
-import org.adorsys.encobject.service.api.ExtendedStoreConnection;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.security.Security;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 
@@ -59,9 +49,9 @@ public class ParallelCommitTxTest extends TransactionFileStorageBaseTest{
 
                 TxID txid = transactionalFileStorage.beginTransaction(userIDAuth);
                 LOGGER.debug("FIRST TXID " + txid);
-                Assert.assertFalse(transactionalFileStorage.documentExists(txid, userIDAuth, documentFQN));
-                transactionalFileStorage.storeDocument(txid, userIDAuth, document);
-                Assert.assertTrue(transactionalFileStorage.documentExists(txid, userIDAuth, documentFQN));
+                Assert.assertFalse(transactionalFileStorage.txDocumentExists(txid, userIDAuth, documentFQN));
+                transactionalFileStorage.txStoreDocument(txid, userIDAuth, document);
+                Assert.assertTrue(transactionalFileStorage.txDocumentExists(txid, userIDAuth, documentFQN));
                 transactionalFileStorage.endTransaction(txid, userIDAuth);
             }
 
@@ -116,7 +106,7 @@ public class ParallelCommitTxTest extends TransactionFileStorageBaseTest{
                 sem.acquire();
 
                 TxID txid = transactionalFileStorage.beginTransaction(userIDAuth);
-                transactionalFileStorage.storeDocument(txid, userIDAuth, document);
+                transactionalFileStorage.txStoreDocument(txid, userIDAuth, document);
                 transactionalFileStorage.endTransaction(txid, userIDAuth);
 
                 sem.release();

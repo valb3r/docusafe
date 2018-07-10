@@ -60,14 +60,34 @@ public class CachedTransactionalFileStorageImpl implements CachedTransactionalFi
     }
 
     @Override
+    public void storeDocument(UserIDAuth userIDAuth, DSDocument dsDocument) {
+        transactionalFileStorage.storeDocument(userIDAuth, dsDocument);
+    }
+
+    @Override
     public void storeDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument) {
         transactionalFileStorage.storeDocument(userIDAuth, documentOwner, dsDocument);
 
     }
 
     @Override
+    public DSDocument readDocument(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN) {
+        return transactionalFileStorage.readDocument(userIDAuth, documentOwner, documentFQN);
+    }
+
+    @Override
     public DSDocument readDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
         return transactionalFileStorage.readDocument(userIDAuth, documentFQN);
+    }
+
+    @Override
+    public boolean documentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+        return transactionalFileStorage.documentExists(userIDAuth, documentFQN);
+    }
+
+    @Override
+    public boolean documentExists(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN) {
+        return transactionalFileStorage.documentExists(userIDAuth, documentOwner, documentFQN);
     }
 
     @Override

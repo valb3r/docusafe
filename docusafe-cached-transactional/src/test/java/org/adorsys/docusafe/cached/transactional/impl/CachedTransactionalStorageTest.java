@@ -32,10 +32,10 @@ import java.util.List;
      x       void destroyUser(UserIDAuth userIDAuth);
             boolean userExists(UserID userID);
     x        void grantAccess(UserIDAuth userIDAuth, UserID receiverUserID);
-    x        void storeDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument);
-    x        DSDocument readDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
-            void deleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
-    x        BucketContentFQN listDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag);
+    x        void txStoreDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument);
+    x        DSDocument txReadDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
+            void txDeleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
+    x        BucketContentFQN txListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag);
 
     x        void beginTransaction(UserIDAuth userIDAuth);
     x        void txStoreDocument(DSDocument dsDocument);
@@ -163,7 +163,8 @@ public class CachedTransactionalStorageTest {
         BucketContentFQN bucketContentFQN = service.listDocuments(userIDAuth, documentFQN.getDocumentDirectory(), ListRecursiveFlag.TRUE);
         Assert.assertTrue(bucketContentFQN.getFiles().isEmpty());
         Assert.assertTrue(bucketContentFQN.getDirectories().isEmpty());
-    //    Assert.assertFalse(service.documentExists(userIDAuth, documentFQN));
+        Assert.assertFalse(service.documentExists(userIDAuth, documentFQN));
+        Assert.assertFalse(service.documentExists(userIDAuth2, userIDAuth.getUserID(), documentFQN));
 
         // document speichern
         {
@@ -179,12 +180,15 @@ public class CachedTransactionalStorageTest {
         BucketContentFQN bucketContentFQN2 = service.listDocuments(userIDAuth, documentFQN.getDocumentDirectory(), ListRecursiveFlag.TRUE);
         Assert.assertEquals(1, bucketContentFQN2.getFiles().size());
         Assert.assertTrue(bucketContentFQN2.getDirectories().isEmpty());
-  //      Assert.assertTrue(service.documentExists(userIDAuth, documentFQN));
+        Assert.assertTrue(service.documentExists(userIDAuth2, userIDAuth.getUserID(), documentFQN));
+        Assert.assertTrue(service.documentExists(userIDAuth, documentFQN));
 
         LOGGER.debug(wrapper.toString());
-        Assert.assertEquals(new Integer(1), wrapper.counterMap.get(TransactionalStorageTestWrapper.STORE_DOCUMENT));
+        Assert.assertEquals(new Integer(1), wrapper.counterMap.get(TransactionalStorageTestWrapper.STORE_GRANTED_DOCUMENT));
+        Assert.assertEquals(new Integer(0), wrapper.counterMap.get(TransactionalStorageTestWrapper.STORE_DOCUMENT));
         Assert.assertEquals(new Integer(1), wrapper.counterMap.get(TransactionalStorageTestWrapper.READ_DOCUMENT));
         Assert.assertEquals(new Integer(2), wrapper.counterMap.get(TransactionalStorageTestWrapper.LIST_DOCUMENTS));
+        Assert.assertEquals(new Integer(2), wrapper.counterMap.get(TransactionalStorageTestWrapper.GRANTED_DOCUMENT_EXISTS));
         Assert.assertEquals(documentFQN, bucketContentFQN2.getFiles().get(0));
     }
 }

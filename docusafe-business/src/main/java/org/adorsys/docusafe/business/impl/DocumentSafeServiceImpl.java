@@ -415,6 +415,14 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
     }
 
     @Override
+    public boolean grantedDocumentExists(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN) {
+        LOGGER.debug("start grantedDocumentExists for " + userIDAuth + " " + documentOwner + " " + documentFQN);
+        DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(documentOwner, documentFQN);
+        checkUserKeyPassword(userIDAuth);
+        return bucketService.fileExists(documentBucketPath);
+    }
+
+    @Override
     public void setMemoryContext(MemoryContext memoryContext) {
         this.memoryContext = memoryContext;
         if (this.memoryContext != null) {

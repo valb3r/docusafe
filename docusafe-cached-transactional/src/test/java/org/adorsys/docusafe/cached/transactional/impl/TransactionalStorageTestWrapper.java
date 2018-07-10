@@ -20,14 +20,18 @@ import java.util.HashMap;
  * Created by peter on 09.07.18 at 14:40.
  */
 public class TransactionalStorageTestWrapper implements TransactionalFileStorage {
-    int MAX = 16;
+    int MAX = 22;
 
     public static final String CREATE_USER = "createUser";
     public static final String DESTROY_USER = "destroyUser";
     public static final String USER_EXISTS = "userExists";
     public static final String GRANT_ACCESS = "grantAccess";
     public static final String STORE_DOCUMENT = "storeDocument";
+    public static final String STORE_GRANTED_DOCUMENT = "storeGrantedDocument";
+    public static final String READ_GRANTED_DOCUMENT = "readGrantedDocument";
     public static final String READ_DOCUMENT = "readDocument";
+    public static final String DOCUMENT_EXISTS = "documentExists";
+    public static final String GRANTED_DOCUMENT_EXISTS = "grantedDocumentExists";
     public static final String DELETE_DOCUMENT = "deleteDocument";
     public static final String LIST_DOCUMENTS = "listDocuments";
     public static final String BEGIN_TX = "beginTx";
@@ -48,7 +52,11 @@ public class TransactionalStorageTestWrapper implements TransactionalFileStorage
         inc(USER_EXISTS);
         inc(GRANT_ACCESS);
         inc(STORE_DOCUMENT);
+        inc(STORE_GRANTED_DOCUMENT);
+        inc(READ_GRANTED_DOCUMENT);
         inc(READ_DOCUMENT);
+        inc(DOCUMENT_EXISTS);
+        inc(GRANTED_DOCUMENT_EXISTS);
         inc(DELETE_DOCUMENT);
         inc(LIST_DOCUMENTS);
         inc(BEGIN_TX);
@@ -85,15 +93,39 @@ public class TransactionalStorageTestWrapper implements TransactionalFileStorage
     }
 
     @Override
-    public void storeDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument) {
+    public void storeDocument(UserIDAuth userIDAuth, DSDocument dsDocument) {
         inc(STORE_DOCUMENT);
+        realTransactionalFileStorage.storeDocument(userIDAuth, dsDocument);
+    }
+
+    @Override
+    public void storeDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument) {
+        inc(STORE_GRANTED_DOCUMENT);
         realTransactionalFileStorage.storeDocument(userIDAuth, documentOwner, dsDocument);
+    }
+
+    @Override
+    public DSDocument readDocument(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN) {
+        inc(READ_GRANTED_DOCUMENT);
+        return realTransactionalFileStorage.readDocument(userIDAuth, documentOwner, documentFQN);
+    }
+
+    @Override
+    public boolean documentExists(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN) {
+        inc(GRANTED_DOCUMENT_EXISTS);
+        return realTransactionalFileStorage.documentExists(userIDAuth, documentOwner, documentFQN);
     }
 
     @Override
     public DSDocument readDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
         inc(READ_DOCUMENT);
         return realTransactionalFileStorage.readDocument(userIDAuth, documentFQN);
+    }
+
+    @Override
+    public boolean documentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+        inc(DOCUMENT_EXISTS);
+        return realTransactionalFileStorage.documentExists(userIDAuth, documentFQN);
     }
 
     @Override
@@ -115,39 +147,39 @@ public class TransactionalStorageTestWrapper implements TransactionalFileStorage
     }
 
     @Override
-    public void storeDocument(TxID txid, UserIDAuth userIDAuth, DSDocument dsDocument) {
+    public void txStoreDocument(TxID txid, UserIDAuth userIDAuth, DSDocument dsDocument) {
         inc(STORE_DOCUMENT_TX);
-        realTransactionalFileStorage.storeDocument(txid, userIDAuth, dsDocument);
+        realTransactionalFileStorage.txStoreDocument(txid, userIDAuth, dsDocument);
     }
 
     @Override
-    public DSDocument readDocument(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+    public DSDocument txReadDocument(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN) {
         inc(READ_DOCUMENT_TX);
-        return realTransactionalFileStorage.readDocument(txid, userIDAuth, documentFQN);
+        return realTransactionalFileStorage.txReadDocument(txid, userIDAuth, documentFQN);
     }
 
     @Override
-    public void deleteDocument(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+    public void txDeleteDocument(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN) {
         inc(DELETE_DOCUMENT_TX);
-        realTransactionalFileStorage.deleteDocument(txid, userIDAuth, documentFQN);
+        realTransactionalFileStorage.txDeleteDocument(txid, userIDAuth, documentFQN);
     }
 
     @Override
-    public BucketContentFQN listDocuments(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
+    public BucketContentFQN txListDocuments(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
         inc(LIST_DOCUMENTS_TX);
-        return realTransactionalFileStorage.listDocuments(txid, userIDAuth, documentDirectoryFQN, recursiveFlag);
+        return realTransactionalFileStorage.txListDocuments(txid, userIDAuth, documentDirectoryFQN, recursiveFlag);
     }
 
     @Override
-    public boolean documentExists(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+    public boolean txDocumentExists(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN) {
         inc(DOCUMENT_EXISTS_TX);
-        return realTransactionalFileStorage.documentExists(txid, userIDAuth, documentFQN);
+        return realTransactionalFileStorage.txDocumentExists(txid, userIDAuth, documentFQN);
     }
 
     @Override
-    public void deleteFolder(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN) {
+    public void txDeleteFolder(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN) {
         inc(DELETE_FOLDER_TX);
-        realTransactionalFileStorage.deleteFolder(txid, userIDAuth, documentDirectoryFQN);
+        realTransactionalFileStorage.txDeleteFolder(txid, userIDAuth, documentDirectoryFQN);
     }
 
     @Override

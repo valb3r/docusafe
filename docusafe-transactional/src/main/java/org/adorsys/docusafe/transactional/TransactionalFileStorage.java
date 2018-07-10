@@ -14,27 +14,32 @@ import org.adorsys.encobject.types.ListRecursiveFlag;
  */
 public interface TransactionalFileStorage {
 
-    // NON-TRANSACTIONAL
+    // NON-TRANSACTIONAL FOR OWNER
     void createUser(UserIDAuth userIDAuth);
     void destroyUser(UserIDAuth userIDAuth);
     boolean userExists(UserID userID);
     void grantAccess(UserIDAuth userIDAuth, UserID receiverUserID);
 
-    void storeDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument);
+    void storeDocument(UserIDAuth userIDAuth, DSDocument dsDocument);
     DSDocument readDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
+    boolean documentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN);
     void deleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
     BucketContentFQN listDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag);
+
+    // NON-TRANSACTIONAL FOR OTHERS
+    void storeDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument);
+    DSDocument readDocument(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN);
+    boolean documentExists(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN);
 
     // TRANSACTIONAL
     TxID beginTransaction(UserIDAuth userIDAuth);
 
-    void storeDocument(TxID txid, UserIDAuth userIDAuth, DSDocument dsDocument);
-    DSDocument readDocument(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN);
-    void deleteDocument(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN);
-    BucketContentFQN listDocuments(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag);
-
-    boolean documentExists(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN);
-    void deleteFolder(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN);
+    void txStoreDocument(TxID txid, UserIDAuth userIDAuth, DSDocument dsDocument);
+    DSDocument txReadDocument(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN);
+    void txDeleteDocument(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN);
+    BucketContentFQN txListDocuments(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag);
+    boolean txDocumentExists(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN);
+    void txDeleteFolder(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN);
 
     void endTransaction(TxID txid, UserIDAuth userIDAuth);
 }

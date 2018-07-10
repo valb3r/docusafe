@@ -51,6 +51,7 @@ public interface DocumentSafeService {
 
     void storeGrantedDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument);
     DSDocument readGrantedDocument(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN);
+    boolean grantedDocumentExists(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN);
 
 
     /**
