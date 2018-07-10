@@ -30,6 +30,7 @@ class CachedTransactionalContext {
     private Map<DocumentFQN, DSDocument> mapToRead = null;
     private Set<DocumentFQN> setToDelete = null;
     private TransactionalFileStorage transactionalFileStorage = null;
+    private BucketContentFQN bucketContent = null;
 
 
     public CachedTransactionalContext(TransactionalFileStorage transactionalFileStorage) {
@@ -79,7 +80,9 @@ class CachedTransactionalContext {
 
     public BucketContentFQN txListDocuments(DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
         assertTxRunning();
-        BucketContentFQN bucketContent = transactionalFileStorage.listDocuments(txid, userIDAuth, new DocumentDirectoryFQN("/"), ListRecursiveFlag.TRUE);
+        if (bucketContent == null) {
+            bucketContent = transactionalFileStorage.listDocuments(txid, userIDAuth, new DocumentDirectoryFQN("/"), ListRecursiveFlag.TRUE);
+        }
 
         BucketContentFQN ret = new BucketContentFQNImpl();
         // bucketContent ist die Liste aller Documente zu Beginn der Transaktion
