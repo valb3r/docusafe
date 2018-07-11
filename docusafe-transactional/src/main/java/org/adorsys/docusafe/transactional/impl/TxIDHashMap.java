@@ -33,7 +33,7 @@ public class TxIDHashMap {
     private TxID currentTxID;
     private Date beginTx;
     private Date endTx;
-    private HashMap<DocumentFQN, TxID> map = new HashMap<>();
+    HashMap<DocumentFQN, TxID> map = new HashMap<>();
 
     private TxIDHashMap(LastCommitedTxID lastCommitedTxID, TxID currentTx, Date beginTxDate) {
         this.lastCommitedTxID = lastCommitedTxID;
@@ -52,18 +52,32 @@ public class TxIDHashMap {
         }
 
         DocumentFQN file = TransactionalFileStorageImpl.modifyTxMetaDocumentName(filenamebase, lastKnownCommitedTxID);
-        if (documentSafeService.documentExists(userIDAuth, file)) {
-            DSDocument dsDocument = documentSafeService.readDocument(userIDAuth, file);
-            TxIDHashMap map = new Class2JsonHelper().txidHashMapFromContent(dsDocument.getDocumentContent());
-            map.lastCommitedTxID = new LastCommitedTxID(map.currentTxID.getValue());
-            map.currentTxID = currentTxID;
-            map.beginTx = beginTxDate;
-            map.endTx = null;
-            return map;
-        }
-
-        throw new TxNotFoundException(file, lastKnownCommitedTxID);
+        TxIDHashMap map = readHashMapOfTx(documentSafeService, userIDAuth, lastKnownCommitedTxID);
+        map.lastCommitedTxID = new LastCommitedTxID(map.currentTxID.getValue());
+        map.currentTxID = currentTxID;
+        map.beginTx = beginTxDate;
+        map.endTx = null;
+        return map;
     }
+
+    public static TxIDHashMap readHashMapOfTx(DocumentSafeService documentSafeService, UserIDAuth userIDAuth, LastCommitedTxID lastCommitedTxID) {
+        DocumentFQN file = TransactionalFileStorageImpl.modifyTxMetaDocumentName(filenamebase, lastCommitedTxID);
+        if (!documentSafeService.documentExists(userIDAuth, file)) {
+            throw new TxNotFoundException(file, lastCommitedTxID);
+        }
+        DSDocument dsDocument = documentSafeService.readDocument(userIDAuth, file);
+        return new Class2JsonHelper().txidHashMapFromContent(dsDocument.getDocumentContent());
+    }
+
+    public static void deleteHashMapOfTx(DocumentSafeService documentSafeService, UserIDAuth userIDAuth, LastCommitedTxID lastCommitedTxID) {
+        DocumentFQN file = TransactionalFileStorageImpl.modifyTxMetaDocumentName(filenamebase, lastCommitedTxID);
+        if (!documentSafeService.documentExists(userIDAuth, file)) {
+            throw new TxNotFoundException(file, lastCommitedTxID);
+        }
+        LOGGER.debug("delete transactional HashMap " + file);
+        documentSafeService.deleteDocument(userIDAuth, file);
+    }
+
 
     public void saveOnce(DocumentSafeService documentSafeService, UserIDAuth userIDAuth) {
         DocumentFQN file = TransactionalFileStorageImpl.modifyTxMetaDocumentName(filenamebase, currentTxID);

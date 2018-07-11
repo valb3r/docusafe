@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Type;
-import java.util.Date;
 
 /**
  * Created by peter on 11.06.18 at 17:04.
@@ -42,7 +41,7 @@ public class Class2JsonHelper {
     public TxIDHashMap txidHashMapFromContent(DocumentContent documentContent) {
         try {
             String jsonString = new String(documentContent.getValue(), CHARSET);
-            LOGGER.debug("content to hashmap:" + jsonString);
+            LOGGER.trace("content to hashmap:" + jsonString);
             return gson.fromJson(jsonString, TxIDHashMap.class);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
@@ -52,7 +51,7 @@ public class Class2JsonHelper {
     public DocumentContent txidHashMapToContent(TxIDHashMap txIDHashMap) {
         try {
             String s = gson.toJson(txIDHashMap);
-            LOGGER.debug("hashmap to content:" + s);
+            LOGGER.trace("hashmap to content:" + s);
             return new DocumentContent(s.getBytes(CHARSET));
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
@@ -62,7 +61,7 @@ public class Class2JsonHelper {
     public TxIDLog txidLogFromContent(DocumentContent documentContent) {
         try {
             String jsonString = new String(documentContent.getValue(), CHARSET);
-            LOGGER.debug("content to txidlog:" + jsonString);
+            LOGGER.trace("content to txidlog:" + jsonString);
             return gson.fromJson(jsonString, TxIDLog.class);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
@@ -72,7 +71,7 @@ public class Class2JsonHelper {
     public DocumentContent txidLogToContent(TxIDLog txidLog) {
         try {
             String s = gson.toJson(txidLog);
-            LOGGER.debug("txidlog to content:" + s);
+            LOGGER.trace("txidlog to content:" + s);
             return new DocumentContent(s.getBytes(CHARSET));
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);

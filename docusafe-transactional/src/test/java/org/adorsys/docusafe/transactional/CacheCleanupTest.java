@@ -8,6 +8,7 @@ import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.types.ListRecursiveFlag;
+import org.apache.commons.lang3.time.StopWatch;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -25,12 +26,15 @@ public class CacheCleanupTest extends TransactionFileStorageBaseTest {
 
     @Test
     public void createFilesAndDeleteSomeRandomFilesInServeralTransactions() {
+        StopWatch st = new StopWatch();
+        st.start();
+
         Map<DocumentFQN, DocumentContent> memoryMap = new HashMap<>();
 
-        int numberOfTransactinos = 10;
+        int numberOfTransactinos = 9;
         int numberOfFilesToDeletePerTx = 1;
         int numberOfFilesToCreatePerTx = 4;
-        int numberOfFilesToOverwritePerTx = 3;
+        int numberOfFilesToOverwritePerTx = 4;
         int expectedNumberOfFilesAfterIteration = (numberOfFilesToCreatePerTx * numberOfTransactinos) - (numberOfTransactinos * numberOfFilesToDeletePerTx);
 
         transactionalFileStorage.createUser(userIDAuth);
@@ -104,6 +108,8 @@ public class CacheCleanupTest extends TransactionFileStorageBaseTest {
         BucketContentFQN list = dssi.list(userIDAuth, new DocumentDirectoryFQN("/"), ListRecursiveFlag.TRUE);
         LOGGER.debug("LIST OF FILES IN DOCUMENTSAFE: " + list.toString());
 //        Assert.assertEquals(numberOfFiles, list.getFiles().size());
+        st.stop();
+        LOGGER.info("time for test " + st.toString());
     }
 
 
