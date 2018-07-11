@@ -65,17 +65,7 @@ public class TxIDHashMap {
         throw new TxNotFoundException(file, lastKnownCommitedTxID);
     }
 
-    public static TxIDHashMap getCurrentFile(DocumentSafeService documentSafeService, UserIDAuth userIDAuth, TxID currentTxID) {
-        DocumentFQN file = TransactionalFileStorageImpl.modifyTxMetaDocumentName(filenamebase, currentTxID);
-        DSDocument dsDocument = documentSafeService.readDocument(userIDAuth, file);
-        TxIDHashMap txIDHashMap = new Class2JsonHelper().txidHashMapFromContent(dsDocument.getDocumentContent());
-        if (txIDHashMap.endTx != null) {
-            throw new TxAlreadyClosedException(currentTxID);
-        }
-        return txIDHashMap;
-    }
-
-    public void save(DocumentSafeService documentSafeService, UserIDAuth userIDAuth) {
+    public void saveOnce(DocumentSafeService documentSafeService, UserIDAuth userIDAuth) {
         DocumentFQN file = TransactionalFileStorageImpl.modifyTxMetaDocumentName(filenamebase, currentTxID);
         LOGGER.debug("save " + file.getValue());
         DocumentContent documentContent = new Class2JsonHelper().txidHashMapToContent(this);
@@ -121,5 +111,11 @@ public class TxIDHashMap {
 
     public BucketContentFQN list(DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
         return BucketContentFromHashMapHelper.list(map.keySet(), documentDirectoryFQN, recursiveFlag);
+    }
+
+    public void checkTxStillOpen() {
+        if (endTx != null) {
+            throw new TxAlreadyClosedException(currentTxID);
+        }
     }
 }
