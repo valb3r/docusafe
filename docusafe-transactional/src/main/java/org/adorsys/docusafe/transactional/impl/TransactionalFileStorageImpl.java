@@ -147,7 +147,8 @@ public class TransactionalFileStorageImpl implements TransactionalFileStorage {
         LOGGER.debug("txReadDocument " + documentFQN.getValue() + " " + txid.getValue());
         TxIDHashMap txIDHashMap = getTxIDHashMap(txid);
         TxID txidOfDocument = txIDHashMap.readDocument(documentFQN);
-        return documentSafeService.readDocument(userIDAuth, modifyTxDocumentName(documentFQN, txidOfDocument));
+        DSDocument dsDocument = documentSafeService.readDocument(userIDAuth, modifyTxDocumentName(documentFQN, txidOfDocument));
+        return new DSDocument(documentFQN, dsDocument.getDocumentContent(), dsDocument.getDsDocumentMetaInfo());
     }
 
     @Override

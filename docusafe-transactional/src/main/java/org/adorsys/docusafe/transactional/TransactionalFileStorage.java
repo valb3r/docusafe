@@ -42,4 +42,6 @@ public interface TransactionalFileStorage {
     void txDeleteFolder(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN);
 
     void endTransaction(TxID txid, UserIDAuth userIDAuth);
+
+
 }

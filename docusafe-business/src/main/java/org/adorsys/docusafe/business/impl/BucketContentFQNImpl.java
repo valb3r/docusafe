@@ -23,4 +23,19 @@ public class BucketContentFQNImpl implements BucketContentFQN {
     public List<DocumentDirectoryFQN> getDirectories() {
         return directories;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("BucketContentFQNImpl{");
+        sb.append("\n");
+        sb.append("files=");
+        sb.append("\n");
+        files.forEach(file -> sb.append("   " + file.getValue() + "\n"));
+        sb.append("directories=");
+        sb.append("\n");
+        directories.forEach(file -> sb.append("   " + file.getValue() + "\n"));
+        sb.append("}");
+        return sb.toString();
+    }
 }

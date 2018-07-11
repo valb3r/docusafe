@@ -17,8 +17,51 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by peter on 12.06.18 at 08:44.
  */
-public class TransactionalFileStorageTest extends TransactionFileStorageBaseTest{
+public class TransactionalFileStorageTest extends TransactionFileStorageBaseTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(TransactionalFileStorageTest.class);
+
+    @Test
+    public void testOverwrite() {
+        transactionalFileStorage.createUser(userIDAuth);
+        DocumentFQN documentFQN = new DocumentFQN("testxTFolder/first.txt");
+        DocumentContent documentContent = new DocumentContent("very first".getBytes());
+        DSDocumentMetaInfo documentMetaInfo = new DSDocumentMetaInfo();
+        DSDocument document = new DSDocument(documentFQN, documentContent, documentMetaInfo);
+
+        {
+            TxID txid = transactionalFileStorage.beginTransaction(userIDAuth);
+            transactionalFileStorage.txStoreDocument(txid, userIDAuth, document);
+            transactionalFileStorage.endTransaction(txid, userIDAuth);
+        }
+
+        {
+            TxID txid = transactionalFileStorage.beginTransaction(userIDAuth);
+            BucketContentFQN bucketContentFQN = transactionalFileStorage.txListDocuments(txid, userIDAuth, documentFQN.getDocumentDirectory(), ListRecursiveFlag.TRUE);
+            Assert.assertEquals(1, bucketContentFQN.getFiles().size());
+            Assert.assertEquals(documentFQN, bucketContentFQN.getFiles().get(0));
+            DSDocument dsDocument = transactionalFileStorage.txReadDocument(txid, userIDAuth, documentFQN);
+            Assert.assertEquals(documentFQN, dsDocument.getDocumentFQN());
+            Assert.assertArrayEquals(document.getDocumentContent().getValue(), dsDocument.getDocumentContent().getValue());
+            transactionalFileStorage.endTransaction(txid, userIDAuth);
+        }
+        DSDocument newDocument = null;
+        {
+            TxID txid = transactionalFileStorage.beginTransaction(userIDAuth);
+            BucketContentFQN bucketContentFQN = transactionalFileStorage.txListDocuments(txid, userIDAuth, documentFQN.getDocumentDirectory(), ListRecursiveFlag.TRUE);
+            Assert.assertEquals(1, bucketContentFQN.getFiles().size());
+            Assert.assertEquals(documentFQN, bucketContentFQN.getFiles().get(0));
+            DSDocument dsDocument = transactionalFileStorage.txReadDocument(txid, userIDAuth, documentFQN);
+            newDocument = new DSDocument(documentFQN, new DocumentContent("new content".getBytes()), dsDocument.getDsDocumentMetaInfo());
+            transactionalFileStorage.txStoreDocument(txid, userIDAuth, newDocument);
+            transactionalFileStorage.endTransaction(txid, userIDAuth);
+        }
+        {
+            TxID txid = transactionalFileStorage.beginTransaction(userIDAuth);
+            DSDocument dsDocument = transactionalFileStorage.txReadDocument(txid, userIDAuth, documentFQN);
+            Assert.assertArrayEquals(newDocument.getDocumentContent().getValue(), dsDocument.getDocumentContent().getValue());
+            transactionalFileStorage.endTransaction(txid, userIDAuth);
+        }
+    }
 
     @Test
     public void testCreateAndChange() {
@@ -133,7 +176,7 @@ public class TransactionalFileStorageTest extends TransactionFileStorageBaseTest
         }
     }
 
-    @Test (expected = TxAlreadyClosedException.class)
+    @Test(expected = TxAlreadyClosedException.class)
     public void testEndTxTwice() {
         transactionalFileStorage.createUser(userIDAuth);
         TxID firstTxID = transactionalFileStorage.beginTransaction(userIDAuth);
