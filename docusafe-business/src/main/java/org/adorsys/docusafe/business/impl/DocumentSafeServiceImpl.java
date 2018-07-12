@@ -28,6 +28,7 @@ import org.adorsys.docusafe.service.DocumentPersistenceService;
 import org.adorsys.docusafe.service.KeySourceService;
 import org.adorsys.docusafe.service.impl.BucketServiceImpl;
 import org.adorsys.docusafe.service.impl.DocumentGuardServiceImpl;
+import org.adorsys.docusafe.service.impl.DocumentKeyIDMap;
 import org.adorsys.docusafe.service.impl.DocumentPersistenceServiceImpl;
 import org.adorsys.docusafe.service.impl.GuardKeyType;
 import org.adorsys.docusafe.service.impl.GuardMap;
@@ -69,6 +70,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentSafeServiceImpl.class);
     public static final String USER_AUTH_CACHE = "userAuthCache";
     public static final String GUARD_MAP = "GUARD_MAP";
+    public static final String DOCUMENT_KEY_MAP = "DOCUMENT_KEY_MAP";
 
 
     private BucketService bucketService;
@@ -428,6 +430,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         if (this.memoryContext != null) {
             this.memoryContext.put(USER_AUTH_CACHE, new UserAuthCache());
             this.memoryContext.put(GUARD_MAP, new GuardMap());
+            this.memoryContext.put(DOCUMENT_KEY_MAP, new DocumentKeyIDMap());
             LOGGER.info("MemoryContext will be used");
         }
     }
@@ -502,10 +505,14 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
                                                                                            AccessType accessType) {
         LOGGER.debug("search key for " + documentDirectory);
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
-        DocumentKeyID documentKeyID = GuardUtil.tryToLoadBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStorePath().getBucketDirectory(), documentDirectory);
+        DocumentKeyID documentKeyID = loadCachedDocumentKeyIDForDocumentDirectory(documentDirectory);
+        if (documentKeyID == null) {
+            documentKeyID = GuardUtil.tryToLoadBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStorePath().getBucketDirectory(), documentDirectory);
+        }
         if (documentKeyID == null) {
             documentKeyID = createSymmetricGuardForBucket(keyStoreAccess, documentDirectory, accessType);
         }
+        cacheDocumentKeyIDForDocumentDirectory(documentDirectory, documentKeyID);
         DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = loadCachedOrRealDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(keyStoreAccess, documentKeyID);
         LOGGER.debug("found " + documentKeyIDWithKeyAndAccessType + " for " + documentDirectory);
         return documentKeyIDWithKeyAndAccessType;
@@ -603,6 +610,22 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
             String cacheKey = GuardMap.cacheKeyToString(keyStoreAccess, documentKeyID);
             guardMap.remove(cacheKey);
         }
+    }
+
+    private DocumentKeyID loadCachedDocumentKeyIDForDocumentDirectory(BucketDirectory bucketDirectory) {
+        DocumentKeyIDMap documentKeyIDMap = memoryContext != null ? (DocumentKeyIDMap) memoryContext.get(DOCUMENT_KEY_MAP) : null;
+        if (documentKeyIDMap != null) {
+            return documentKeyIDMap.get(bucketDirectory);
+        }
+        return null;
+    }
+
+    private void cacheDocumentKeyIDForDocumentDirectory(BucketDirectory bucketDirectory, DocumentKeyID documentKeyID) {
+        DocumentKeyIDMap documentKeyIDMap = memoryContext != null ? (DocumentKeyIDMap) memoryContext.get(DOCUMENT_KEY_MAP) : null;
+        if (documentKeyIDMap == null) {
+            return;
+        }
+        documentKeyIDMap.put(bucketDirectory, documentKeyID);
     }
 
 }
