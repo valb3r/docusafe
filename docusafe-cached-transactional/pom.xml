@@ -24,6 +24,14 @@
             <version>${slf4j-simple.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>de.adorsys</groupId>
+            <artifactId>docusafe-transactional</artifactId>
+            <classifier>tests</classifier>
+            <type>test-jar</type>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

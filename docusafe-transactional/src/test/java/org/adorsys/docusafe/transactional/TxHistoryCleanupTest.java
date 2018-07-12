@@ -21,8 +21,8 @@ import java.util.concurrent.ThreadLocalRandom;
 /**
  * Created by peter on 11.07.18 at 11:20.
  */
-public class CacheCleanupTest extends TransactionFileStorageBaseTest {
-    private final static Logger LOGGER = LoggerFactory.getLogger(CacheCleanupTest.class);
+public class TxHistoryCleanupTest extends TransactionFileStorageBaseTest {
+    private final static Logger LOGGER = LoggerFactory.getLogger(TxHistoryCleanupTest.class);
 
     @Test
     public void createFilesAndDeleteSomeRandomFilesInServeralTransactions() {

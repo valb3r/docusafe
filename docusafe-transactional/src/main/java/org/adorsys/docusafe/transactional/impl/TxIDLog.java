@@ -36,7 +36,7 @@ public class TxIDLog {
             }
             int size = txIDLog.txidList.size();
             if (size > MAX_COMMITED_TX_FOR_CLEANUP) {
-                txIDLog = cleaup(documentSafeService, userIDAuth, txIDLog);
+                txIDLog = cleaupTxHistory(documentSafeService, userIDAuth, txIDLog);
                 size = txIDLog.txidList.size();
                 DSDocumentMetaInfo metaInfo = new DSDocumentMetaInfo();
                 metaInfo.setNoEncryption();
@@ -78,7 +78,7 @@ public class TxIDLog {
         }
     }
 
-    private static TxIDLog cleaup(DocumentSafeService documentSafeService, UserIDAuth userIDAuth, TxIDLog txIDLog) {
+    private static TxIDLog cleaupTxHistory(DocumentSafeService documentSafeService, UserIDAuth userIDAuth, TxIDLog txIDLog) {
         int size = txIDLog.txidList.size();
         if (size < 1) {
             return txIDLog;
