@@ -29,7 +29,6 @@
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />
     </logger>
-
     <logger name="org.adorsys.cryptoutils.mongodbstoreconnection.MongoDBExtendedStoreConnection" level="DEBUG" additivity="false">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />
@@ -39,6 +38,14 @@
         <appender-ref ref="FILE" />
     </logger>
     <logger name="org.adorsys.encobject.filesystem.ZipFileHelper" level="DEBUG" additivity="false">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE" />
+    </logger>
+    <!-- the loggers above must not be changed or removed -->
+
+
+    <!-- can be changed or removed -->
+    <logger name="org.adorsys.docusafe.business" level="DEBUG" additivity="false">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />
     </logger>
