@@ -11,26 +11,27 @@ import org.adorsys.docusafe.cached.transactional.CachedTransactionalFileStorage;
 import org.adorsys.docusafe.cached.transactional.exceptions.CacheException;
 import org.adorsys.docusafe.transactional.RequestMemoryContext;
 import org.adorsys.docusafe.transactional.TransactionalFileStorage;
+import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Created by peter on 21.06.18 at 11:51.
- *
+ * <p>
  * Es gibt drei Listen:
  * mapToStore enthält alle Dokumente, die gespeichert werden sollen.
  * Es wird nicht gepüft, ob sich der Inhalt gehändert hat, oder nicht.
- *
+ * <p>
  * mapToRead enthält alle Documente, die gelesen wurden. Wenn diese anschliessend
  * gespeichert werden, dann sind sie zusätzlich in mapToStore.
- *
+ * <p>
  * setToDelete enhält alle Namen der Dokumente, die gelöscht werden sollen.
  * Der name darf dann nicht in mapToRead oder mapToStore auftauchen.
  */
 public class CachedTransactionalFileStorageImpl implements CachedTransactionalFileStorage {
     private final static Logger LOGGER = LoggerFactory.getLogger(CachedTransactionalFileStorageImpl.class);
-    public static final String USER_CONTEXT = "USER_CONTEXT";
+    public static final String CACHEND_TRANSACTIONAL_CONTEXT_MAP = "cachendTransactionalContextMap";
     private TransactionalFileStorage transactionalFileStorage;
     private RequestMemoryContext requestContext;
 
@@ -55,109 +56,128 @@ public class CachedTransactionalFileStorageImpl implements CachedTransactionalFi
     }
 
     @Override
-    public void grantAccess(UserIDAuth userIDAuth, UserID receiverUserID) {
-        transactionalFileStorage.grantAccess(userIDAuth, receiverUserID);
+    public void grantAccessToNonTxFolder(UserIDAuth userIDAuth, UserID receiverUserID, DocumentDirectoryFQN documentDirectoryFQN) {
+        transactionalFileStorage.grantAccessToNonTxFolder(userIDAuth, receiverUserID, documentDirectoryFQN);
     }
 
     @Override
-    public void storeDocument(UserIDAuth userIDAuth, DSDocument dsDocument) {
-        transactionalFileStorage.storeDocument(userIDAuth, dsDocument);
+    public void nonTxStoreDocument(UserIDAuth userIDAuth, DSDocument dsDocument) {
+        transactionalFileStorage.nonTxStoreDocument(userIDAuth, dsDocument);
     }
 
     @Override
-    public void storeDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument) {
-        transactionalFileStorage.storeDocument(userIDAuth, documentOwner, dsDocument);
+    public void nonTxStoreDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument) {
+        transactionalFileStorage.nonTxStoreDocument(userIDAuth, documentOwner, dsDocument);
 
     }
 
     @Override
-    public DSDocument readDocument(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN) {
-        return transactionalFileStorage.readDocument(userIDAuth, documentOwner, documentFQN);
+    public DSDocument nonTxReadDocument(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN) {
+        return transactionalFileStorage.nonTxReadDocument(userIDAuth, documentOwner, documentFQN);
     }
 
     @Override
-    public DSDocument readDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
-        return transactionalFileStorage.readDocument(userIDAuth, documentFQN);
+    public DSDocument nonTxReadDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+        return transactionalFileStorage.nonTxReadDocument(userIDAuth, documentFQN);
     }
 
     @Override
-    public boolean documentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
-        return transactionalFileStorage.documentExists(userIDAuth, documentFQN);
+    public boolean nonTxDocumentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+        return transactionalFileStorage.nonTxDocumentExists(userIDAuth, documentFQN);
     }
 
     @Override
-    public boolean documentExists(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN) {
-        return transactionalFileStorage.documentExists(userIDAuth, documentOwner, documentFQN);
+    public boolean nonTxDocumentExists(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN) {
+        return transactionalFileStorage.nonTxDocumentExists(userIDAuth, documentOwner, documentFQN);
     }
 
     @Override
-    public void deleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
-        transactionalFileStorage.deleteDocument(userIDAuth, documentFQN);
+    public void nonTxDeleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+        transactionalFileStorage.nonTxDeleteDocument(userIDAuth, documentFQN);
     }
 
     @Override
-    public BucketContentFQN listDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
-        return transactionalFileStorage.listDocuments(userIDAuth, documentDirectoryFQN, recursiveFlag);
+    public BucketContentFQN nonTxListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
+        return transactionalFileStorage.nonTxListDocuments(userIDAuth, documentDirectoryFQN, recursiveFlag);
     }
 
     @Override
-    public void beginTransaction(UserIDAuth userIDAuth) {
-        createTransactionalContext().beginTransaction(userIDAuth);
+    public TxID beginTransaction(UserIDAuth userIDAuth) {
+        TxID txid = transactionalFileStorage.beginTransaction(userIDAuth);
+        createTransactionalContext(txid);
+        return txid;
     }
 
     @Override
-    public void txStoreDocument(DSDocument dsDocument) {
-        getTransactionalContext().txStoreDocument(dsDocument);
+    public void txStoreDocument(TxID txid, UserIDAuth userIDAuth, DSDocument dsDocument) {
+        getTransactionalContext(txid).txStoreDocument(dsDocument);
     }
 
     @Override
-    public DSDocument txReadDocument(DocumentFQN documentFQN) {
-        return getTransactionalContext().txReadDocument(documentFQN);
+    public DSDocument txReadDocument(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+        return getTransactionalContext(txid).txReadDocument(txid, userIDAuth, documentFQN);
     }
 
     @Override
-    public void txDeleteDocument(DocumentFQN documentFQN) {
-        getTransactionalContext().txDeleteDocument(documentFQN);
+    public void txDeleteDocument(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+        getTransactionalContext(txid).txDeleteDocument(documentFQN);
     }
 
     @Override
-    public BucketContentFQN txListDocuments(DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
-        return getTransactionalContext().txListDocuments(documentDirectoryFQN, recursiveFlag);
+    public BucketContentFQN txListDocuments(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
+        return getTransactionalContext(txid).txListDocuments(txid, userIDAuth, documentDirectoryFQN, recursiveFlag);
     }
 
     @Override
-    public boolean txDocumentExists(DocumentFQN documentFQN) {
-        return getTransactionalContext().txDocumentExists(documentFQN);
+    public boolean txDocumentExists(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+        return getTransactionalContext(txid).txDocumentExists(txid, userIDAuth, documentFQN);
     }
 
     @Override
-    public void txDeleteFolder(DocumentDirectoryFQN documentDirectoryFQN) {
+    public void txDeleteFolder(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN) {
         throw new BaseException("Who needs this interface");
 
     }
 
     @Override
-    public void endTransaction() {
-        getTransactionalContext().endTransaction();
+    public void endTransaction(TxID txid, UserIDAuth userIDAuth) {
+        getTransactionalContext(txid).endTransaction(txid, userIDAuth);
+        deleteTransactionalContext(txid);
 
     }
 
-    private CachedTransactionalContext createTransactionalContext() {
-        Object o = requestContext.get(USER_CONTEXT);
-        if (o != null) {
-            throw new CacheException("RequestContext has Transactional Object. New Transaction can not be started");
+    private CachedTransactionalContext createTransactionalContext(TxID txid) {
+        CachedTransactionalContextMap cachedTransactionalContextMap = (CachedTransactionalContextMap) requestContext.get(CACHEND_TRANSACTIONAL_CONTEXT_MAP);
+        if (cachedTransactionalContextMap == null) {
+            cachedTransactionalContextMap = new CachedTransactionalContextMap();
+            requestContext.put(CACHEND_TRANSACTIONAL_CONTEXT_MAP, cachedTransactionalContextMap);
         }
-
         CachedTransactionalContext cachedTransactionalContext = new CachedTransactionalContext(transactionalFileStorage);
-        requestContext.put(USER_CONTEXT, cachedTransactionalContext);
+        cachedTransactionalContextMap.put(txid, cachedTransactionalContext);
         return cachedTransactionalContext;
     }
 
-    private CachedTransactionalContext getTransactionalContext() {
-        CachedTransactionalContext cachedTransactionalContext = (CachedTransactionalContext) requestContext.get(USER_CONTEXT);
+    private CachedTransactionalContext getTransactionalContext(TxID txid) {
+        CachedTransactionalContextMap cachedTransactionalContextMap = (CachedTransactionalContextMap) requestContext.get(CACHEND_TRANSACTIONAL_CONTEXT_MAP);
+        if (cachedTransactionalContextMap == null) {
+            throw new CacheException("RequestContext has no CachedTransactionalContextMap. So Context for " + txid + " can not be searched");
+        }
+        CachedTransactionalContext cachedTransactionalContext = cachedTransactionalContextMap.get(txid);
         if (cachedTransactionalContext == null) {
-            throw new CacheException("RequestContext has no Transactional Object.");
+            throw new CacheException("CachedTransactionalContextMap has no CachedContext for " + txid);
         }
         return cachedTransactionalContext;
+    }
+
+    private void deleteTransactionalContext(TxID txid) {
+        CachedTransactionalContextMap cachedTransactionalContextMap = (CachedTransactionalContextMap) requestContext.get(CACHEND_TRANSACTIONAL_CONTEXT_MAP);
+        if (cachedTransactionalContextMap == null) {
+            throw new CacheException("RequestContext has no CachedTransactionalContextMap. So Context for " + txid + " can not be searched");
+        }
+        CachedTransactionalContext cachedTransactionalContext = cachedTransactionalContextMap.get(txid);
+        if (cachedTransactionalContext == null) {
+            throw new CacheException("CachedTransactionalContextMap has no CachedContext for " + txid);
+        }
+        cachedTransactionalContextMap.remove(txid);
     }
 }

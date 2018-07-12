@@ -59,37 +59,37 @@ public class TransactionalFileStorageImpl implements TransactionalFileStorage {
     }
 
     @Override
-    public void grantAccess(UserIDAuth userIDAuth, UserID receiverUserID) {
-        LOGGER.debug("grant write access from " + userIDAuth.getUserID() + " to " + receiverUserID + " for " + nonTxContent);
-        documentSafeService.grantAccessToUserForFolder(userIDAuth, receiverUserID, nonTxContent, AccessType.WRITE);
+    public void grantAccessToNonTxFolder(UserIDAuth userIDAuth, UserID receiverUserID, DocumentDirectoryFQN documentDirectoryFQN) {
+        LOGGER.debug("grant write access from " + userIDAuth.getUserID() + " to " + receiverUserID + " for " + nonTxContent.addDirectory(documentDirectoryFQN));
+        documentSafeService.grantAccessToUserForFolder(userIDAuth, receiverUserID, nonTxContent.addDirectory(documentDirectoryFQN), AccessType.WRITE);
     }
 
     @Override
-    public void storeDocument(UserIDAuth userIDAuth, DSDocument dsDocument) {
-        LOGGER.debug("storeDocument " + dsDocument.getDocumentFQN() + " from folder " + nonTxContent + " of user " + userIDAuth.getUserID());
+    public void nonTxStoreDocument(UserIDAuth userIDAuth, DSDocument dsDocument) {
+        LOGGER.debug("nonTxStoreDocument " + dsDocument.getDocumentFQN() + " from folder " + nonTxContent + " of user " + userIDAuth.getUserID());
         documentSafeService.storeDocument(userIDAuth, modifyNonTxDocument(dsDocument));
     }
 
     @Override
-    public DSDocument readDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+    public DSDocument nonTxReadDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
         LOGGER.debug("read document " + documentFQN + " from folder " + nonTxContent + " of user " + userIDAuth.getUserID());
         return unmodifyNonTxDocument(documentSafeService.readDocument(userIDAuth, modifyNonTxDocumentName(documentFQN)));
     }
 
     @Override
-    public boolean documentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
-        LOGGER.debug("documentExists " + documentFQN + " from folder " + nonTxContent + " of user " + userIDAuth.getUserID());
+    public boolean nonTxDocumentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+        LOGGER.debug("nonTxDocumentExists " + documentFQN + " from folder " + nonTxContent + " of user " + userIDAuth.getUserID());
         return documentSafeService.documentExists(userIDAuth, modifyNonTxDocumentName(documentFQN));
     }
 
     @Override
-    public void deleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+    public void nonTxDeleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
         LOGGER.debug("delete document " + documentFQN + " from folder " + nonTxContent + " of user " + userIDAuth.getUserID());
         documentSafeService.deleteDocument(userIDAuth, modifyNonTxDocumentName(documentFQN));
     }
 
     @Override
-    public BucketContentFQN listDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
+    public BucketContentFQN nonTxListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
         LOGGER.debug("list documents " + documentDirectoryFQN + " from folder " + nonTxContent + " of user " + userIDAuth.getUserID());
         return filterNonTxPrefix(documentSafeService.list(userIDAuth, modifyNonTxDirectoryName(documentDirectoryFQN), recursiveFlag));
     }
@@ -98,19 +98,19 @@ public class TransactionalFileStorageImpl implements TransactionalFileStorage {
     // NON-TRANSACTIONAL FOR OTHERS
     // ============================================================================================
     @Override
-    public void storeDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument) {
+    public void nonTxStoreDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument) {
         LOGGER.debug("store document " + dsDocument.getDocumentFQN() + " in folder " + nonTxContent + " of user " + documentOwner + " for user " + userIDAuth.getUserID());
         documentSafeService.storeGrantedDocument(userIDAuth, documentOwner, modifyNonTxDocument(dsDocument));
     }
 
     @Override
-    public DSDocument readDocument(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN) {
+    public DSDocument nonTxReadDocument(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN) {
         LOGGER.debug("read document " + documentFQN + " in folder " + nonTxContent + " of user " + documentOwner + " for user " + userIDAuth.getUserID());
         return unmodifyNonTxDocument(documentSafeService.readGrantedDocument(userIDAuth, documentOwner, modifyNonTxDocumentName(documentFQN)));
     }
 
     @Override
-    public boolean documentExists(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN) {
+    public boolean nonTxDocumentExists(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN) {
         LOGGER.debug("document exists " + documentFQN + " in folder " + nonTxContent + " of user " + documentOwner + " for user " + userIDAuth.getUserID());
         return documentSafeService.grantedDocumentExists(userIDAuth, documentOwner, modifyNonTxDocumentName(documentFQN));
     }

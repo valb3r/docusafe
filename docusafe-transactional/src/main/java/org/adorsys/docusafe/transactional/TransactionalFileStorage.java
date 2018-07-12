@@ -18,18 +18,18 @@ public interface TransactionalFileStorage {
     void createUser(UserIDAuth userIDAuth);
     void destroyUser(UserIDAuth userIDAuth);
     boolean userExists(UserID userID);
-    void grantAccess(UserIDAuth userIDAuth, UserID receiverUserID);
+    void grantAccessToNonTxFolder(UserIDAuth userIDAuth, UserID receiverUserID, DocumentDirectoryFQN documentDirectoryFQN);
 
-    void storeDocument(UserIDAuth userIDAuth, DSDocument dsDocument);
-    DSDocument readDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
-    boolean documentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN);
-    void deleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
-    BucketContentFQN listDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag);
+    void nonTxStoreDocument(UserIDAuth userIDAuth, DSDocument dsDocument);
+    DSDocument nonTxReadDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
+    boolean nonTxDocumentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN);
+    void nonTxDeleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
+    BucketContentFQN nonTxListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag);
 
     // NON-TRANSACTIONAL FOR OTHERS
-    void storeDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument);
-    DSDocument readDocument(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN);
-    boolean documentExists(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN);
+    void nonTxStoreDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument);
+    DSDocument nonTxReadDocument(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN);
+    boolean nonTxDocumentExists(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN);
 
     // TRANSACTIONAL
     TxID beginTransaction(UserIDAuth userIDAuth);

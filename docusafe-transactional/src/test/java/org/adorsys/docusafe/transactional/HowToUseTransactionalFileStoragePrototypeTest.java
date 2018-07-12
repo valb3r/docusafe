@@ -1,5 +1,6 @@
 package org.adorsys.docusafe.transactional;
 
+import com.googlecode.catchexception.CatchException;
 import org.adorsys.docusafe.business.exceptions.GuardException;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
@@ -33,6 +34,7 @@ public class HowToUseTransactionalFileStoragePrototypeTest extends TransactionFi
     public void pseudoMain() {
         LOGGER.info("create System User");
         transactionalFileStorage.createUser(systemUserIDAuth);
+        DocumentDirectoryFQN systemUserBaseDir = new DocumentDirectoryFQN("systemuser");
 
         LOGGER.info("create personal User");
         transactionalFileStorage.createUser(userIDAuth);
@@ -40,7 +42,7 @@ public class HowToUseTransactionalFileStoragePrototypeTest extends TransactionFi
         // der Name der Inbox ist festgelegt, kann nicht geändert werden, und ist fuer
         // alle Benutzer gleich. Jeder Benutzer hat nur genau eine inbox
         LOGGER.info("grant system user access to non transactional folder of personal user");
-        transactionalFileStorage.grantAccess(userIDAuth, systemUserIDAuth.getUserID());
+        transactionalFileStorage.grantAccessToNonTxFolder(userIDAuth, systemUserIDAuth.getUserID(), systemUserBaseDir);
 
         // prüfen, ob neue Dateien in der Inbox sind
         // da noch nichts angelegt wurde, passiert hier erst einmal nichts
@@ -48,7 +50,7 @@ public class HowToUseTransactionalFileStoragePrototypeTest extends TransactionFi
         Assert.assertEquals(0, filesMoved);
 
         // stelle nun als system user eine Datei bereit
-        transactionalFileStorage.storeDocument(systemUserIDAuth, userIDAuth.getUserID(), newDocument("file1"));
+        transactionalFileStorage.nonTxStoreDocument(systemUserIDAuth, userIDAuth.getUserID(), newDocument(systemUserBaseDir.addName("file1")));
 
         // nun gibt es eine Datei, die wird innerhalb der Unterfunktion kopiert und dann gelöscht
         filesMoved = checkForNewInFiles();
@@ -60,21 +62,16 @@ public class HowToUseTransactionalFileStoragePrototypeTest extends TransactionFi
 
         // Das Anlegen einer Datei in einem Unterverzeichnis der Inbox ist nicht gestattet, da der Grant immer nur
         // Verzeichnisweise gilt, nicht für Unterverzeichnisse
-        boolean gotException = false;
-        try {
-            transactionalFileStorage.storeDocument(systemUserIDAuth, userIDAuth.getUserID(), newDocument("subdir/file1"));
-        } catch (GuardException e) {
-            gotException = true;
-        }
-        Assert.assertTrue(gotException);
+        CatchException.catchException(() -> transactionalFileStorage.nonTxStoreDocument(systemUserIDAuth, userIDAuth.getUserID(), newDocument(systemUserBaseDir.addDirectory("subdir").addName("file1"))));
+        Assert.assertNotNull(CatchException.caughtException());
 
         // Wenn gewünscht, kann das granten hier erweitert werden. Dann könnte man verschiedenen
         // Benutzern die Zugriff auf verschiedene Unterverzeichnisse gewähren.
 
     }
 
-    private DSDocument newDocument(String filename) {
-        return new DSDocument(new DocumentFQN(filename), new DocumentContent("some content".getBytes()), new DSDocumentMetaInfo());
+    private DSDocument newDocument(DocumentFQN documentFQN) {
+        return new DSDocument(documentFQN, new DocumentContent("some content".getBytes()), new DSDocumentMetaInfo());
     }
 
     // returns the number of files that have been imported
@@ -83,7 +80,7 @@ public class HowToUseTransactionalFileStoragePrototypeTest extends TransactionFi
         // txListDocuments (ohne txId) ist transaktionslos und bezieht sich damit immer
         // auf die inbox. Wenn man nur bestimmte Documente sehen möchte, dann man
         // das DocumentDirectoryFQN anpasen
-        BucketContentFQN list = transactionalFileStorage.listDocuments(userIDAuth, new DocumentDirectoryFQN("/"), ListRecursiveFlag.TRUE);
+        BucketContentFQN list = transactionalFileStorage.nonTxListDocuments(userIDAuth, new DocumentDirectoryFQN("/"), ListRecursiveFlag.TRUE);
 
         if (list.getFiles().isEmpty()) {
             LOGGER.info("no new files found");
@@ -99,7 +96,7 @@ public class HowToUseTransactionalFileStoragePrototypeTest extends TransactionFi
         list.getFiles().forEach(documentFQN -> {
             // Lade das Document TRANSAKTIONSLOS
             LOGGER.info("load document " + documentFQN + " from non transactional folder");
-            DSDocument dsDocument = transactionalFileStorage.readDocument(userIDAuth, documentFQN);
+            DSDocument dsDocument = transactionalFileStorage.nonTxReadDocument(userIDAuth, documentFQN);
 
             // Erzeuge ein neues Document
             // da hier mit einer Transaktion gearbeitet wird, wird das Dokument in eimem anderen
@@ -121,7 +118,7 @@ public class HowToUseTransactionalFileStoragePrototypeTest extends TransactionFi
         // Jetzt müssen im Nachgang die zuvor sicher kopierten Dateien gelöscht werden, damit sie nicht
         // erneut verarbeitet werden.
         list.getFiles().forEach(documentFQN -> {
-            transactionalFileStorage.deleteDocument(userIDAuth, documentFQN);
+            transactionalFileStorage.nonTxDeleteDocument(userIDAuth, documentFQN);
         });
 
         return list.getFiles().size();

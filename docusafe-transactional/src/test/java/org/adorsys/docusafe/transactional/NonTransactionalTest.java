@@ -21,13 +21,13 @@ import org.slf4j.LoggerFactory;
  *   void createUser(UserIDAuth userIDAuth);
  *   void destroyUser(UserIDAuth userIDAuth);
  *   boolean userExists(UserID userID);
-    void grantAccess(UserIDAuth userIDAuth, UserID receiverUserID);
+    void grantAccessToNonTxFolder(UserIDAuth userIDAuth, UserID receiverUserID);
 
- *    void storeDocument(UserIDAuth userIDAuth, DSDocument dsDocument);
- *   DSDocument readDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
- *   boolean documentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN);
-    void deleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
- *   BucketContentFQN listDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag);
+ *    void nonTxStoreDocument(UserIDAuth userIDAuth, DSDocument dsDocument);
+ *   DSDocument nonTxReadDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
+ *   boolean nonTxDocumentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN);
+    void nonTxDeleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
+ *   BucketContentFQN nonTxListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag);
 
  */
 // @SuppressWarnings("Duplicates")
@@ -41,43 +41,43 @@ public class NonTransactionalTest extends TransactionFileStorageBaseTest {
 
         DocumentFQN documentFQN = new DocumentFQN("file1.txt");
         DSDocument storeDocument = null;
-        BucketContentFQN bucketContentFQN = transactionalFileStorage.listDocuments(userIDAuth, documentFQN.getDocumentDirectory(), ListRecursiveFlag.TRUE);
+        BucketContentFQN bucketContentFQN = transactionalFileStorage.nonTxListDocuments(userIDAuth, documentFQN.getDocumentDirectory(), ListRecursiveFlag.TRUE);
         Assert.assertEquals(0, bucketContentFQN.getFiles().size());
         Assert.assertEquals(0, bucketContentFQN.getDirectories().size());
-        Assert.assertFalse(transactionalFileStorage.documentExists(userIDAuth, documentFQN));
+        Assert.assertFalse(transactionalFileStorage.nonTxDocumentExists(userIDAuth, documentFQN));
 
         {
             // Document speichern
             DocumentContent documentContent = new DocumentContent("content for in put box".getBytes());
             DSDocumentMetaInfo documentMetaInfo = new DSDocumentMetaInfo();
             storeDocument = new DSDocument(documentFQN, documentContent, documentMetaInfo);
-            transactionalFileStorage.storeDocument(userIDAuth, storeDocument);
-            bucketContentFQN = transactionalFileStorage.listDocuments(userIDAuth, documentFQN.getDocumentDirectory(), ListRecursiveFlag.TRUE);
+            transactionalFileStorage.nonTxStoreDocument(userIDAuth, storeDocument);
+            bucketContentFQN = transactionalFileStorage.nonTxListDocuments(userIDAuth, documentFQN.getDocumentDirectory(), ListRecursiveFlag.TRUE);
             Assert.assertEquals(1, bucketContentFQN.getFiles().size());
             Assert.assertEquals(0, bucketContentFQN.getDirectories().size());
-            DSDocument readDocument = transactionalFileStorage.readDocument(userIDAuth, documentFQN);
+            DSDocument readDocument = transactionalFileStorage.nonTxReadDocument(userIDAuth, documentFQN);
             Assert.assertArrayEquals(storeDocument.getDocumentContent().getValue(), readDocument.getDocumentContent().getValue());
-            Assert.assertTrue(transactionalFileStorage.documentExists(userIDAuth, documentFQN));
+            Assert.assertTrue(transactionalFileStorage.nonTxDocumentExists(userIDAuth, documentFQN));
         }
 
         {
             // Zugriff für andere nicht vorhanden
             transactionalFileStorage.createUser(systemUserIDAuth);
-            CatchException.catchException(() -> transactionalFileStorage.readDocument(systemUserIDAuth, userIDAuth.getUserID(), documentFQN));
+            CatchException.catchException(() -> transactionalFileStorage.nonTxReadDocument(systemUserIDAuth, userIDAuth.getUserID(), documentFQN));
             Assert.assertNotNull(CatchException.caughtException());
-            CatchException.catchException(() -> transactionalFileStorage.documentExists(systemUserIDAuth, userIDAuth.getUserID(), documentFQN));
+            CatchException.catchException(() -> transactionalFileStorage.nonTxDocumentExists(systemUserIDAuth, userIDAuth.getUserID(), documentFQN));
         }
         {
             // Zugriff gewähren
-            transactionalFileStorage.grantAccess(userIDAuth, systemUserIDAuth.getUserID());
-            DSDocument readDocument = transactionalFileStorage.readDocument(systemUserIDAuth, userIDAuth.getUserID(), documentFQN);
+            transactionalFileStorage.grantAccessToNonTxFolder(userIDAuth, systemUserIDAuth.getUserID(), documentFQN.getDocumentDirectory());
+            DSDocument readDocument = transactionalFileStorage.nonTxReadDocument(systemUserIDAuth, userIDAuth.getUserID(), documentFQN);
             Assert.assertArrayEquals(storeDocument.getDocumentContent().getValue(), readDocument.getDocumentContent().getValue());
-            Assert.assertTrue(transactionalFileStorage.documentExists(systemUserIDAuth, userIDAuth.getUserID(), documentFQN));
+            Assert.assertTrue(transactionalFileStorage.nonTxDocumentExists(systemUserIDAuth, userIDAuth.getUserID(), documentFQN));
         }
         {
             // Dokument Löschen
-            transactionalFileStorage.deleteDocument(userIDAuth, documentFQN);
-            Assert.assertFalse(transactionalFileStorage.documentExists(userIDAuth, documentFQN));
+            transactionalFileStorage.nonTxDeleteDocument(userIDAuth, documentFQN);
+            Assert.assertFalse(transactionalFileStorage.nonTxDocumentExists(userIDAuth, documentFQN));
         }
 
         transactionalFileStorage.destroyUser(userIDAuth);
@@ -88,24 +88,25 @@ public class NonTransactionalTest extends TransactionFileStorageBaseTest {
     public void testCreateUsersAndSendOneDocument() {
         transactionalFileStorage.createUser(userIDAuth);
         transactionalFileStorage.createUser(systemUserIDAuth);
-        transactionalFileStorage.grantAccess(userIDAuth, systemUserIDAuth.getUserID());
+        DocumentDirectoryFQN systemuserBaseDir = new DocumentDirectoryFQN("systemuser");
+        transactionalFileStorage.grantAccessToNonTxFolder(userIDAuth, systemUserIDAuth.getUserID(), systemuserBaseDir);
 
-        BucketContentFQN bucketContentFQN = transactionalFileStorage.listDocuments(userIDAuth, new DocumentDirectoryFQN("/"), ListRecursiveFlag.TRUE);
+        BucketContentFQN bucketContentFQN = transactionalFileStorage.nonTxListDocuments(userIDAuth, new DocumentDirectoryFQN("/"), ListRecursiveFlag.TRUE);
         bucketContentFQN.getDirectories().forEach(dir -> LOGGER.debug("dir: " + dir));
         bucketContentFQN.getFiles().forEach(dir -> LOGGER.debug("file: " + dir));
         Assert.assertEquals(0, bucketContentFQN.getFiles().size());
         Assert.assertEquals(0, bucketContentFQN.getDirectories().size());
 
-        DocumentFQN documentFQN = new DocumentFQN("first.txt");
+        DocumentFQN documentFQN = systemuserBaseDir.addName("first.txt");
         DocumentContent documentContent = new DocumentContent("content for in put box".getBytes());
         DSDocumentMetaInfo documentMetaInfo = new DSDocumentMetaInfo();
         DSDocument document = new DSDocument(documentFQN, documentContent, documentMetaInfo);
 
-        transactionalFileStorage.storeDocument(systemUserIDAuth, userIDAuth.getUserID(), document);
-        bucketContentFQN = transactionalFileStorage.listDocuments(userIDAuth, new DocumentDirectoryFQN("/"), ListRecursiveFlag.TRUE);
+        transactionalFileStorage.nonTxStoreDocument(systemUserIDAuth, userIDAuth.getUserID(), document);
+        bucketContentFQN = transactionalFileStorage.nonTxListDocuments(userIDAuth, new DocumentDirectoryFQN("/"), ListRecursiveFlag.TRUE);
         bucketContentFQN.getDirectories().forEach(dir -> LOGGER.debug("dir: " + dir));
         bucketContentFQN.getFiles().forEach(dir -> LOGGER.debug("file: " + dir));
         Assert.assertEquals(1, bucketContentFQN.getFiles().size());
-        Assert.assertEquals(0, bucketContentFQN.getDirectories().size());
+        Assert.assertEquals(1, bucketContentFQN.getDirectories().size());
     }
 }

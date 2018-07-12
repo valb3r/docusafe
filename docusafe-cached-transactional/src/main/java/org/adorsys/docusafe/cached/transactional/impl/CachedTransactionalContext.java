@@ -24,8 +24,6 @@ import java.util.UUID;
  */
 class CachedTransactionalContext {
     private String id = UUID.randomUUID().toString() + " ";
-    private TxID txid = null;
-    private UserIDAuth userIDAuth = null;
     private Map<DocumentFQN, DSDocument> mapToStore = null;
     private Map<DocumentFQN, DSDocument> mapToRead = null;
     private Set<DocumentFQN> setToDelete = null;
@@ -35,29 +33,18 @@ class CachedTransactionalContext {
 
     public CachedTransactionalContext(TransactionalFileStorage transactionalFileStorage) {
         this.transactionalFileStorage = transactionalFileStorage;
-    }
-
-    public void beginTransaction(UserIDAuth userIDAuth) {
-        this.userIDAuth = userIDAuth;
-        if (txid != null) {
-            throw new CacheException("A transaction is running " + txid);
-        }
-        txid = transactionalFileStorage.beginTransaction(userIDAuth);
         mapToStore = new HashMap<>();
         mapToRead = new HashMap<>();
         setToDelete = new HashSet<>();
     }
 
-
     public void txStoreDocument(DSDocument dsDocument) {
-        assertTxRunning();
         setToDelete.remove(dsDocument.getDocumentFQN());
         mapToStore.put(dsDocument.getDocumentFQN(), dsDocument);
         mapToRead.put(dsDocument.getDocumentFQN(), dsDocument);
     }
 
-    public DSDocument txReadDocument(DocumentFQN documentFQN) {
-        assertTxRunning();
+    public DSDocument txReadDocument(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN) {
         if (mapToRead.containsKey(documentFQN)) {
             return mapToRead.get(documentFQN);
         }
@@ -71,15 +58,13 @@ class CachedTransactionalContext {
     }
 
     public void txDeleteDocument(DocumentFQN documentFQN) {
-        assertTxRunning();
         setToDelete.add(documentFQN);
         mapToStore.remove(documentFQN);
         mapToRead.remove(documentFQN);
 
     }
 
-    public BucketContentFQN txListDocuments(DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
-        assertTxRunning();
+    public BucketContentFQN txListDocuments(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
         if (bucketContent == null) {
             bucketContent = transactionalFileStorage.txListDocuments(txid, userIDAuth, new DocumentDirectoryFQN("/"), ListRecursiveFlag.TRUE);
         }
@@ -132,8 +117,7 @@ class CachedTransactionalContext {
         return ret;
     }
 
-    public boolean txDocumentExists(DocumentFQN documentFQN) {
-        assertTxRunning();
+    public boolean txDocumentExists(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN) {
         if (setToDelete.contains(documentFQN)) {
             return false;
         }
@@ -143,19 +127,10 @@ class CachedTransactionalContext {
         return (transactionalFileStorage.txDocumentExists(txid, userIDAuth, documentFQN));
     }
 
-    public void endTransaction() {
+    public void endTransaction(final TxID txid, final UserIDAuth userIDAuth) {
         setToDelete.forEach(documentFQN -> transactionalFileStorage.txDeleteDocument(txid, userIDAuth, documentFQN));
         mapToStore.keySet().forEach(documentFQN ->  transactionalFileStorage.txStoreDocument(txid, userIDAuth, mapToStore.get(documentFQN)));
         transactionalFileStorage.endTransaction(txid, userIDAuth);
-        txid = null;
-        userIDAuth = null;
-    }
-
-    private void assertTxRunning() {
-        if (txid == null) {
-            throw new CacheException("No Transactin is running yet");
-        }
-
     }
 
 }
