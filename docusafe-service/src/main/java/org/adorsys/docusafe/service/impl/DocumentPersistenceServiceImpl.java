@@ -39,12 +39,15 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
     private DocumentGuardService documentGuardService;
     private ExtendedStoreConnection extendedStoreConnection;
     private BucketServiceImpl bucketService = null;
+    private DocumentKeyID2DocumentKeyCache documentKeyID2DocumentKeyCache = null;
 
-    public DocumentPersistenceServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
+    public DocumentPersistenceServiceImpl(ExtendedStoreConnection extendedStoreConnection,
+                                          DocumentKeyID2DocumentKeyCache documentKeyID2DocumentKeyCache) {
         this.extendedStoreConnection = extendedStoreConnection;
         this.encryptedPersistenceService = new EncryptedPersistenceServiceImpl(extendedStoreConnection, new AESEncryptionStreamServiceImpl());
         this.documentGuardService = new DocumentGuardServiceImpl(extendedStoreConnection);
         this.bucketService = new BucketServiceImpl(extendedStoreConnection);
+        this.documentKeyID2DocumentKeyCache = documentKeyID2DocumentKeyCache;
     }
 
     /**
@@ -79,7 +82,7 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
             DocumentBucketPath documentBucketPath) {
 
         LOGGER.debug("start load and decrypt document " + documentBucketPath + " " + keyStoreAccess);
-        KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess);
+        KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess, documentKeyID2DocumentKeyCache);
         Payload payload = encryptedPersistenceService.loadAndDecrypt(documentBucketPath, keySource, storageMetadata);
         LOGGER.debug("finished load and decrypt " + documentBucketPath);
         return payload;
@@ -135,7 +138,7 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
             KeyStoreAccess keyStoreAccess,
             DocumentBucketPath documentBucketPath) {
         LOGGER.debug("start load and decrypt stream " + documentBucketPath + " " + keyStoreAccess);
-        KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess);
+        KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess, documentKeyID2DocumentKeyCache);
         PayloadStream payloadStream = encryptedPersistenceService.loadAndDecryptStream(documentBucketPath, keySource, storageMetadata);
         LOGGER.debug("finished load and decrypt stream " + documentBucketPath);
         return payloadStream;

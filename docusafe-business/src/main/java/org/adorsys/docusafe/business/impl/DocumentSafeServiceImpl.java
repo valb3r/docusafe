@@ -28,6 +28,7 @@ import org.adorsys.docusafe.service.DocumentPersistenceService;
 import org.adorsys.docusafe.service.KeySourceService;
 import org.adorsys.docusafe.service.impl.BucketServiceImpl;
 import org.adorsys.docusafe.service.impl.DocumentGuardServiceImpl;
+import org.adorsys.docusafe.service.impl.DocumentKeyID2DocumentKeyCache;
 import org.adorsys.docusafe.service.impl.DocumentKeyIDMap;
 import org.adorsys.docusafe.service.impl.DocumentPersistenceServiceImpl;
 import org.adorsys.docusafe.service.impl.GuardKeyType;
@@ -37,6 +38,7 @@ import org.adorsys.docusafe.service.impl.PasswordAndDocumentKeyIDWithKeyAndAcces
 import org.adorsys.docusafe.service.types.AccessType;
 import org.adorsys.docusafe.service.types.BucketContent;
 import org.adorsys.docusafe.service.types.DocumentContent;
+import org.adorsys.docusafe.service.types.DocumentKey;
 import org.adorsys.docusafe.service.types.DocumentKeyID;
 import org.adorsys.docusafe.service.types.complextypes.DocumentBucketPath;
 import org.adorsys.docusafe.service.types.complextypes.DocumentGuardLocation;
@@ -66,7 +68,7 @@ import java.security.UnrecoverableEntryException;
 /**
  * Created by peter on 19.01.18 at 14:39.
  */
-public class DocumentSafeServiceImpl implements DocumentSafeService {
+public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKeyID2DocumentKeyCache {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentSafeServiceImpl.class);
     public static final String USER_AUTH_CACHE = "userAuthCache";
     public static final String GUARD_MAP = "GUARD_MAP";
@@ -86,7 +88,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         this.bucketService = new BucketServiceImpl(extendedStoreConnection);
         this.keyStoreService = new KeyStoreServiceImpl(extendedStoreConnection);
         this.documentGuardService = new DocumentGuardServiceImpl(extendedStoreConnection);
-        this.documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection);
+        this.documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection, this);
         this.keySourceService = new KeySourceServiceImpl(extendedStoreConnection);
     }
 
@@ -559,21 +561,14 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
     }
 
     private DocumentKeyIDWithKeyAndAccessType loadCachedOrRealDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(KeyStoreAccess keyStoreAccess, DocumentKeyID documentKeyID) {
-        GuardMap guardMap = memoryContext != null ? (GuardMap) memoryContext.get(GUARD_MAP) : null;
-        if (guardMap != null) {
-            String cacheKey = GuardMap.cacheKeyToString(keyStoreAccess, documentKeyID);
-            if (guardMap.containsKey(cacheKey)) {
-                PasswordAndDocumentKeyIDWithKeyAndAccessType passwordAndDocumentKeyIDWithKeyAndAccessType = guardMap.get(cacheKey);
-                if (passwordAndDocumentKeyIDWithKeyAndAccessType.getReadKeyPassword().equals(keyStoreAccess.getKeyStoreAuth().getReadKeyPassword())) {
-                    LOGGER.debug("AAA return document key for cache key " + cacheKey);
-                    return guardMap.get(cacheKey).getDocumentKeyIDWithKeyAndAccessType();
-                }
-                // Password war falsch, wir lassen den Aufrufer abtauchen und die original Exception erhalten
-            }
+        DocumentKeyIDWithKeyAndAccessType fromCache = get(keyStoreAccess, documentKeyID);
+        if (fromCache != null) {
+            return fromCache;
         }
 
         DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = documentGuardService.loadDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(keyStoreAccess, documentKeyID);
 
+        GuardMap guardMap = memoryContext != null ? (GuardMap) memoryContext.get(GUARD_MAP) : null;
         if (guardMap != null) {
             String cacheKey = GuardMap.cacheKeyToString(keyStoreAccess, documentKeyID);
             guardMap.put(cacheKey, new PasswordAndDocumentKeyIDWithKeyAndAccessType(keyStoreAccess.getKeyStoreAuth().getReadKeyPassword(), documentKeyIDWithKeyAndAccessType));
@@ -628,4 +623,20 @@ public class DocumentSafeServiceImpl implements DocumentSafeService {
         documentKeyIDMap.put(bucketDirectory, documentKeyID);
     }
 
+    @Override
+    public DocumentKeyIDWithKeyAndAccessType get(KeyStoreAccess keyStoreAccess, DocumentKeyID documentKeyID) {
+        GuardMap guardMap = memoryContext != null ? (GuardMap) memoryContext.get(GUARD_MAP) : null;
+        if (guardMap != null) {
+            String cacheKey = GuardMap.cacheKeyToString(keyStoreAccess, documentKeyID);
+            if (guardMap.containsKey(cacheKey)) {
+                PasswordAndDocumentKeyIDWithKeyAndAccessType passwordAndDocumentKeyIDWithKeyAndAccessType = guardMap.get(cacheKey);
+                if (passwordAndDocumentKeyIDWithKeyAndAccessType.getReadKeyPassword().equals(keyStoreAccess.getKeyStoreAuth().getReadKeyPassword())) {
+                    LOGGER.debug("AAA return document key for cache key " + cacheKey);
+                    return guardMap.get(cacheKey).getDocumentKeyIDWithKeyAndAccessType();
+                }
+                // Password war falsch, wir lassen den Aufrufer abtauchen und die original Exception erhalten
+            }
+        }
+        return null;
+    }
 }

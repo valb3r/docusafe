@@ -44,7 +44,7 @@ public class DocumentPersistenceServiceTest {
                                              DocumentContent documentContent,
                                              OverwriteFlag overwriteFlag) {
         extendedStoreConnection.createContainer(documentBucketPath.getBucketDirectory());
-        DocumentPersistenceService documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection);
+        DocumentPersistenceService documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection, null);
         documentPersistenceService.encryptAndPersistDocument(
                 documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey(),
                 documentBucketPath,
@@ -58,7 +58,7 @@ public class DocumentPersistenceServiceTest {
     public Payload testLoadDocument(DocumentGuardService documentGuardService,
                                  KeyStoreAccess keyStoreAccess,
                                  DocumentBucketPath documentBucketPath) {
-        DocumentPersistenceService documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection);
+        DocumentPersistenceService documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection, null);
         StorageMetadata storageMetadata = extendedStoreConnection.getStorageMetadata(documentBucketPath);
         if (DocumentPersistenceService.isNotEncrypted(storageMetadata.getUserMetadata())) {
             return documentPersistenceService.loadDocument(storageMetadata, documentBucketPath);
