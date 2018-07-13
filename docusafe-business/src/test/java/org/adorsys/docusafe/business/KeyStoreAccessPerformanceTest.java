@@ -1,5 +1,6 @@
 package org.adorsys.docusafe.business;
 
+import com.googlecode.catchexception.CatchException;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
@@ -24,6 +25,8 @@ public class KeyStoreAccessPerformanceTest extends BusinessTestBase {
         UserIDAuth userIDAuth = new UserIDAuth(new UserID("peter"), new ReadKeyPassword("readKeyPassword"));
         service.createUser(userIDAuth);
 
+        // LOGGER.debug("==================================================================");
+        // CatchException.catchException(() -> Thread.currentThread().sleep(30000));
         StopWatch st = new StopWatch();
         st.start();
 
