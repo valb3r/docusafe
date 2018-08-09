@@ -44,8 +44,8 @@ public class DocumentsafeRestClient {
     private static final String WRITE_DOCUMENT = "document";
     private static final String WRITE_DOCUMENT_STREAM1 = "documentstream";
 
-    public DocumentsafeRestClient(String baseuri) {
-        this.baseuri = baseuri;
+    public DocumentsafeRestClient() {
+        this.baseuri = System.getProperty("BASE_URL");
         client = ClientBuilder.newClient(new ClientConfig()
                 // The line below that registers JSON-Processing feature can be
                 // omitted if FEATURE_AUTO_DISCOVERY_DISABLE is not disabled.

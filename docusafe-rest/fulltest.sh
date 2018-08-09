@@ -17,7 +17,7 @@ echo "build standalone server"
 mvn -f ../pom.xml clean package -DskipTests  > /dev/null
 
 echo "start standalone server"
-java -jar ../docusafe-rest/target/docusafe-rest.jar ERASE_DATABASE $* > documentsafe.console.out.log &
+java -jar ../docusafe-rest/target/docusafe-rest.jar -ERASE_DATABASE $* > documentsafe.console.out.log &
 pid=$!
 echo "pid ist $pid"
 
@@ -70,6 +70,7 @@ testParams $*
 echo filesystem $filesystem
 
 ./dorest.sh $filesystem
+echo "warte nun 60 sekunden"
 ./streamTest.sh
 ./streamByteTest.sh
 

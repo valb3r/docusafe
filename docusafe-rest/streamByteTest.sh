@@ -1,3 +1,6 @@
+
+BASE_URL=http://localhost:9999
+
 trap error ERR
 
 function error () {
@@ -26,14 +29,14 @@ size=$(ls -sk $filetosave | cut -f  2 -d " ")
 # write stream and read bytes and stream ===================
 # ==========================================================
 print "$(date) write file stream oriented with size $size"
-java -jar $file -wb $filetosave
+java -DBASE_URL=${BASE_URL} -jar $file -wb $filetosave
 
 print "$(date) read file stream oriented with size $size"
-java -jar $file -rs $filetosave $file-as-stream2
+java -DBASE_URL=${BASE_URL} -jar $file -rs $filetosave $file-as-stream2
 diff $filetosave $file-as-stream2
 
 print "$(date) read file byte oriented with size $size"
-java -jar $file -rb $filetosave $file-as-bytes
+java -DBASE_URL=${BASE_URL} -jar $file -rb $filetosave $file-as-bytes
 diff $filetosave $file-as-bytes
 
 print "STREAM TESTING SUCCESSFULL"

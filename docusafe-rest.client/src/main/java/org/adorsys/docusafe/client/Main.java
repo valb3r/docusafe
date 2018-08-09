@@ -16,7 +16,7 @@ import java.io.InputStream;
  */
 public class Main {
     private final static Logger LOGGER = LoggerFactory.getLogger(Main.class);
-    static final String BASEURI = "http://localhost:8080";
+
     public static final String USER_ID = "peter";
     public static final String PASSWORD = "rkp";
 
@@ -27,7 +27,7 @@ public class Main {
         String action = args[0];
 
         System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
-        DocumentsafeRestClient client = new DocumentsafeRestClient(BASEURI);
+        DocumentsafeRestClient client = new DocumentsafeRestClient();
         if (action.equals("-cu")) {
             if (args.length != 1) {
                 error();

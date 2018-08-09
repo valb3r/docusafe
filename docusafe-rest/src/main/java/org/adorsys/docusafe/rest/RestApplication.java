@@ -3,6 +3,7 @@ package org.adorsys.docusafe.rest;
 import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
+import org.adorsys.cryptoutils.storeconnectionfactory.ReadArguments;
 import org.adorsys.cryptoutils.utils.ShowProperties;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -55,7 +56,7 @@ public class RestApplication {
                         } catch (Exception e) {
                             throw BaseExceptionHandler.handle(e);
                         }
-                    } else if (arg.equalsIgnoreCase("ERASE_DATABASE")) {
+                    } else if (arg.equalsIgnoreCase("-ERASE_DATABASE")) {
                         LOGGER.warn("***************************");
                         LOGGER.warn("*                         *");
                         LOGGER.warn("*  *********************  *");
@@ -69,7 +70,18 @@ public class RestApplication {
                         extendedStoreConnection.listAllBuckets().forEach(c -> extendedStoreConnection.deleteContainer(c));
                     } else {
                         LOGGER.error("Parameter " + arg + " is unknown.");
-                        LOGGER.error("Knwon Parameters are: encoff, mongodb, filesystem");
+                        LOGGER.error("Knwon Parameters are: " +
+                                "-TurnOffEncPolicy, " +
+                                "-EncOff, " +
+                                "-ERASE_DATABASE, " +
+                                ReadArguments.FILESYSTEM_ARG + ", " +
+                                ReadArguments.MINIO_ARG + ", " +
+                                ReadArguments.MONGO_ARG + " ");
+                        LOGGER.error("The StoreConnection to choose can be supplied via Systemproperties too :" +
+                                ReadArguments.FILESYSTEM + ", " +
+                                ReadArguments.MINIO+ ", " +
+                                ReadArguments.MONGO + " ");
+
                         throw new BaseException("Parameter " + arg + " is unknown.");
                     }
                 }
