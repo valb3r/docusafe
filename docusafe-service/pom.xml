@@ -30,12 +30,6 @@
             <artifactId>jkeyutils</artifactId>
             <version>${crypt.version}</version>
         </dependency>
-        <dependency>
-            <groupId>de.adorsys.cryptoutils</groupId>
-            <artifactId>filesystemstoreconnection</artifactId>
-            <version>${crypt.version}</version>
-        </dependency>
-
         <!-- bouncy castle -->
         <dependency>
             <groupId>org.bouncycastle</groupId>

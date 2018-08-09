@@ -45,7 +45,7 @@
 
 
     <!-- can be changed or removed -->
-    <logger name="org.adorsys.docusafe.business" level="DEBUG" additivity="false">
+    <logger name="org.adorsys.docusafe.business" level="INFO" additivity="false">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />
     </logger>
