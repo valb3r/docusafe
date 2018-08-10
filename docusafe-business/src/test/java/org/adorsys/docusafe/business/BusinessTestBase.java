@@ -3,6 +3,7 @@ package org.adorsys.docusafe.business;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
 import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
+import org.adorsys.docusafe.business.impl.WithCache;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
@@ -62,7 +63,7 @@ public class BusinessTestBase {
         LOGGER.debug("add bouncy castle provider");
         Security.addProvider(new BouncyCastleProvider());
         users.clear();
-        service = new DocumentSafeServiceImpl(extendedStoreConnection);
+        service = new DocumentSafeServiceImpl(WithCache.FAlSE, extendedStoreConnection);
     }
 
     @After

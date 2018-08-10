@@ -15,7 +15,6 @@ import java.security.Security;
 @SuppressWarnings("Duplicates")
 public class BusinessUnencryptedWithCacheTest extends BusinessUnencryptedTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(BusinessUnencryptedWithCacheTest.class);
-    private MemoryContext mc;
 
     @BeforeClass
     static public void beforeClass() {
@@ -28,8 +27,6 @@ public class BusinessUnencryptedWithCacheTest extends BusinessUnencryptedTest {
     @Before
     public void before() {
         super.before();
-        mc = new DocusafeCacheImpl();
-        service.setMemoryContext(mc);
     }
 
     @Override

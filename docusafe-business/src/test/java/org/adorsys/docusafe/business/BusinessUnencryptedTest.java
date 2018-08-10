@@ -2,6 +2,7 @@ package org.adorsys.docusafe.business;
 
 import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
+import org.adorsys.docusafe.business.impl.DocusafeCacheImpl;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
@@ -12,6 +13,7 @@ import org.adorsys.docusafe.service.types.AccessType;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +30,19 @@ import java.util.stream.Collectors;
 @SuppressWarnings("Duplicates")
 public class BusinessUnencryptedTest extends BusinessTestBase {
     private final static Logger LOGGER = LoggerFactory.getLogger(BusinessUnencryptedTest.class);
+
+    @Before
+    public void before() {
+        super.before();
+    }
+
+    @Override
+    public void after() {
+        try {
+            super.after();
+        } finally {
+        }
+    }
 
     /**
      * Achtung, dieser Test möchte sicherstellen, dass in Cryptoutils die Methode zum Lesen der StorageMetadata
