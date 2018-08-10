@@ -1,8 +1,7 @@
 package org.adorsys.docusafe.cached.transactional.impl;
 
 import org.adorsys.cryptoutils.exceptions.BaseException;
-import org.adorsys.docusafe.business.impl.SimpleMemoryContextImpl;
-import org.adorsys.docusafe.business.types.MemoryContext;
+import org.adorsys.docusafe.business.impl.DocusafeCacheImpl;
 import org.adorsys.docusafe.transactional.RequestMemoryContext;
 
 import java.util.HashMap;
@@ -32,7 +31,7 @@ public class SimpleRequestMemoryContextImpl implements RequestMemoryContext {
     public void switchToUser(int i) {
         String key = "" + i;
         if (!pseudoUserMap.containsKey(key)) {
-            pseudoUserMap.put(key, new SimpleMemoryContextImpl());
+            pseudoUserMap.put(key, new DocusafeCacheImpl());
         }
         current = pseudoUserMap.get(key);
     }

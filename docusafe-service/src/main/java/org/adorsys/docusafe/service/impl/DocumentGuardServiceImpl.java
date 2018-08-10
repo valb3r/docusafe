@@ -1,7 +1,6 @@
 package org.adorsys.docusafe.service.impl;
 
 import org.adorsys.cryptoutils.exceptions.BaseException;
-import org.adorsys.docusafe.business.types.MemoryContext;
 import org.adorsys.docusafe.service.BucketService;
 import org.adorsys.docusafe.service.DocumentGuardService;
 import org.adorsys.docusafe.service.exceptions.NoDocumentGuardExists;
@@ -40,8 +39,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.security.KeyStore;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.UUID;
 
 public class DocumentGuardServiceImpl implements DocumentGuardService {
@@ -52,9 +49,6 @@ public class DocumentGuardServiceImpl implements DocumentGuardService {
     private KeystorePersistence keystorePersistence;
     private EncryptedPersistenceService encryptedPersistenceUtil;
     private BucketService bucketService;
-    private MemoryContext memoryContext = null;
-
-
     private DocumentGuardSerializerRegistery serializerRegistry = DocumentGuardSerializerRegistery.getInstance();
 
     public DocumentGuardServiceImpl(ExtendedStoreConnection extendedStoreConnection) {

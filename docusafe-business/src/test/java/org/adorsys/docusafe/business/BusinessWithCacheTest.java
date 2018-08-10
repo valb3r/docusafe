@@ -1,7 +1,6 @@
 package org.adorsys.docusafe.business;
 
-import org.adorsys.docusafe.business.impl.SimpleMemoryContextImpl;
-import org.adorsys.docusafe.business.types.MemoryContext;
+import org.adorsys.docusafe.business.impl.DocusafeCacheImpl;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -29,7 +28,7 @@ public class BusinessWithCacheTest extends BusinessTest {
     @Before
     public void before() {
         super.before();
-        mc = new SimpleMemoryContextImpl();
+        mc = new DocusafeCacheImpl();
         service.setMemoryContext(mc);
     }
 
@@ -38,7 +37,7 @@ public class BusinessWithCacheTest extends BusinessTest {
         try {
             super.after();
         } finally {
-            LOGGER.info(SimpleMemoryContextImpl.toString(mc));
+            LOGGER.info(DocusafeCacheImpl.toString(mc));
             service.setMemoryContext(null);
             mc = null;
         }

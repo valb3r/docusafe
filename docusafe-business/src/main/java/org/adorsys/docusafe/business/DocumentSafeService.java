@@ -1,7 +1,6 @@
 package org.adorsys.docusafe.business;
 
 import com.nimbusds.jose.jwk.JWK;
-import org.adorsys.docusafe.business.types.MemoryContext;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
@@ -52,10 +51,4 @@ public interface DocumentSafeService {
     void storeGrantedDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument);
     DSDocument readGrantedDocument(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN);
     boolean grantedDocumentExists(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN);
-
-
-    /**
-     * Caching
-     */
-    void setMemoryContext(MemoryContext memoryContext);
 }

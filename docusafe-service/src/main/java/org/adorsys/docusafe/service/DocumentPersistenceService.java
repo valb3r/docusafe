@@ -1,6 +1,5 @@
 package org.adorsys.docusafe.service;
 
-import org.adorsys.docusafe.business.types.MemoryContext;
 import org.adorsys.docusafe.service.types.complextypes.DocumentBucketPath;
 import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.encobject.domain.KeyStoreAccess;

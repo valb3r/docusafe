@@ -9,7 +9,6 @@ import org.adorsys.docusafe.business.exceptions.NoWriteAccessException;
 import org.adorsys.docusafe.business.exceptions.UserIDAlreadyExistsException;
 import org.adorsys.docusafe.business.exceptions.UserIDDoesNotExistException;
 import org.adorsys.docusafe.business.exceptions.WrongPasswordException;
-import org.adorsys.docusafe.business.types.MemoryContext;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
@@ -38,7 +37,6 @@ import org.adorsys.docusafe.service.impl.PasswordAndDocumentKeyIDWithKeyAndAcces
 import org.adorsys.docusafe.service.types.AccessType;
 import org.adorsys.docusafe.service.types.BucketContent;
 import org.adorsys.docusafe.service.types.DocumentContent;
-import org.adorsys.docusafe.service.types.DocumentKey;
 import org.adorsys.docusafe.service.types.DocumentKeyID;
 import org.adorsys.docusafe.service.types.complextypes.DocumentBucketPath;
 import org.adorsys.docusafe.service.types.complextypes.DocumentGuardLocation;
@@ -81,15 +79,19 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
     private DocumentPersistenceService documentPersistenceService;
     private KeySourceService keySourceService;
     private ExtendedStoreConnection extendedStoreConnection;
-    private MemoryContext memoryContext = null;
+    private DocusafeCache memoryContext = null;
 
-    public DocumentSafeServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
+    public DocumentSafeServiceImpl(WithCache withCache, ExtendedStoreConnection extendedStoreConnection) {
         this.extendedStoreConnection = extendedStoreConnection;
         this.bucketService = new BucketServiceImpl(extendedStoreConnection);
         this.keyStoreService = new KeyStoreServiceImpl(extendedStoreConnection);
         this.documentGuardService = new DocumentGuardServiceImpl(extendedStoreConnection);
         this.documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection, this);
         this.keySourceService = new KeySourceServiceImpl(extendedStoreConnection);
+
+        if (withCache.equals(WithCache.TRUE)) {
+            memoryContext = new DocusafeCacheImpl();
+        }
     }
 
     /**
@@ -427,17 +429,6 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
     }
 
     @Override
-    public void setMemoryContext(MemoryContext memoryContext) {
-        this.memoryContext = memoryContext;
-        if (this.memoryContext != null) {
-            this.memoryContext.put(USER_AUTH_CACHE, new UserAuthCache());
-            this.memoryContext.put(GUARD_MAP, new GuardMap());
-            this.memoryContext.put(DOCUMENT_KEY_MAP, new DocumentKeyIDMap());
-            LOGGER.info("MemoryContext will be used");
-        }
-    }
-
-    @Override
     public JWK findPublicEncryptionKey(UserID userID) {
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(new UserIDAuth(userID, null));
         return keySourceService.findPublicEncryptionKey(keyStoreAccess);
@@ -532,7 +523,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
     }
 
     private void checkUserKeyPassword(UserIDAuth userIDAuth) {
-        UserAuthCache userAuthCache = memoryContext != null ? (UserAuthCache) memoryContext.get(USER_AUTH_CACHE) : null;
+        UserAuthCache userAuthCache = memoryContext != null ? memoryContext.getUserAuthCache() : null;
         if (userAuthCache != null) {
             LOGGER.info("MemoryContext is used");
 
@@ -579,10 +570,10 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
     }
 
     void createCachedDocumentGuardFor(GuardKeyType guardKeyType, KeyStoreAccess keyStoreAccess,
-                                DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType,
-                                OverwriteFlag overwriteFlag) {
+                                      DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType,
+                                      OverwriteFlag overwriteFlag) {
 
-        documentGuardService.createDocumentGuardFor(guardKeyType,keyStoreAccess,documentKeyIDWithKeyAndAccessType,overwriteFlag);
+        documentGuardService.createDocumentGuardFor(guardKeyType, keyStoreAccess, documentKeyIDWithKeyAndAccessType, overwriteFlag);
 
         GuardMap guardMap = memoryContext != null ? (GuardMap) memoryContext.get(GUARD_MAP) : null;
         if (guardMap != null) {

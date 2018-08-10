@@ -1,7 +1,6 @@
 package org.adorsys.docusafe.transactional;
 
-import org.adorsys.docusafe.business.impl.SimpleMemoryContextImpl;
-import org.adorsys.docusafe.business.types.MemoryContext;
+import org.adorsys.docusafe.business.impl.DocusafeCacheImpl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +29,7 @@ public class SimpleRequestMemoryContextImpl implements RequestMemoryContext {
     public void switchToUser(int i) {
         String key = "" + i;
         if (!pseudoUserMap.containsKey(key)) {
-            pseudoUserMap.put(key, new SimpleMemoryContextImpl());
+            pseudoUserMap.put(key, new DocusafeCacheImpl());
         }
         current = pseudoUserMap.get(key);
     }
