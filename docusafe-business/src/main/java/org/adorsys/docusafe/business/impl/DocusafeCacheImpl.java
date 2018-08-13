@@ -34,10 +34,12 @@ public class DocusafeCacheImpl implements DocusafeCache {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("DOCUSAFE_CACHE");
-        sb.append("\n");
-        sb.append("number of users   :" + getUserAuthCache().keySet().size());
-        sb.append("number of guards  :" + getGuardCache().keySet().size());
-        sb.append("number of doc keys:" + getDocumentKeyIDCache().keySet().size());
+        sb.append(" ");
+        sb.append("number of users: " + getUserAuthCache().keySet().size());
+        sb.append(" ");
+        sb.append("number of guards: " + getGuardCache().keySet().size());
+        sb.append(" ");
+        sb.append("number of doc keys: " + getDocumentKeyIDCache().keySet().size());
         return sb.toString();
     }
 }

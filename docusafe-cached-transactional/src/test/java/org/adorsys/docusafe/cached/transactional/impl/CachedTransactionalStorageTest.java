@@ -2,6 +2,7 @@ package org.adorsys.docusafe.cached.transactional.impl;
 
 import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
 import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
+import org.adorsys.docusafe.business.impl.WithCache;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
@@ -35,7 +36,7 @@ public class CachedTransactionalStorageTest {
     private RequestMemoryContext memoryContext = new SimpleRequestMemoryContextImpl();
     private TransactionalStorageTestWrapper wrapper = new TransactionalStorageTestWrapper(
             new TransactionalFileStorageImpl(memoryContext,
-                    new DocumentSafeServiceImpl(ExtendedStoreConnectionFactory.get())));
+                    new DocumentSafeServiceImpl(WithCache.FALSE, ExtendedStoreConnectionFactory.get())));
     private CachedTransactionalFileStorage service = new CachedTransactionalFileStorageImpl(memoryContext, wrapper);
 
     List<UserIDAuth> userIDAuthList = new ArrayList<>();

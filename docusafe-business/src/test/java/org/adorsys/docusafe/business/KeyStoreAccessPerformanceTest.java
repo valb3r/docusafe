@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
  */
 public class KeyStoreAccessPerformanceTest extends BusinessTestBase {
     private final static Logger LOGGER = LoggerFactory.getLogger(KeyStoreAccessPerformanceTest.class);
+
     @Test
     public void a() {
 

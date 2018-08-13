@@ -47,6 +47,7 @@ public class BusinessTestBase {
     private final static Logger LOGGER = LoggerFactory.getLogger(BusinessTestBase.class);
     protected final static ExtendedStoreConnection extendedStoreConnection = ExtendedStoreConnectionFactory.get();
     protected DocumentSafeService service;
+    protected WithCache withCache = WithCache.FALSE;
 
     public static Set<UserIDAuth> users = new HashSet<>();
 
@@ -63,12 +64,13 @@ public class BusinessTestBase {
         LOGGER.debug("add bouncy castle provider");
         Security.addProvider(new BouncyCastleProvider());
         users.clear();
-        service = new DocumentSafeServiceImpl(WithCache.FAlSE, extendedStoreConnection);
+        service = new DocumentSafeServiceImpl(withCache, extendedStoreConnection);
     }
 
     @After
     public void after() {
         try {
+            LOGGER.info("AFTER TEST:" + DocumentSafeServiceImpl.showCache(service));
             users.forEach(userIDAuth -> {
                 LOGGER.debug("AFTER TEST DESTROY " + userIDAuth.getUserID().getValue());
                 service.destroyUser(userIDAuth);

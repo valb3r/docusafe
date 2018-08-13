@@ -9,8 +9,8 @@ import java.util.Map;
  * Created by peter on 09.07.18 at 14:06.
  */
 public class SimpleRequestMemoryContextImpl implements RequestMemoryContext {
-    private Map<String, MemoryContext> pseudoUserMap = new HashMap<>();
-    MemoryContext current = null;
+    private Map<String, TransactionalContext> pseudoUserMap = new HashMap<>();
+    TransactionalContext current = null;
 
     @Override
     public void put(Object key, Object value) {
@@ -29,10 +29,12 @@ public class SimpleRequestMemoryContextImpl implements RequestMemoryContext {
     public void switchToUser(int i) {
         String key = "" + i;
         if (!pseudoUserMap.containsKey(key)) {
-            pseudoUserMap.put(key, new DocusafeCacheImpl());
+            pseudoUserMap.put(key, new TransactionalContext());
         }
         current = pseudoUserMap.get(key);
     }
 
+    public static class TransactionalContext extends HashMap<Object, Object> {
+    }
 
 }

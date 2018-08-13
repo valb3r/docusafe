@@ -1,24 +1,19 @@
 package org.adorsys.docusafe.rest;
 
-import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
-import org.adorsys.cryptoutils.miniostoreconnection.MinioExtendedStoreConnection;
-import org.adorsys.cryptoutils.miniostoreconnection.MinioParamParser;
-import org.adorsys.cryptoutils.mongodbstoreconnection.MongoDBExtendedStoreConnection;
 import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
 import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
+import org.adorsys.docusafe.business.impl.WithCache;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentStream;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
-import org.adorsys.docusafe.rest.types.CreateLinkTupel;
 import org.adorsys.docusafe.rest.types.GrantDocument;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.domain.ReadKeyPassword;
-import org.adorsys.encobject.filesystem.FileSystemExtendedStorageConnection;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +48,7 @@ public class DocumentSafeController {
     private DocumentSafeService service;
 
     public DocumentSafeController() {
-        service = new DocumentSafeServiceImpl(ExtendedStoreConnectionFactory.get());
+        service = new DocumentSafeServiceImpl(WithCache.TRUE, ExtendedStoreConnectionFactory.get());
     }
 
     /**
