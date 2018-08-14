@@ -1,7 +1,5 @@
 package org.adorsys.docusafe.transactional;
 
-import org.adorsys.docusafe.business.impl.DocusafeCacheImpl;
-
 import java.util.HashMap;
 import java.util.Map;
 
