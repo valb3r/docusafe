@@ -9,6 +9,9 @@ import org.adorsys.docusafe.business.exceptions.NoWriteAccessException;
 import org.adorsys.docusafe.business.exceptions.UserIDAlreadyExistsException;
 import org.adorsys.docusafe.business.exceptions.UserIDDoesNotExistException;
 import org.adorsys.docusafe.business.exceptions.WrongPasswordException;
+import org.adorsys.docusafe.business.impl.caches.DocumentGuardCache;
+import org.adorsys.docusafe.business.impl.caches.DocumentKeyIDCache;
+import org.adorsys.docusafe.business.impl.caches.UserAuthCache;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
@@ -88,7 +91,10 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         this.keySourceService = new KeySourceServiceImpl(extendedStoreConnection);
 
         if (withCache.equals(WithCache.TRUE)) {
-            docusafeCacheWrapper = new DocusafeCacheWrapperImpl();
+            docusafeCacheWrapper = new DocusafeCacheWrapperImpl(CacheType.GUAVA);
+        }
+        if (withCache.equals(WithCache.TRUE_HASH_MAP)) {
+            docusafeCacheWrapper = new DocusafeCacheWrapperImpl(CacheType.HASH_MAP);
         }
     }
 
@@ -525,13 +531,15 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         if (userAuthCache != null) {
             LOGGER.info("MemoryContext is used");
 
-            if (userAuthCache.containsKey(userIDAuth.getUserID())) {
-                ReadKeyPassword expected = userAuthCache.get(userIDAuth.getUserID());
-                if (expected.equals(userIDAuth.getReadKeyPassword())) {
+            ReadKeyPassword expectedFromCache = userAuthCache.get(userIDAuth.getUserID());
+            if (expectedFromCache != null) {
+                if (expectedFromCache.equals(userIDAuth.getReadKeyPassword())) {
                     LOGGER.info("MemoryContext successful for " + userIDAuth.getUserID());
                     return;
                 }
-                throw new WrongPasswordException(userIDAuth.getUserID());
+                // Password war falsch, also löschen und normale Prozedur laufen lassen
+                // Koennte sich ja z.B. geändert haben.
+                userAuthCache.remove(userIDAuth.getUserID());
             }
         }
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
@@ -617,13 +625,14 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         DocumentGuardCache documentGuardCache = docusafeCacheWrapper != null ? docusafeCacheWrapper.getDocumentGuardCache() : null;
         if (documentGuardCache != null) {
             String cacheKey = DocumentGuardCache.cacheKeyToString(keyStoreAccess, documentKeyID);
-            if (documentGuardCache.containsKey(cacheKey)) {
-                PasswordAndDocumentKeyIDWithKeyAndAccessType passwordAndDocumentKeyIDWithKeyAndAccessType = documentGuardCache.get(cacheKey);
-                if (passwordAndDocumentKeyIDWithKeyAndAccessType.getReadKeyPassword().equals(keyStoreAccess.getKeyStoreAuth().getReadKeyPassword())) {
+            PasswordAndDocumentKeyIDWithKeyAndAccessType passwordAndDocumentKeyIDWithKeyAndAccessTypeFromCache = documentGuardCache.get(cacheKey);
+            if (passwordAndDocumentKeyIDWithKeyAndAccessTypeFromCache != null) {
+                if (passwordAndDocumentKeyIDWithKeyAndAccessTypeFromCache.getReadKeyPassword().equals(keyStoreAccess.getKeyStoreAuth().getReadKeyPassword())) {
                     LOGGER.debug("AAA return document key for cache key " + cacheKey);
                     return documentGuardCache.get(cacheKey).getDocumentKeyIDWithKeyAndAccessType();
                 }
                 // Password war falsch, wir lassen den Aufrufer abtauchen und die original Exception erhalten
+                documentGuardCache.remove(cacheKey);
             }
         }
         return null;

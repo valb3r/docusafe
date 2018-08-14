@@ -5,5 +5,6 @@ package org.adorsys.docusafe.business.impl;
  */
 public enum WithCache {
     FALSE,
-    TRUE
+    TRUE,
+    TRUE_HASH_MAP
 }

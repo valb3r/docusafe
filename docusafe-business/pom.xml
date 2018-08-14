@@ -39,6 +39,12 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>
+
         <!-- extra logback, weil bei einem Test die Logausgaben geprüft werden
         das ist mit dem simpleLogger nicht moeglich, da der nur nach standard out schreibt
         -->

@@ -23,6 +23,7 @@
         <slf4j-simple.version>1.7.25</slf4j-simple.version>
         <catch.exception.version>2.0.0-beta-1</catch.exception.version>
         <junit.version>4.12</junit.version>
+        <guava.version>26.0-jre</guava.version>
     </properties>
 
     <scm>
