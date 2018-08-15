@@ -12,25 +12,7 @@ import org.adorsys.encobject.types.ListRecursiveFlag;
 /**
  * Created by peter on 11.06.18 at 14:56.
  */
-public interface TransactionalFileStorage {
-
-    // NON-TRANSACTIONAL FOR OWNER
-    void createUser(UserIDAuth userIDAuth);
-    void destroyUser(UserIDAuth userIDAuth);
-    boolean userExists(UserID userID);
-    void grantAccessToNonTxFolder(UserIDAuth userIDAuth, UserID receiverUserID, DocumentDirectoryFQN documentDirectoryFQN);
-
-    void nonTxStoreDocument(UserIDAuth userIDAuth, DSDocument dsDocument);
-    DSDocument nonTxReadDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
-    boolean nonTxDocumentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN);
-    void nonTxDeleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
-    BucketContentFQN nonTxListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag);
-
-    // NON-TRANSACTIONAL FOR OTHERS
-    void nonTxStoreDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument);
-    DSDocument nonTxReadDocument(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN);
-    boolean nonTxDocumentExists(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN);
-
+public interface TransactionalFileStorage extends NonTransactionalFileStorage {
     // TRANSACTIONAL
     TxID beginTransaction(UserIDAuth userIDAuth);
 
@@ -42,6 +24,5 @@ public interface TransactionalFileStorage {
     void txDeleteFolder(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN);
 
     void endTransaction(TxID txid, UserIDAuth userIDAuth);
-
 
 }
