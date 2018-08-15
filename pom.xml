@@ -56,8 +56,6 @@
     <modules>
         <module>docusafe-service</module>
         <module>docusafe-business</module>
-        <module>docusafe-rest</module>
-        <module>docusafe-rest.client</module>
         <module>docusafe-transactional</module>
         <module>docusafe-cached-transactional</module>
     </modules>
