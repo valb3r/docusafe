@@ -1,7 +1,7 @@
 package org.adorsys.docusafe.transactional;
 
-import org.adorsys.docusafe.cached.transactional.impl.CachedTransactionalFileStorageImpl;
-import org.adorsys.docusafe.transactional.impl.TransactionalFileStorageImpl;
+import org.adorsys.docusafe.cached.transactional.impl.CachedTransactionalDocumentSafeServiceImpl;
+import org.adorsys.docusafe.transactional.impl.TransactionalDocumentSafeServiceImpl;
 import org.junit.Before;
 
 /**
@@ -10,7 +10,7 @@ import org.junit.Before;
 public class TxHistoryCleanupWithCacheTest extends TxHistoryCleanupTest {
     @Before
     public void preTest() {
-        TransactionalFileStorage localTransactionalFileStorage = new TransactionalFileStorageImpl(requestMemoryContext, dssi);
-        this.transactionalFileStorage = new CachedTransactionalFileStorageImpl(requestMemoryContext, localTransactionalFileStorage);
+        TransactionalDocumentSafeService localTransactionalFileStorage = new TransactionalDocumentSafeServiceImpl(requestMemoryContext, dssi);
+        this.transactionalFileStorage = new CachedTransactionalDocumentSafeServiceImpl(requestMemoryContext, localTransactionalFileStorage);
     }
 }

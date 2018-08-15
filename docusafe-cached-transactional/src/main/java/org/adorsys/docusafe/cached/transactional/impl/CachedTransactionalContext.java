@@ -7,7 +7,7 @@ import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.cached.transactional.exceptions.CacheException;
-import org.adorsys.docusafe.transactional.TransactionalFileStorage;
+import org.adorsys.docusafe.transactional.TransactionalDocumentSafeService;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.types.ListRecursiveFlag;
@@ -27,11 +27,11 @@ class CachedTransactionalContext {
     private Map<DocumentFQN, DSDocument> mapToStore = null;
     private Map<DocumentFQN, DSDocument> mapToRead = null;
     private Set<DocumentFQN> setToDelete = null;
-    private TransactionalFileStorage transactionalFileStorage = null;
+    private TransactionalDocumentSafeService transactionalFileStorage = null;
     private BucketContentFQN bucketContent = null;
 
 
-    public CachedTransactionalContext(TransactionalFileStorage transactionalFileStorage) {
+    public CachedTransactionalContext(TransactionalDocumentSafeService transactionalFileStorage) {
         this.transactionalFileStorage = transactionalFileStorage;
         mapToStore = new HashMap<>();
         mapToRead = new HashMap<>();

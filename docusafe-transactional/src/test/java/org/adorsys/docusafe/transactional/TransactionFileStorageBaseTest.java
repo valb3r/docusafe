@@ -6,7 +6,7 @@ import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
 import org.adorsys.docusafe.business.impl.WithCache;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
-import org.adorsys.docusafe.transactional.impl.TransactionalFileStorageImpl;
+import org.adorsys.docusafe.transactional.impl.TransactionalDocumentSafeServiceImpl;
 import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
 import org.junit.After;
@@ -19,7 +19,7 @@ public class TransactionFileStorageBaseTest {
 
     RequestMemoryContext requestMemoryContext = new SimpleRequestMemoryContextImpl();
     DocumentSafeServiceImpl dssi = new DocumentSafeServiceImpl(WithCache.FALSE, ExtendedStoreConnectionFactory.get());
-    TransactionalFileStorage transactionalFileStorage = new TransactionalFileStorageImpl(requestMemoryContext, dssi);
+    TransactionalDocumentSafeService transactionalFileStorage = new TransactionalDocumentSafeServiceImpl(requestMemoryContext, dssi);
     UserIDAuth userIDAuth = new UserIDAuth(new UserID("peter"), new ReadKeyPassword("password"));
     UserIDAuth systemUserIDAuth = new UserIDAuth(new UserID("system"), new ReadKeyPassword("systemPassword"));
 

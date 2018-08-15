@@ -10,10 +10,10 @@ import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
-import org.adorsys.docusafe.cached.transactional.CachedTransactionalFileStorage;
+import org.adorsys.docusafe.cached.transactional.CachedTransactionalDocumentSafeService;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.transactional.RequestMemoryContext;
-import org.adorsys.docusafe.transactional.impl.TransactionalFileStorageImpl;
+import org.adorsys.docusafe.transactional.impl.TransactionalDocumentSafeServiceImpl;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.adorsys.encobject.types.ListRecursiveFlag;
@@ -35,9 +35,9 @@ public class CachedTransactionalStorageTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(CachedTransactionalStorageTest.class);
     private RequestMemoryContext memoryContext = new SimpleRequestMemoryContextImpl();
     private TransactionalStorageTestWrapper wrapper = new TransactionalStorageTestWrapper(
-            new TransactionalFileStorageImpl(memoryContext,
+            new TransactionalDocumentSafeServiceImpl(memoryContext,
                     new DocumentSafeServiceImpl(WithCache.FALSE, ExtendedStoreConnectionFactory.get())));
-    private CachedTransactionalFileStorage service = new CachedTransactionalFileStorageImpl(memoryContext, wrapper);
+    private CachedTransactionalDocumentSafeService service = new CachedTransactionalDocumentSafeServiceImpl(memoryContext, wrapper);
 
     List<UserIDAuth> userIDAuthList = new ArrayList<>();
     @Before

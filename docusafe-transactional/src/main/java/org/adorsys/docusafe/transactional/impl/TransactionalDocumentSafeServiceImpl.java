@@ -1,17 +1,13 @@
 package org.adorsys.docusafe.transactional.impl;
 
-import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.docusafe.business.DocumentSafeService;
-import org.adorsys.docusafe.business.impl.BucketContentFQNImpl;
-import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
-import org.adorsys.docusafe.service.types.AccessType;
 import org.adorsys.docusafe.transactional.RequestMemoryContext;
-import org.adorsys.docusafe.transactional.TransactionalFileStorage;
+import org.adorsys.docusafe.transactional.TransactionalDocumentSafeService;
 import org.adorsys.docusafe.transactional.exceptions.TxNotFoundException;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.types.ListRecursiveFlag;
@@ -23,15 +19,15 @@ import java.util.Date;
 /**
  * Created by peter on 11.06.18 at 15:01.
  */
-public class TransactionalFileStorageImpl extends NonTransactionalFileStorageImpl implements TransactionalFileStorage {
-    private final static Logger LOGGER = LoggerFactory.getLogger(TransactionalFileStorageImpl.class);
+public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocumentSafeServiceImpl implements TransactionalDocumentSafeService {
+    private final static Logger LOGGER = LoggerFactory.getLogger(TransactionalDocumentSafeServiceImpl.class);
     final static DocumentDirectoryFQN txMeta = new DocumentDirectoryFQN("meta.tx");
     final static DocumentDirectoryFQN txContent = new DocumentDirectoryFQN("tx");
     public static final String CURRENT_TRANSACTIONS_MAP = "CurrentTransactionsMap";
 
-    public TransactionalFileStorageImpl(RequestMemoryContext requestMemoryContext, DocumentSafeService documentSafeService) {
+    public TransactionalDocumentSafeServiceImpl(RequestMemoryContext requestMemoryContext, DocumentSafeService documentSafeService) {
         super(requestMemoryContext, documentSafeService);
-        LOGGER.debug("new Instance of TransactionalFileStorageImpl");
+        LOGGER.debug("new Instance of TransactionalDocumentSafeServiceImpl");
     }
 
     // ============================================================================================

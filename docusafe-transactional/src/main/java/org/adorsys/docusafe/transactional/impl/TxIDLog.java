@@ -23,7 +23,7 @@ public class TxIDLog {
     private final static int MAX_COMMITED_TX_FOR_CLEANUP = 5;
     private final static Logger LOGGER = LoggerFactory.getLogger(TxIDLog.class);
     private static String LOG_FILE_NAME = "LastCommitedTxID.txt";
-    private static DocumentFQN txidLogFilename = TransactionalFileStorageImpl.txMeta.addName(LOG_FILE_NAME);
+    private static DocumentFQN txidLogFilename = TransactionalDocumentSafeServiceImpl.txMeta.addName(LOG_FILE_NAME);
 
     private List<Tuple> txidList = new ArrayList<>();
 
@@ -91,7 +91,7 @@ public class TxIDLog {
             for (int i = 0; i < size - 1; i++) {
                 Tuple tuple = txIDLog.txidList.get(i);
                 TxIDHashMap txIDHashMap = TxIDHashMap.readHashMapOfTx(documentSafeService, userIDAuth, new LastCommitedTxID(tuple.currentTxID.getValue()));
-                txIDHashMap.map.forEach((documentFQN, txID) -> allPrevousFiles.add(TransactionalFileStorageImpl.modifyTxDocumentName(documentFQN, txID)));
+                txIDHashMap.map.forEach((documentFQN, txID) -> allPrevousFiles.add(TransactionalDocumentSafeServiceImpl.modifyTxDocumentName(documentFQN, txID)));
             }
         }
 
@@ -100,7 +100,7 @@ public class TxIDLog {
         {
             Tuple tuple = txIDLog.txidList.get(size - 1);
             TxIDHashMap txIDHashMap = TxIDHashMap.readHashMapOfTx(documentSafeService, userIDAuth, new LastCommitedTxID(tuple.currentTxID.getValue()));
-            txIDHashMap.map.forEach((documentFQN, txID) -> currentFiles.add(TransactionalFileStorageImpl.modifyTxDocumentName(documentFQN, txID)));
+            txIDHashMap.map.forEach((documentFQN, txID) -> currentFiles.add(TransactionalDocumentSafeServiceImpl.modifyTxDocumentName(documentFQN, txID)));
         }
         LOGGER.debug("previous files size = " + allPrevousFiles.size());
         LOGGER.debug("current files size  = " + currentFiles.size());

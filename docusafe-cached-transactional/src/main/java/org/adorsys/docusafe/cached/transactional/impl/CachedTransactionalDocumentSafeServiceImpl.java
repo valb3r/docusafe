@@ -7,10 +7,10 @@ import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
-import org.adorsys.docusafe.cached.transactional.CachedTransactionalFileStorage;
+import org.adorsys.docusafe.cached.transactional.CachedTransactionalDocumentSafeService;
 import org.adorsys.docusafe.cached.transactional.exceptions.CacheException;
 import org.adorsys.docusafe.transactional.RequestMemoryContext;
-import org.adorsys.docusafe.transactional.TransactionalFileStorage;
+import org.adorsys.docusafe.transactional.TransactionalDocumentSafeService;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.slf4j.Logger;
@@ -29,13 +29,13 @@ import org.slf4j.LoggerFactory;
  * setToDelete enhält alle Namen der Dokumente, die gelöscht werden sollen.
  * Der name darf dann nicht in mapToRead oder mapToStore auftauchen.
  */
-public class CachedTransactionalFileStorageImpl implements CachedTransactionalFileStorage {
-    private final static Logger LOGGER = LoggerFactory.getLogger(CachedTransactionalFileStorageImpl.class);
+public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransactionalDocumentSafeService {
+    private final static Logger LOGGER = LoggerFactory.getLogger(CachedTransactionalDocumentSafeServiceImpl.class);
     public static final String CACHEND_TRANSACTIONAL_CONTEXT_MAP = "cachendTransactionalContextMap";
-    private TransactionalFileStorage transactionalFileStorage;
+    private TransactionalDocumentSafeService transactionalFileStorage;
     private RequestMemoryContext requestContext;
 
-    public CachedTransactionalFileStorageImpl(RequestMemoryContext requestContext, TransactionalFileStorage transactionalFileStorage) {
+    public CachedTransactionalDocumentSafeServiceImpl(RequestMemoryContext requestContext, TransactionalDocumentSafeService transactionalFileStorage) {
         this.transactionalFileStorage = transactionalFileStorage;
         this.requestContext = requestContext;
     }

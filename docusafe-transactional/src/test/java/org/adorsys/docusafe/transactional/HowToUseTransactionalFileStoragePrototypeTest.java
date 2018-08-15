@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
  * für einen Benutzer in einem "INBOX" Folder ablegt.
  * Dann greift der Benutzer innerhalb einer Transaktion auf diese Datei zu.
  *
- * Wichtig ist, dass der documentSafeService nicht benutzt wird, denn das TransactionalFileStorage Layer
+ * Wichtig ist, dass der documentSafeService nicht benutzt wird, denn das TransactionalDocumentSafeService Layer
  * setzt auf dem documentSafeService auf.
  */
 // @SuppressWarnings("Duplicates")

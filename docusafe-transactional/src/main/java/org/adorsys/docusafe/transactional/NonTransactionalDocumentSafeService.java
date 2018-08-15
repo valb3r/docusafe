@@ -11,7 +11,7 @@ import org.adorsys.encobject.types.ListRecursiveFlag;
 /**
  * Created by peter on 15.08.18 at 11:55.
  */
-public interface NonTransactionalFileStorage {
+public interface NonTransactionalDocumentSafeService {
 
     // NON-TRANSACTIONAL FOR OWNER
     void createUser(UserIDAuth userIDAuth);

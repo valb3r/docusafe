@@ -10,7 +10,7 @@ import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.service.types.AccessType;
-import org.adorsys.docusafe.transactional.NonTransactionalFileStorage;
+import org.adorsys.docusafe.transactional.NonTransactionalDocumentSafeService;
 import org.adorsys.docusafe.transactional.RequestMemoryContext;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.slf4j.Logger;
@@ -19,14 +19,14 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by peter on 15.08.18 at 11:57.
  */
-public class NonTransactionalFileStorageImpl implements NonTransactionalFileStorage {
-    private final static Logger LOGGER = LoggerFactory.getLogger(NonTransactionalFileStorageImpl.class);
+public class NonTransactionalDocumentSafeServiceImpl implements NonTransactionalDocumentSafeService {
+    private final static Logger LOGGER = LoggerFactory.getLogger(NonTransactionalDocumentSafeServiceImpl.class);
     protected DocumentSafeService documentSafeService;
     protected RequestMemoryContext requestMemoryContext;
     final static DocumentDirectoryFQN nonTxContent = new DocumentDirectoryFQN("nonttx");
 
-    public NonTransactionalFileStorageImpl(RequestMemoryContext requestMemoryContext, DocumentSafeService documentSafeService) {
-        LOGGER.debug("new Instance of TransactionalFileStorageImpl");
+    public NonTransactionalDocumentSafeServiceImpl(RequestMemoryContext requestMemoryContext, DocumentSafeService documentSafeService) {
+        LOGGER.debug("new Instance of TransactionalDocumentSafeServiceImpl");
         this.documentSafeService = documentSafeService;
         this.requestMemoryContext = requestMemoryContext;
     }

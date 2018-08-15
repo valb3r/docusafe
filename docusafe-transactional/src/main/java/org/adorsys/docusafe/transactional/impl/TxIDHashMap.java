@@ -51,7 +51,7 @@ public class TxIDHashMap {
             return new TxIDHashMap(lastKnownCommitedTxID, currentTxID, beginTxDate);
         }
 
-        DocumentFQN file = TransactionalFileStorageImpl.modifyTxMetaDocumentName(filenamebase, lastKnownCommitedTxID);
+        DocumentFQN file = TransactionalDocumentSafeServiceImpl.modifyTxMetaDocumentName(filenamebase, lastKnownCommitedTxID);
         TxIDHashMap map = readHashMapOfTx(documentSafeService, userIDAuth, lastKnownCommitedTxID);
         map.lastCommitedTxID = new LastCommitedTxID(map.currentTxID.getValue());
         map.currentTxID = currentTxID;
@@ -61,7 +61,7 @@ public class TxIDHashMap {
     }
 
     public static TxIDHashMap readHashMapOfTx(DocumentSafeService documentSafeService, UserIDAuth userIDAuth, LastCommitedTxID lastCommitedTxID) {
-        DocumentFQN file = TransactionalFileStorageImpl.modifyTxMetaDocumentName(filenamebase, lastCommitedTxID);
+        DocumentFQN file = TransactionalDocumentSafeServiceImpl.modifyTxMetaDocumentName(filenamebase, lastCommitedTxID);
         if (!documentSafeService.documentExists(userIDAuth, file)) {
             throw new TxNotFoundException(file, lastCommitedTxID);
         }
@@ -70,7 +70,7 @@ public class TxIDHashMap {
     }
 
     public static void deleteHashMapOfTx(DocumentSafeService documentSafeService, UserIDAuth userIDAuth, LastCommitedTxID lastCommitedTxID) {
-        DocumentFQN file = TransactionalFileStorageImpl.modifyTxMetaDocumentName(filenamebase, lastCommitedTxID);
+        DocumentFQN file = TransactionalDocumentSafeServiceImpl.modifyTxMetaDocumentName(filenamebase, lastCommitedTxID);
         if (!documentSafeService.documentExists(userIDAuth, file)) {
             throw new TxNotFoundException(file, lastCommitedTxID);
         }
@@ -80,7 +80,7 @@ public class TxIDHashMap {
 
 
     public void saveOnce(DocumentSafeService documentSafeService, UserIDAuth userIDAuth) {
-        DocumentFQN file = TransactionalFileStorageImpl.modifyTxMetaDocumentName(filenamebase, currentTxID);
+        DocumentFQN file = TransactionalDocumentSafeServiceImpl.modifyTxMetaDocumentName(filenamebase, currentTxID);
         LOGGER.debug("save " + file.getValue());
         DocumentContent documentContent = new Class2JsonHelper().txidHashMapToContent(this);
         DSDocument dsDocument = new DSDocument(file, documentContent, new DSDocumentMetaInfo());

@@ -6,7 +6,7 @@ import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
-import org.adorsys.docusafe.transactional.TransactionalFileStorage;
+import org.adorsys.docusafe.transactional.TransactionalDocumentSafeService;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 
@@ -19,7 +19,7 @@ import java.util.HashMap;
 /**
  * Created by peter on 09.07.18 at 14:40.
  */
-public class TransactionalStorageTestWrapper implements TransactionalFileStorage {
+public class TransactionalStorageTestWrapper implements TransactionalDocumentSafeService {
     int MAX = 22;
 
     public static final String CREATE_USER = "createUser";
@@ -44,8 +44,8 @@ public class TransactionalStorageTestWrapper implements TransactionalFileStorage
     public static final String END_TRANSACTION = "endTransaction";
     public Map<String, Integer> counterMap = new HashMap<>();
 
-    private TransactionalFileStorage realTransactionalFileStorage;
-    public TransactionalStorageTestWrapper(TransactionalFileStorage realTransactionalFileStorage) {
+    private TransactionalDocumentSafeService realTransactionalFileStorage;
+    public TransactionalStorageTestWrapper(TransactionalDocumentSafeService realTransactionalFileStorage) {
         this.realTransactionalFileStorage = realTransactionalFileStorage;
         inc(CREATE_USER);
         inc(DESTROY_USER);

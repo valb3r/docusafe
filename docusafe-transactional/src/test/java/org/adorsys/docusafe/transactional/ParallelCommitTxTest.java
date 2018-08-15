@@ -81,13 +81,13 @@ public class ParallelCommitTxTest extends TransactionFileStorageBaseTest{
 
         private int instanceID;
         private Semaphore sem;
-        private TransactionalFileStorage transactionalFileStorage;
+        private TransactionalDocumentSafeService transactionalFileStorage;
         private UserIDAuth userIDAuth;
         private CountDownLatch countDownLatch;
         public boolean ok = false;
         public Exception exception;
 
-        public ARunnable(Semaphore sem, CountDownLatch countDownLatch, TransactionalFileStorage transactionalFileStorage, UserIDAuth userIDAuth) {
+        public ARunnable(Semaphore sem, CountDownLatch countDownLatch, TransactionalDocumentSafeService transactionalFileStorage, UserIDAuth userIDAuth) {
             this.instanceID = instanceCounter++;
             this.sem = sem;
             this.transactionalFileStorage = transactionalFileStorage;
