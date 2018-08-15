@@ -10,13 +10,13 @@ Docusafe ist eine dienstbasierte Bibliothek. Dabei sind die Dienste so in Module
 Stellt Dienste für Buckets, DocumentGuards, Document und Keystores bereit.
 * layer 1: **docusafe-business**
 
-    Basiert auf docusafe-service und stellt die Hauptfunktionalität dar. Das Anlegen von Benutzern, das Speichern und Lesen von Objekten unterhalb dieser Benutzer.
+    Basiert auf docusafe-service und stellt die Hauptfunktionalität dar. Das Anlegen von Benutzern, das Speichern und Lesen von Objekten unterhalb dieser Benutzer. Das Interface dieses Layers heißt: ***DocumentSafeService*** 
 * layer 2: **docusafe-transactional**
 
-    Basiert auf docusafe-business. Ermöglicht, eine Menge von Documenten transaktional zu speichern. D.h. es werden wirklich alle Documente gespeichert, oder keines. 
+    Basiert auf docusafe-business. Ermöglicht, eine Menge von Documenten transaktional zu speichern. D.h. es werden wirklich alle Documente gespeichert, oder keines. Das Interfaces dieses Layers heißt: ***TransactionalDocumentSafeService*** 
 * layer 3: **docusafe-cached-transactional**
 
-    Eine Cache-Schicht, die Mehrfachaufrufe beim Lesen oder Schreiben einfach unterbindet bzw. die Daten direkt aus dem Speicher liest, statt von der ExtendedStoreConnection.
+    Eine Cache-Schicht, die Mehrfachaufrufe beim Lesen oder Schreiben einfach unterbindet bzw. die Daten direkt aus dem Speicher liest, statt von der ExtendedStoreConnection. Das Interface dieses Layers heißt: ***CachedTransactionalDocumentSafeService***
 * layer 4a: **docusafe-rest**
 
     Dieses Layer hat nur Testfunktionalität. Es stellt die Bibliotheksdienste der layer 0-3 in einem Server zur Verfügung. Dabei können die Dienste über REST angesprochen werden.
