@@ -178,6 +178,9 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
         if (cachedTransactionalContext == null) {
             throw new CacheException("CachedTransactionalContextMap has no CachedContext for " + txid);
         }
+        LOGGER.info("freeMemory() of tx " + txid);
+
+        cachedTransactionalContext.freeMemory();
         cachedTransactionalContextMap.remove(txid);
     }
 }

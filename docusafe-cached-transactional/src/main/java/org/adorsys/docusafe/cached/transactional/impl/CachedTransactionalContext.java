@@ -11,6 +11,8 @@ import org.adorsys.docusafe.transactional.TransactionalDocumentSafeService;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.types.ListRecursiveFlag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,6 +25,7 @@ import java.util.UUID;
  * Created by peter on 09.07.18 at 11:59.
  */
 class CachedTransactionalContext {
+    private final static Logger LOGGER = LoggerFactory.getLogger(CachedTransactionalContext.class);
     private String id = UUID.randomUUID().toString() + " ";
     private Map<DocumentFQN, DSDocument> mapToStore = null;
     private Map<DocumentFQN, DSDocument> mapToRead = null;
@@ -133,4 +136,16 @@ class CachedTransactionalContext {
         transactionalFileStorage.endTransaction(txid, userIDAuth);
     }
 
+    public void freeMemory() {
+        int numWrite = mapToStore.size();
+        int numRead = mapToRead.size();
+        long sumWrite = mapToStore.values().stream().mapToLong(dsDocument -> dsDocument.getDocumentContent().getValue().length).sum();
+        long sumRead = mapToRead.values().stream().mapToLong(dsDocument -> dsDocument.getDocumentContent().getValue().length).sum();
+        LOGGER.info("freeMemory("+numWrite + ":" + sumWrite+", "+ numRead + ":" + sumRead+")");
+        mapToStore.clear();
+        mapToRead.clear();
+        setToDelete.clear();
+        transactionalFileStorage = null;
+        bucketContent = null;
+    }
 }
