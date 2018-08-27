@@ -139,7 +139,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         BucketDirectory userRootBucketDirectory = UserIDUtil.getUserRootBucketDirectory(userIDAuth.getUserID());
         {   // check user does not exist yet
             if (!bucketService.bucketExists(userRootBucketDirectory)) {
-                throw new UserIDDoesNotExistException(userIDAuth.getUserID().toString());
+                throw new UserIDDoesNotExistException(userIDAuth.getUserID());
             }
         }
         {
@@ -328,13 +328,13 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         {
             BucketDirectory userRootBucketDirectory = UserIDUtil.getUserRootBucketDirectory(userIDAuth.getUserID());
             if (!bucketService.bucketExists(userRootBucketDirectory)) {
-                throw new UserIDDoesNotExistException(userIDAuth.getUserID().toString());
+                throw new UserIDDoesNotExistException(userIDAuth.getUserID());
             }
         }
         {
             BucketDirectory userRootBucketDirectory = UserIDUtil.getUserRootBucketDirectory(receiverUserID);
             if (!bucketService.bucketExists(userRootBucketDirectory)) {
-                throw new UserIDDoesNotExistException(receiverUserID.toString());
+                throw new UserIDDoesNotExistException(receiverUserID);
             }
         }
 
@@ -544,7 +544,10 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         }
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
         BucketDirectory documentDirectory = UserIDUtil.getHomeBucketDirectory(userIDAuth.getUserID());
-        DocumentKeyID documentKeyID = GuardUtil.loadBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStorePath().getBucketDirectory(), documentDirectory);
+        DocumentKeyID documentKeyID = GuardUtil.tryToLoadBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStorePath().getBucketDirectory(), documentDirectory);
+        if (documentKeyID == null) {
+            throw new UserIDDoesNotExistException(userIDAuth.getUserID());
+        }
         try {
             loadCachedOrRealDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(keyStoreAccess, documentKeyID);
             if (userAuthCache != null) {
