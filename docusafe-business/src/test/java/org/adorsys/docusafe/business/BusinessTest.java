@@ -3,6 +3,7 @@ package org.adorsys.docusafe.business;
 import com.googlecode.catchexception.CatchException;
 import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.docusafe.business.exceptions.NoWriteAccessException;
+import org.adorsys.docusafe.business.exceptions.UserIDDoesNotExistException;
 import org.adorsys.docusafe.business.exceptions.WrongPasswordException;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
@@ -28,6 +29,21 @@ import org.slf4j.LoggerFactory;
 public class BusinessTest extends BusinessTestBase {
     private final static Logger LOGGER = LoggerFactory.getLogger(BusinessTest.class);
 
+    @Test
+    public void documentExistsTest_DOC_36() {
+        UserIDAuth userIDAuth = createUser(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));
+        DocumentFQN documentFQNReadme1 = new DocumentFQN("README.txt");
+        DocumentFQN documentFQNReadme2 = new DocumentFQN("README2.txt");
+        DocumentFQN documentFQNnewDir = new DocumentFQN("affe/README2.txt");
+        Assert.assertTrue(service.documentExists(userIDAuth, documentFQNReadme1));
+        Assert.assertFalse(service.documentExists(userIDAuth, documentFQNReadme2));
+        Assert.assertFalse(service.documentExists(userIDAuth, documentFQNnewDir));
+        UserIDAuth userIDAuth2 = new UserIDAuth(new UserID("UserPeter2"), new ReadKeyPassword("peterkey"));
+        CatchException.catchException(() -> service.documentExists(userIDAuth2, documentFQNReadme1));
+        Assert.assertNotNull(CatchException.caughtException());
+        Assert.assertTrue(CatchException.caughtException() instanceof UserIDDoesNotExistException);
+
+    }
 
     @Test
     public void performanceTest_DOC_29() {
@@ -62,7 +78,7 @@ public class BusinessTest extends BusinessTestBase {
     }
 
     @Test
-    public void sequenceDiagramTest () {
+    public void sequenceDiagramTest() {
         UserIDAuth userIDAuth = new UserIDAuth(new UserID("user1"), new ReadKeyPassword("password1"));
         users.add(userIDAuth);
         service.createUser(userIDAuth);
