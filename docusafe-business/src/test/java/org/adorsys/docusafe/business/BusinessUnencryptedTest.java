@@ -43,43 +43,6 @@ public class BusinessUnencryptedTest extends BusinessTestBase {
         }
     }
 
-    /**
-     * Achtung, dieser Test möchte sicherstellen, dass in Cryptoutils die Methode zum Lesen der StorageMetadata
-     * wirklich nur einmal aufgerufen wird. Um das zu machen, wird einfach eine spezielle Logmeldung gesucht, die
-     * nach dem Test genau einmal mehr geschrieben sein muss, als vor dem Test. Daher wird für diesen Test
-     * logback benötigt, denn der Simpple-Logger schreibt nicht in Dateien.
-     */
-    @Test
-    public void checkMetaInfoOnlyReadOnceForDocument() {
-        try {
-            LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
-            DocumentFQN documentFQN = new DocumentFQN("first/next/a-new-document.txt");
-            waitUntilLogfileisSynched();
-            int count1 = countReadMetaData(documentFQN);
-
-            UserIDAuth userIDAuth = createUser();
-            UserIDAuth userIDAuthWrongPassword = new UserIDAuth(userIDAuth.getUserID(), new ReadKeyPassword("total falsch und anders"));
-            Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
-
-            checkGuardsForDocument(userIDAuth, documentFQN, false);
-            DSDocumentMetaInfo mi = new DSDocumentMetaInfo();
-            mi.setNoEncryption();
-            DSDocument dsDocument1 = createDocument(userIDAuth, documentFQN, mi);
-            checkGuardsForDocument(userIDAuth, documentFQN, true);
-            Assert.assertEquals("Anzahl der guards", 2, getNumberOfGuards(userIDAuth.getUserID()));
-
-            readDocument(userIDAuth, documentFQN, dsDocument1.getDocumentContent(), true);
-
-            waitUntilLogfileisSynched();
-            int count2 = countReadMetaData(documentFQN);
-            Assert.assertEquals(count1 + 1, count2);
-            LOGGER.debug("found " + count2 + " lines :-)");
-        } catch (Exception e) {
-            throw BaseExceptionHandler.handle(e);
-        }
-    }
-
-
     @Test
     public void writeDocument() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
@@ -212,57 +175,6 @@ public class BusinessUnencryptedTest extends BusinessTestBase {
 
         // Lesen mit korrektem Kennwort
         service.readGrantedDocument(userIDAuth2, userIDAuth1.getUserID(), documentFQN);
-    }
-
-
-    private int countReadMetaData(DocumentFQN documentFQN) {
-        try {
-
-            String logfilename = "./business-test-log-file.log";
-            if (!new File(logfilename).exists()) {
-                throw new BaseException("logfile " + logfilename + " not found. I am in "
-                        + new java.io.File(".").getCanonicalPath()
-                        + "This tests requires the logfilefile to succeed.");
-            }
-            String searchname = documentFQN.getPlainNameWithoutPath().getValue();
-            return Files.lines(Paths.get(logfilename))
-                    .filter(line -> line.indexOf("readmetadata") != -1)
-                    .filter(line -> line.indexOf(searchname) != -1)
-                    .collect(Collectors.toSet())
-                    .size();
-        } catch (Exception e) {
-            throw BaseExceptionHandler.handle(e);
-        }
-    }
-
-    private void waitUntilLogfileisSynched() {
-        try {
-            String logfilename = "./business-test-log-file.log";
-            if (!new File(logfilename).exists()) {
-                throw new BaseException("logfile " + logfilename + " not found. I am in "
-                        + new java.io.File(".").getCanonicalPath()
-                        + "This tests requires the logfilefile to succeed.");
-            }
-            int MAX_WAIT = 10;
-            int trials = 0;
-            String unique = UUID.randomUUID().toString();
-            int count = 0;
-
-            do {
-                if (trials > MAX_WAIT) {
-                    throw new BaseException("Did not find unique entry in logfile for " + MAX_WAIT + " seconds.");
-                }
-                Thread.currentThread().sleep(1000);
-                LOGGER.debug(unique);
-                count = Files.lines(Paths.get(logfilename))
-                        .filter(line -> line.indexOf(unique) != -1)
-                        .collect(Collectors.toSet())
-                        .size();
-                trials++;
-            } while (count != 1);
-        } catch (Exception e) {
-            throw BaseExceptionHandler.handle(e);
-        }
     }
 
 }

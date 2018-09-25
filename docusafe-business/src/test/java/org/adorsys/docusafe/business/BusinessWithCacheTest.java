@@ -25,7 +25,7 @@ public class BusinessWithCacheTest extends BusinessTest {
         try {
             super.after();
         } finally {
-            LOGGER.info(DocumentSafeServiceImpl.showCache(service));
+            LOGGER.debug(DocumentSafeServiceImpl.showCache(service));
         }
     }
 }

@@ -32,16 +32,16 @@ public class HowToUseTransactionalFileStoragePrototypeTest extends TransactionFi
 
     @Test
     public void pseudoMain() {
-        LOGGER.info("create System User");
+        LOGGER.debug("create System User");
         transactionalFileStorage.createUser(systemUserIDAuth);
         DocumentDirectoryFQN systemUserBaseDir = new DocumentDirectoryFQN("systemuser");
 
-        LOGGER.info("create personal User");
+        LOGGER.debug("create personal User");
         transactionalFileStorage.createUser(userIDAuth);
         // dem Systembenutzer Zugriff auf die die Inbox gewähren
         // der Name der Inbox ist festgelegt, kann nicht geändert werden, und ist fuer
         // alle Benutzer gleich. Jeder Benutzer hat nur genau eine inbox
-        LOGGER.info("grant system user access to non transactional folder of personal user");
+        LOGGER.debug("grant system user access to non transactional folder of personal user");
         transactionalFileStorage.grantAccessToNonTxFolder(userIDAuth, systemUserIDAuth.getUserID(), systemUserBaseDir);
 
         // prüfen, ob neue Dateien in der Inbox sind
@@ -76,26 +76,26 @@ public class HowToUseTransactionalFileStoragePrototypeTest extends TransactionFi
 
     // returns the number of files that have been imported
     private int checkForNewInFiles() {
-        LOGGER.info("check for new files in non transactional folder");
+        LOGGER.debug("check for new files in non transactional folder");
         // txListDocuments (ohne txId) ist transaktionslos und bezieht sich damit immer
         // auf die inbox. Wenn man nur bestimmte Documente sehen möchte, dann man
         // das DocumentDirectoryFQN anpasen
         BucketContentFQN list = transactionalFileStorage.nonTxListDocuments(userIDAuth, new DocumentDirectoryFQN("/"), ListRecursiveFlag.TRUE);
 
         if (list.getFiles().isEmpty()) {
-            LOGGER.info("no new files found");
+            LOGGER.debug("no new files found");
             // Nichts zu tuen, also return
             return 0;
         }
 
         // Es gibt also Dateien im der Inbox
         // wir verarbeiten alle Dokumente in einer Transaction
-        LOGGER.info("new files found");
-        LOGGER.info("start tx");
+        LOGGER.debug("new files found");
+        LOGGER.debug("start tx");
         TxID txID = transactionalFileStorage.beginTransaction(userIDAuth);
         list.getFiles().forEach(documentFQN -> {
             // Lade das Document TRANSAKTIONSLOS
-            LOGGER.info("load document " + documentFQN + " from non transactional folder");
+            LOGGER.debug("load document " + documentFQN + " from non transactional folder");
             DSDocument dsDocument = transactionalFileStorage.nonTxReadDocument(userIDAuth, documentFQN);
 
             // Erzeuge ein neues Document

@@ -529,12 +529,12 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
     private void checkUserKeyPassword(UserIDAuth userIDAuth) {
         UserAuthCache userAuthCache = docusafeCacheWrapper != null ? docusafeCacheWrapper.getUserAuthCache() : null;
         if (userAuthCache != null) {
-            LOGGER.info("MemoryContext is used");
+            LOGGER.debug("MemoryContext is used");
 
             ReadKeyPassword expectedFromCache = userAuthCache.get(userIDAuth.getUserID());
             if (expectedFromCache != null) {
                 if (expectedFromCache.equals(userIDAuth.getReadKeyPassword())) {
-                    LOGGER.info("MemoryContext successful for " + userIDAuth.getUserID());
+                    LOGGER.debug("MemoryContext successful for " + userIDAuth.getUserID());
                     return;
                 }
                 // Password war falsch, also löschen und normale Prozedur laufen lassen

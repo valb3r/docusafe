@@ -40,10 +40,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UTFDataFormatException;
 import java.security.UnrecoverableKeyException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by peter on 04.01.18.
@@ -451,20 +448,11 @@ public class AllServiceTest {
         Assert.assertEquals("number of entries", 26, files.size());
     }
 
-    private boolean contains(List<StorageMetadata> content, String file0) {
-        for (StorageMetadata m : content) {
-            if (m.getName().equals(file0)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     @Test
     public void checkNonExistingBucket() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         BucketServiceTest bucketServiceTest = new BucketServiceTest(extendedStoreConnection);
-        BucketDirectory bucketDirectory = new BucketDirectory("user1");
+        BucketDirectory bucketDirectory = new BucketDirectory("user-" + UUID.randomUUID().toString());
         boolean exists = bucketServiceTest.bucketExists(bucketDirectory);
         Assert.assertFalse("bucket must not exist", exists);
     }
@@ -485,9 +473,12 @@ public class AllServiceTest {
         documentPersistenceServiceTest.testPersistDocument(null, documentBucketPath, documentKeyIDWithKeyAndAccessType, documentContent, OverwriteFlag.FALSE);
 
         BucketDirectory pathAsDirectory = new BucketDirectory(documentBucketPath);
-        BucketContent bucketContent = bucketServiceTest.listBucket(pathAsDirectory, ListRecursiveFlag.FALSE.TRUE);
+        LOGGER.debug("bucketPath " + documentBucketPath);
+        LOGGER.debug("pathAsDir  " + pathAsDirectory);
+        BucketContent bucketContent = bucketServiceTest.listBucket(pathAsDirectory, ListRecursiveFlag.TRUE);
         LOGGER.debug(bucketContent.toString());
-        Assert.assertEquals("this is no bucket, so no result expected", 0, bucketContent.getContent().size());
+        Assert.assertTrue("this is no bucket, so no result expected", bucketContent.getFiles().isEmpty());
+        Assert.assertTrue("this is no bucket, so no result expected", bucketContent.getSubdirectories().isEmpty());
         boolean fileExsits = bucketServiceTest.fileExists(documentBucketPath);
         Assert.assertEquals("file should exist", true, fileExsits);
 

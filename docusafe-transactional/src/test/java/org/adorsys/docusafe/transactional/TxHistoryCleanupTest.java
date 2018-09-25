@@ -109,7 +109,7 @@ public class TxHistoryCleanupTest extends TransactionFileStorageBaseTest {
         LOGGER.debug("LIST OF FILES IN DOCUMENTSAFE: " + list.toString());
 //        Assert.assertEquals(numberOfFiles, list.getFiles().size());
         st.stop();
-        LOGGER.info("time for test " + st.toString());
+        LOGGER.debug("time for test " + st.toString());
     }
 
 

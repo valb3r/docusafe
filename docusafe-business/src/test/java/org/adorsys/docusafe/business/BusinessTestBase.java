@@ -70,7 +70,7 @@ public class BusinessTestBase {
     @After
     public void after() {
         try {
-            LOGGER.info("AFTER TEST:" + DocumentSafeServiceImpl.showCache(service));
+            LOGGER.debug("AFTER TEST:" + DocumentSafeServiceImpl.showCache(service));
             users.forEach(userIDAuth -> {
                 LOGGER.debug("AFTER TEST DESTROY " + userIDAuth.getUserID().getValue());
                 service.destroyUser(userIDAuth);

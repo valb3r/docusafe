@@ -45,20 +45,10 @@
             <version>${guava.version}</version>
         </dependency>
 
-        <!-- extra logback, weil bei einem Test die Logausgaben geprüft werden
-        das ist mit dem simpleLogger nicht moeglich, da der nur nach standard out schreibt
-        -->
         <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.1.2</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
-            <version>1.1.2</version>
-            <scope>test</scope>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${slf4j-simple.version}</version>
         </dependency>
 
     </dependencies>

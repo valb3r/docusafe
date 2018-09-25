@@ -141,7 +141,7 @@ class CachedTransactionalContext {
         int numRead = mapToRead.size();
         long sumWrite = mapToStore.values().stream().mapToLong(dsDocument -> dsDocument.getDocumentContent().getValue().length).sum();
         long sumRead = mapToRead.values().stream().mapToLong(dsDocument -> dsDocument.getDocumentContent().getValue().length).sum();
-        LOGGER.info("freeMemory("+numWrite + ":" + sumWrite+", "+ numRead + ":" + sumRead+")");
+        LOGGER.debug("freeMemory("+numWrite + ":" + sumWrite+", "+ numRead + ":" + sumRead+")");
         mapToStore.clear();
         mapToRead.clear();
         setToDelete.clear();

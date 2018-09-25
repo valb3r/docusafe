@@ -25,8 +25,9 @@ public class DocusafeCacheTemplateHashMapImpl<K,V> implements DocusafeCacheTempl
     }
 
     @Override
-    public String toString() {
-        return "" + map.keySet().size();
+    public long size() {
+        return map.size();
     }
+
 
 }

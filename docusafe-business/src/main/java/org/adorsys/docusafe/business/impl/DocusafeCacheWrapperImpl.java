@@ -58,11 +58,11 @@ public class DocusafeCacheWrapperImpl implements DocusafeCacheWrapper {
         StringBuilder sb = new StringBuilder();
         sb.append("DOCUSAFE_CACHE WRAPPER");
         sb.append(" ");
-        sb.append("number of users: " + getUserAuthCache().toString());
+        sb.append("number of users: " + getUserAuthCache().size());
         sb.append(" ");
-        sb.append("number of guards: " + getDocumentGuardCache().toString());
+        sb.append("number of guards: " + getDocumentGuardCache().size());
         sb.append(" ");
-        sb.append("number of doc keys: " + getDocumentKeyIDCache().toString());
+        sb.append("number of doc keys: " + getDocumentKeyIDCache().size());
         return sb.toString();
     }
 }
