@@ -4,10 +4,10 @@ import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.cryptoutils.utils.HexUtil;
 import org.adorsys.docusafe.business.exceptions.PathDecryptionException;
 import org.adorsys.docusafe.business.exceptions.PathEncryptionException;
+import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.complextypes.BucketPathUtil;
-import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,29 +24,34 @@ import java.util.StringTokenizer;
 public class BucketPathEncryption {
     private final static Logger LOGGER = LoggerFactory.getLogger(BucketPathEncryption.class);
     private final static Charset CHARSET = Charset.forName("UTF-8");
+    public final static boolean encryptContainer = false;  // Darf nur dann auf true gesetzt werden, wenn es ein universales Kennwort gibt.
+    // Andernfalls könnte userExists nicht funktionieren
 
-    public static BucketDirectory encrypt(ReadKeyPassword readKeyPassword, BucketDirectory bucketDirectory) {
-        return new BucketDirectory(encrypt(readKeyPassword, BucketPathUtil.getAsString(bucketDirectory)));
+    public static BucketDirectory encrypt(UserIDAuth userIDAuth, BucketDirectory bucketDirectory) {
+        return new BucketDirectory(encrypt(userIDAuth, BucketPathUtil.getAsString(bucketDirectory)));
     }
 
-    public static BucketPath encrypt(ReadKeyPassword readKeyPassword, BucketPath bucketPath) {
-        return new BucketPath(encrypt(readKeyPassword, BucketPathUtil.getAsString(bucketPath)));
+    public static BucketPath encrypt(UserIDAuth userIDAuth, BucketPath bucketPath) {
+        return new BucketPath(encrypt(userIDAuth, BucketPathUtil.getAsString(bucketPath)));
     }
 
-    public static BucketDirectory decrypt(ReadKeyPassword readKeyPassword, BucketDirectory bucketDirectory) {
-        return new BucketDirectory(decrypt(readKeyPassword, BucketPathUtil.getAsString(bucketDirectory)));
+    public static BucketDirectory decrypt(UserIDAuth userIDAuth, BucketDirectory bucketDirectory) {
+        return new BucketDirectory(decrypt(userIDAuth, BucketPathUtil.getAsString(bucketDirectory)));
     }
 
-    public static BucketPath decrypt(ReadKeyPassword readKeyPassword, BucketPath bucketPath) {
-        return new BucketPath(decrypt(readKeyPassword, BucketPathUtil.getAsString(bucketPath)));
+    public static BucketPath decrypt(UserIDAuth userIDAuth, BucketPath bucketPath) {
+        return new BucketPath(decrypt(userIDAuth, BucketPathUtil.getAsString(bucketPath)));
     }
 
-    private static String encrypt(ReadKeyPassword readKeyPassword, String fullString) {
+    private static String encrypt(UserIDAuth userIDAuth, String fullString) {
         try {
-            Cipher cipher = createCipher(readKeyPassword, Cipher.ENCRYPT_MODE);
+            Cipher cipher = createCipher(userIDAuth, Cipher.ENCRYPT_MODE);
 
             StringBuilder encryptedPath = new StringBuilder();
             StringTokenizer st = new StringTokenizer(fullString, BucketPath.BUCKET_SEPARATOR);
+            if (! encryptContainer) {
+                encryptedPath.append(BucketPath.BUCKET_SEPARATOR + st.nextToken());
+            }
             while (st.hasMoreTokens()) {
 
                 String plainString = st.nextToken();
@@ -64,12 +69,15 @@ public class BucketPathEncryption {
         }
     }
 
-    public static String decrypt(ReadKeyPassword readKeyPassword, String encryptedHexString) {
+    public static String decrypt(UserIDAuth UserIDAuth, String encryptedHexString) {
         try {
-            Cipher cipher = createCipher(readKeyPassword, Cipher.DECRYPT_MODE);
+            Cipher cipher = createCipher(UserIDAuth, Cipher.DECRYPT_MODE);
 
             StringBuilder plainPath = new StringBuilder();
             StringTokenizer st = new StringTokenizer(encryptedHexString, BucketPath.BUCKET_SEPARATOR);
+            if (! encryptContainer) {
+                plainPath.append(BucketPath.BUCKET_SEPARATOR + st.nextToken());
+            }
             while (st.hasMoreTokens()) {
                 String encryptedBytesAsHexString = st.nextToken();
                 // LOGGER.debug("decrypt: encrpyted bytes as hex string:" + encryptedBytesAsHexString);
@@ -88,9 +96,9 @@ public class BucketPathEncryption {
         }
     }
 
-    private static Cipher createCipher(ReadKeyPassword readKeyPassword, int cipherMode) {
+    private static Cipher createCipher(UserIDAuth userIDAuth, int cipherMode) {
         try {
-            byte[] key = (readKeyPassword.getValue()).getBytes("UTF-8");
+            byte[] key = (userIDAuth.getUserID().getValue() + userIDAuth.getReadKeyPassword().getValue()).getBytes("UTF-8");
             MessageDigest sha = MessageDigest.getInstance("SHA-256");
             key = sha.digest(key);
             // nur die ersten 128 bit nutzen
