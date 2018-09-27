@@ -1,5 +1,7 @@
 package org.adorsys.docusafe.transactional.impl;
 
+import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
+import org.adorsys.cryptoutils.storeconnectionfactory.ReadArguments;
 import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
@@ -84,7 +86,10 @@ public class TxIDHashMap {
         LOGGER.debug("save " + file.getValue());
         DocumentContent documentContent = new Class2JsonHelper().txidHashMapToContent(this);
         DSDocument dsDocument = new DSDocument(file, documentContent, new DSDocumentMetaInfo());
-        dsDocument.getDsDocumentMetaInfo().setNoEncryption();
+        if (TxIDLog.dontEncrypt) {
+            LOGGER.debug("save " + file.getValue() + " encrypted");
+            dsDocument.getDsDocumentMetaInfo().setNoEncryption();
+        }
         documentSafeService.storeDocument(userIDAuth, dsDocument);
     }
 

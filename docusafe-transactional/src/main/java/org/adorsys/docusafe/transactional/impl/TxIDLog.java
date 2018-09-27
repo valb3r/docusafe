@@ -1,6 +1,7 @@
 package org.adorsys.docusafe.transactional.impl;
 
 import org.adorsys.cryptoutils.exceptions.BaseException;
+import org.adorsys.cryptoutils.storeconnectionfactory.ReadArguments;
 import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
@@ -24,6 +25,8 @@ public class TxIDLog {
     private final static Logger LOGGER = LoggerFactory.getLogger(TxIDLog.class);
     private static String LOG_FILE_NAME = "LastCommitedTxID.txt";
     private static DocumentFQN txidLogFilename = TransactionalDocumentSafeServiceImpl.txMeta.addName(LOG_FILE_NAME);
+    public final static boolean dontEncrypt = System.getProperty(ReadArguments.NO_ENCRYPTION_PASSWORD) != null;
+
 
     private List<Tuple> txidList = new ArrayList<>();
 
@@ -39,7 +42,10 @@ public class TxIDLog {
                 txIDLog = cleaupTxHistory(documentSafeService, userIDAuth, txIDLog);
                 size = txIDLog.txidList.size();
                 DSDocumentMetaInfo metaInfo = new DSDocumentMetaInfo();
-                metaInfo.setNoEncryption();
+                if (dontEncrypt) {
+                    LOGGER.debug("save " + txidLogFilename + " encrypted");
+                    metaInfo.setNoEncryption();
+                }
                 DSDocument document = new DSDocument(txidLogFilename, new Class2JsonHelper().txidLogToContent(txIDLog), metaInfo);
                 documentSafeService.storeDocument(userIDAuth, document);
             }
@@ -52,7 +58,10 @@ public class TxIDLog {
     public static void saveJustFinishedTx(DocumentSafeService documentSafeService, UserIDAuth userIDAuth, Date start, Date finished, LastCommitedTxID previousTxID, TxID currentTxID) {
         TxIDLog txIDLog = new TxIDLog();
         DSDocumentMetaInfo metaInfo = new DSDocumentMetaInfo();
-        metaInfo.setNoEncryption();
+        if (dontEncrypt) {
+            LOGGER.debug("save " + txidLogFilename + " encrypted");
+            metaInfo.setNoEncryption();
+        }
         if (documentSafeService.documentExists(userIDAuth, txidLogFilename)) {
             DSDocument dsDocument = documentSafeService.readDocument(userIDAuth, txidLogFilename);
             txIDLog = new Class2JsonHelper().txidLogFromContent(dsDocument.getDocumentContent());
