@@ -11,6 +11,11 @@ import org.adorsys.docusafe.cached.transactional.CachedTransactionalDocumentSafe
 import org.adorsys.docusafe.cached.transactional.exceptions.CacheException;
 import org.adorsys.docusafe.transactional.RequestMemoryContext;
 import org.adorsys.docusafe.transactional.TransactionalDocumentSafeService;
+import org.adorsys.docusafe.transactional.exceptions.TxNotActiveException;
+import org.adorsys.docusafe.transactional.exceptions.TxNotFoundException;
+import org.adorsys.docusafe.transactional.impl.CurrentTransactionsMap;
+import org.adorsys.docusafe.transactional.impl.TransactionalDocumentSafeServiceImpl;
+import org.adorsys.docusafe.transactional.impl.TxIDHashMap;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.slf4j.Logger;
@@ -38,6 +43,7 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
     public CachedTransactionalDocumentSafeServiceImpl(RequestMemoryContext requestContext, TransactionalDocumentSafeService transactionalFileStorage) {
         this.transactionalFileStorage = transactionalFileStorage;
         this.requestContext = requestContext;
+
     }
 
     @Override
@@ -102,48 +108,47 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
     }
 
     @Override
-    public TxID beginTransaction(UserIDAuth userIDAuth) {
-        TxID txid = transactionalFileStorage.beginTransaction(userIDAuth);
-        createTransactionalContext(txid);
-        return txid;
+    public void beginTransaction(UserIDAuth userIDAuth) {
+        transactionalFileStorage.beginTransaction(userIDAuth);
+        createTransactionalContext(getCurrentTxID());
     }
 
     @Override
-    public void txStoreDocument(TxID txid, UserIDAuth userIDAuth, DSDocument dsDocument) {
-        getTransactionalContext(txid).txStoreDocument(dsDocument);
+    public void txStoreDocument(UserIDAuth userIDAuth, DSDocument dsDocument) {
+        getTransactionalContext(getCurrentTxID()).txStoreDocument(dsDocument);
     }
 
     @Override
-    public DSDocument txReadDocument(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN) {
-        return getTransactionalContext(txid).txReadDocument(txid, userIDAuth, documentFQN);
+    public DSDocument txReadDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+        return getTransactionalContext(getCurrentTxID()).txReadDocument(userIDAuth, documentFQN);
     }
 
     @Override
-    public void txDeleteDocument(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN) {
-        getTransactionalContext(txid).txDeleteDocument(documentFQN);
+    public void txDeleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+        getTransactionalContext(getCurrentTxID()).txDeleteDocument(documentFQN);
     }
 
     @Override
-    public BucketContentFQN txListDocuments(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
-        return getTransactionalContext(txid).txListDocuments(txid, userIDAuth, documentDirectoryFQN, recursiveFlag);
+    public BucketContentFQN txListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
+        return getTransactionalContext(getCurrentTxID()).txListDocuments(userIDAuth, documentDirectoryFQN, recursiveFlag);
     }
 
     @Override
-    public boolean txDocumentExists(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN) {
-        return getTransactionalContext(txid).txDocumentExists(txid, userIDAuth, documentFQN);
+    public boolean txDocumentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+        return getTransactionalContext(getCurrentTxID()).txDocumentExists(getCurrentTxID(), userIDAuth, documentFQN);
     }
 
     @Override
-    public void txDeleteFolder(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN) {
+    public void txDeleteFolder(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN) {
         throw new BaseException("Who needs this interface");
 
     }
 
     @Override
-    public void endTransaction(TxID txid, UserIDAuth userIDAuth) {
-        getTransactionalContext(txid).endTransaction(txid, userIDAuth);
+    public void endTransaction(UserIDAuth userIDAuth) {
+        TxID txid = getCurrentTxID();
+        getTransactionalContext(txid).endTransaction(userIDAuth);
         deleteTransactionalContext(txid);
-
     }
 
     private CachedTransactionalContext createTransactionalContext(TxID txid) {
@@ -182,5 +187,23 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
 
         cachedTransactionalContext.freeMemory();
         cachedTransactionalContextMap.remove(txid);
+    }
+
+    public TxID getCurrentTxID() {
+            CurrentTransactionsMap currentTransactionsMap = getCurrentTransactionMap();
+            TxID txID = currentTransactionsMap.getCurrentTxID();
+            if (txID == null) {
+                throw new TxNotActiveException();
+            }
+            return txID;
+        }
+
+
+    private CurrentTransactionsMap getCurrentTransactionMap() {
+        CurrentTransactionsMap currentTransactionsMap = (CurrentTransactionsMap) requestContext.get(TransactionalDocumentSafeServiceImpl.CURRENT_TRANSACTIONS_MAP);
+        if (currentTransactionsMap == null) {
+            throw new TxNotActiveException();
+        }
+        return currentTransactionsMap;
     }
 }

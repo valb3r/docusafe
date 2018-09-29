@@ -47,14 +47,14 @@ class CachedTransactionalContext {
         mapToRead.put(dsDocument.getDocumentFQN(), dsDocument);
     }
 
-    public DSDocument txReadDocument(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+    public DSDocument txReadDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
         if (mapToRead.containsKey(documentFQN)) {
             return mapToRead.get(documentFQN);
         }
         if (setToDelete.contains(documentFQN)) {
             throw new CacheException("document " + documentFQN + " has been deleted before. can not be read");
         }
-        DSDocument dsDocument = transactionalFileStorage.txReadDocument(txid, userIDAuth, documentFQN);
+        DSDocument dsDocument = transactionalFileStorage.txReadDocument(userIDAuth, documentFQN);
         mapToRead.put(dsDocument.getDocumentFQN(), dsDocument);
         return dsDocument;
 
@@ -67,9 +67,9 @@ class CachedTransactionalContext {
 
     }
 
-    public BucketContentFQN txListDocuments(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
+    public BucketContentFQN txListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
         if (bucketContent == null) {
-            bucketContent = transactionalFileStorage.txListDocuments(txid, userIDAuth, new DocumentDirectoryFQN("/"), ListRecursiveFlag.TRUE);
+            bucketContent = transactionalFileStorage.txListDocuments(userIDAuth, new DocumentDirectoryFQN("/"), ListRecursiveFlag.TRUE);
         }
 
         BucketContentFQN ret = new BucketContentFQNImpl();
@@ -127,13 +127,13 @@ class CachedTransactionalContext {
         if (mapToStore.containsKey(documentFQN)) {
             return true;
         }
-        return (transactionalFileStorage.txDocumentExists(txid, userIDAuth, documentFQN));
+        return (transactionalFileStorage.txDocumentExists(userIDAuth, documentFQN));
     }
 
-    public void endTransaction(final TxID txid, final UserIDAuth userIDAuth) {
-        setToDelete.forEach(documentFQN -> transactionalFileStorage.txDeleteDocument(txid, userIDAuth, documentFQN));
-        mapToStore.keySet().forEach(documentFQN ->  transactionalFileStorage.txStoreDocument(txid, userIDAuth, mapToStore.get(documentFQN)));
-        transactionalFileStorage.endTransaction(txid, userIDAuth);
+    public void endTransaction(final UserIDAuth userIDAuth) {
+        setToDelete.forEach(documentFQN -> transactionalFileStorage.txDeleteDocument(userIDAuth, documentFQN));
+        mapToStore.keySet().forEach(documentFQN ->  transactionalFileStorage.txStoreDocument(userIDAuth, mapToStore.get(documentFQN)));
+        transactionalFileStorage.endTransaction(userIDAuth);
     }
 
     public void freeMemory() {

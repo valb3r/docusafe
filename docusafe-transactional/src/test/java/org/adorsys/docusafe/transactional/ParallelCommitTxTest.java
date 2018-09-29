@@ -47,12 +47,12 @@ public class ParallelCommitTxTest extends TransactionFileStorageBaseTest{
                 DSDocumentMetaInfo documentMetaInfo = new DSDocumentMetaInfo();
                 DSDocument document = new DSDocument(documentFQN, documentContent, documentMetaInfo);
 
-                TxID txid = transactionalFileStorage.beginTransaction(userIDAuth);
-                LOGGER.debug("FIRST TXID " + txid);
-                Assert.assertFalse(transactionalFileStorage.txDocumentExists(txid, userIDAuth, documentFQN));
-                transactionalFileStorage.txStoreDocument(txid, userIDAuth, document);
-                Assert.assertTrue(transactionalFileStorage.txDocumentExists(txid, userIDAuth, documentFQN));
-                transactionalFileStorage.endTransaction(txid, userIDAuth);
+                transactionalFileStorage.beginTransaction(userIDAuth);
+                LOGGER.debug("FIRST TXID");
+                Assert.assertFalse(transactionalFileStorage.txDocumentExists(userIDAuth, documentFQN));
+                transactionalFileStorage.txStoreDocument(userIDAuth, document);
+                Assert.assertTrue(transactionalFileStorage.txDocumentExists(userIDAuth, documentFQN));
+                transactionalFileStorage.endTransaction(userIDAuth);
             }
 
             LOGGER.debug("start " + PARALLEL_INSTANCES + " threads concurrently now");
@@ -105,9 +105,9 @@ public class ParallelCommitTxTest extends TransactionFileStorageBaseTest{
 
                 sem.acquire();
 
-                TxID txid = transactionalFileStorage.beginTransaction(userIDAuth);
-                transactionalFileStorage.txStoreDocument(txid, userIDAuth, document);
-                transactionalFileStorage.endTransaction(txid, userIDAuth);
+                transactionalFileStorage.beginTransaction(userIDAuth);
+                transactionalFileStorage.txStoreDocument(userIDAuth, document);
+                transactionalFileStorage.endTransaction(userIDAuth);
 
                 sem.release();
                 ok = true;

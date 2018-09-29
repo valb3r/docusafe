@@ -44,63 +44,63 @@ public class TxHistoryCleanupTest extends TransactionFileStorageBaseTest {
         {
             // create documents
             for (int i = 0; i < numberOfTransactinos; i++) {
-                TxID txid = transactionalFileStorage.beginTransaction(userIDAuth);
+                transactionalFileStorage.beginTransaction(userIDAuth);
                 for (int j = 0; j < numberOfFilesToCreatePerTx; j++) {
                     DSDocument document = new DSDocument(documentDirectoryFQN.addName("file_" + staticCounter++ + ".TXT"),
                             new DocumentContent(("Content of File " + i).getBytes()),
                             new DSDocumentMetaInfo());
-                    transactionalFileStorage.txStoreDocument(txid, userIDAuth, document);
+                    transactionalFileStorage.txStoreDocument(userIDAuth, document);
                     memoryMap.put(document.getDocumentFQN(), document.getDocumentContent());
                 }
-                transactionalFileStorage.endTransaction(txid, userIDAuth);
+                transactionalFileStorage.endTransaction(userIDAuth);
             }
         }
         {
             // delete documentes
             for (int i = 0; i < numberOfTransactinos; i++) {
-                TxID txid = transactionalFileStorage.beginTransaction(userIDAuth);
+                transactionalFileStorage.beginTransaction(userIDAuth);
                 for (int j = 0; j < numberOfFilesToDeletePerTx; j++) {
-                    BucketContentFQN bucketContentFQN = transactionalFileStorage.txListDocuments(txid, userIDAuth, documentDirectoryFQN, ListRecursiveFlag.TRUE);
+                    BucketContentFQN bucketContentFQN = transactionalFileStorage.txListDocuments(userIDAuth, documentDirectoryFQN, ListRecursiveFlag.TRUE);
                     int currentNumberOfFiles = bucketContentFQN.getFiles().size();
                     int indexToDelete = getRandomInRange(currentNumberOfFiles);
                     LOGGER.debug("Transaction number " + i + " has " + currentNumberOfFiles + " files");
                     LOGGER.debug("Index to delete is " + indexToDelete);
-                    transactionalFileStorage.txDeleteDocument(txid, userIDAuth, bucketContentFQN.getFiles().get(indexToDelete));
+                    transactionalFileStorage.txDeleteDocument(userIDAuth, bucketContentFQN.getFiles().get(indexToDelete));
                     memoryMap.remove(bucketContentFQN.getFiles().get(indexToDelete));
 
                 }
-                transactionalFileStorage.endTransaction(txid, userIDAuth);
+                transactionalFileStorage.endTransaction(userIDAuth);
             }
         }
         {
             // overwrite documents
             for (int i = 0; i < numberOfTransactinos; i++) {
-                TxID txid = transactionalFileStorage.beginTransaction(userIDAuth);
+                transactionalFileStorage.beginTransaction(userIDAuth);
                 for (int j = 0; j < numberOfFilesToOverwritePerTx; j++) {
-                    BucketContentFQN bucketContentFQN = transactionalFileStorage.txListDocuments(txid, userIDAuth, documentDirectoryFQN, ListRecursiveFlag.TRUE);
+                    BucketContentFQN bucketContentFQN = transactionalFileStorage.txListDocuments(userIDAuth, documentDirectoryFQN, ListRecursiveFlag.TRUE);
                     int currentNumberOfFiles = bucketContentFQN.getFiles().size();
                     int indexToOverwrite = getRandomInRange(currentNumberOfFiles);
-                    DSDocument dsDocument = transactionalFileStorage.txReadDocument(txid, userIDAuth, bucketContentFQN.getFiles().get(indexToOverwrite));
+                    DSDocument dsDocument = transactionalFileStorage.txReadDocument(userIDAuth, bucketContentFQN.getFiles().get(indexToOverwrite));
                     DSDocument newDsDocument = new DSDocument(dsDocument.getDocumentFQN(),
-                            new DocumentContent((new String(dsDocument.getDocumentContent().getValue()) + " overwritten in tx " + txid.getValue()).getBytes()),
+                            new DocumentContent((new String(dsDocument.getDocumentContent().getValue()) + " overwritten in tx ").getBytes()),
                             new DSDocumentMetaInfo());
-                    transactionalFileStorage.txStoreDocument(txid, userIDAuth, newDsDocument);
+                    transactionalFileStorage.txStoreDocument(userIDAuth, newDsDocument);
                     memoryMap.put(newDsDocument.getDocumentFQN(), newDsDocument.getDocumentContent());
                 }
-                transactionalFileStorage.endTransaction(txid, userIDAuth);
+                transactionalFileStorage.endTransaction(userIDAuth);
             }
         }
         {
-            TxID txid = transactionalFileStorage.beginTransaction(userIDAuth);
-            BucketContentFQN bucketContentFQN = transactionalFileStorage.txListDocuments(txid, userIDAuth, documentDirectoryFQN, ListRecursiveFlag.TRUE);
+            transactionalFileStorage.beginTransaction(userIDAuth);
+            BucketContentFQN bucketContentFQN = transactionalFileStorage.txListDocuments(userIDAuth, documentDirectoryFQN, ListRecursiveFlag.TRUE);
             LOGGER.debug("LIST OF FILES IN TRANSACTIONAL LAYER: " + bucketContentFQN.toString());
             Assert.assertEquals(memoryMap.keySet().size(), bucketContentFQN.getFiles().size());
             bucketContentFQN.getFiles().forEach(documentFQN -> {
-                DSDocument dsDocument = transactionalFileStorage.txReadDocument(txid, userIDAuth, documentFQN);
+                DSDocument dsDocument = transactionalFileStorage.txReadDocument(userIDAuth, documentFQN);
                 Assert.assertArrayEquals(memoryMap.get(documentFQN).getValue(), dsDocument.getDocumentContent().getValue());
                 LOGGER.debug(documentFQN + " checked!");
             });
-            transactionalFileStorage.endTransaction(txid, userIDAuth);
+            transactionalFileStorage.endTransaction(userIDAuth);
             Assert.assertEquals(expectedNumberOfFilesAfterIteration, bucketContentFQN.getFiles().size());
         }
 

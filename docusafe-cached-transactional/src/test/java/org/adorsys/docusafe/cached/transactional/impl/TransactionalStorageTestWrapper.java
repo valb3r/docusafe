@@ -141,51 +141,51 @@ public class TransactionalStorageTestWrapper implements TransactionalDocumentSaf
     }
 
     @Override
-    public TxID beginTransaction(UserIDAuth userIDAuth) {
+    public void beginTransaction(UserIDAuth userIDAuth) {
         inc(BEGIN_TX);
-        return realTransactionalFileStorage.beginTransaction(userIDAuth);
+        realTransactionalFileStorage.beginTransaction(userIDAuth);
     }
 
     @Override
-    public void txStoreDocument(TxID txid, UserIDAuth userIDAuth, DSDocument dsDocument) {
+    public void txStoreDocument(UserIDAuth userIDAuth, DSDocument dsDocument) {
         inc(STORE_DOCUMENT_TX);
-        realTransactionalFileStorage.txStoreDocument(txid, userIDAuth, dsDocument);
+        realTransactionalFileStorage.txStoreDocument(userIDAuth, dsDocument);
     }
 
     @Override
-    public DSDocument txReadDocument(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+    public DSDocument txReadDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
         inc(READ_DOCUMENT_TX);
-        return realTransactionalFileStorage.txReadDocument(txid, userIDAuth, documentFQN);
+        return realTransactionalFileStorage.txReadDocument(userIDAuth, documentFQN);
     }
 
     @Override
-    public void txDeleteDocument(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+    public void txDeleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
         inc(DELETE_DOCUMENT_TX);
-        realTransactionalFileStorage.txDeleteDocument(txid, userIDAuth, documentFQN);
+        realTransactionalFileStorage.txDeleteDocument(userIDAuth, documentFQN);
     }
 
     @Override
-    public BucketContentFQN txListDocuments(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
+    public BucketContentFQN txListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
         inc(LIST_DOCUMENTS_TX);
-        return realTransactionalFileStorage.txListDocuments(txid, userIDAuth, documentDirectoryFQN, recursiveFlag);
+        return realTransactionalFileStorage.txListDocuments(userIDAuth, documentDirectoryFQN, recursiveFlag);
     }
 
     @Override
-    public boolean txDocumentExists(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+    public boolean txDocumentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
         inc(DOCUMENT_EXISTS_TX);
-        return realTransactionalFileStorage.txDocumentExists(txid, userIDAuth, documentFQN);
+        return realTransactionalFileStorage.txDocumentExists(userIDAuth, documentFQN);
     }
 
     @Override
-    public void txDeleteFolder(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN) {
+    public void txDeleteFolder(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN) {
         inc(DELETE_FOLDER_TX);
-        realTransactionalFileStorage.txDeleteFolder(txid, userIDAuth, documentDirectoryFQN);
+        realTransactionalFileStorage.txDeleteFolder(userIDAuth, documentDirectoryFQN);
     }
 
     @Override
-    public void endTransaction(TxID txid, UserIDAuth userIDAuth) {
+    public void endTransaction(UserIDAuth userIDAuth) {
         inc(END_TRANSACTION);
-        realTransactionalFileStorage.endTransaction(txid, userIDAuth);
+        realTransactionalFileStorage.endTransaction(userIDAuth);
     }
 
     private void inc(String s) {

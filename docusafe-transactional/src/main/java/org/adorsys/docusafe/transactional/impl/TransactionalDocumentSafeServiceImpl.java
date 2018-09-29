@@ -1,5 +1,6 @@
 package org.adorsys.docusafe.transactional.impl;
 
+import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
@@ -8,6 +9,7 @@ import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.transactional.RequestMemoryContext;
 import org.adorsys.docusafe.transactional.TransactionalDocumentSafeService;
+import org.adorsys.docusafe.transactional.exceptions.TxNotActiveException;
 import org.adorsys.docusafe.transactional.exceptions.TxNotFoundException;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.types.ListRecursiveFlag;
@@ -35,22 +37,26 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
     // ============================================================================================
 
     @Override
-    public TxID beginTransaction(UserIDAuth userIDAuth) {
+    public void beginTransaction(UserIDAuth userIDAuth) {
         Date beginTxDate = new Date();
-        TxID currentTxID = new TxID();
-        LOGGER.debug("beginTransaction " + currentTxID.getValue());
-        TxIDHashMap txIDHashMap = TxIDHashMap.fromPreviousFileOrNew(documentSafeService, userIDAuth, currentTxID, beginTxDate);
         CurrentTransactionsMap currentTransactionsMap = (CurrentTransactionsMap) requestMemoryContext.get(CURRENT_TRANSACTIONS_MAP);
         if (currentTransactionsMap == null) {
             currentTransactionsMap = new CurrentTransactionsMap();
             requestMemoryContext.put(CURRENT_TRANSACTIONS_MAP, currentTransactionsMap);
         }
+        if (currentTransactionsMap.getCurrentTxID() != null) {
+            throw new BaseException("INNER TRANSACTION NOT ALLOWED YET");
+        }
+        TxID currentTxID = new TxID();
+        LOGGER.debug("beginTransaction " + currentTxID.getValue());
+        TxIDHashMap txIDHashMap = TxIDHashMap.fromPreviousFileOrNew(documentSafeService, userIDAuth, currentTxID, beginTxDate);
         currentTransactionsMap.put(currentTxID, txIDHashMap);
-        return currentTxID;
+        currentTransactionsMap.setCurrentTxID(currentTxID);
     }
 
     @Override
-    public void txStoreDocument(TxID txid, UserIDAuth userIDAuth, DSDocument dsDocument) {
+    public void txStoreDocument(UserIDAuth userIDAuth, DSDocument dsDocument) {
+        TxID txid = getCurrentTxID();
         LOGGER.debug("txStoreDocument " + dsDocument.getDocumentFQN().getValue() + " " + txid.getValue());
         TxIDHashMap txIDHashMap = getTxIDHashMap(txid);
         documentSafeService.storeDocument(userIDAuth, modifyTxDocument(dsDocument, txid));
@@ -58,7 +64,8 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
     }
 
     @Override
-    public DSDocument txReadDocument(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+    public DSDocument txReadDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+        TxID txid = getCurrentTxID();
         LOGGER.debug("txReadDocument " + documentFQN.getValue() + " " + txid.getValue());
         TxIDHashMap txIDHashMap = getTxIDHashMap(txid);
         TxID txidOfDocument = txIDHashMap.readDocument(documentFQN);
@@ -67,39 +74,45 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
     }
 
     @Override
-    public void txDeleteDocument(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+    public void txDeleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+        TxID txid = getCurrentTxID();
         LOGGER.debug("txDeleteDocument " + documentFQN.getValue() + " " + txid.getValue());
         TxIDHashMap txIDHashMap = getTxIDHashMap(txid);
         txIDHashMap.deleteDocument(documentFQN);
     }
 
     @Override
-    public BucketContentFQN txListDocuments(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
+    public BucketContentFQN txListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
+        TxID txid = getCurrentTxID();
         TxIDHashMap txIDHashMap = getTxIDHashMap(txid);
         return txIDHashMap.list(documentDirectoryFQN, recursiveFlag);
     }
 
     @Override
-    public boolean txDocumentExists(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+    public boolean txDocumentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+        TxID txid = getCurrentTxID();
         LOGGER.debug("txDocumentExists " + documentFQN.getValue() + " " + txid.getValue());
         TxIDHashMap txIDHashMap = getTxIDHashMap(txid);
         return txIDHashMap.documentExists(documentFQN);
     }
 
     @Override
-    public void txDeleteFolder(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN) {
+    public void txDeleteFolder(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN) {
+        TxID txid = getCurrentTxID();
         LOGGER.debug("txDeleteFolder " + documentDirectoryFQN.getValue() + " " + txid.getValue());
         TxIDHashMap txIDHashMap = getTxIDHashMap(txid);
         txIDHashMap.deleteFolder(documentDirectoryFQN);
     }
 
     @Override
-    public void endTransaction(TxID txid, UserIDAuth userIDAuth) {
+    public void endTransaction(UserIDAuth userIDAuth) {
+        TxID txid = getCurrentTxID();
         LOGGER.debug("transactionIsOver " + txid.getValue());
         TxIDHashMap txIDHashMap = getTxIDHashMap(txid);
         txIDHashMap.setEndTransactionDate(new Date());
         txIDHashMap.saveOnce(documentSafeService, userIDAuth);
         txIDHashMap.transactionIsOver(documentSafeService, userIDAuth);
+        getCurrentTransactionMap().setCurrentTxID(null);
     }
 
     public static DSDocument modifyTxDocument(DSDocument dsDocument, TxID txid) {
@@ -117,12 +130,18 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
         return txMeta.addName(origName.getValue() + "." + txid.getValue());
     }
 
+    private TxID getCurrentTxID() {
+        CurrentTransactionsMap currentTransactionsMap = getCurrentTransactionMap();
+        TxID txID = currentTransactionsMap.getCurrentTxID();
+        if (txID == null) {
+            throw new TxNotActiveException();
+        }
+        return txID;
+    }
+
 
     private TxIDHashMap getTxIDHashMap(TxID txid) {
-        CurrentTransactionsMap currentTransactionsMap = (CurrentTransactionsMap) requestMemoryContext.get(CURRENT_TRANSACTIONS_MAP);
-        if (currentTransactionsMap == null) {
-            throw new TxNotFoundException(txid);
-        }
+        CurrentTransactionsMap currentTransactionsMap = getCurrentTransactionMap();
         TxIDHashMap txidHashMap = currentTransactionsMap.get(txid);
         if (currentTransactionsMap == null) {
             throw new TxNotFoundException(txid);
@@ -131,6 +150,11 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
         return txidHashMap;
     }
 
-
-
+    private CurrentTransactionsMap getCurrentTransactionMap() {
+        CurrentTransactionsMap currentTransactionsMap = (CurrentTransactionsMap) requestMemoryContext.get(CURRENT_TRANSACTIONS_MAP);
+        if (currentTransactionsMap == null) {
+            throw new TxNotActiveException();
+        }
+        return currentTransactionsMap;
+    }
 }

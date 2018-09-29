@@ -13,15 +13,15 @@ import org.adorsys.encobject.types.ListRecursiveFlag;
  */
 public interface TransactionalDocumentSafeService extends NonTransactionalDocumentSafeService {
     // TRANSACTIONAL
-    TxID beginTransaction(UserIDAuth userIDAuth);
+    void beginTransaction(UserIDAuth userIDAuth);
 
-    void txStoreDocument(TxID txid, UserIDAuth userIDAuth, DSDocument dsDocument);
-    DSDocument txReadDocument(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN);
-    void txDeleteDocument(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN);
-    BucketContentFQN txListDocuments(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag);
-    boolean txDocumentExists(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN);
-    void txDeleteFolder(TxID txid, UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN);
+    void txStoreDocument(UserIDAuth userIDAuth, DSDocument dsDocument);
+    DSDocument txReadDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
+    void txDeleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
+    BucketContentFQN txListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag);
+    boolean txDocumentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN);
+    void txDeleteFolder(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN);
 
-    void endTransaction(TxID txid, UserIDAuth userIDAuth);
+    void endTransaction(UserIDAuth userIDAuth);
 
 }

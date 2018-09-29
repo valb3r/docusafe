@@ -92,7 +92,7 @@ public class HowToUseTransactionalFileStoragePrototypeTest extends TransactionFi
         // wir verarbeiten alle Dokumente in einer Transaction
         LOGGER.debug("new files found");
         LOGGER.debug("start tx");
-        TxID txID = transactionalFileStorage.beginTransaction(userIDAuth);
+        transactionalFileStorage.beginTransaction(userIDAuth);
         list.getFiles().forEach(documentFQN -> {
             // Lade das Document TRANSAKTIONSLOS
             LOGGER.debug("load document " + documentFQN + " from non transactional folder");
@@ -103,10 +103,10 @@ public class HowToUseTransactionalFileStoragePrototypeTest extends TransactionFi
             // Namensraum abgelegt. Daher kann der Name identisch sein!
 
             // Speichere das Document MIT TRANSAKTION
-            transactionalFileStorage.txStoreDocument(txID, userIDAuth, dsDocument);
+            transactionalFileStorage.txStoreDocument(userIDAuth, dsDocument);
         });
 
-        transactionalFileStorage.endTransaction(txID, userIDAuth);
+        transactionalFileStorage.endTransaction(userIDAuth);
 
         // Zu diesem Zeitpunkt enthält das Filesystem physisch foldgende Dateien:
         //

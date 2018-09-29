@@ -2,6 +2,7 @@ package org.adorsys.docusafe.transactional;
 
 import org.adorsys.docusafe.cached.transactional.exceptions.CacheException;
 import org.adorsys.docusafe.cached.transactional.impl.CachedTransactionalDocumentSafeServiceImpl;
+import org.adorsys.docusafe.transactional.exceptions.TxNotActiveException;
 import org.adorsys.docusafe.transactional.impl.TransactionalDocumentSafeServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,15 +17,18 @@ public class TransactionalFileStorageWithCacheTest extends TransactionalFileStor
         this.transactionalFileStorage = new CachedTransactionalDocumentSafeServiceImpl(requestMemoryContext, localTransactionalFileStorage);
     }
 
-    @Test(expected = CacheException.class)
+    @Test(expected = TxNotActiveException.class)
     @Override
     public void testEndTxTwice() {
         super.testEndTxTwice();
     }
 
+    /*
+    TODO DOC-48
     @Test
     @Override
     public void testDelete() {
         // txDeleteFolder not yet implemented in cache layer
     }
+     */
 }
