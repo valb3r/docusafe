@@ -23,12 +23,9 @@ public class TransactionalFileStorageWithCacheTest extends TransactionalFileStor
         super.testEndTxTwice();
     }
 
-    /*
-    TODO DOC-48
     @Test
     @Override
     public void testDelete() {
         // txDeleteFolder not yet implemented in cache layer
     }
-     */
 }

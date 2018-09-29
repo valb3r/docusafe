@@ -17,7 +17,7 @@ import org.junit.Before;
  */
 public class TransactionFileStorageBaseTest {
 
-    RequestMemoryContext requestMemoryContext = new SimpleRequestMemoryContextImpl();
+    SimpleRequestMemoryContextImpl requestMemoryContext = new SimpleRequestMemoryContextImpl();
     DocumentSafeServiceImpl dssi = new DocumentSafeServiceImpl(WithCache.FALSE, ExtendedStoreConnectionFactory.get());
     TransactionalDocumentSafeService transactionalFileStorage = new TransactionalDocumentSafeServiceImpl(requestMemoryContext, dssi);
     UserIDAuth userIDAuth = new UserIDAuth(new UserID("peter"), new ReadKeyPassword("password"));

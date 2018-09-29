@@ -9,6 +9,7 @@ import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.transactional.RequestMemoryContext;
 import org.adorsys.docusafe.transactional.TransactionalDocumentSafeService;
+import org.adorsys.docusafe.transactional.exceptions.TxInnerException;
 import org.adorsys.docusafe.transactional.exceptions.TxNotActiveException;
 import org.adorsys.docusafe.transactional.exceptions.TxNotFoundException;
 import org.adorsys.docusafe.transactional.types.TxID;
@@ -45,7 +46,7 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
             requestMemoryContext.put(CURRENT_TRANSACTIONS_MAP, currentTransactionsMap);
         }
         if (currentTransactionsMap.getCurrentTxID() != null) {
-            throw new BaseException("INNER TRANSACTION NOT ALLOWED YET");
+            throw new TxInnerException();
         }
         TxID currentTxID = new TxID();
         LOGGER.debug("beginTransaction " + currentTxID.getValue());
