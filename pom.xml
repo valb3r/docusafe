@@ -58,6 +58,7 @@
         <module>docusafe-business</module>
         <module>docusafe-transactional</module>
         <module>docusafe-cached-transactional</module>
+        <module>docusafe-spring</module>
     </modules>
 
     <dependencies>
