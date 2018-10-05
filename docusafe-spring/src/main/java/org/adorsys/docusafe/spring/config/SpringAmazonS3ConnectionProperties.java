@@ -23,12 +23,22 @@ import java.net.URL;
 @Component
 @ConfigurationProperties(prefix = "docusafe.storeconnection.amazons3")
 @Validated
-public class SpringAmazonS3ConnectionProperties extends SpringConnectionPropertiesImpl implements AmazonS3ConnectionProperties{
+public class SpringAmazonS3ConnectionProperties extends SpringConnectionPropertiesImpl implements AmazonS3ConnectionProperties {
     private final static Logger LOGGER = LoggerFactory.getLogger(SpringAmazonS3ConnectionProperties.class);
+    public final static String template = "\n" +
+            "docusafe:\n" +
+            "  storeconnection:\n" +
+            "    amazons3\n" +
+            "      url: (mandatory)\n" +
+            "      accesskey: (mandatory)\n" +
+            "      secretkey: (mandatory)\n" +
+            "      region: (optional)\n" +
+            "      rootbucket: (optional)\n" +
+            SpringConnectionPropertiesImpl.template;
 
     private String url;
-    private String secretkey;
     private String accesskey;
+    private String secretkey;
     private String region = defaultRegion.getValue();
     @Nullable
     private String rootbucket = defaultRootBucketName.getValue();

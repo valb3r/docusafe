@@ -16,6 +16,11 @@ public class SpringDocusafeStoreconnectionProperties {
     private SpringAmazonS3ConnectionProperties amazons3;
     @Nullable
     private SpringFilesystemConnectionProperties filesystem;
+    @Nullable
+    private SpringMinioConnectionProperties minio;
+    @Nullable
+    private SpringMongoConnectionProperties mongo;
+
 
     public SpringAmazonS3ConnectionProperties getAmazons3() {
         return amazons3;
@@ -31,5 +36,21 @@ public class SpringDocusafeStoreconnectionProperties {
 
     public void setFilesystem(SpringFilesystemConnectionProperties filesystem) {
         this.filesystem = filesystem;
+    }
+
+    public SpringMinioConnectionProperties getMinio() {
+        return minio;
+    }
+
+    public void setMinio(SpringMinioConnectionProperties minio) {
+        this.minio = minio;
+    }
+
+    public SpringMongoConnectionProperties getMongo() {
+        return mongo;
+    }
+
+    public void setMongo(SpringMongoConnectionProperties mongo) {
+        this.mongo = mongo;
     }
 }

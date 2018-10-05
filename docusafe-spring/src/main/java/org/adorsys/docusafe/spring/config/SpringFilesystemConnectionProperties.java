@@ -5,9 +5,7 @@ import org.adorsys.encobject.types.connection.FilesystemBasedirectoryName;
 import org.adorsys.encobject.types.properties.FilesystemConnectionProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
@@ -19,9 +17,15 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public class SpringFilesystemConnectionProperties extends SpringConnectionPropertiesImpl implements FilesystemConnectionProperties {
     private final static Logger LOGGER = LoggerFactory.getLogger(SpringFilesystemConnectionProperties.class);
+    public final static String template = "\n" +
+            "docusafe:\n" +
+            "  storeconnection:\n" +
+            "    filesystem:\n" +
+            "      basedir: (mandatory)\n" +
+            SpringConnectionPropertiesImpl.template;
 
-    @Nullable
-    private String basedir = defaultBasedirectory.getValue();
+
+    private String basedir;
 
     @Override
     public FilesystemBasedirectoryName getFilesystemBasedirectoryName() {
@@ -35,9 +39,4 @@ public class SpringFilesystemConnectionProperties extends SpringConnectionProper
     public void setBasedir(String basedir) {
         this.basedir = basedir;
     }
-
-
-
-
-
 }

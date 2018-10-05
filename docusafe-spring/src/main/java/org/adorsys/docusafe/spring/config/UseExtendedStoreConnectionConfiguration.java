@@ -32,6 +32,21 @@ public class UseExtendedStoreConnectionConfiguration {
             LOGGER.debug("jetzt amazon");
             return ExtendedStoreConnectionFactory.get(properties.getAmazons3());
         }
-        throw new BaseException("at least filesystem or amazons3 has to be specified");
+        if (properties.getMinio() != null) {
+            LOGGER.debug("jetzt minio");
+            return ExtendedStoreConnectionFactory.get(properties.getMinio());
+        }
+        if (properties.getMongo() != null) {
+            LOGGER.debug("jetzt mongo");
+            return ExtendedStoreConnectionFactory.get(properties.getMongo());
+        }
+        String emessage = "at least filesystem, amazons3, minio or mongo has to be specified with ";
+        String message = emessage +
+                SpringFilesystemConnectionProperties.template +
+                SpringAmazonS3ConnectionProperties.template +
+                SpringMinioConnectionProperties.template +
+                SpringMongoConnectionProperties.template;
+        LOGGER.error(message);
+        throw new BaseException(emessage);
     }
 }

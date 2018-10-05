@@ -11,6 +11,8 @@ import org.springframework.lang.Nullable;
  */
 public class SpringConnectionPropertiesImpl implements ConnectionProperties {
     private final static Logger LOGGER = LoggerFactory.getLogger(SpringConnectionPropertiesImpl.class);
+    protected final static String template = "      encryptionpassword: (optional. null means no ecryption)\n";
+
 
     @Nullable
     private String encryptionpassword = defaultEncryptionPassword.getValue();
