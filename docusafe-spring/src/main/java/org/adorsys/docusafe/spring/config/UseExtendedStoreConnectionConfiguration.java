@@ -3,14 +3,11 @@ package org.adorsys.docusafe.spring.config;
 import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
-import org.adorsys.encobject.types.properties.FilesystemConnectionProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.StringTokenizer;
 
 /**
  * Created by peter on 02.10.18.
