@@ -16,7 +16,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <crypt.version>0.21.3</crypt.version>
+        <crypt.version>0.21.4-SNAPSHOT</crypt.version>
         <version.swagger>1.5.5</version.swagger>
         <deploy.disabled>false</deploy.disabled>
         <spring-boot.version>2.0.1.RELEASE</spring-boot.version>

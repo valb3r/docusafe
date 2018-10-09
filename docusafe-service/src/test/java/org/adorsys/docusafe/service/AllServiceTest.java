@@ -1,6 +1,8 @@
 package org.adorsys.docusafe.service;
 
+import com.googlecode.catchexception.CatchException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
+import org.adorsys.cryptoutils.extendendstoreconnection.impl.amazons3.AmazonS3ExtendedStoreConnection;
 import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
 import org.adorsys.cryptoutils.utils.HexUtil;
 import org.adorsys.docusafe.service.types.AccessType;
@@ -28,6 +30,7 @@ import org.adorsys.encobject.service.impl.ContainerPersistenceImpl;
 import org.adorsys.encobject.service.impl.generator.KeyStoreCreationConfigImpl;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.adorsys.encobject.types.OverwriteFlag;
+import org.adorsys.encobject.types.properties.AmazonS3ConnectionProperties;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -349,17 +352,17 @@ public class AllServiceTest {
 
         DocumentContent documentContent = new DocumentContent("Ein Affe im Zoo ist nie allein".getBytes());
 
-        boolean exceptionCaught = false;
-            FullStuff symmetricStuff = createKeyStoreAndDocument(container1, documentBucketPath, documentContent);
-        try {
-            createPublicKeyStoreForKnownDocument(container2, documentContent, symmetricStuff.documentStuff.documentBucketPath, symmetricStuff.documentGuardStuff.documentKeyIDWithKeyAndAccessType, false);
-        } catch (Exception e) {
-            LOGGER.debug("Exception was expected");
-            exceptionCaught = true;
-        }
-        Assert.assertTrue(exceptionCaught);
+        FullStuff symmetricStuff = createKeyStoreAndDocument(container1, documentBucketPath, documentContent);
+        CatchException.catchException(() -> createPublicKeyStoreForKnownDocument(container2, documentContent, symmetricStuff.documentStuff.documentBucketPath, symmetricStuff.documentGuardStuff.documentKeyIDWithKeyAndAccessType, false));
+        Assert.assertTrue(CatchException.caughtException() != null);
     }
 
+    // @Test
+    public void cleanDB() {
+        if (extendedStoreConnection instanceof AmazonS3ExtendedStoreConnection) {
+            ((AmazonS3ExtendedStoreConnection) extendedStoreConnection).cleanDatabase();
+        }
+    }
     @Test
     public void testCreate_oneDocument_twoKeyStores_twoGuards_ChangeDocument() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
@@ -488,7 +491,7 @@ public class AllServiceTest {
     @Test
     public void createManyBuckets() {
         BucketServiceTest bucketServiceTest = new BucketServiceTest(extendedStoreConnection);
-        for (int i = 0; i<200; i++) {
+        for (int i = 0; i < 200; i++) {
             BucketDirectory bd = new BucketDirectory("bucket" + i);
             buckets.add(bd);
             bucketServiceTest.createBucket(bd);

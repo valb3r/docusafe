@@ -19,7 +19,7 @@ public class SpringConnectionPropertiesImpl implements ConnectionProperties {
 
     @Override
     public BucketPathEncryptionPassword getBucketPathEncryptionPassword() {
-        if (encryptionpassword == null || encryptionpassword.length() == 0) {
+        if (encryptionpassword == null || encryptionpassword.length() == 0 || encryptionpassword.equalsIgnoreCase("null")) {
             LOGGER.debug("encryptionpassword is:null");
             return null;
         }

@@ -54,7 +54,7 @@ public class SpringMongoConnectionProperties extends SpringConnectionPropertiesI
 
     @Override
     public MongoUser getMongoUser() {
-        if (user == null) {
+        if (user == null || user.length() == 0 || user.equalsIgnoreCase("null")) {
             return null;
         }
         return new MongoUser(user);
@@ -62,7 +62,7 @@ public class SpringMongoConnectionProperties extends SpringConnectionPropertiesI
 
     @Override
     public MongoPassword getMongoPassword() {
-        if (password == null) {
+        if (password == null || password.length() == 0 || password.equalsIgnoreCase("null")) {
             return null;
         }
         return new MongoPassword(password);
