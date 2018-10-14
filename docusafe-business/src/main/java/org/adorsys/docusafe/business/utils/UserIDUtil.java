@@ -28,7 +28,7 @@ public class UserIDUtil {
     }
 
     public static BucketDirectory getKeyStoreDirectory(UserID userID) {
-        return UserIDUtil.getUserRootBucketDirectory(userID).appendDirectory(".keystore");
+        return UserIDUtil.getUserRootBucketDirectory(userID).appendDirectory(".keys");
     }
 
     public static BucketDirectory getHomeBucketDirectory(UserID userID) {

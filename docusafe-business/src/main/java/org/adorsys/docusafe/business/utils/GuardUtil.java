@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
  */
 public class GuardUtil {
     private final static Logger LOGGER = LoggerFactory.getLogger(GuardUtil.class);
-    private final static String BUCKET_GUARD_KEY = ".bucketGuardKey";
+    public final static String BUCKET_GUARD_KEY = ".bgk";
 
     public static void saveBucketGuardKeyFile(BucketService bucketService, BucketDirectory keyStoreDirectory, BucketDirectory documentDirectory, DocumentKeyID documentKeyID) {
         BucketPath guardFile = keyStoreDirectory.append(documentDirectory.addSuffix(BUCKET_GUARD_KEY));

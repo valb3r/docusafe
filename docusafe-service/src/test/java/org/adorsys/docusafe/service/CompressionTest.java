@@ -63,9 +63,11 @@ public class CompressionTest {
         }
     }
 
+
     @Test
     public void testCompressionWithPrivateAndPublicKey() {
         BucketDirectory bd = new BucketDirectory("containerforcompressiontestwithprivatepublickeypay");
+        LOGGER.debug("instance of extendedStoreConnection is " + extendedStoreConnection.getClass().getName());
         extendedStoreConnection.createContainer(bd);
         buckets.add(bd);
 

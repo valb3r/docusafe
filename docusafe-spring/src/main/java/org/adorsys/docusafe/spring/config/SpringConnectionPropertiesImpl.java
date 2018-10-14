@@ -1,6 +1,7 @@
 package org.adorsys.docusafe.spring.config;
 
 import org.adorsys.encobject.types.BucketPathEncryptionPassword;
+import org.adorsys.encobject.types.properties.BucketPathEncryptionFilenameOnly;
 import org.adorsys.encobject.types.properties.ConnectionProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,11 +12,15 @@ import org.springframework.lang.Nullable;
  */
 public class SpringConnectionPropertiesImpl implements ConnectionProperties {
     private final static Logger LOGGER = LoggerFactory.getLogger(SpringConnectionPropertiesImpl.class);
-    protected final static String template = "      encryptionpassword: (optional. null means no ecryption)\n";
+    protected final static String template = "      encryptionpassword: (optional. null means no ecryption)\n"
+            + "      encryptionfilenameonly (optional. TRUE means, path is not encrypted)";
 
 
     @Nullable
     private String encryptionpassword = defaultEncryptionPassword.getValue();
+
+    @Nullable
+    private String encryptionfilenameonly = defaultBucketPathEncryptionFilenameOnly.toString();
 
     @Override
     public BucketPathEncryptionPassword getBucketPathEncryptionPassword() {
@@ -23,7 +28,6 @@ public class SpringConnectionPropertiesImpl implements ConnectionProperties {
             LOGGER.debug("encryptionpassword is:null");
             return null;
         }
-        LOGGER.debug("encryptionpassword is:\"" + encryptionpassword + "\"");
         LOGGER.debug("encryptionpassword is:\"" + new BucketPathEncryptionPassword(encryptionpassword) + "\"");
         return new BucketPathEncryptionPassword(encryptionpassword);
     }
@@ -32,5 +36,18 @@ public class SpringConnectionPropertiesImpl implements ConnectionProperties {
         this.encryptionpassword = encryptionpassword;
     }
 
+    @Override
+    public BucketPathEncryptionFilenameOnly getBucketPathEncryptionFilenameOnly() {
+        if (encryptionfilenameonly == null) {
+            return defaultBucketPathEncryptionFilenameOnly;
+        }
+        if (encryptionfilenameonly.equalsIgnoreCase("true")) {
+            return BucketPathEncryptionFilenameOnly.TRUE;
+        }
+        return BucketPathEncryptionFilenameOnly.FAlSE;
+    }
 
+    public void setEncryptionfilenameonly(String encryptionfilenameonly) {
+        this.encryptionfilenameonly = encryptionfilenameonly;
+    }
 }

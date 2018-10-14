@@ -326,8 +326,8 @@ public class AllServiceTest {
     @Test
     public void testCreate_oneDocument_twoKeyStores_twoGuards_LoadDocument() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
-        String container1 = "user1/key-store-container-for-secretkey";
-        String container2 = "user2/key-store-container-for-enckey";
+        String container1 = "user1/secretkey";
+        String container2 = "user2/enckey";
         DocumentBucketPath documentBucketPath = new DocumentBucketPath("documentbucketpath3/subfolder/1/2/3");
         DocumentContent documentContent = new DocumentContent("Ein Affe im Zoo ist nie allein".getBytes());
 
@@ -346,8 +346,8 @@ public class AllServiceTest {
     @Test
     public void testCreate_oneDocument_twoKeyStores_twoGuards_LoadDocument_with_expected_failure() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
-        String container1 = "user1/.keystore/key-store-container-for-secretkey";
-        String container2 = "user2/.keystore/key-store-container-for-enckey";
+        String container1 = "user1/secretkey";
+        String container2 = "user2/enckey";
         DocumentBucketPath documentBucketPath = new DocumentBucketPath("documentbucketpath/4");
 
         DocumentContent documentContent = new DocumentContent("Ein Affe im Zoo ist nie allein".getBytes());
@@ -366,8 +366,8 @@ public class AllServiceTest {
     @Test
     public void testCreate_oneDocument_twoKeyStores_twoGuards_ChangeDocument() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
-        String container1 = "user1/key-store-container-for-secretkey";
-        String container2 = "user2/key-store-container-for-enckey";
+        String container1 = "user1/secretkey";
+        String container2 = "user2/enckey";
         DocumentBucketPath documentBucketPath = new DocumentBucketPath("documentbucketpath5/1/2/3");
 
         DocumentContent documentContent = new DocumentContent("Ein Affe im Zoo ist nie allein".getBytes());
@@ -460,7 +460,8 @@ public class AllServiceTest {
         Assert.assertFalse("bucket must not exist", exists);
     }
 
-    @Test
+    // @Test
+    // todo spezialtest, bei dem das directory auch als pfad benutzt wird, kann mit dsc-encryption-filename-only nicht gehen
     public void createBucketWithDot() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         BucketServiceTest bucketServiceTest = new BucketServiceTest(extendedStoreConnection);

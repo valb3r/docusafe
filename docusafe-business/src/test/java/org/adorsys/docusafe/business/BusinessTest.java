@@ -116,7 +116,7 @@ public class BusinessTest extends BusinessTestBase {
     @Test
     public void deleteDocumentTest() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
-        UserID userID = new UserID("UserPeterDelete");
+        UserID userID = new UserID("DelPeter");
         Assert.assertFalse(service.userExists(userID));
         UserIDAuth userIDAuth = createUser(userID);
         Assert.assertTrue(service.userExists(userID));
@@ -159,10 +159,10 @@ public class BusinessTest extends BusinessTestBase {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         UserIDAuth userIDAuthPeter = createUser(new UserID("peter"), new ReadKeyPassword("keyPasswordForPeter"));
         UserIDAuth userIDAuthFrancis = createUser(new UserID("francis"), new ReadKeyPassword("keyPasswordForFrancis"));
-        DocumentFQN documentFQN = new DocumentFQN("first/next/a-new-document.txt");
+        DocumentFQN documentFQN = new DocumentFQN("first/document.txt");
         DSDocument dsDocument1 = createDocument(userIDAuthPeter, documentFQN);
 
-        DocumentDirectoryFQN documentDirectoryFQN = new DocumentDirectoryFQN("first/next");
+        DocumentDirectoryFQN documentDirectoryFQN = new DocumentDirectoryFQN("first");
 
         service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentDirectoryFQN, AccessType.WRITE);
 
@@ -220,7 +220,7 @@ public class BusinessTest extends BusinessTestBase {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         UserIDAuth userIDAuthPeter = createUser(new UserID("peter"), new ReadKeyPassword("keyPasswordForPeter"));
         UserIDAuth userIDAuthFrancis = createUser(new UserID("francis"), new ReadKeyPassword("keyPasswordForFrancis"));
-        DocumentFQN documentFQN = new DocumentFQN("first/next/a-new-document.txt");
+        DocumentFQN documentFQN = new DocumentFQN("first/document.txt");
         DSDocument dsDocument1 = createDocument(userIDAuthPeter, documentFQN);
 
         CatchException.catchException(() -> service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN));
@@ -311,21 +311,21 @@ public class BusinessTest extends BusinessTestBase {
     public void checkDirectoryListings() {
         LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         UserIDAuth userIDAuth = createUser();
-        DocumentDirectoryFQN dir = new DocumentDirectoryFQN("many/deeper/and/deeper");
+        DocumentDirectoryFQN dir = new DocumentDirectoryFQN("/");
         createDirectoryWithSubdirectories(3, userIDAuth, dir, 3, 3);
         {
             BucketContentFQN list = service.list(userIDAuth, dir, ListRecursiveFlag.FALSE);
             list.getDirectories().forEach(sdir -> LOGGER.debug("found dir " + sdir));
             list.getFiles().forEach(file -> LOGGER.debug("found file " + file));
             Assert.assertEquals(3, list.getDirectories().size());
-            Assert.assertEquals(3, list.getFiles().size());
+            Assert.assertEquals(4, list.getFiles().size());
         }
         {
             BucketContentFQN list = service.list(userIDAuth, dir, ListRecursiveFlag.TRUE);
             list.getDirectories().forEach(sdir -> LOGGER.debug("found dir " + sdir));
             list.getFiles().forEach(file -> LOGGER.debug("found file " + file));
             Assert.assertEquals(12, list.getDirectories().size());
-            Assert.assertEquals(39, list.getFiles().size());
+            Assert.assertEquals(40, list.getFiles().size());
         }
     }
 

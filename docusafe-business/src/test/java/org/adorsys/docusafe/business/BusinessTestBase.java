@@ -102,7 +102,7 @@ public class BusinessTestBase {
         BucketContent bucketContent = bucketService.readDocumentBucket(keyStoreDirectory, ListRecursiveFlag.TRUE);
         int count = 0;
         for (StorageMetadata meta : bucketContent.getContent()) {
-            if (meta.getName().endsWith("bucketGuardKey")) {
+            if (meta.getName().endsWith(GuardUtil.BUCKET_GUARD_KEY)) {
                 count++;
             }
         }
@@ -115,7 +115,7 @@ public class BusinessTestBase {
     }
 
     protected UserIDAuth createUser() {
-        return createUser(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));
+        return createUser(new UserID("peter"), new ReadKeyPassword("peterkey"));
     }
 
     protected UserIDAuth createUser(UserID userID, ReadKeyPassword readKeyPassword) {
