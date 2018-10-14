@@ -28,7 +28,7 @@ public class SpringAmazonS3ConnectionProperties extends SpringConnectionProperti
     public final static String template = "\n" +
             "docusafe:\n" +
             "  storeconnection:\n" +
-            "    amazons3\n" +
+            "    amazons3:\n" +
             "      url: (mandatory)\n" +
             "      accesskey: (mandatory)\n" +
             "      secretkey: (mandatory)\n" +

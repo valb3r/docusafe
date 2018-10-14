@@ -13,7 +13,7 @@ import org.springframework.lang.Nullable;
 public class SpringConnectionPropertiesImpl implements ConnectionProperties {
     private final static Logger LOGGER = LoggerFactory.getLogger(SpringConnectionPropertiesImpl.class);
     protected final static String template = "      encryptionpassword: (optional. null means no ecryption)\n"
-            + "      encryptionfilenameonly (optional. TRUE means, path is not encrypted)";
+            + "      encryptionfilenameonly: (optional. TRUE means, path is not encrypted)";
 
 
     @Nullable
