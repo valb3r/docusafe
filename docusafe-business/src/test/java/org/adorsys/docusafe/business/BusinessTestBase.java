@@ -143,17 +143,22 @@ public class BusinessTestBase {
     }
 
     protected DSDocumentStream createDocumentStream(UserIDAuth userIDAuth, DocumentFQN documentFQN, DSDocumentMetaInfo mi) {
-        String content = "Einfach nur a bisserl Text";
-        ByteArrayInputStream bis = new ByteArrayInputStream(content.getBytes());
-        DSDocumentStream dsDocumentStream = new DSDocumentStream(documentFQN, bis, mi);
+        try {
+            String content = "Einfach nur a bisserl Text";
+            try (ByteArrayInputStream bis = new ByteArrayInputStream(content.getBytes())) {
+                DSDocumentStream dsDocumentStream = new DSDocumentStream(documentFQN, bis, mi);
 
-        // check, there exists no guard yet
-        LOGGER.debug("check no bucket guard exists yet for " + dsDocumentStream.getDocumentFQN());
-        service.storeDocumentStream(userIDAuth, dsDocumentStream);
+                // check, there exists no guard yet
+                LOGGER.debug("check no bucket guard exists yet for " + dsDocumentStream.getDocumentFQN());
+                service.storeDocumentStream(userIDAuth, dsDocumentStream);
 
-        // Der Stream wurde nun schon ausgelesen, um ihn später prüfen zu können, muss er resetted werden
-        bis.reset();
-        return dsDocumentStream;
+                // Der Stream wurde nun schon ausgelesen, um ihn später prüfen zu können, müsste er resetted werden
+                // nicht alle streams sind resettable, daher hier auf nummer sicher gehen
+                return service.readDocumentStream(userIDAuth, dsDocumentStream.getDocumentFQN());
+            }
+        } catch (Exception e) {
+            throw BaseExceptionHandler.handle(e);
+        }
     }
 
     protected DSDocument readDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN, DocumentContent documentContent) {
@@ -182,14 +187,16 @@ public class BusinessTestBase {
         return dsDocument1Result;
     }
 
-    protected DSDocumentStream readDocumentStream(UserIDAuth userIDAuth, DocumentFQN documentFQN, InputStream is, boolean checkGuards) {
+    protected DSDocumentStream readDocumentStream(UserIDAuth userIDAuth, DocumentFQN documentFQN, InputStream origInputStream, boolean checkGuards) {
         try {
             DSDocumentStream dsDocument1Result = service.readDocumentStream(userIDAuth, documentFQN);
-            String origContent = IOUtils.toString(is, Charset.defaultCharset());
-            String readContent = IOUtils.toString(dsDocument1Result.getDocumentStream(), Charset.defaultCharset());
-            LOGGER.debug("original  document stream:" + origContent);
-            LOGGER.debug("retrieved document:" + readContent);
-            Assert.assertEquals("document content ok", origContent, readContent);
+            try (InputStream is2 = dsDocument1Result.getDocumentStream()) {
+                String readContent = IOUtils.toString(is2, Charset.defaultCharset());
+                String origContent = IOUtils.toString(origInputStream, Charset.defaultCharset());
+                LOGGER.debug("original  document stream:" + origContent);
+                LOGGER.debug("retrieved document:" + readContent);
+                Assert.assertEquals("document content ok", origContent, readContent);
+            }
             if (!checkGuards) {
                 return dsDocument1Result;
             }
