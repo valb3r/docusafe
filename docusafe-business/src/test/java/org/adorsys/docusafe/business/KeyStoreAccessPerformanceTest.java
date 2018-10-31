@@ -21,6 +21,7 @@ public class KeyStoreAccessPerformanceTest extends BusinessTestBase {
 
     @Test
     public void a() {
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
 
         int MAX_DOCS = 100;
         UserIDAuth userIDAuth = new UserIDAuth(new UserID("peter"), new ReadKeyPassword("readKeyPassword"));

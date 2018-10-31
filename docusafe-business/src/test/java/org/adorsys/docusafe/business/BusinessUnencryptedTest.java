@@ -42,7 +42,7 @@ public class BusinessUnencryptedTest extends BusinessTestBase {
     @Test
     public void createUAndDeleteUser() {
         {
-            LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+            LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
             UserIDAuth userIDAuth = new UserIDAuth(new UserID("peter"), new ReadKeyPassword("peterkey"));
             service.createUser(userIDAuth);
 
@@ -64,7 +64,7 @@ public class BusinessUnencryptedTest extends BusinessTestBase {
 
     @Test
     public void writeDocument() {
-        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         UserIDAuth userIDAuth = createUser();
         UserIDAuth userIDAuthWrongPassword = new UserIDAuth(userIDAuth.getUserID(), new ReadKeyPassword("total falsch und anders"));
         Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
@@ -94,7 +94,7 @@ public class BusinessUnencryptedTest extends BusinessTestBase {
     @Test
     public void writeDocumentStream() {
         try {
-            LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+            LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
             UserIDAuth userIDAuth = createUser();
             UserIDAuth userIDAuthWrongPassword = new UserIDAuth(userIDAuth.getUserID(), new ReadKeyPassword("total falsch und anders"));
             Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
@@ -145,7 +145,7 @@ public class BusinessUnencryptedTest extends BusinessTestBase {
 
     @Test
     public void writeGrantedDocument() {
-        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         UserIDAuth userIDAuth1 = createUser(new UserID("user1"), new ReadKeyPassword("passwordOfUser1"));
         UserIDAuth userIDAuth1WrongPassword = new UserIDAuth(userIDAuth1.getUserID(), new ReadKeyPassword("total falsch und anders"));
         UserIDAuth userIDAuth2 = createUser(new UserID("user2"), new ReadKeyPassword("passwordOfUser2"));

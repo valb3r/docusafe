@@ -52,6 +52,8 @@ public class CachedTransactionalStorageTest {
 
     @Test
     public void testTxListAndDeleteDocument() {
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+
         UserIDAuth userIDAuth = new UserIDAuth(new UserID("peter"), new ReadKeyPassword("petersPassword"));
         service.createUser(userIDAuth);
         userIDAuthList.add(userIDAuth);
@@ -93,6 +95,8 @@ public class CachedTransactionalStorageTest {
 
     @Test
     public void testTxReadAndStore() {
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+
         UserIDAuth userIDAuth = new UserIDAuth(new UserID("peter"), new ReadKeyPassword("petersPassword"));
         DocumentFQN documentFQN = new DocumentFQN("folder1/file1.txt");
         service.createUser(userIDAuth);
@@ -134,6 +138,8 @@ public class CachedTransactionalStorageTest {
 
     @Test
     public void testNonTxListAndDeleteDocument() {
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+
         UserIDAuth userIDAuth = new UserIDAuth(new UserID("peter"), new ReadKeyPassword("petersPassword"));
         service.createUser(userIDAuth);
         userIDAuthList.add(userIDAuth);

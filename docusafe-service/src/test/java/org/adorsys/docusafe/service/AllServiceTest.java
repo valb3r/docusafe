@@ -74,7 +74,7 @@ public class AllServiceTest {
 
     @Test
     public void testCreateBucketPath() {
-        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         try {
             BucketDirectory bp = new BucketDirectory("abc1/2/3");
             ContainerPersistence containerPersistence = new ContainerPersistenceImpl(extendedStoreConnection);
@@ -87,7 +87,7 @@ public class AllServiceTest {
 
     @Test
     public void testCreateKeyStore() {
-        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest(extendedStoreConnection).createKeyStore();
             Assert.assertEquals("Number of Entries", 15, keyStoreStuff.keyStore.size());
@@ -98,7 +98,7 @@ public class AllServiceTest {
 
     @Test(expected = KeyStoreExistsException.class)
     public void testCreateKeyStoreTwice() {
-        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         try {
             KeyStoreServiceTest keyStoreServiceTest = new KeyStoreServiceTest(extendedStoreConnection);
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = keyStoreServiceTest.createKeyStore();
@@ -112,7 +112,7 @@ public class AllServiceTest {
 
     @Test
     public void testCreateKeyStoreAndDocumentGuard() {
-        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest(extendedStoreConnection).createKeyStore();
             new DocumentGuardServiceTest(extendedStoreConnection).testCreateSymmetricDocumentGuard(
@@ -125,7 +125,7 @@ public class AllServiceTest {
 
     @Test
     public void testCreateKeyStoreAndDocumentGuardAndLoadDocumentGuard() {
-        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         try {
             KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest(extendedStoreConnection).createKeyStore();
             DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest(extendedStoreConnection);
@@ -143,6 +143,7 @@ public class AllServiceTest {
 
     @Test
     public void testWrongKeyLoop() {
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         if (System.getProperty("loop") == null) {
             LOGGER.debug("TEST WRONG LOOP IGNROED. PLEASE RUN WITH -Dloop");
             return;
@@ -186,11 +187,11 @@ public class AllServiceTest {
 
     @Test
     public void testCreateKeyStoreAndDocumentGuardAndTryToLoadDocumentGuardWithWrongKey() {
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         testCreateKeyStoreAndDocumentGuardAndTryToLoadDocumentGuardWithWrongKey("testwrongkey");
     }
 
     private int testCreateKeyStoreAndDocumentGuardAndTryToLoadDocumentGuardWithWrongKey(String container) {
-        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         try {
 
             ReadStorePassword origReadStorePassword = new ReadStorePassword("affe1");
@@ -258,7 +259,7 @@ public class AllServiceTest {
 
     @Test
     public void testCreateDocument() {
-        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         try {
             DocumentContent documentContent = new DocumentContent("Ein Affe im Zoo ist nie allein".getBytes());
 
@@ -280,7 +281,7 @@ public class AllServiceTest {
 
     @Test
     public void testCreateAndLoadDocument() {
-        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         try {
             DocumentContent documentContent = new DocumentContent("Ein Affe im Zoo ist nie allein".getBytes());
 
@@ -325,7 +326,7 @@ public class AllServiceTest {
      */
     @Test
     public void testCreate_oneDocument_twoKeyStores_twoGuards_LoadDocument() {
-        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         String container1 = "user1/secretkey";
         String container2 = "user2/enckey";
         DocumentBucketPath documentBucketPath = new DocumentBucketPath("documentbucketpath3/subfolder/1/2/3");
@@ -345,7 +346,7 @@ public class AllServiceTest {
      */
     @Test
     public void testCreate_oneDocument_twoKeyStores_twoGuards_LoadDocument_with_expected_failure() {
-        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         String container1 = "user1/secretkey";
         String container2 = "user2/enckey";
         DocumentBucketPath documentBucketPath = new DocumentBucketPath("documentbucketpath/4");
@@ -365,7 +366,7 @@ public class AllServiceTest {
     }
     @Test
     public void testCreate_oneDocument_twoKeyStores_twoGuards_ChangeDocument() {
-        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         String container1 = "user1/secretkey";
         String container2 = "user2/enckey";
         DocumentBucketPath documentBucketPath = new DocumentBucketPath("documentbucketpath5/1/2/3");
@@ -402,7 +403,7 @@ public class AllServiceTest {
 
     @Test(expected = FileExistsException.class)
     public void testCreateDocumentTwice() {
-        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         DocumentBucketPath documentBucketPath = new DocumentBucketPath("user1/bucket/folder1");
         DocumentContent documentContent = new DocumentContent("Affe".getBytes());
 
@@ -417,7 +418,7 @@ public class AllServiceTest {
 
     @Test
     public void testCreateDocumentTwiceButOverwrite() {
-        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         DocumentBucketPath documentBucketPath = new DocumentBucketPath("user1/bucket/folder1");
         DocumentContent documentContent = new DocumentContent("Affe".getBytes());
 
@@ -433,7 +434,7 @@ public class AllServiceTest {
 
     @Test
     public void testBucketService1() {
-        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         BucketServiceTest bucketServiceTest = new BucketServiceTest(extendedStoreConnection);
         BucketDirectory rootDirectory = new BucketDirectory("user1");
         bucketServiceTest.createFiles(extendedStoreConnection, rootDirectory, 3, 2);
@@ -453,7 +454,7 @@ public class AllServiceTest {
 
     @Test
     public void checkNonExistingBucket() {
-        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         BucketServiceTest bucketServiceTest = new BucketServiceTest(extendedStoreConnection);
         BucketDirectory bucketDirectory = new BucketDirectory("user-" + UUID.randomUUID().toString());
         boolean exists = bucketServiceTest.bucketExists(bucketDirectory);
@@ -463,7 +464,7 @@ public class AllServiceTest {
     // @Test
     // todo spezialtest, bei dem das directory auch als pfad benutzt wird, kann mit dsc-encryption-filename-only nicht gehen
     public void createBucketWithDot() {
-        LOGGER.debug("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         BucketServiceTest bucketServiceTest = new BucketServiceTest(extendedStoreConnection);
 
         DocumentBucketPath documentBucketPath = new DocumentBucketPath("user1/.hidden/Affenfile.txt");
@@ -491,6 +492,7 @@ public class AllServiceTest {
 
     @Test
     public void createManyBuckets() {
+        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
         BucketServiceTest bucketServiceTest = new BucketServiceTest(extendedStoreConnection);
         for (int i = 0; i < 200; i++) {
             BucketDirectory bd = new BucketDirectory("bucket" + i);
