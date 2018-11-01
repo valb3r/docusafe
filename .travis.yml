@@ -4,6 +4,7 @@ jdk:
   - oraclejdk8
 
 script:
+  - mvn --version
   - echo "=========================================================================="
   - echo "===================== TEST mit FILESYSTELM ==============================="
   - echo "=========================================================================="
@@ -11,7 +12,6 @@ script:
   - echo "=========================================================================="
   - echo "===================== TEST mit MINIO ====================================="
   - echo "=========================================================================="
-
   - mvn test -DSC-AMAZONS3=http://minio-psp-docusafe-performancetest.cloud.adorsys.de,simpleAccessKey,simpleSecretKey,us-east-1,travis.docusafe.${TRAVIS_BRANCH}
 
 
