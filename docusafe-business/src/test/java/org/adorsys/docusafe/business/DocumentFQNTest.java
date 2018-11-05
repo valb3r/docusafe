@@ -24,26 +24,26 @@ public class DocumentFQNTest {
 
     @Test (expected = BaseException.class)
     public void testNonValid1() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
         new DocumentFQN("//");
     }
 
     @Test (expected = BaseException.class)
     public void testNonValid2() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
         new DocumentFQN("a/");
     }
 
     @Test (expected = BaseException.class)
     public void testNonValid3() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
         new DocumentFQN("a/b//c");
     }
 
 
     @Test
     public void testValidDir() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
         new DocumentDirectoryFQN("/");
         new DocumentDirectoryFQN("a");
         new DocumentDirectoryFQN("");
@@ -52,19 +52,19 @@ public class DocumentFQNTest {
 
     @Test (expected = BaseException.class)
     public void testNonValidDir1() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
         new DocumentDirectoryFQN("//");
     }
 
     @Test (expected = BaseException.class)
     public void testNonValidDir2() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
         new DocumentDirectoryFQN("a/");
     }
 
     @Test (expected = BaseException.class)
     public void testNonValidDir3() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
         new DocumentDirectoryFQN("a/b//c");
     }
 

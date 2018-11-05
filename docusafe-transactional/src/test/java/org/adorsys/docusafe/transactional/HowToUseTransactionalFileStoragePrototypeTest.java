@@ -32,7 +32,7 @@ public class HowToUseTransactionalFileStoragePrototypeTest extends TransactionFi
 
     @Test
     public void pseudoMain() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
 
         LOGGER.debug("create System User");
         transactionalFileStorage.createUser(systemUserIDAuth);

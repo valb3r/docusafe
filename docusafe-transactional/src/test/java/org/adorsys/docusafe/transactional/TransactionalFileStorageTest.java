@@ -26,7 +26,7 @@ public class TransactionalFileStorageTest extends TransactionFileStorageBaseTest
 
     @Test
     public void testOverwrite() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
 
         transactionalFileStorage.createUser(userIDAuth);
         DocumentFQN documentFQN = new DocumentFQN("testxTFolder/first.txt");
@@ -71,7 +71,7 @@ public class TransactionalFileStorageTest extends TransactionFileStorageBaseTest
 
     @Test (expected = TxInnerException.class)
     public void innerTxNotImplementedYet() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
 
         transactionalFileStorage.createUser(userIDAuth);
         transactionalFileStorage.beginTransaction(userIDAuth);
@@ -80,7 +80,7 @@ public class TransactionalFileStorageTest extends TransactionFileStorageBaseTest
 
     @Test
     public void testCreateAndChange() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
 
         transactionalFileStorage.createUser(userIDAuth);
         DocumentFQN documentFQN = new DocumentFQN("testxTFolder/first.txt");
@@ -146,7 +146,7 @@ public class TransactionalFileStorageTest extends TransactionFileStorageBaseTest
 
     @Test
     public void testDelete() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
 
         transactionalFileStorage.createUser(userIDAuth);
         transactionalFileStorage.beginTransaction(userIDAuth);
@@ -213,7 +213,7 @@ public class TransactionalFileStorageTest extends TransactionFileStorageBaseTest
 
     @Test(expected = TxNotActiveException.class)
     public void testEndTxTwice() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
 
         transactionalFileStorage.createUser(userIDAuth);
         transactionalFileStorage.beginTransaction(userIDAuth);

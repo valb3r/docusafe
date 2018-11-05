@@ -23,7 +23,7 @@ public class TransactionalFileStorageWithCacheTest extends TransactionalFileStor
     @Test(expected = TxNotActiveException.class)
     @Override
     public void testEndTxTwice() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
         super.testEndTxTwice();
     }
 

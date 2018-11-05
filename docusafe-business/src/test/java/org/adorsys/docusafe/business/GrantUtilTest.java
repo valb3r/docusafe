@@ -55,7 +55,7 @@ public class GrantUtilTest {
 
     @Test
     public void test1() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
 
         UserID owner = new UserID("peter");
         UserID receiver = new UserID("affe");
@@ -72,7 +72,7 @@ public class GrantUtilTest {
 
     @Test
     public void test2() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
 
         UserID owner = new UserID("peter");
         UserID receiver = new UserID("affe");
@@ -109,7 +109,7 @@ public class GrantUtilTest {
 
     @Test
     public void test3() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
 
         UserID owner = new UserID("peter");
         UserID receiver = new UserID("affe");

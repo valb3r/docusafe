@@ -66,7 +66,7 @@ public class CompressionTest {
 
     @Test
     public void testCompressionWithPrivateAndPublicKey() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
 
         BucketDirectory bd = new BucketDirectory("containerforcompressiontestwithprivatepublickeypay");
         LOGGER.debug("instance of extendedStoreConnection is " + extendedStoreConnection.getClass().getName());
@@ -132,7 +132,7 @@ public class CompressionTest {
 
     @Test
     public void testCompressionWithSecretKey() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
 
         BucketDirectory bd = new BucketDirectory("containerforcompressiontestwithsecretkey");
         extendedStoreConnection.createContainer(bd);

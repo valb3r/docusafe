@@ -21,7 +21,7 @@ public class ParallelUUIDTest {
     @Test
     public void createUUIDs() {
         try {
-            LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+            
 
             Semaphore semaphore = new Semaphore(PARALLEL_INSTANCES);
             semaphore.acquire(PARALLEL_INSTANCES);

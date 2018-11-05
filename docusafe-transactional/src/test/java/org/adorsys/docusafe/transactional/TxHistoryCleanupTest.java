@@ -26,7 +26,7 @@ public class TxHistoryCleanupTest extends TransactionFileStorageBaseTest {
 
     @Test
     public void createFilesAndDeleteSomeRandomFilesInServeralTransactions() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
 
         StopWatch st = new StopWatch();
         st.start();

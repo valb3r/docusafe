@@ -14,7 +14,7 @@ public class DocumentBucketPathTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentBucketPathTest.class);
     @Test
     public void test1() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
 
         DocumentBucketPath bp=new DocumentBucketPath("aaa/b/c/d");
         BucketDirectory dd = bp.getBucketDirectory();

@@ -31,7 +31,7 @@ public class BusinessTest extends BusinessTestBase {
 
     @Test
     public void documentExistsTest_DOC_36() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
 
         UserIDAuth userIDAuth = createUser(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));
         DocumentFQN documentFQNReadme1 = new DocumentFQN("README.txt");
@@ -49,7 +49,7 @@ public class BusinessTest extends BusinessTestBase {
 
     @Test
     public void performanceTest_DOC_29() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
         int REPEATS = 1;
         int i = 0;
 
@@ -82,7 +82,7 @@ public class BusinessTest extends BusinessTestBase {
 
     @Test
     public void sequenceDiagramTest() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
         UserIDAuth userIDAuth = new UserIDAuth(new UserID("user1"), new ReadKeyPassword("password1"));
         users.add(userIDAuth);
         service.createUser(userIDAuth);
@@ -90,7 +90,7 @@ public class BusinessTest extends BusinessTestBase {
 
     @Test
     public void testCreateUser() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
         UserIDAuth userIDAuth = createUser();
         Assert.assertEquals("Anzahl der guards muss 1 betragen", 1, getNumberOfGuards(userIDAuth.getUserID()));
     }
@@ -98,7 +98,7 @@ public class BusinessTest extends BusinessTestBase {
 
     @Test
     public void loadDSDocument() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
         UserIDAuth userIDAuth = createUser(new UserID("affe"), new ReadKeyPassword("ab_irgendwas_cd"));
         DocumentFQN fqn = new DocumentFQN("README.txt");
         checkGuardsForDocument(userIDAuth, fqn, true);
@@ -119,7 +119,7 @@ public class BusinessTest extends BusinessTestBase {
 
     @Test
     public void deleteDocumentTest() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
         UserID userID = new UserID("DelPeter");
         Assert.assertFalse(service.userExists(userID));
         UserIDAuth userIDAuth = createUser(userID);
@@ -140,7 +140,7 @@ public class BusinessTest extends BusinessTestBase {
 
     @Test
     public void storeDSDocumentInANewFolder() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
         UserIDAuth userIDAuth = createUser();
         Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
 
@@ -160,7 +160,7 @@ public class BusinessTest extends BusinessTestBase {
 
     @Test
     public void grantAccessToFolder() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
         UserIDAuth userIDAuthPeter = createUser(new UserID("peter"), new ReadKeyPassword("keyPasswordForPeter"));
         UserIDAuth userIDAuthFrancis = createUser(new UserID("francis"), new ReadKeyPassword("keyPasswordForFrancis"));
         DocumentFQN documentFQN = new DocumentFQN("first/document.txt");
@@ -179,7 +179,7 @@ public class BusinessTest extends BusinessTestBase {
     // Hier speichert Benuzter B etwas für Benutzer A und will es anschliessend lesen
     @Test
     public void grantReadAccessToFolder() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
         UserIDAuth userIDAuthPeter = createUser(new UserID("peter"), new ReadKeyPassword("keyPasswordForPeter"));
         UserIDAuth userIDAuthFrancis = createUser(new UserID("francis"), new ReadKeyPassword("keyPasswordForFrancis"));
         DocumentFQN documentFQN = new DocumentFQN("first/next/a-new-document.txt");
@@ -221,7 +221,7 @@ public class BusinessTest extends BusinessTestBase {
     // Hier speichert Benuzter A etwas für Benutzer A (also sich selbst) und will es anschliessend Benutzer B lesen lassen
     @Test
     public void grantReadAccessToFolderForOwnDocuments() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
         UserIDAuth userIDAuthPeter = createUser(new UserID("peter"), new ReadKeyPassword("keyPasswordForPeter"));
         UserIDAuth userIDAuthFrancis = createUser(new UserID("francis"), new ReadKeyPassword("keyPasswordForFrancis"));
         DocumentFQN documentFQN = new DocumentFQN("first/document.txt");
@@ -245,7 +245,7 @@ public class BusinessTest extends BusinessTestBase {
      */
     @Test
     public void tryOverwriteGrantAccessToFolder() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
         UserIDAuth userIDAuthPeter = createUser(new UserID("peter"), new ReadKeyPassword("keyPasswordForPeter"));
         UserIDAuth userIDAuthFrancis = createUser(new UserID("francis"), new ReadKeyPassword("keyPasswordForFrancis"));
         DocumentFQN documentFQN = new DocumentFQN("first/next/a-new-document.txt");
@@ -295,7 +295,7 @@ public class BusinessTest extends BusinessTestBase {
 
     @Test
     public void tryToDeleteUserWithWrongPassword() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
         UserIDAuth userIDAuthPeter = createUser(new UserID("peter"), new ReadKeyPassword("keyPasswordForPeter"));
         UserIDAuth wrongUserIDAuthPeter = new UserIDAuth(userIDAuthPeter.getUserID(), new ReadKeyPassword("WRONGPASSWORD"));
         boolean exceptionRaised = false;
@@ -314,7 +314,7 @@ public class BusinessTest extends BusinessTestBase {
 
     @Test
     public void checkDirectoryListings() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
         UserIDAuth userIDAuth = createUser();
         DocumentDirectoryFQN dir = new DocumentDirectoryFQN("/");
         createDirectoryWithSubdirectories(3, userIDAuth, dir, 3, 3);
@@ -336,7 +336,7 @@ public class BusinessTest extends BusinessTestBase {
 
     @Test
     public void checkRootDirectoryListings() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
         UserIDAuth userIDAuth = createUser();
         DocumentDirectoryFQN dir = new DocumentDirectoryFQN("/");
         createDirectoryWithSubdirectories(2, userIDAuth, dir, 1, 1);
@@ -358,7 +358,7 @@ public class BusinessTest extends BusinessTestBase {
 
     @Test
     public void checkRootDirectoryListingVerySimple() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
         UserIDAuth userIDAuth = createUser();
         DocumentDirectoryFQN dir = new DocumentDirectoryFQN("/");
         DocumentFQN documentFQN = new DocumentFQN("/affe.txt");
@@ -379,7 +379,7 @@ public class BusinessTest extends BusinessTestBase {
 
     @Test
     public void checkRootDirectoryListingSimple() {
-        LOGGER.info("START TEST " + new RuntimeException("").getStackTrace()[0].getMethodName());
+        
         UserIDAuth userIDAuth = createUser();
         DocumentDirectoryFQN dir = new DocumentDirectoryFQN("/anyfolder");
         DocumentFQN documentFQN = new DocumentFQN("/anyfolder/affe.txt");
