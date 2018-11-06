@@ -36,6 +36,8 @@ public class NonTransactionalTest extends TransactionFileStorageBaseTest {
 
     @Test
     public void testAllNonTransactional() {
+        
+
         transactionalFileStorage.createUser(userIDAuth);
         Assert.assertTrue(transactionalFileStorage.userExists(userIDAuth.getUserID()));
 
@@ -86,6 +88,8 @@ public class NonTransactionalTest extends TransactionFileStorageBaseTest {
 
     @Test
     public void testCreateUsersAndSendOneDocument() {
+        
+
         transactionalFileStorage.createUser(userIDAuth);
         transactionalFileStorage.createUser(systemUserIDAuth);
         DocumentDirectoryFQN systemuserBaseDir = new DocumentDirectoryFQN("systemuser");

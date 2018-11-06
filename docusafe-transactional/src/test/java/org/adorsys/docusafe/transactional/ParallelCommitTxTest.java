@@ -27,6 +27,8 @@ public class ParallelCommitTxTest extends TransactionFileStorageBaseTest{
     @Test
     public void parallelCommits() {
         try {
+            
+
             Semaphore semaphore = new Semaphore(PARALLEL_INSTANCES);
             CountDownLatch countDownLatch = new CountDownLatch(PARALLEL_INSTANCES);
             semaphore.acquire(PARALLEL_INSTANCES);

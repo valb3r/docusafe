@@ -1,5 +1,6 @@
 package org.adorsys.docusafe.spring.config;
 
+import org.adorsys.cryptoutils.mongodbstoreconnection.MongoParamParser;
 import org.adorsys.encobject.types.connection.*;
 import org.adorsys.encobject.types.properties.MongoConnectionProperties;
 import org.slf4j.Logger;
@@ -22,69 +23,18 @@ public class SpringMongoConnectionProperties extends SpringConnectionPropertiesI
             "docusafe:\n" +
             "  storeconnection:\n" +
             "    mongo:\n" +
-            "      database: (mandatory)\n" +
-            "      host: (mandatory)\n" +
-            "      port: (mandatory)\n" +
-            "      user: (optional)\n" +
-            "      password: (optional)\n" +
+            "      mongoURI: (mandatory)\n" +
+            "                (" + MongoParamParser.EXPECTED_PARAMS + ")" +
             SpringConnectionPropertiesImpl.template;
 
-    private String database;
-    private String host;
-    private String port;
-    @Nullable
-    private String user = null;
-    @Nullable
-    private String password = null;
+    private String mongoURI;
 
     @Override
-    public MongoDatabaseName getMongoDatabaseName() {
-        return new MongoDatabaseName(database);
+    public MongoURI getMongoURI() {
+        return new MongoURI(mongoURI);
     }
 
-    @Override
-    public MongoHost getMongoHost() {
-        return new MongoHost(host);
-    }
-
-    @Override
-    public MongoPort getMongoPort() {
-        return new MongoPort(Long.parseLong(port));
-    }
-
-    @Override
-    public MongoUser getMongoUser() {
-        if (user == null || user.length() == 0 || user.equalsIgnoreCase("null")) {
-            return null;
-        }
-        return new MongoUser(user);
-    }
-
-    @Override
-    public MongoPassword getMongoPassword() {
-        if (password == null || password.length() == 0 || password.equalsIgnoreCase("null")) {
-            return null;
-        }
-        return new MongoPassword(password);
-    }
-
-    public void setDatabase(String database) {
-        this.database = database;
-    }
-
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    public void setPort(String port) {
-        this.port = port;
-    }
-
-    public void setUser(String user) {
-        this.user = user;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
+    public void setMongoURI(String mongoURI) {
+        this.mongoURI = mongoURI;
     }
 }

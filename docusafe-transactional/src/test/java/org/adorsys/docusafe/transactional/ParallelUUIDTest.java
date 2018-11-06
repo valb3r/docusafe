@@ -21,6 +21,8 @@ public class ParallelUUIDTest {
     @Test
     public void createUUIDs() {
         try {
+            
+
             Semaphore semaphore = new Semaphore(PARALLEL_INSTANCES);
             semaphore.acquire(PARALLEL_INSTANCES);
             ARunnable[] runnables = new ARunnable[PARALLEL_INSTANCES];

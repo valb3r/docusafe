@@ -3,12 +3,17 @@ language: java
 jdk:
   - oraclejdk8
 
-install:
-  - mvn --settings .travis/settings.xml clean install -Dmaven.javadoc.skip=true -B -V
-
-
 script:
-  - /bin/bash .travis/build.sh
+  - mvn --version
+  - echo "=========================================================================="
+  - echo "===================== TEST mit FILESYSTELM ==============================="
+  - echo "=========================================================================="
+  - mvn clean verify -B -V
+  - echo "=========================================================================="
+  - echo "===================== TEST mit MINIO ====================================="
+  - echo "=========================================================================="
+  - mvn test -DSC-AMAZONS3=http://minio-psp-docusafe-performancetest.cloud.adorsys.de,simpleAccessKey,simpleSecretKey,us-east-1,travis.docusafe.${TRAVIS_BRANCH}
+
 
 before_deploy:
   - echo $GPG_SECRET_KEY | base64 --decode | $GPG_EXECUTABLE --import
@@ -24,5 +29,3 @@ deploy:
       # matches: vX.Y.Z, vX.Y.Z-A, vX.Y.Z-RCA, vX.Y.Z-A-B.C.D, vX.Y.Z-A-B.C.D-E, vX.Y.Z-RCA-B.C.D-E
       condition: "$TRAVIS_TAG =~ ^v([[:digit:]]+\\.)+[[:digit:]]+(-(RC)?[[:digit:]]+)?(-([[:digit:]]+\\.)+[[:digit:]]+(-[[:digit:]]+)?)?$"
 
-no-script-till-fix:
-  - mvn clean install -DSC-AMAZONS3=http://minio-psp-docusafe-performancetest.cloud.adorsys.de,simpleAccessKey,simpleSecretKey,us-east-1,travis.docusafe.${TRAVIS_BRANCH}

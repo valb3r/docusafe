@@ -26,6 +26,8 @@ public class TransactionalFileStorageTest extends TransactionFileStorageBaseTest
 
     @Test
     public void testOverwrite() {
+        
+
         transactionalFileStorage.createUser(userIDAuth);
         DocumentFQN documentFQN = new DocumentFQN("testxTFolder/first.txt");
         DocumentContent documentContent = new DocumentContent("very first".getBytes());
@@ -69,6 +71,8 @@ public class TransactionalFileStorageTest extends TransactionFileStorageBaseTest
 
     @Test (expected = TxInnerException.class)
     public void innerTxNotImplementedYet() {
+        
+
         transactionalFileStorage.createUser(userIDAuth);
         transactionalFileStorage.beginTransaction(userIDAuth);
         transactionalFileStorage.beginTransaction(userIDAuth);
@@ -76,6 +80,8 @@ public class TransactionalFileStorageTest extends TransactionFileStorageBaseTest
 
     @Test
     public void testCreateAndChange() {
+        
+
         transactionalFileStorage.createUser(userIDAuth);
         DocumentFQN documentFQN = new DocumentFQN("testxTFolder/first.txt");
         DocumentContent documentContent1 = new DocumentContent("very first".getBytes());
@@ -140,10 +146,14 @@ public class TransactionalFileStorageTest extends TransactionFileStorageBaseTest
 
     @Test
     public void testDelete() {
+        
+
         transactionalFileStorage.createUser(userIDAuth);
         transactionalFileStorage.beginTransaction(userIDAuth);
 
         int N = 5;
+        // TODO actually a performance test
+        N=2;
         {
             // Nun erzeuge N verschiedene Datein in einem Verzeichnis
             for (int i = 0; i < N; i++) {
@@ -205,6 +215,8 @@ public class TransactionalFileStorageTest extends TransactionFileStorageBaseTest
 
     @Test(expected = TxNotActiveException.class)
     public void testEndTxTwice() {
+        
+
         transactionalFileStorage.createUser(userIDAuth);
         transactionalFileStorage.beginTransaction(userIDAuth);
         transactionalFileStorage.endTransaction(userIDAuth);

@@ -55,6 +55,8 @@ public class GrantUtilTest {
 
     @Test
     public void test1() {
+        
+
         UserID owner = new UserID("peter");
         UserID receiver = new UserID("affe");
 
@@ -70,6 +72,8 @@ public class GrantUtilTest {
 
     @Test
     public void test2() {
+        
+
         UserID owner = new UserID("peter");
         UserID receiver = new UserID("affe");
 
@@ -105,6 +109,8 @@ public class GrantUtilTest {
 
     @Test
     public void test3() {
+        
+
         UserID owner = new UserID("peter");
         UserID receiver = new UserID("affe");
 

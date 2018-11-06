@@ -20,9 +20,11 @@ public class KeyStoreAccessPerformanceTest extends BusinessTestBase {
     private final static Logger LOGGER = LoggerFactory.getLogger(KeyStoreAccessPerformanceTest.class);
 
     @Test
-    public void a() {
+    public void createDocuments() {
+        int MAX_DOCS = 200;
+        // TODO acutally a performance test
+        MAX_DOCS = 2;
 
-        int MAX_DOCS = 100;
         UserIDAuth userIDAuth = new UserIDAuth(new UserID("peter"), new ReadKeyPassword("readKeyPassword"));
         service.createUser(userIDAuth);
 

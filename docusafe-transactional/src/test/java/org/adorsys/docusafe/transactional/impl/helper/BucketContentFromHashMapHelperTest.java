@@ -34,6 +34,8 @@ public class BucketContentFromHashMapHelperTest {
 
     @Test
     public void testRecursiveWithFolder() {
+        
+
         BucketContentFQN a = BucketContentFromHashMapHelper.list(keys, new DocumentDirectoryFQN("a"), ListRecursiveFlag.TRUE);
         a.getFiles().forEach(file -> LOGGER.debug("file: " + file));
         a.getDirectories().forEach(dir -> LOGGER.debug("dir: " + dir));
@@ -43,6 +45,8 @@ public class BucketContentFromHashMapHelperTest {
 
     @Test
     public void testRecursiveWithRoot() {
+        
+
         BucketContentFQN a = BucketContentFromHashMapHelper.list(keys, new DocumentDirectoryFQN("/"), ListRecursiveFlag.TRUE);
         a.getFiles().forEach(file -> LOGGER.debug("file: " + file));
         a.getDirectories().forEach(dir -> LOGGER.debug("dir: " + dir));
@@ -52,6 +56,8 @@ public class BucketContentFromHashMapHelperTest {
 
     @Test
     public void testRecursiveWithNonExsistantFolder() {
+        
+
         BucketContentFQN a = BucketContentFromHashMapHelper.list(keys, new DocumentDirectoryFQN("/b"), ListRecursiveFlag.TRUE);
         a.getFiles().forEach(file -> LOGGER.debug("file: " + file));
         a.getDirectories().forEach(dir -> LOGGER.debug("dir: " + dir));
@@ -61,6 +67,8 @@ public class BucketContentFromHashMapHelperTest {
 
     @Test
     public void testNonRecursiveWithFolder() {
+        
+
         BucketContentFQN a = BucketContentFromHashMapHelper.list(keys, new DocumentDirectoryFQN("a"), ListRecursiveFlag.FALSE);
         a.getFiles().forEach(file -> LOGGER.debug("file: " + file));
         a.getDirectories().forEach(dir -> LOGGER.debug("dir: " + dir));
@@ -70,6 +78,8 @@ public class BucketContentFromHashMapHelperTest {
 
     @Test
     public void testNonRecursiveWithRoot() {
+        
+
         BucketContentFQN a = BucketContentFromHashMapHelper.list(keys, new DocumentDirectoryFQN("/"), ListRecursiveFlag.FALSE);
         a.getFiles().forEach(file -> LOGGER.debug("file: " + file));
         a.getDirectories().forEach(dir -> LOGGER.debug("dir: " + dir));
@@ -79,6 +89,8 @@ public class BucketContentFromHashMapHelperTest {
 
     @Test
     public void testNonRecursiveWithNonExsistantFolder() {
+        
+
         BucketContentFQN a = BucketContentFromHashMapHelper.list(keys, new DocumentDirectoryFQN("/b"), ListRecursiveFlag.FALSE);
         a.getFiles().forEach(file -> LOGGER.debug("file: " + file));
         a.getDirectories().forEach(dir -> LOGGER.debug("dir: " + dir));
