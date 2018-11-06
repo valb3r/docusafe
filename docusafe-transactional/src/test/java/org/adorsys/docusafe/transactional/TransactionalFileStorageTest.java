@@ -152,6 +152,8 @@ public class TransactionalFileStorageTest extends TransactionFileStorageBaseTest
         transactionalFileStorage.beginTransaction(userIDAuth);
 
         int N = 5;
+        // TODO actually a performance test
+        N=2;
         {
             // Nun erzeuge N verschiedene Datein in einem Verzeichnis
             for (int i = 0; i < N; i++) {

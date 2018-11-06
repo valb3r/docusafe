@@ -33,14 +33,20 @@ public class TxHistoryCleanupTest extends TransactionFileStorageBaseTest {
 
         Map<DocumentFQN, DocumentContent> memoryMap = new HashMap<>();
 
-        int numberOfTransactinos = 9;
+        int numberOfTransactinos = 3;
         int numberOfFilesToDeletePerTx = 1;
-        int numberOfFilesToCreatePerTx = 4;
-        int numberOfFilesToOverwritePerTx = 4;
+        int numberOfFilesToCreatePerTx = 3;
+        int numberOfFilesToOverwritePerTx = 2;
         int expectedNumberOfFilesAfterIteration = (numberOfFilesToCreatePerTx * numberOfTransactinos) - (numberOfTransactinos * numberOfFilesToDeletePerTx);
 
         transactionalFileStorage.createUser(userIDAuth);
         DocumentDirectoryFQN documentDirectoryFQN = new DocumentDirectoryFQN("folder");
+
+        LOGGER.info("numberOfTransactions:                "  + numberOfTransactinos);
+        LOGGER.info("numberOfFilesToDeletePerTx:          " + numberOfFilesToDeletePerTx);
+        LOGGER.info("numberOfFilesToCreatePerTx:          " + numberOfFilesToCreatePerTx);
+        LOGGER.info("numberOfFilesToOverwritePerTx:       " + numberOfFilesToOverwritePerTx);
+        LOGGER.info("expectedNumberOfFilesAfterIteration: " + expectedNumberOfFilesAfterIteration);
 
         int staticCounter = 0;
         {

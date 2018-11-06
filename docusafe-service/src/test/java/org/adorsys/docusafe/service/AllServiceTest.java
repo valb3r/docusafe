@@ -462,7 +462,7 @@ public class AllServiceTest {
     }
 
     // @Test
-    // todo spezialtest, bei dem das directory auch als pfad benutzt wird, kann mit dsc-encryption-filename-only nicht gehen
+    // TODO spezialtest, bei dem das directory auch als pfad benutzt wird, kann mit dsc-encryption-filename-only nicht gehen
     public void createBucketWithDot() {
         
         BucketServiceTest bucketServiceTest = new BucketServiceTest(extendedStoreConnection);
@@ -492,9 +492,11 @@ public class AllServiceTest {
 
     @Test
     public void createManyBuckets() {
-        
+        int NUMBER_OF_BUCKETS = 200;
+        // TODO actually a performancetest
+        NUMBER_OF_BUCKETS = 2;
         BucketServiceTest bucketServiceTest = new BucketServiceTest(extendedStoreConnection);
-        for (int i = 0; i < 200; i++) {
+        for (int i = 0; i < NUMBER_OF_BUCKETS; i++) {
             BucketDirectory bd = new BucketDirectory("bucket" + i);
             buckets.add(bd);
             bucketServiceTest.createBucket(bd);
