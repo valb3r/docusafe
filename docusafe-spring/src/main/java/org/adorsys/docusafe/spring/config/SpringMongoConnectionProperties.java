@@ -24,7 +24,7 @@ public class SpringMongoConnectionProperties extends SpringConnectionPropertiesI
             "  storeconnection:\n" +
             "    mongo:\n" +
             "      mongoURI: (mandatory)\n" +
-            "                (" + MongoParamParser.EXPECTED_PARAMS + ")" +
+            "                (" + MongoParamParser.EXPECTED_PARAMS + ")\n" +
             SpringConnectionPropertiesImpl.template;
 
     private String mongoURI;
