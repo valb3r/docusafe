@@ -2,6 +2,7 @@ package org.adorsys.docusafe.spring;
 
 import org.adorsys.docusafe.spring.annotation.UseDocusafeCachedTransactional;
 import org.adorsys.docusafe.spring.annotation.UseExtendedStoreConnection;
+import org.adorsys.docusafe.spring.annotation.UseSimpleExtendedStoreConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
@@ -12,8 +13,9 @@ import org.springframework.context.annotation.Configuration;
  */
 
 @Configuration
-@UseDocusafeCachedTransactional
+@UseSimpleExtendedStoreConnectionFactory
 @UseExtendedStoreConnection
+@UseDocusafeCachedTransactional
 
 public class DocusafeSpringConfiguration {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocusafeSpringConfiguration.class);

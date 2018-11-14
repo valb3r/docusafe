@@ -35,6 +35,7 @@ public class UseDocusafeCachedTransactionalConfiguration {
         if (extendedStoreConnection == null) {
             throw new BaseException("Injection did not work");
         }
+        LOGGER.info(CachedTransactionalDocumentSafeService.class.getName() + " is required as @Bean");
         LOGGER.debug("create documentSafeService");
         DocumentSafeService documentSafeService = new DocumentSafeServiceImpl(withCache ? WithCache.TRUE : WithCache.FALSE, extendedStoreConnection);
         RequestMemoryContext requestContext = new SimpleRequestMemoryContextImpl();

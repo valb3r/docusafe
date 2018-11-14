@@ -1,7 +1,7 @@
 package org.adorsys.docusafe.spring.config;
 
 import org.adorsys.cryptoutils.exceptions.BaseException;
-import org.adorsys.encobject.types.connection.FilesystemBasedirectoryName;
+import org.adorsys.encobject.types.connection.FilesystemRootBucketName;
 import org.adorsys.encobject.types.properties.FilesystemConnectionProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,22 +21,22 @@ public class SpringFilesystemConnectionProperties extends SpringConnectionProper
             "docusafe:\n" +
             "  storeconnection:\n" +
             "    filesystem:\n" +
-            "      basedir: (mandatory)\n" +
+            "      rootbucket: (mandatory)\n" +
             SpringConnectionPropertiesImpl.template;
 
 
-    private String basedir;
+    private String rootbucket;
 
     @Override
-    public FilesystemBasedirectoryName getFilesystemBasedirectoryName() {
-        if (basedir == null) {
+    public FilesystemRootBucketName getFilesystemRootBucketName() {
+        if (rootbucket == null) {
             throw new BaseException("basedir must not be null");
         }
-        LOGGER.debug("basedir:" + new FilesystemBasedirectoryName(basedir));
-        return new FilesystemBasedirectoryName(basedir);
+        LOGGER.debug("basedir:" + new FilesystemRootBucketName(rootbucket));
+        return new FilesystemRootBucketName(rootbucket);
     }
 
-    public void setBasedir(String basedir) {
-        this.basedir = basedir;
+    public void setRootbucket(String rootbucket) {
+        this.rootbucket = rootbucket;
     }
 }

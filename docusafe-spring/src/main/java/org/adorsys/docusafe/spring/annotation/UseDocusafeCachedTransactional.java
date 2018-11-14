@@ -13,8 +13,6 @@ import java.lang.annotation.Target;
 @Retention(value = java.lang.annotation.RetentionPolicy.RUNTIME)
 @Target(value = {java.lang.annotation.ElementType.TYPE})
 @Documented
-@Import({
-        UseDocusafeCachedTransactionalConfiguration.class
-})
+@Import({UseDocusafeCachedTransactionalConfiguration.class})
 public @interface UseDocusafeCachedTransactional {
 }
