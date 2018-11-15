@@ -1,6 +1,6 @@
 package org.adorsys.docusafe.spring.annotation;
 
-import org.adorsys.docusafe.spring.config.UseDocusafeCachedTransactionalConfiguration;
+import org.adorsys.docusafe.spring.config.UseCachedTransactionalDocumentSafeServiceConfiguration;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.Documented;
@@ -13,6 +13,6 @@ import java.lang.annotation.Target;
 @Retention(value = java.lang.annotation.RetentionPolicy.RUNTIME)
 @Target(value = {java.lang.annotation.ElementType.TYPE})
 @Documented
-@Import({UseDocusafeCachedTransactionalConfiguration.class})
-public @interface UseDocusafeCachedTransactional {
+@Import({UseCachedTransactionalDocumentSafeServiceConfiguration.class})
+public @interface UseCachedTransactionalDocumentSafeService {
 }

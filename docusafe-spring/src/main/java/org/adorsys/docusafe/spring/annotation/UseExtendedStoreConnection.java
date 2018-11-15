@@ -1,6 +1,5 @@
 package org.adorsys.docusafe.spring.annotation;
 
-import org.adorsys.docusafe.spring.config.UseDocusafeCachedTransactionalConfiguration;
 import org.adorsys.docusafe.spring.config.UseExtendedStoreConnectionConfiguration;
 import org.springframework.context.annotation.Import;
 

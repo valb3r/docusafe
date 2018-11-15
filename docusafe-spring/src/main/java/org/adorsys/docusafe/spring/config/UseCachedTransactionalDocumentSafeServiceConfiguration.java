@@ -7,7 +7,7 @@ import org.adorsys.docusafe.business.impl.WithCache;
 import org.adorsys.docusafe.cached.transactional.CachedTransactionalDocumentSafeService;
 import org.adorsys.docusafe.cached.transactional.impl.CachedTransactionalDocumentSafeServiceImpl;
 import org.adorsys.docusafe.spring.SimpleRequestMemoryContextImpl;
-import org.adorsys.docusafe.spring.annotation.UseDocusafeCachedTransactional;
+import org.adorsys.docusafe.spring.annotation.UseCachedTransactionalDocumentSafeService;
 import org.adorsys.docusafe.spring.annotation.UseExtendedStoreConnection;
 import org.adorsys.docusafe.transactional.RequestMemoryContext;
 import org.adorsys.docusafe.transactional.TransactionalDocumentSafeService;
@@ -24,8 +24,8 @@ import org.springframework.context.annotation.Configuration;
  */
 @UseExtendedStoreConnection
 @Configuration
-public class UseDocusafeCachedTransactionalConfiguration {
-    private final static Logger LOGGER = LoggerFactory.getLogger(UseDocusafeCachedTransactional.class);
+public class UseCachedTransactionalDocumentSafeServiceConfiguration {
+    private final static Logger LOGGER = LoggerFactory.getLogger(UseCachedTransactionalDocumentSafeService.class);
 
     @Bean
     public CachedTransactionalDocumentSafeService docusafeCachedTransactionalService(
