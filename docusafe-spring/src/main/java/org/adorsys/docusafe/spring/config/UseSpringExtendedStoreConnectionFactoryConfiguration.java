@@ -1,6 +1,5 @@
 package org.adorsys.docusafe.spring.config;
 
-import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.docusafe.spring.factory.SpringExtendedStoreConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,12 +17,13 @@ import org.springframework.context.annotation.Configuration;
 public class UseSpringExtendedStoreConnectionFactoryConfiguration {
     private final static Logger LOGGER = LoggerFactory.getLogger(UseSpringExtendedStoreConnectionFactoryConfiguration.class);
 
+    public UseSpringExtendedStoreConnectionFactoryConfiguration() {
+        LOGGER.info("INIT");
+    }
+
     @Bean
     public SpringExtendedStoreConnectionFactory factory(SpringDocusafeStoreconnectionProperties properties) {
         LOGGER.info(SpringExtendedStoreConnectionFactory.class.getName() + " is required as @Bean");
-        if (properties == null) {
-            throw new BaseException("Injection of " + SpringDocusafeStoreconnectionProperties.class.getName() + " did not work");
-        }
         return new SpringExtendedStoreConnectionFactory(properties);
     }
 }

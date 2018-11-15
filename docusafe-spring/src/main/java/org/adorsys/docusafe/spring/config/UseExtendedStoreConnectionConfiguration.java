@@ -11,10 +11,14 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Created by peter on 02.10.18.
  */
-@UseSpringExtendedStoreConnectionFactory
 @Configuration
+@UseSpringExtendedStoreConnectionFactory
 public class UseExtendedStoreConnectionConfiguration {
     private final static Logger LOGGER = LoggerFactory.getLogger(UseExtendedStoreConnectionConfiguration.class);
+
+    public UseExtendedStoreConnectionConfiguration() {
+        LOGGER.info("INIT");
+    }
 
     @Bean
     public ExtendedStoreConnection extendedStoreConnection(SpringExtendedStoreConnectionFactory factory) {
