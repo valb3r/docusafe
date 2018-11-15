@@ -21,11 +21,11 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by peter on 14.11.18 12:05.
  */
-public class SimpleSubdirFactory {
-    private final static Logger LOGGER = LoggerFactory.getLogger(SimpleSubdirFactory.class);
+public class SpringExtendedStoreConnectionFactory {
+    private final static Logger LOGGER = LoggerFactory.getLogger(SpringExtendedStoreConnectionFactory.class);
     private SpringDocusafeStoreconnectionProperties wiredProperties;
 
-    public SimpleSubdirFactory(SpringDocusafeStoreconnectionProperties wiredProperties) {
+    public SpringExtendedStoreConnectionFactory(SpringDocusafeStoreconnectionProperties wiredProperties) {
         this.wiredProperties = wiredProperties;
     }
 

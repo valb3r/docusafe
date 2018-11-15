@@ -2,7 +2,7 @@ package org.adorsys.docusafe.spring;
 
 import org.adorsys.docusafe.spring.annotation.UseDocusafeCachedTransactional;
 import org.adorsys.docusafe.spring.annotation.UseExtendedStoreConnection;
-import org.adorsys.docusafe.spring.annotation.UseSimpleExtendedStoreConnectionFactory;
+import org.adorsys.docusafe.spring.annotation.UseSpringExtendedStoreConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
  */
 
 @Configuration
-@UseSimpleExtendedStoreConnectionFactory
+@UseSpringExtendedStoreConnectionFactory
 @UseExtendedStoreConnection
 @UseDocusafeCachedTransactional
 
