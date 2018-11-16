@@ -1,9 +1,11 @@
 package org.adorsys.docusafe.spring.config;
 
+import org.adorsys.docusafe.spring.factory.SpringCachedTransactionalDocusafeServiceFactory;
 import org.adorsys.docusafe.spring.factory.SpringExtendedStoreConnectionFactory;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

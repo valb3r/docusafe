@@ -11,9 +11,7 @@ import org.springframework.context.annotation.Configuration;
  */
 
 @Configuration
-@ComponentScan(basePackages = {
-        "org.adorsys.docusafe.spring.config"
-})
+@ComponentScan(basePackageClasses = {DocusafeSpringConfiguration.class})
 public class DocusafeSpringConfiguration {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocusafeSpringConfiguration.class);
     public DocusafeSpringConfiguration() {
