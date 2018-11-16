@@ -1,6 +1,5 @@
 package org.adorsys.docusafe.spring.config;
 
-import org.adorsys.docusafe.spring.annotation.UseSpringExtendedStoreConnectionFactory;
 import org.adorsys.docusafe.spring.factory.SpringExtendedStoreConnectionFactory;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
 import org.slf4j.Logger;
@@ -12,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
  * Created by peter on 02.10.18.
  */
 @Configuration
-@UseSpringExtendedStoreConnectionFactory
+// @UseSpringExtendedStoreConnectionFactory
 public class UseExtendedStoreConnectionConfiguration {
     private final static Logger LOGGER = LoggerFactory.getLogger(UseExtendedStoreConnectionConfiguration.class);
 

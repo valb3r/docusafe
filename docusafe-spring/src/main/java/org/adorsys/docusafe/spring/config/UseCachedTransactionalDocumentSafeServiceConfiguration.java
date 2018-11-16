@@ -2,8 +2,6 @@ package org.adorsys.docusafe.spring.config;
 
 import org.adorsys.docusafe.cached.transactional.CachedTransactionalDocumentSafeService;
 import org.adorsys.docusafe.spring.annotation.UseCachedTransactionalDocumentSafeService;
-import org.adorsys.docusafe.spring.annotation.UseSpringCachedTransactionalDocusafeServiceFactory;
-import org.adorsys.docusafe.spring.factory.SpringCachedTransactionalDocusafeServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
  * Created by peter on 02.10.18.
  */
 @Configuration
-@UseSpringCachedTransactionalDocusafeServiceFactory
+// @UseSpringCachedTransactionalDocusafeServiceFactory
 public class UseCachedTransactionalDocumentSafeServiceConfiguration {
     private final static Logger LOGGER = LoggerFactory.getLogger(UseCachedTransactionalDocumentSafeService.class);
 

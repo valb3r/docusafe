@@ -11,9 +11,6 @@ import org.springframework.context.annotation.Configuration;
  * Created by peter on 14.11.18 14:19.
  */
 @Configuration
-@ComponentScan(basePackages = {
-        "org.adorsys.docusafe.spring.config"
-})
 public class UseSpringExtendedStoreConnectionFactoryConfiguration {
     private final static Logger LOGGER = LoggerFactory.getLogger(UseSpringExtendedStoreConnectionFactoryConfiguration.class);
 
