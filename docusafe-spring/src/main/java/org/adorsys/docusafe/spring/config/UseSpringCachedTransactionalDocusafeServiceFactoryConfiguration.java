@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 
 public class UseSpringCachedTransactionalDocusafeServiceFactoryConfiguration {
 }
+
 /*
 @Configuration
 @UseSpringExtendedStoreConnectionFactory

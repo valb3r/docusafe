@@ -24,10 +24,11 @@ public class UseCachedTransactionalDocumentSafeServiceConfiguration {
 
     @Bean
     public CachedTransactionalDocumentSafeService docusafeCachedTransactionalService(
-            SpringCachedTransactionalDocusafeServiceFactory springCachedTransactionalDocusafeServiceFactory,
+//            SpringCachedTransactionalDocusafeServiceFactory springCachedTransactionalDocusafeServiceFactory,
             @Value("${docusafe.cache:true}") Boolean withCache
     ) {
         LOGGER.info(CachedTransactionalDocumentSafeService.class.getName() + " is required as @Bean");
-        return springCachedTransactionalDocusafeServiceFactory.getCachedTransactionalDocumentSafeServiceWithSubdir(null);
+//        return springCachedTransactionalDocusafeServiceFactory.getCachedTransactionalDocumentSafeServiceWithSubdir(null);
+        return null;
     }
 }

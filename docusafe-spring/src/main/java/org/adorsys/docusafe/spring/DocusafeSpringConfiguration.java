@@ -2,6 +2,7 @@ package org.adorsys.docusafe.spring;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 
@@ -10,10 +11,9 @@ import org.springframework.context.annotation.Configuration;
  */
 
 @Configuration
-// @UseSpringExtendedStoreConnectionFactory
-// @UseExtendedStoreConnection
-// @UseCachedTransactionalDocumentSafeService
-
+@ComponentScan(basePackages = {
+        "org.adorsys.docusafe.spring.config"
+})
 public class DocusafeSpringConfiguration {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocusafeSpringConfiguration.class);
     public DocusafeSpringConfiguration() {
