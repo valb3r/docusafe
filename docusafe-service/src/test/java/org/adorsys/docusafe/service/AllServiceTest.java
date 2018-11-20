@@ -30,7 +30,6 @@ import org.adorsys.encobject.service.impl.ContainerPersistenceImpl;
 import org.adorsys.encobject.service.impl.generator.KeyStoreCreationConfigImpl;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.adorsys.encobject.types.OverwriteFlag;
-import org.adorsys.encobject.types.properties.AmazonS3ConnectionProperties;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -43,7 +42,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UTFDataFormatException;
 import java.security.UnrecoverableKeyException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Created by peter on 04.01.18.

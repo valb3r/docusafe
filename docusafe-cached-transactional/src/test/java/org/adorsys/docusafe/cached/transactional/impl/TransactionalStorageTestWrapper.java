@@ -7,14 +7,14 @@ import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.transactional.TransactionalDocumentSafeService;
-import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.types.ListRecursiveFlag;
+import org.adorsys.encobject.types.PublicKeyJWK;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 /**
  * Created by peter on 09.07.18 at 14:40.
@@ -33,6 +33,7 @@ public class TransactionalStorageTestWrapper implements TransactionalDocumentSaf
     public static final String DOCUMENT_EXISTS = "nonTxDocumentExists";
     public static final String GRANTED_DOCUMENT_EXISTS = "grantedDocumentExists";
     public static final String DELETE_DOCUMENT = "nonTxDeleteDocument";
+    public static final String DELETE_FOLDER = "nonTxDeleteFolder";
     public static final String LIST_DOCUMENTS = "nonTxListDocuments";
     public static final String BEGIN_TX = "beginTx";
     public static final String STORE_DOCUMENT_TX = "storeDocumentTx";
@@ -42,6 +43,7 @@ public class TransactionalStorageTestWrapper implements TransactionalDocumentSaf
     public static final String DOCUMENT_EXISTS_TX = "documentExistsTx";
     public static final String DELETE_FOLDER_TX = "deleteFolderTx";
     public static final String END_TRANSACTION = "endTransaction";
+    public static final String FIND_PUBLIC_KEY = "findPublicEncryptionKey";
     public Map<String, Integer> counterMap = new HashMap<>();
 
     private TransactionalDocumentSafeService realTransactionalFileStorage;
@@ -58,6 +60,7 @@ public class TransactionalStorageTestWrapper implements TransactionalDocumentSaf
         inc(DOCUMENT_EXISTS);
         inc(GRANTED_DOCUMENT_EXISTS);
         inc(DELETE_DOCUMENT);
+        inc(DELETE_FOLDER);
         inc(LIST_DOCUMENTS);
         inc(BEGIN_TX);
         inc(STORE_DOCUMENT_TX);
@@ -66,6 +69,7 @@ public class TransactionalStorageTestWrapper implements TransactionalDocumentSaf
         inc(LIST_DOCUMENTS_TX);
         inc(DELETE_FOLDER_TX);
         inc(END_TRANSACTION);
+        inc(FIND_PUBLIC_KEY);
     }
 
     @Override
@@ -90,6 +94,12 @@ public class TransactionalStorageTestWrapper implements TransactionalDocumentSaf
     public void grantAccessToNonTxFolder(UserIDAuth userIDAuth, UserID receiverUserID, DocumentDirectoryFQN documentDirectoryFQN) {
         inc(GRANT_ACCESS);
         realTransactionalFileStorage.grantAccessToNonTxFolder(userIDAuth, receiverUserID, documentDirectoryFQN);
+    }
+
+    @Override
+    public PublicKeyJWK findPublicEncryptionKey(UserID userID) {
+        inc(FIND_PUBLIC_KEY);
+        return realTransactionalFileStorage.findPublicEncryptionKey(userID);
     }
 
     @Override
@@ -132,6 +142,12 @@ public class TransactionalStorageTestWrapper implements TransactionalDocumentSaf
     public void nonTxDeleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
         inc(DELETE_DOCUMENT);
         realTransactionalFileStorage.nonTxDeleteDocument(userIDAuth, documentFQN);
+    }
+
+    @Override
+    public void nonTxDeleteFolder(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN) {
+        inc(DELETE_FOLDER);
+        realTransactionalFileStorage.nonTxDeleteFolder(userIDAuth, documentDirectoryFQN);
     }
 
     @Override
@@ -220,4 +236,5 @@ public class TransactionalStorageTestWrapper implements TransactionalDocumentSaf
         }
         return s;
     }
+
 }

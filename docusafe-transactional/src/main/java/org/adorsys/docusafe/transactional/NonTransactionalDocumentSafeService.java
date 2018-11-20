@@ -7,6 +7,7 @@ import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.encobject.types.ListRecursiveFlag;
+import org.adorsys.encobject.types.PublicKeyJWK;
 
 /**
  * Created by peter on 15.08.18 at 11:55.
@@ -18,11 +19,14 @@ public interface NonTransactionalDocumentSafeService {
     void destroyUser(UserIDAuth userIDAuth);
     boolean userExists(UserID userID);
     void grantAccessToNonTxFolder(UserIDAuth userIDAuth, UserID receiverUserID, DocumentDirectoryFQN documentDirectoryFQN);
+    PublicKeyJWK findPublicEncryptionKey(UserID userID);
+
 
     void nonTxStoreDocument(UserIDAuth userIDAuth, DSDocument dsDocument);
     DSDocument nonTxReadDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
     boolean nonTxDocumentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN);
     void nonTxDeleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
+    void nonTxDeleteFolder(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN);
     BucketContentFQN nonTxListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag);
 
     // NON-TRANSACTIONAL FOR OTHERS

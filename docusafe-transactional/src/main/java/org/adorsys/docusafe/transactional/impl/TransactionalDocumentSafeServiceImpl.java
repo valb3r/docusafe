@@ -1,7 +1,8 @@
 package org.adorsys.docusafe.transactional.impl;
 
-import org.adorsys.cryptoutils.exceptions.BaseException;
+import com.nimbusds.jose.jwk.JWK;
 import org.adorsys.docusafe.business.DocumentSafeService;
+import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
@@ -14,6 +15,7 @@ import org.adorsys.docusafe.transactional.exceptions.TxNotActiveException;
 import org.adorsys.docusafe.transactional.exceptions.TxNotFoundException;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.types.ListRecursiveFlag;
+import org.adorsys.encobject.types.PublicKeyJWK;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -157,5 +159,10 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
             throw new TxNotActiveException();
         }
         return currentTransactionsMap;
+    }
+
+    @Override
+    public PublicKeyJWK findPublicEncryptionKey(UserID userID) {
+        return documentSafeService.findPublicEncryptionKey(userID);
     }
 }

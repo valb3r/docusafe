@@ -18,6 +18,7 @@ import org.adorsys.docusafe.transactional.impl.TransactionalDocumentSafeServiceI
 import org.adorsys.docusafe.transactional.impl.TxIDHashMap;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.types.ListRecursiveFlag;
+import org.adorsys.encobject.types.PublicKeyJWK;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,6 +68,11 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
     }
 
     @Override
+    public PublicKeyJWK findPublicEncryptionKey(UserID userID) {
+        return transactionalFileStorage.findPublicEncryptionKey(userID);
+    }
+
+    @Override
     public void nonTxStoreDocument(UserIDAuth userIDAuth, DSDocument dsDocument) {
         transactionalFileStorage.nonTxStoreDocument(userIDAuth, dsDocument);
     }
@@ -100,6 +106,11 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
     @Override
     public void nonTxDeleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
         transactionalFileStorage.nonTxDeleteDocument(userIDAuth, documentFQN);
+    }
+
+    @Override
+    public void nonTxDeleteFolder(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN) {
+        transactionalFileStorage.nonTxDeleteFolder(userIDAuth, documentDirectoryFQN);
     }
 
     @Override

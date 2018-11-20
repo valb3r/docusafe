@@ -1,5 +1,6 @@
 package org.adorsys.docusafe.transactional.impl;
 
+import com.nimbusds.jose.jwk.JWK;
 import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.impl.BucketContentFQNImpl;
@@ -13,6 +14,7 @@ import org.adorsys.docusafe.service.types.AccessType;
 import org.adorsys.docusafe.transactional.NonTransactionalDocumentSafeService;
 import org.adorsys.docusafe.transactional.RequestMemoryContext;
 import org.adorsys.encobject.types.ListRecursiveFlag;
+import org.adorsys.encobject.types.PublicKeyJWK;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +57,11 @@ public class NonTransactionalDocumentSafeServiceImpl implements NonTransactional
     }
 
     @Override
+    public PublicKeyJWK findPublicEncryptionKey(UserID userID) {
+        return documentSafeService.findPublicEncryptionKey(userID);
+    }
+
+    @Override
     public void nonTxStoreDocument(UserIDAuth userIDAuth, DSDocument dsDocument) {
         LOGGER.debug("nonTxStoreDocument " + dsDocument.getDocumentFQN() + " from folder " + nonTxContent + " of user " + userIDAuth.getUserID());
         documentSafeService.storeDocument(userIDAuth, modifyNonTxDocument(dsDocument));
@@ -82,6 +89,12 @@ public class NonTransactionalDocumentSafeServiceImpl implements NonTransactional
     public BucketContentFQN nonTxListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
         LOGGER.debug("list documents " + documentDirectoryFQN + " from folder " + nonTxContent + " of user " + userIDAuth.getUserID());
         return filterNonTxPrefix(documentSafeService.list(userIDAuth, modifyNonTxDirectoryName(documentDirectoryFQN), recursiveFlag));
+    }
+
+    @Override
+    public void nonTxDeleteFolder(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN) {
+        LOGGER.debug("delete folder " + documentDirectoryFQN + " from folder " + nonTxContent + " of user " + userIDAuth.getUserID());
+        documentSafeService.deleteFolder(userIDAuth, unmodifyNonTxDocumentDirName(documentDirectoryFQN));
     }
 
     // ============================================================================================
@@ -153,7 +166,4 @@ public class NonTransactionalDocumentSafeServiceImpl implements NonTransactional
         filtered.getFiles().forEach(file -> LOGGER.debug("after filter:" + file));
         return filtered;
     }
-
-
-
 }

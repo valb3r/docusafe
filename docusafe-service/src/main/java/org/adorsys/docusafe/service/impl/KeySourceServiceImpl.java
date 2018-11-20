@@ -7,6 +7,7 @@ import org.adorsys.encobject.service.api.KeySource;
 import org.adorsys.encobject.service.api.KeyStore2KeySourceHelper;
 import org.adorsys.encobject.service.api.KeystorePersistence;
 import org.adorsys.encobject.service.impl.BlobStoreKeystorePersistenceImpl;
+import org.adorsys.encobject.types.PublicKeyJWK;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,9 +22,9 @@ public class KeySourceServiceImpl implements KeySourceService {
 	}
 
 	@Override
-	public JWK findPublicEncryptionKey(KeyStoreAccess keyStoreAccess) {
-		JWK publicKeyJWK = KeyStore2KeySourceHelper.getForPublicKeyJWK(keystorePersistence, keyStoreAccess);
-        LOGGER.debug("Found public encryption key JWK :" + publicKeyJWK.getKeyID());
+	public PublicKeyJWK findPublicEncryptionKey(KeyStoreAccess keyStoreAccess) {
+		PublicKeyJWK publicKeyJWK = KeyStore2KeySourceHelper.getPublicKeyJWK(keystorePersistence, keyStoreAccess);
+        LOGGER.debug("Found public encryption key JWK :" + publicKeyJWK.getValue().getKeyID());
         return publicKeyJWK;
 	}
 

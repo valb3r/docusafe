@@ -4,6 +4,7 @@ import org.adorsys.encobject.domain.KeyStoreAccess;
 import org.adorsys.encobject.service.api.KeySource;
 
 import com.nimbusds.jose.jwk.JWK;
+import org.adorsys.encobject.types.PublicKeyJWK;
 
 /**
  * 
@@ -19,7 +20,7 @@ public interface KeySourceService {
 	 * @param keyStoreAccess : the keystore access of the receiver of a message.
 	 * @return
 	 */
-	JWK findPublicEncryptionKey(KeyStoreAccess keyStoreAccess);
+	PublicKeyJWK findPublicEncryptionKey(KeyStoreAccess keyStoreAccess);
 	
 	/**
 	 * Returns the keysource of the receiver of a message. User by the receiver

@@ -1,6 +1,5 @@
 package org.adorsys.docusafe.business.impl;
 
-import com.nimbusds.jose.jwk.JWK;
 import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.docusafe.business.DocumentSafeService;
@@ -58,6 +57,7 @@ import org.adorsys.encobject.service.impl.SimplePayloadStreamImpl;
 import org.adorsys.encobject.service.impl.SimpleStorageMetadataImpl;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.adorsys.encobject.types.OverwriteFlag;
+import org.adorsys.encobject.types.PublicKeyJWK;
 import org.adorsys.jkeygen.keystore.KeyStoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -433,7 +433,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
     }
 
     @Override
-    public JWK findPublicEncryptionKey(UserID userID) {
+    public PublicKeyJWK findPublicEncryptionKey(UserID userID) {
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(new UserIDAuth(userID, null));
         return keySourceService.findPublicEncryptionKey(keyStoreAccess);
     }
