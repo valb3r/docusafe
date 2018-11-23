@@ -34,7 +34,7 @@ public class SpringCachedTransactionalDocusafeServiceFactory {
         this.withCache = withCache;
         instanceId = ++instanceCounter;
         if (instanceId > 1) {
-            throw new BaseException("Expected just to exist exaclty one Factory");
+            LOGGER.warn("Expected just to exist exactly one Factory. But this is Instance No: " + instanceId);
         }
     }
 
