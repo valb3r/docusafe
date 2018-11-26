@@ -44,7 +44,7 @@ public class SpringConnectionPropertiesImpl implements ConnectionProperties {
         if (encryptionfilenameonly.equalsIgnoreCase("true")) {
             return BucketPathEncryptionFilenameOnly.TRUE;
         }
-        return BucketPathEncryptionFilenameOnly.FAlSE;
+        return BucketPathEncryptionFilenameOnly.FALSE;
     }
 
     public void setEncryptionfilenameonly(String encryptionfilenameonly) {
