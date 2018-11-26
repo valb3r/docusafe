@@ -17,8 +17,6 @@ public class SpringDocusafeStoreconnectionProperties {
     @Nullable
     private SpringFilesystemConnectionProperties filesystem;
     @Nullable
-    private SpringMinioConnectionProperties minio;
-    @Nullable
     private SpringMongoConnectionProperties mongo;
 
 
@@ -36,14 +34,6 @@ public class SpringDocusafeStoreconnectionProperties {
 
     public void setFilesystem(SpringFilesystemConnectionProperties filesystem) {
         this.filesystem = filesystem;
-    }
-
-    public SpringMinioConnectionProperties getMinio() {
-        return minio;
-    }
-
-    public void setMinio(SpringMinioConnectionProperties minio) {
-        this.minio = minio;
     }
 
     public SpringMongoConnectionProperties getMongo() {
