@@ -94,7 +94,7 @@ public class NonTransactionalDocumentSafeServiceImpl implements NonTransactional
     @Override
     public void nonTxDeleteFolder(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN) {
         LOGGER.debug("delete folder " + documentDirectoryFQN + " from folder " + nonTxContent + " of user " + userIDAuth.getUserID());
-        documentSafeService.deleteFolder(userIDAuth, unmodifyNonTxDocumentDirName(documentDirectoryFQN));
+        documentSafeService.deleteFolder(userIDAuth, modifyNonTxDirectoryName(documentDirectoryFQN));
     }
 
     // ============================================================================================
