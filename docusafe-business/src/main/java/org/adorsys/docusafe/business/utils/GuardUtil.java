@@ -6,7 +6,6 @@ import org.adorsys.docusafe.service.BucketService;
 import org.adorsys.docusafe.service.exceptions.NoDocumentGuardExists;
 import org.adorsys.docusafe.service.types.DocumentKeyID;
 import org.adorsys.docusafe.service.types.PlainFileContent;
-import org.adorsys.docusafe.business.exceptions.GuardException;
 import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.slf4j.Logger;
