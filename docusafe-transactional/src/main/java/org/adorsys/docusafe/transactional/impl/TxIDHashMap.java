@@ -9,6 +9,7 @@ import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
+import org.adorsys.docusafe.service.impl.UserMetaDataUtil;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.transactional.exceptions.TxAlreadyClosedException;
 import org.adorsys.docusafe.transactional.exceptions.TxNotFoundException;
@@ -88,7 +89,7 @@ public class TxIDHashMap {
         DSDocument dsDocument = new DSDocument(file, documentContent, new DSDocumentMetaInfo());
         if (TxIDLog.dontEncrypt) {
             LOGGER.debug("save " + file.getValue() + " encrypted");
-            dsDocument.getDsDocumentMetaInfo().setNoEncryption();
+            UserMetaDataUtil.setNoEncryption(dsDocument.getDsDocumentMetaInfo());
         }
         documentSafeService.storeDocument(userIDAuth, dsDocument);
     }

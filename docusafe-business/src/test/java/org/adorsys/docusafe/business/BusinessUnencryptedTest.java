@@ -8,6 +8,7 @@ import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DSDocumentStream;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
+import org.adorsys.docusafe.service.impl.UserMetaDataUtil;
 import org.adorsys.docusafe.service.types.AccessType;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.encobject.domain.ReadKeyPassword;
@@ -48,7 +49,7 @@ public class BusinessUnencryptedTest extends BusinessTestBase {
 
             DocumentFQN documentFQN = new DocumentFQN("first/next/a-new-document.txt");
             DSDocumentMetaInfo mi = new DSDocumentMetaInfo();
-            mi.setNoEncryption();
+            UserMetaDataUtil.setNoEncryption(mi);
             // try (DSDocumentStream dsDocument1 = createDocumentStream(userIDAuth, documentFQN, mi)) {
             try (InputStream is = createDocumentStream(userIDAuth, documentFQN, mi).getDocumentStream()) {
 
@@ -72,7 +73,7 @@ public class BusinessUnencryptedTest extends BusinessTestBase {
         DocumentFQN documentFQN = new DocumentFQN("first/next/a-new-document.txt");
         checkGuardsForDocument(userIDAuth, documentFQN, false);
         DSDocumentMetaInfo mi = new DSDocumentMetaInfo();
-        mi.setNoEncryption();
+        UserMetaDataUtil.setNoEncryption(mi);
 
         // Speichern mit falschen Kennwort nicht möglich, obwohl unverschluesselt
         CatchException.catchException(() -> createDocument(userIDAuthWrongPassword, documentFQN, mi));
@@ -102,7 +103,7 @@ public class BusinessUnencryptedTest extends BusinessTestBase {
             DocumentFQN documentFQN = new DocumentFQN("first/next/a-new-document.txt");
             checkGuardsForDocument(userIDAuth, documentFQN, false);
             DSDocumentMetaInfo mi = new DSDocumentMetaInfo();
-            mi.setNoEncryption();
+            UserMetaDataUtil.setNoEncryption(mi);
             boolean catched = false;
 
             {
@@ -156,7 +157,7 @@ public class BusinessUnencryptedTest extends BusinessTestBase {
         service.grantAccessToUserForFolder(userIDAuth1, userIDAuth2.getUserID(), documentFQN.getDocumentDirectory(), AccessType.WRITE);
 
         DSDocumentMetaInfo mi = new DSDocumentMetaInfo();
-        mi.setNoEncryption();
+        UserMetaDataUtil.setNoEncryption(mi);
 
         DocumentContent documentContent = new DocumentContent("Einfach nur a bisserl Text".getBytes());
         DSDocument dsDocument = new DSDocument(documentFQN, documentContent, mi);

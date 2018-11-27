@@ -7,6 +7,7 @@ import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
+import org.adorsys.docusafe.service.impl.UserMetaDataUtil;
 import org.adorsys.docusafe.transactional.impl.helper.Class2JsonHelper;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.slf4j.Logger;
@@ -44,7 +45,7 @@ public class TxIDLog {
                 DSDocumentMetaInfo metaInfo = new DSDocumentMetaInfo();
                 if (dontEncrypt) {
                     LOGGER.debug("save " + txidLogFilename + " encrypted");
-                    metaInfo.setNoEncryption();
+                    UserMetaDataUtil.setNoEncryption(metaInfo);
                 }
                 DSDocument document = new DSDocument(txidLogFilename, new Class2JsonHelper().txidLogToContent(txIDLog), metaInfo);
                 documentSafeService.storeDocument(userIDAuth, document);
@@ -60,7 +61,7 @@ public class TxIDLog {
         DSDocumentMetaInfo metaInfo = new DSDocumentMetaInfo();
         if (dontEncrypt) {
             LOGGER.debug("save " + txidLogFilename + " encrypted");
-            metaInfo.setNoEncryption();
+            UserMetaDataUtil.setNoEncryption(metaInfo);
         }
         if (documentSafeService.documentExists(userIDAuth, txidLogFilename)) {
             DSDocument dsDocument = documentSafeService.readDocument(userIDAuth, txidLogFilename);

@@ -3,6 +3,7 @@ package org.adorsys.docusafe.business.utils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.adorsys.docusafe.service.BucketService;
+import org.adorsys.docusafe.service.exceptions.NoDocumentGuardExists;
 import org.adorsys.docusafe.service.types.DocumentKeyID;
 import org.adorsys.docusafe.service.types.PlainFileContent;
 import org.adorsys.docusafe.business.exceptions.GuardException;
@@ -45,7 +46,7 @@ public class GuardUtil {
     public static DocumentKeyID loadBucketGuardKeyFile(BucketService bucketService, BucketDirectory keyStoreDirectory, BucketDirectory documentDirectory) {
         DocumentKeyID documentKeyID = tryToLoadBucketGuardKeyFile(bucketService, keyStoreDirectory, documentDirectory);
         if (documentKeyID == null) {
-            throw new GuardException("No DocumentGuard found for Bucket" + documentDirectory);
+            throw new NoDocumentGuardExists(keyStoreDirectory.append(documentDirectory.addSuffix(BUCKET_GUARD_KEY)));
         }
         return documentKeyID;
     }

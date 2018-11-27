@@ -71,16 +71,5 @@ public interface DocumentPersistenceService {
             StorageMetadata storageMetadata,
             DocumentBucketPath documentBucketPath);
 
-    static boolean isNotEncrypted(UserMetaData userMetaData) {
-        String value = null;
-        if ((value = userMetaData.find("NO_ENCRYPTION")) != null) {
-            return (value.equalsIgnoreCase("TRUE"));
-        }
-        return false;
-    }
-    static void setNotEncrypted(UserMetaData userMetaData) {
-        userMetaData.put("NO_ENCRYPTION", "TRUE");
-    }
-
 
 }

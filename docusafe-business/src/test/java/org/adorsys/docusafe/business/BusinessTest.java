@@ -198,24 +198,13 @@ public class BusinessTest extends BusinessTestBase {
         // and read as peter
         service.readDocument(userIDAuthPeter, documentFQN);
         service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentDirectoryFQN, AccessType.READ);
-        boolean catched = false;
-        try {
-            service.storeGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), dsDocument);
-        } catch (NoWriteAccessException e) {
-            catched = true;
-        }
-        Assert.assertTrue(catched);
+        CatchException.catchException(() -> service.storeGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), dsDocument));
+        Assert.assertTrue(CatchException.caughtException() instanceof NoWriteAccessException);
         service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
 
         service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentDirectoryFQN, AccessType.NONE);
-        catched = false;
-        try {
-            service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
-        } catch (NoDocumentGuardExists e) {
-            catched = true;
-        }
-        Assert.assertTrue(catched);
-
+        CatchException.catchException(() -> service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN));
+        Assert.assertTrue(CatchException.caughtException() instanceof NoDocumentGuardExists);
     }
 
     // Hier speichert Benuzter A etwas für Benutzer A (also sich selbst) und will es anschliessend Benutzer B lesen lassen

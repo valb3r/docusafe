@@ -19,6 +19,7 @@ import org.adorsys.docusafe.business.types.complex.DSDocumentStream;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
+import org.adorsys.docusafe.service.impl.UserMetaDataUtil;
 import org.adorsys.docusafe.business.utils.BucketPath2FQNHelper;
 import org.adorsys.docusafe.business.utils.GrantUtil;
 import org.adorsys.docusafe.business.utils.GuardUtil;
@@ -173,7 +174,8 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), dsDocument.getDocumentFQN());
         // getOrCreate dient hier nur der Authentifizierung, koennte zum Schreiben unverschluesselter Documente entfallen
         DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, documentBucketPath.getBucketDirectory(), AccessType.WRITE);
-        if (dsDocument.getDsDocumentMetaInfo().isNotEncrypted()) {
+
+        if (UserMetaDataUtil.isNotEncrypted(storageMetadata.getUserMetadata())) {
             documentPersistenceService.persistDocument(
                     documentBucketPath,
                     OverwriteFlag.TRUE,
@@ -195,7 +197,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         LOGGER.debug("start readDocument for " + userIDAuth + " " + documentFQN);
         DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), documentFQN);
         StorageMetadata storageMetadata = extendedStoreConnection.getStorageMetadata(documentBucketPath);
-        if (DocumentPersistenceService.isNotEncrypted(storageMetadata.getUserMetadata())) {
+        if (UserMetaDataUtil.isNotEncrypted(storageMetadata.getUserMetadata())) {
             checkUserKeyPassword(userIDAuth);
             Payload payload = documentPersistenceService.loadDocument(storageMetadata, documentBucketPath);
             DSDocument dsDocument = new DSDocument(documentFQN, new DocumentContent(payload.getData()), new DSDocumentMetaInfo(payload.getStorageMetadata().getUserMetadata()));
@@ -208,7 +210,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         LOGGER.debug("finished readDocument for " + userIDAuth + " " + documentFQN);
         DSDocument dsDocument = new DSDocument(documentFQN, new DocumentContent(payload.getData()), new DSDocumentMetaInfo(payload.getStorageMetadata().getUserMetadata()));
         // man könnte auch früher prüfen, aber das wäre doppelt so teuer
-        if (dsDocument.getDsDocumentMetaInfo().isNotEncrypted()) {
+        if (UserMetaDataUtil.isNotEncrypted(dsDocument.getDsDocumentMetaInfo())) {
             checkUserKeyPassword(userIDAuth);
         }
         return dsDocument;
@@ -226,7 +228,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), dsDocumentStream.getDocumentFQN());
         // getOrCreate dient hier nur der Authentifizierung, koennte zum Schreiben unverschluesselter Documente entfallen
         DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, documentBucketPath.getBucketDirectory(), AccessType.WRITE);
-        if (dsDocumentStream.getDsDocumentMetaInfo().isNotEncrypted()) {
+        if (UserMetaDataUtil.isNotEncrypted(storageMetadata.getUserMetadata())) {
             documentPersistenceService.persistDocumentStream(
                     documentBucketPath,
                     OverwriteFlag.TRUE,
@@ -251,7 +253,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
             DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), documentFQN);
 
             StorageMetadata storageMetadata = extendedStoreConnection.getStorageMetadata(documentBucketPath);
-            if (DocumentPersistenceService.isNotEncrypted(storageMetadata.getUserMetadata())) {
+            if (UserMetaDataUtil.isNotEncrypted(storageMetadata.getUserMetadata())) {
                 checkUserKeyPassword(userIDAuth);
                 PayloadStream payloadStream = documentPersistenceService.loadDocumentStream(storageMetadata, documentBucketPath);
                 DSDocumentStream dsDocumentStream = new DSDocumentStream(documentFQN, payloadStream.openStream(), new DSDocumentMetaInfo(payloadStream.getStorageMetadata().getUserMetadata()));
@@ -384,7 +386,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         if (!documentKeyIDWithKeyAndAccessType.getAccessType().equals(AccessType.WRITE)) {
             throw new NoWriteAccessException(userIDAuth.getUserID(), documentOwner, dsDocument.getDocumentFQN());
         }
-        if (dsDocument.getDsDocumentMetaInfo().isNotEncrypted()) {
+        if (UserMetaDataUtil.isNotEncrypted(storageMetadata.getUserMetadata())) {
             documentPersistenceService.persistDocument(
                     documentBucketPath,
                     OverwriteFlag.TRUE,
@@ -406,7 +408,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         LOGGER.debug("start readDocument for " + userIDAuth + " " + documentOwner + " " + documentFQN);
         DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(documentOwner, documentFQN);
         StorageMetadata storageMetadata = extendedStoreConnection.getStorageMetadata(documentBucketPath);
-        if (DocumentPersistenceService.isNotEncrypted(storageMetadata.getUserMetadata())) {
+        if (UserMetaDataUtil.isNotEncrypted(storageMetadata.getUserMetadata())) {
             checkUserKeyPassword(userIDAuth); // Das alleine reicht nicht aus
             DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = getDocumentKeyIDwithKeyForBucketPath(userIDAuth, documentBucketPath.getBucketDirectory());
             if (documentKeyIDWithKeyAndAccessType.getAccessType().equals(AccessType.NONE)) {

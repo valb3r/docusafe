@@ -1,6 +1,7 @@
 package org.adorsys.docusafe.service;
 
 import org.adorsys.docusafe.service.impl.DocumentPersistenceServiceImpl;
+import org.adorsys.docusafe.service.impl.UserMetaDataUtil;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.service.types.complextypes.DocumentBucketPath;
 import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
@@ -58,9 +59,11 @@ public class DocumentPersistenceServiceTest {
                                  DocumentBucketPath documentBucketPath) {
         DocumentPersistenceService documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection, null);
         StorageMetadata storageMetadata = extendedStoreConnection.getStorageMetadata(documentBucketPath);
-        if (DocumentPersistenceService.isNotEncrypted(storageMetadata.getUserMetadata())) {
+/*
+        if (UserMetaDataUtil.isNotEncrypted(storageMetadata.getUserMetadata())) {
             return documentPersistenceService.loadDocument(storageMetadata, documentBucketPath);
         }
+        */
         Payload payload = documentPersistenceService.loadAndDecryptDocument(
                 storageMetadata,
                 keyStoreAccess,
