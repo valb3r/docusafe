@@ -1,5 +1,6 @@
 package org.adorsys.docusafe.transactional;
 
+import com.googlecode.catchexception.CatchException;
 import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
@@ -221,6 +222,31 @@ public class TransactionalFileStorageTest extends TransactionFileStorageBaseTest
         transactionalFileStorage.beginTransaction(userIDAuth);
         transactionalFileStorage.endTransaction(userIDAuth);
         transactionalFileStorage.endTransaction(userIDAuth);
+    }
+
+    @Test
+    public void twoCommitsInARow() {
+        transactionalFileStorage.createUser(userIDAuth);
+        DocumentFQN documentFQN = new DocumentFQN("testxTFolder/first.txt");
+        DocumentContent documentContent = new DocumentContent("very first".getBytes());
+        DSDocumentMetaInfo documentMetaInfo = new DSDocumentMetaInfo();
+        DSDocument document = new DSDocument(documentFQN, documentContent, documentMetaInfo);
+
+        transactionalFileStorage.beginTransaction(userIDAuth);
+        LOGGER.debug("FIRST TXID ");
+        Assert.assertFalse(transactionalFileStorage.txDocumentExists(userIDAuth, documentFQN));
+        transactionalFileStorage.txStoreDocument(userIDAuth, document);
+        Assert.assertTrue(transactionalFileStorage.txDocumentExists(userIDAuth, documentFQN));
+        transactionalFileStorage.endTransaction(userIDAuth);
+
+        transactionalFileStorage.beginTransaction(userIDAuth);
+        LOGGER.debug("SECOND TXID ");
+        DSDocument dsDocument = transactionalFileStorage.txReadDocument(userIDAuth, documentFQN);
+        Assert.assertEquals(new String(documentContent.getValue()), new String(dsDocument.getDocumentContent().getValue()));
+        transactionalFileStorage.endTransaction(userIDAuth);
+
+        CatchException.catchException(() -> transactionalFileStorage.txReadDocument(userIDAuth, documentFQN));
+        Assert.assertTrue(CatchException.caughtException() instanceof TxNotActiveException);
     }
 }
 

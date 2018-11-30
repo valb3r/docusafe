@@ -1,7 +1,5 @@
 package org.adorsys.docusafe.transactional.impl;
 
-import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
-import org.adorsys.cryptoutils.storeconnectionfactory.ReadArguments;
 import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
@@ -27,6 +25,10 @@ import java.util.List;
 
 /**
  * Created by peter on 11.06.18 at 15:12.
+ */
+
+/**
+ * Contains all documents, that exist for this transaction. the documents have been created from previous or this transaction.
  */
 public class TxIDHashMap {
     private final static Logger LOGGER = LoggerFactory.getLogger(TxIDHashMap.class);

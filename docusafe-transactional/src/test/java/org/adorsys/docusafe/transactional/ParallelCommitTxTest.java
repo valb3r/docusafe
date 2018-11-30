@@ -12,6 +12,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 
@@ -63,14 +65,23 @@ public class ParallelCommitTxTest extends TransactionFileStorageBaseTest{
             countDownLatch.await();
             LOGGER.debug(PARALLEL_INSTANCES + " threadas have finished");
 
+            Set<Integer> winner = new HashSet<>();
+            for (int i = 0; i<PARALLEL_INSTANCES; i++) {
+                winner.add(i);
+            }
             int errorCounter = 0;
             for (int i = 0; i < PARALLEL_INSTANCES; i++) {
                 if (! runnables[i].ok) {
                     errorCounter ++;
-                    LOGGER.error("error " + errorCounter + " " + runnables[i].exception.getMessage());
+                    LOGGER.error("THREAD " + runnables[i].instanceID + " error " + errorCounter + " " + runnables[i].exception.getMessage());
+                    winner.remove(runnables[i].instanceID);
                 }
             }
-            // Assert.assertEquals(0, errorCounter);
+            // only one tx can be closed, the others are too late
+            Assert.assertEquals(PARALLEL_INSTANCES-1, errorCounter);
+            Assert.assertEquals(1, winner.size());
+            LOGGER.info("=================================================================================================");
+            LOGGER.info("the winner of the " + PARALLEL_INSTANCES + " instances is thread number " + winner.toArray()[0]);
 
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
