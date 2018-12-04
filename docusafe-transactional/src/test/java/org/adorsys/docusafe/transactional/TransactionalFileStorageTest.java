@@ -11,6 +11,7 @@ import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.transactional.exceptions.TxAlreadyClosedException;
 import org.adorsys.docusafe.transactional.exceptions.TxInnerException;
 import org.adorsys.docusafe.transactional.exceptions.TxNotActiveException;
+import org.adorsys.docusafe.transactional.exceptions.TxRacingConditionException;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.bouncycastle.jcajce.provider.symmetric.ARC4;
@@ -175,10 +176,10 @@ public class TransactionalFileStorageTest extends TransactionFileStorageBaseTest
             transactionalFileStorage.beginTransaction(userIDAuth);
             requestMemoryContext.switchToUser(4);
             transactionalFileStorage.beginTransaction(userIDAuth);
+            requestMemoryContext.switchToUser(2);
             // Nun erzeuge N verschiedene Datein in einem Verzeichnis
             for (int i = 0; i < N; i++) {
                 DocumentFQN docFQN = new DocumentFQN("folder1/file_" + i + ".txt");
-                requestMemoryContext.switchToUser(2);
                 Assert.assertTrue(transactionalFileStorage.txDocumentExists(userIDAuth, docFQN));
                 transactionalFileStorage.txDeleteDocument(userIDAuth, docFQN);
                 Assert.assertFalse(transactionalFileStorage.txDocumentExists(userIDAuth, docFQN));
@@ -207,8 +208,13 @@ public class TransactionalFileStorageTest extends TransactionFileStorageBaseTest
                 Assert.assertTrue(transactionalFileStorage.txDocumentExists(userIDAuth, docFQN));
             }
             requestMemoryContext.switchToUser(3);
-            transactionalFileStorage.endTransaction(userIDAuth);
+            // this commit must not be successfull, because user 2 already commited the delete before.
+            CatchException.catchException(() -> transactionalFileStorage.endTransaction(userIDAuth));
+            Assert.assertTrue(CatchException.caughtException() instanceof TxRacingConditionException);
+
+
             requestMemoryContext.switchToUser(4);
+            // this commit must be successfull, because the tx did not write or delete any file
             transactionalFileStorage.endTransaction(userIDAuth);
         }
     }

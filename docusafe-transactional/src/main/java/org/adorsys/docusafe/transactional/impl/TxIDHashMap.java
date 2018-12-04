@@ -49,6 +49,12 @@ public class TxIDHashMap {
         }
     }
 
+    public TxIDHashMap clone() {
+        TxIDHashMap newTxIDHashMap = new TxIDHashMap(lastCommitedTxID, currentTxID, beginTx);
+        newTxIDHashMap.map = new HashMap<>(map);
+        return newTxIDHashMap;
+    }
+
     public static TxIDHashMap fromPreviousFileOrNew(DocumentSafeService documentSafeService, UserIDAuth userIDAuth, TxID currentTxID, Date beginTxDate) {
         LastCommitedTxID lastKnownCommitedTxID = TxIDLog.findLastCommitedTxID(documentSafeService, userIDAuth);
 

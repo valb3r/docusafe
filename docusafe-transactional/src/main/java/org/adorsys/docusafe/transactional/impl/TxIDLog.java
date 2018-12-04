@@ -75,9 +75,8 @@ public class TxIDLog {
                 Tuple lastTuple = txIDLog.txidList.get(txIDLog.txidList.size() - 1);
                 LastCommitedTxID lastCommitedTxID = new LastCommitedTxID(lastTuple.currentTxID.getValue());
                 if (!lastCommitedTxID.equals(previousTxID)) {
-                    throw new TxRacingConditionException(lastCommitedTxID, previousTxID);
+                    throw new TxRacingConditionException(currentTxID, lastCommitedTxID, previousTxID);
                 }
-
             }
 
             txIDLog.txidList.add(new Tuple(start, finished, previousTxID, currentTxID));

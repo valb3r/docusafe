@@ -12,10 +12,8 @@ import org.adorsys.docusafe.cached.transactional.exceptions.CacheException;
 import org.adorsys.docusafe.transactional.RequestMemoryContext;
 import org.adorsys.docusafe.transactional.TransactionalDocumentSafeService;
 import org.adorsys.docusafe.transactional.exceptions.TxNotActiveException;
-import org.adorsys.docusafe.transactional.exceptions.TxNotFoundException;
-import org.adorsys.docusafe.transactional.impl.CurrentTransactionsMap;
+import org.adorsys.docusafe.transactional.impl.CurrentTransactionData;
 import org.adorsys.docusafe.transactional.impl.TransactionalDocumentSafeServiceImpl;
-import org.adorsys.docusafe.transactional.impl.TxIDHashMap;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.adorsys.encobject.types.PublicKeyJWK;
@@ -39,11 +37,11 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
     private final static Logger LOGGER = LoggerFactory.getLogger(CachedTransactionalDocumentSafeServiceImpl.class);
     public static final String CACHEND_TRANSACTIONAL_CONTEXT_MAP = "cachendTransactionalContextMap";
     private TransactionalDocumentSafeService transactionalFileStorage;
-    private RequestMemoryContext requestContext;
+    private RequestMemoryContext requestMemoryContext;
 
-    public CachedTransactionalDocumentSafeServiceImpl(RequestMemoryContext requestContext, TransactionalDocumentSafeService transactionalFileStorage) {
+    public CachedTransactionalDocumentSafeServiceImpl(RequestMemoryContext requestMemoryContext, TransactionalDocumentSafeService transactionalFileStorage) {
         this.transactionalFileStorage = transactionalFileStorage;
-        this.requestContext = requestContext;
+        this.requestMemoryContext = requestMemoryContext;
 
     }
 
@@ -163,10 +161,10 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
     }
 
     private CachedTransactionalContext createTransactionalContext(TxID txid) {
-        CachedTransactionalContextMap cachedTransactionalContextMap = (CachedTransactionalContextMap) requestContext.get(CACHEND_TRANSACTIONAL_CONTEXT_MAP);
+        CachedTransactionalContextMap cachedTransactionalContextMap = (CachedTransactionalContextMap) requestMemoryContext.get(CACHEND_TRANSACTIONAL_CONTEXT_MAP);
         if (cachedTransactionalContextMap == null) {
             cachedTransactionalContextMap = new CachedTransactionalContextMap();
-            requestContext.put(CACHEND_TRANSACTIONAL_CONTEXT_MAP, cachedTransactionalContextMap);
+            requestMemoryContext.put(CACHEND_TRANSACTIONAL_CONTEXT_MAP, cachedTransactionalContextMap);
         }
         CachedTransactionalContext cachedTransactionalContext = new CachedTransactionalContext(transactionalFileStorage);
         cachedTransactionalContextMap.put(txid, cachedTransactionalContext);
@@ -174,7 +172,7 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
     }
 
     private CachedTransactionalContext getTransactionalContext(TxID txid) {
-        CachedTransactionalContextMap cachedTransactionalContextMap = (CachedTransactionalContextMap) requestContext.get(CACHEND_TRANSACTIONAL_CONTEXT_MAP);
+        CachedTransactionalContextMap cachedTransactionalContextMap = (CachedTransactionalContextMap) requestMemoryContext.get(CACHEND_TRANSACTIONAL_CONTEXT_MAP);
         if (cachedTransactionalContextMap == null) {
             throw new CacheException("RequestContext has no CachedTransactionalContextMap. So Context for " + txid + " can not be searched");
         }
@@ -186,7 +184,7 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
     }
 
     private void deleteTransactionalContext(TxID txid) {
-        CachedTransactionalContextMap cachedTransactionalContextMap = (CachedTransactionalContextMap) requestContext.get(CACHEND_TRANSACTIONAL_CONTEXT_MAP);
+        CachedTransactionalContextMap cachedTransactionalContextMap = (CachedTransactionalContextMap) requestMemoryContext.get(CACHEND_TRANSACTIONAL_CONTEXT_MAP);
         if (cachedTransactionalContextMap == null) {
             throw new CacheException("RequestContext has no CachedTransactionalContextMap. So Context for " + txid + " can not be searched");
         }
@@ -201,8 +199,8 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
     }
 
     public TxID getCurrentTxID() {
-            CurrentTransactionsMap currentTransactionsMap = getCurrentTransactionMap();
-            TxID txID = currentTransactionsMap.getCurrentTxID();
+            CurrentTransactionData currentTransactionData = getCurrentTransactionMap();
+            TxID txID = currentTransactionData.getCurrentTxID();
             if (txID == null) {
                 throw new TxNotActiveException();
             }
@@ -210,11 +208,11 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
         }
 
 
-    private CurrentTransactionsMap getCurrentTransactionMap() {
-        CurrentTransactionsMap currentTransactionsMap = (CurrentTransactionsMap) requestContext.get(TransactionalDocumentSafeServiceImpl.CURRENT_TRANSACTIONS_MAP);
-        if (currentTransactionsMap == null) {
+    private CurrentTransactionData getCurrentTransactionMap() {
+        CurrentTransactionData currentTransactionData = (CurrentTransactionData) requestMemoryContext.get(TransactionalDocumentSafeServiceImpl.CURRENT_TRANSACTIONS_MAP);
+        if (currentTransactionData == null) {
             throw new TxNotActiveException();
         }
-        return currentTransactionsMap;
+        return currentTransactionData;
     }
 }

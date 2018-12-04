@@ -60,6 +60,7 @@ public class TxHistoryCleanupTest extends TransactionFileStorageBaseTest {
                     transactionalFileStorage.txStoreDocument(userIDAuth, document);
                     memoryMap.put(document.getDocumentFQN(), document.getDocumentContent());
                 }
+                // show("create loop:", transactionalFileStorage.txListDocuments(userIDAuth, documentDirectoryFQN, ListRecursiveFlag.TRUE));
                 transactionalFileStorage.endTransaction(userIDAuth);
             }
         }
@@ -77,6 +78,8 @@ public class TxHistoryCleanupTest extends TransactionFileStorageBaseTest {
                     memoryMap.remove(bucketContentFQN.getFiles().get(indexToDelete));
 
                 }
+
+                // show("delete loop:", transactionalFileStorage.txListDocuments(userIDAuth, documentDirectoryFQN, ListRecursiveFlag.TRUE));
                 transactionalFileStorage.endTransaction(userIDAuth);
             }
         }
@@ -85,6 +88,7 @@ public class TxHistoryCleanupTest extends TransactionFileStorageBaseTest {
             for (int i = 0; i < numberOfTransactinos; i++) {
                 transactionalFileStorage.beginTransaction(userIDAuth);
                 for (int j = 0; j < numberOfFilesToOverwritePerTx; j++) {
+                    // show("overwrite loop", transactionalFileStorage.txListDocuments(userIDAuth, documentDirectoryFQN, ListRecursiveFlag.TRUE));
                     BucketContentFQN bucketContentFQN = transactionalFileStorage.txListDocuments(userIDAuth, documentDirectoryFQN, ListRecursiveFlag.TRUE);
                     int currentNumberOfFiles = bucketContentFQN.getFiles().size();
                     int indexToOverwrite = getRandomInRange(currentNumberOfFiles);
@@ -120,10 +124,19 @@ public class TxHistoryCleanupTest extends TransactionFileStorageBaseTest {
         LOGGER.debug("time for test " + st.toString());
     }
 
+    private void show(String description, BucketContentFQN bucketContentFQN) {
+        LOGGER.info("--------------------------------- begin " + description);
+        LOGGER.info("directories" + bucketContentFQN.getDirectories().size());
+        bucketContentFQN.getDirectories().forEach(dir -> LOGGER.info(dir.toString()));
+        LOGGER.info("files" + bucketContentFQN.getFiles().size());
+        bucketContentFQN.getFiles().forEach(dir -> LOGGER.info(dir.toString()));
+        LOGGER.info("--------------------------------- end " + description);
+    }
+
 
     private int getRandomInRange(int max) {
         // nextInt is normally exclusive of the top value,
-        int randomNum = ThreadLocalRandom.current().nextInt(0, max);
-        return randomNum;
+        LOGGER.debug("Also max ist " + max);
+        return ThreadLocalRandom.current().nextInt(0, max);
     }
 }
