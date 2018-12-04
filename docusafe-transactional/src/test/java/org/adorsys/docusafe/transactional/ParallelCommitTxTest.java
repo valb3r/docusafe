@@ -1,11 +1,15 @@
 package org.adorsys.docusafe.transactional;
 
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
+import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
+import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
+import org.adorsys.docusafe.business.impl.WithCache;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.service.types.DocumentContent;
+import org.adorsys.docusafe.transactional.impl.TransactionalDocumentSafeServiceImpl;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.junit.Assert;
 import org.junit.Test;
@@ -21,16 +25,19 @@ import java.util.concurrent.Semaphore;
  * Created by peter on 13.06.18 at 11:38.
  */
 // @SuppressWarnings("Duplicates")
-public class ParallelCommitTxTest extends TransactionFileStorageBaseTest{
+public class ParallelCommitTxTest extends TransactionFileStorageBaseTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(ParallelCommitTxTest.class);
     private final static int PARALLEL_INSTANCES = 5;
     private final static String FILENAME = "paralleltest.txt";
 
+
     @Test
     public void parallelCommits() {
-        try {
-            
+        ThreadMemoryContextImpl requestMemoryContext = new ThreadMemoryContextImpl();
+        DocumentSafeServiceImpl dssi = new DocumentSafeServiceImpl(WithCache.FALSE, ExtendedStoreConnectionFactory.get());
+        TransactionalDocumentSafeService transactionalFileStorage = new TransactionalDocumentSafeServiceImpl(requestMemoryContext, dssi);
 
+        try {
             Semaphore semaphore = new Semaphore(PARALLEL_INSTANCES);
             CountDownLatch countDownLatch = new CountDownLatch(PARALLEL_INSTANCES);
             semaphore.acquire(PARALLEL_INSTANCES);
@@ -66,22 +73,32 @@ public class ParallelCommitTxTest extends TransactionFileStorageBaseTest{
             LOGGER.debug(PARALLEL_INSTANCES + " threadas have finished");
 
             Set<Integer> winner = new HashSet<>();
-            for (int i = 0; i<PARALLEL_INSTANCES; i++) {
+            for (int i = 0; i < PARALLEL_INSTANCES; i++) {
                 winner.add(i);
             }
             int errorCounter = 0;
             for (int i = 0; i < PARALLEL_INSTANCES; i++) {
-                if (! runnables[i].ok) {
-                    errorCounter ++;
+                if (!runnables[i].ok) {
+                    errorCounter++;
                     LOGGER.error("THREAD " + runnables[i].instanceID + " error " + errorCounter + " " + runnables[i].exception.getMessage());
                     winner.remove(runnables[i].instanceID);
                 }
             }
             // only one tx can be closed, the others are too late
-            Assert.assertEquals(PARALLEL_INSTANCES-1, errorCounter);
+            Assert.assertEquals(PARALLEL_INSTANCES - 1, errorCounter);
             Assert.assertEquals(1, winner.size());
+            Integer[] winnerInts = new Integer[winner.size()];
+            winner.toArray(winnerInts);
+            Integer winnerInstanceID = winnerInts[0];
             LOGGER.info("=================================================================================================");
-            LOGGER.info("the winner of the " + PARALLEL_INSTANCES + " instances is thread number " + winner.toArray()[0]);
+            LOGGER.info("the winner of the " + PARALLEL_INSTANCES + " instances is thread number " + winnerInstanceID);
+            transactionalFileStorage.beginTransaction(userIDAuth);
+            DSDocument dsDocument = transactionalFileStorage.txReadDocument(userIDAuth, new DocumentFQN(FILENAME));
+            LOGGER.info("Content found is " + new String(dsDocument.getDocumentContent().getValue()));
+            DocumentContent expectedContent = new DocumentContent(("Thread Number " + winnerInstanceID).getBytes());
+            LOGGER.info("expected Content  is " + new String(expectedContent.getValue()));
+            Assert.assertEquals(expectedContent, dsDocument.getDocumentContent());
+            transactionalFileStorage.endTransaction(userIDAuth);
 
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
@@ -124,6 +141,7 @@ public class ParallelCommitTxTest extends TransactionFileStorageBaseTest{
 
                 sem.release();
                 ok = true;
+                LOGGER.info("Thread " + instanceID + " successfully wrote file " + FILENAME + " with content \"" + new String(documentContent.getValue()) + "\"");
             } catch (Exception e) {
                 exception = e;
             } finally {

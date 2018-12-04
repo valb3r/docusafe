@@ -8,6 +8,7 @@ import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.service.impl.UserMetaDataUtil;
+import org.adorsys.docusafe.transactional.exceptions.TxRacingConditionException;
 import org.adorsys.docusafe.transactional.impl.helper.Class2JsonHelper;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.slf4j.Logger;
@@ -57,21 +58,33 @@ public class TxIDLog {
     }
 
     public static void saveJustFinishedTx(DocumentSafeService documentSafeService, UserIDAuth userIDAuth, Date start, Date finished, LastCommitedTxID previousTxID, TxID currentTxID) {
-        TxIDLog txIDLog = new TxIDLog();
-        DSDocumentMetaInfo metaInfo = new DSDocumentMetaInfo();
-        if (dontEncrypt) {
-            LOGGER.debug("save " + txidLogFilename + " encrypted");
-            UserMetaDataUtil.setNoEncryption(metaInfo);
+        // we synchonize not all methods, but those, refering to the same user
+        synchronized(userIDAuth.getUserID().getValue()) {
+            TxIDLog txIDLog = new TxIDLog();
+            DSDocumentMetaInfo metaInfo = new DSDocumentMetaInfo();
+            if (dontEncrypt) {
+                LOGGER.debug("save " + txidLogFilename + " encrypted");
+                UserMetaDataUtil.setNoEncryption(metaInfo);
+            }
+            if (documentSafeService.documentExists(userIDAuth, txidLogFilename)) {
+                DSDocument dsDocument = documentSafeService.readDocument(userIDAuth, txidLogFilename);
+                txIDLog = new Class2JsonHelper().txidLogFromContent(dsDocument.getDocumentContent());
+                metaInfo = dsDocument.getDsDocumentMetaInfo();
+            }
+            if (!txIDLog.txidList.isEmpty()) {
+                Tuple lastTuple = txIDLog.txidList.get(txIDLog.txidList.size() - 1);
+                LastCommitedTxID lastCommitedTxID = new LastCommitedTxID(lastTuple.currentTxID.getValue());
+                if (!lastCommitedTxID.equals(previousTxID)) {
+                    throw new TxRacingConditionException(lastCommitedTxID, previousTxID);
+                }
+
+            }
+
+            txIDLog.txidList.add(new Tuple(start, finished, previousTxID, currentTxID));
+            DSDocument document = new DSDocument(txidLogFilename, new Class2JsonHelper().txidLogToContent(txIDLog), metaInfo);
+            documentSafeService.storeDocument(userIDAuth, document);
+            LOGGER.debug("successfully wrote new Version to " + txidLogFilename);
         }
-        if (documentSafeService.documentExists(userIDAuth, txidLogFilename)) {
-            DSDocument dsDocument = documentSafeService.readDocument(userIDAuth, txidLogFilename);
-            txIDLog = new Class2JsonHelper().txidLogFromContent(dsDocument.getDocumentContent());
-            metaInfo = dsDocument.getDsDocumentMetaInfo();
-        }
-        txIDLog.txidList.add(new Tuple(start, finished, previousTxID, currentTxID));
-        DSDocument document = new DSDocument(txidLogFilename, new Class2JsonHelper().txidLogToContent(txIDLog), metaInfo);
-        documentSafeService.storeDocument(userIDAuth, document);
-        LOGGER.debug("successfully wrote new Version to " + txidLogFilename);
     }
 
     private final static class Tuple {
