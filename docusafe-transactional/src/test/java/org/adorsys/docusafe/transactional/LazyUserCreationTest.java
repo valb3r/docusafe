@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 public class LazyUserCreationTest extends TransactionFileStorageBaseTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(TransactionalFileStorageTest.class);
 
+    // TODO DOC-73
     // @Test
     public void createUserAfterBegin() {
 

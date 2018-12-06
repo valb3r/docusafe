@@ -12,7 +12,7 @@ import java.util.concurrent.Semaphore;
 
 /**
  * Created by peter on 03.12.18 14:33.
- * This methos proves, that synchronizing the method TxIDLog.saveJustFinishedTx with the userid is ok.
+ * This method proves, that synchronizing the method TxIDLog.saveJustFinishedTx with the userid is ok.
  * The method will become blocked for the same user, but not for different users.
  *
  */
