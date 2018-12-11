@@ -1,5 +1,6 @@
 package org.adorsys.docusafe.transactional.impl;
 
+import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.slf4j.Logger;
@@ -21,6 +22,7 @@ public class CurrentTransactionData {
     private TxID currentTxID = null;
     private TxIDHashMap currentTxHashMap = null;
     private TxIDHashMap initialTxHashMap = null;
+    private Set<DocumentFQN> nonTxDocumentsToBeDeletedAfterCommit = new HashSet<>();
 
     public CurrentTransactionData(TxID currentTxID, TxIDHashMap currentTxHashMap) {
         this.currentTxID = currentTxID;
@@ -63,5 +65,13 @@ public class CurrentTransactionData {
         }
         LOGGER.debug(" nothing has changed");
         return false;
+    }
+
+    public void addNonTxFileToBeDeletedAfterCommit(DocumentFQN nonTxFQN) {
+        nonTxDocumentsToBeDeletedAfterCommit.add(nonTxFQN);
+    }
+
+    public Set<DocumentFQN> getNonTxDocumentsToBeDeletedAfterCommit() {
+        return nonTxDocumentsToBeDeletedAfterCommit;
     }
 }

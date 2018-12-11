@@ -44,6 +44,7 @@ public class TransactionalStorageTestWrapper implements TransactionalDocumentSaf
     public static final String DELETE_FOLDER_TX = "deleteFolderTx";
     public static final String END_TRANSACTION = "endTransaction";
     public static final String FIND_PUBLIC_KEY = "findPublicEncryptionKey";
+    public static final String TRANSFER_FROM_NONTX_TO_TX = "transferFromNonTxToTx";
     public Map<String, Integer> counterMap = new HashMap<>();
 
     private TransactionalDocumentSafeService realTransactionalFileStorage;
@@ -196,6 +197,12 @@ public class TransactionalStorageTestWrapper implements TransactionalDocumentSaf
     public void txDeleteFolder(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN) {
         inc(DELETE_FOLDER_TX);
         realTransactionalFileStorage.txDeleteFolder(userIDAuth, documentDirectoryFQN);
+    }
+
+    @Override
+    public void transferFromNonTxToTx(UserIDAuth userIDAuth, DocumentFQN nonTxFQN, DocumentFQN txFQN) {
+        inc(TRANSFER_FROM_NONTX_TO_TX);
+        realTransactionalFileStorage.transferFromNonTxToTx(userIDAuth, nonTxFQN, txFQN);
     }
 
     @Override

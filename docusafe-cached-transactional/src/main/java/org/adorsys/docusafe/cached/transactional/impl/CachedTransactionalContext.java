@@ -64,7 +64,6 @@ class CachedTransactionalContext {
         setToDelete.add(documentFQN);
         mapToStore.remove(documentFQN);
         mapToRead.remove(documentFQN);
-
     }
 
     public BucketContentFQN txListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {

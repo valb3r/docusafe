@@ -7,7 +7,7 @@ import org.junit.Before;
 /**
  * Created by peter on 12.07.18 at 11:40.
  */
-public class HowToUseTransactionalFileStoragePrototypeWithCacheTest extends HowToUseTransactionalFileStoragePrototypeTest {
+public class MoveFromNonTxToTxWithCacheTest extends MoveFromNonTxToTxTest {
 
     @Before
     public void preTest() {

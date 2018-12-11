@@ -154,6 +154,14 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
     }
 
     @Override
+    public void transferFromNonTxToTx(UserIDAuth userIDAuth, DocumentFQN nonTxFQN, DocumentFQN txFQN) {
+        DSDocument nonTxDsDocument = nonTxReadDocument(userIDAuth, nonTxFQN);
+        DSDocument txDsDocument = new DSDocument(txFQN, nonTxDsDocument.getDocumentContent(), nonTxDsDocument.getDsDocumentMetaInfo());
+        txStoreDocument(userIDAuth, txDsDocument);
+        getCurrentTransactionData().addNonTxFileToBeDeletedAfterCommit(nonTxFQN);
+    }
+
+    @Override
     public void endTransaction(UserIDAuth userIDAuth) {
         TxID txid = getCurrentTxID();
         getTransactionalContext(txid).endTransaction(userIDAuth);
@@ -199,17 +207,16 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
     }
 
     public TxID getCurrentTxID() {
-            CurrentTransactionData currentTransactionData = getCurrentTransactionMap();
-            TxID txID = currentTransactionData.getCurrentTxID();
-            if (txID == null) {
-                throw new TxNotActiveException();
-            }
-            return txID;
+        CurrentTransactionData currentTransactionData = getCurrentTransactionData();
+        TxID txID = currentTransactionData.getCurrentTxID();
+        if (txID == null) {
+            throw new TxNotActiveException();
         }
+        return txID;
+    }
 
-
-    private CurrentTransactionData getCurrentTransactionMap() {
-        CurrentTransactionData currentTransactionData = (CurrentTransactionData) requestMemoryContext.get(TransactionalDocumentSafeServiceImpl.CURRENT_TRANSACTIONS_MAP);
+    private CurrentTransactionData getCurrentTransactionData() {
+        CurrentTransactionData currentTransactionData = (CurrentTransactionData) requestMemoryContext.get(TransactionalDocumentSafeServiceImpl.CURRENT_TRANSACTION_DATA);
         if (currentTransactionData == null) {
             throw new TxNotActiveException();
         }

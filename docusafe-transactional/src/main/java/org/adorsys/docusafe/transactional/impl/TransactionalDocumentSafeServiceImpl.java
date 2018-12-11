@@ -1,5 +1,6 @@
 package org.adorsys.docusafe.transactional.impl;
 
+import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
@@ -26,7 +27,7 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
     private final static Logger LOGGER = LoggerFactory.getLogger(TransactionalDocumentSafeServiceImpl.class);
     final static DocumentDirectoryFQN txMeta = new DocumentDirectoryFQN("meta.tx");
     final static DocumentDirectoryFQN txContent = new DocumentDirectoryFQN("tx");
-    public static final String CURRENT_TRANSACTIONS_MAP = "CurrentTransactionData";
+    public static final String CURRENT_TRANSACTION_DATA = "CurrentTransactionData";
 
     public TransactionalDocumentSafeServiceImpl(RequestMemoryContext requestMemoryContext, DocumentSafeService documentSafeService) {
         super(requestMemoryContext, documentSafeService);
@@ -40,7 +41,7 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
     @Override
     public void beginTransaction(UserIDAuth userIDAuth) {
         Date beginTxDate = new Date();
-        CurrentTransactionData currentTransactionData = (CurrentTransactionData) requestMemoryContext.get(CURRENT_TRANSACTIONS_MAP);
+        CurrentTransactionData currentTransactionData = (CurrentTransactionData) requestMemoryContext.get(CURRENT_TRANSACTION_DATA);
         if (currentTransactionData != null) {
             throw new TxInnerException();
         }
@@ -49,7 +50,7 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
         LOGGER.debug("beginTransaction " + currentTxID.getValue());
         TxIDHashMap txIDHashMap = TxIDHashMap.fromPreviousFileOrNew(documentSafeService, userIDAuth, currentTxID, beginTxDate);
         currentTransactionData = new CurrentTransactionData(currentTxID, txIDHashMap);
-        requestMemoryContext.put(CURRENT_TRANSACTIONS_MAP, currentTransactionData);
+        requestMemoryContext.put(CURRENT_TRANSACTION_DATA, currentTransactionData);
     }
 
     @Override
@@ -93,6 +94,14 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
     }
 
     @Override
+    public void transferFromNonTxToTx(UserIDAuth userIDAuth, DocumentFQN nonTxFQN, DocumentFQN txFQN) {
+        DSDocument nonTxDsDocument = nonTxReadDocument(userIDAuth, nonTxFQN);
+        DSDocument txDsDocument = new DSDocument(txFQN, nonTxDsDocument.getDocumentContent(), nonTxDsDocument.getDsDocumentMetaInfo());
+        txStoreDocument(userIDAuth, txDsDocument);
+        getCurrentTransactionData().addNonTxFileToBeDeletedAfterCommit(nonTxFQN);
+    }
+
+    @Override
     public void endTransaction(UserIDAuth userIDAuth) {
         TxID txid = getCurrentTxID();
         LOGGER.debug("endTransaction " + txid.getValue());
@@ -103,10 +112,21 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
             txIDHashMap.setEndTransactionDate(new Date());
             txIDHashMap.saveOnce(documentSafeService, userIDAuth);
             txIDHashMap.transactionIsOver(documentSafeService, userIDAuth);
+            for (DocumentFQN doc : getCurrentTransactionData().getNonTxDocumentsToBeDeletedAfterCommit()) {
+                try {
+                    LOGGER.debug("delete file after commit " + doc);
+                    nonTxDeleteDocument(userIDAuth, doc);
+                } catch(BaseException e) {
+                    LOGGER.warn("Exception is ignored. File deletion after commit does not raise exception");
+                } catch (Exception e) {
+                    new BaseException(e);
+                    LOGGER.warn("Exception is ignored. File deletion after commit does not raise exception");
+                }
+            }
         } else {
             LOGGER.info("nothing has changed, so nothing has to be written down");
         }
-        setCurrentTransactionMapToNull();
+        setCurrentTransactionDataToNull();
     }
 
     public static DSDocument modifyTxDocument(DSDocument dsDocument, TxID txid) {
@@ -133,15 +153,15 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
     }
 
     private CurrentTransactionData getCurrentTransactionData() {
-        CurrentTransactionData currentTransactionData = (CurrentTransactionData) requestMemoryContext.get(CURRENT_TRANSACTIONS_MAP);
+        CurrentTransactionData currentTransactionData = (CurrentTransactionData) requestMemoryContext.get(CURRENT_TRANSACTION_DATA);
         if (currentTransactionData == null) {
             throw new TxNotActiveException();
         }
         return currentTransactionData;
     }
 
-    private void setCurrentTransactionMapToNull() {
-        requestMemoryContext.put(CURRENT_TRANSACTIONS_MAP, null);
+    private void setCurrentTransactionDataToNull() {
+        requestMemoryContext.put(CURRENT_TRANSACTION_DATA, null);
     }
 
     @Override
