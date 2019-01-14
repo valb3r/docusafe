@@ -1,7 +1,6 @@
 package org.adorsys.docusafe.business;
 
 import com.googlecode.catchexception.CatchException;
-import com.sun.tools.internal.ws.wsdl.document.jaxws.Exception;
 import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.docusafe.business.exceptions.NoWriteAccessException;
 import org.adorsys.docusafe.business.exceptions.UserIDDoesNotExistException;

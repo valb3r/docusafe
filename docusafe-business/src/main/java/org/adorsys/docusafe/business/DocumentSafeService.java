@@ -1,7 +1,6 @@
 package org.adorsys.docusafe.business;
 
 import org.adorsys.docusafe.business.types.UserID;
-import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQNWithUserMetaData;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentStream;
