@@ -3,6 +3,7 @@ package org.adorsys.docusafe.service.types;
 import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.domain.StorageMetadata;
+import org.adorsys.encobject.domain.UserMetaData;
 
 import java.util.List;
 
@@ -14,4 +15,6 @@ public interface BucketContent {
     List<BucketPath> getFiles();
     List<BucketDirectory> getSubdirectories();
     List<StorageMetadata> getContent();
+    UserMetaData getUserMetaData(BucketPath bucketPath);
+
 }

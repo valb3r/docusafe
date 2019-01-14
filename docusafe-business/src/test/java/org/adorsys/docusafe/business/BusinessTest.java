@@ -7,6 +7,7 @@ import org.adorsys.docusafe.business.exceptions.UserIDDoesNotExistException;
 import org.adorsys.docusafe.business.exceptions.WrongPasswordException;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
+import org.adorsys.docusafe.business.types.complex.BucketContentFQNWithUserMetaData;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
@@ -16,6 +17,7 @@ import org.adorsys.docusafe.service.exceptions.NoDocumentGuardExists;
 import org.adorsys.docusafe.service.types.AccessType;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.encobject.domain.ReadKeyPassword;
+import org.adorsys.encobject.domain.UserMetaData;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.junit.Assert;
 import org.junit.Test;
@@ -30,9 +32,27 @@ public class BusinessTest extends BusinessTestBase {
     private final static Logger LOGGER = LoggerFactory.getLogger(BusinessTest.class);
 
     @Test
+    public void documentListMetadata_DOC_77() {
+        UserIDAuth userIDAuth = createUser(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));
+
+        DocumentFQN documentFQN = new DocumentFQN("first/document.txt");
+        Assert.assertFalse(service.documentExists(userIDAuth, documentFQN));
+        DocumentContent documentContent = new DocumentContent(("Einfach nur a bisserl Text").getBytes());
+        UserMetaData userMetaData = new UserMetaData();
+        userMetaData.put("first",  "1");
+        userMetaData.put("second",  "2");
+        DSDocument dsDocument = new DSDocument(documentFQN, documentContent, new DSDocumentMetaInfo(userMetaData));
+        service.storeDocument(userIDAuth, dsDocument);
+        Assert.assertTrue(service.documentExists(userIDAuth, documentFQN));
+        BucketContentFQNWithUserMetaData list = service.list(userIDAuth, new DocumentDirectoryFQN(""), ListRecursiveFlag.TRUE);
+        list.getFiles().stream().filter(file -> file.equals(documentFQN)).forEach(file -> {
+            LOGGER.info("found:" + file);
+            list.getUserMetaData(file).keySet().forEach(key -> LOGGER.info("UserMetaData: " + key + " " + list.getUserMetaData(file).get(key)));
+        });
+    }
+
+    @Test
     public void documentExistsTest_DOC_36() {
-
-
         UserIDAuth userIDAuth = createUser(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));
         DocumentFQN documentFQNReadme1 = new DocumentFQN("README.txt");
         DocumentFQN documentFQNReadme2 = new DocumentFQN("README2.txt");
@@ -44,7 +64,6 @@ public class BusinessTest extends BusinessTestBase {
         CatchException.catchException(() -> service.documentExists(userIDAuth2, documentFQNReadme1));
         Assert.assertNotNull(CatchException.caughtException());
         Assert.assertTrue(CatchException.caughtException() instanceof UserIDDoesNotExistException);
-
     }
 
     @Test

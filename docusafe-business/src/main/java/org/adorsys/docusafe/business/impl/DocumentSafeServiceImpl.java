@@ -13,6 +13,7 @@ import org.adorsys.docusafe.business.impl.caches.DocumentKeyIDCache;
 import org.adorsys.docusafe.business.impl.caches.UserAuthCache;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
+import org.adorsys.docusafe.business.types.complex.BucketContentFQNWithUserMetaData;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DSDocumentStream;
@@ -293,15 +294,19 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
     }
 
     @Override
-    public BucketContentFQN list(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
+    public BucketContentFQNWithUserMetaData list(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
         LOGGER.debug("list directroy " + documentDirectoryFQN + " for " + userIDAuth.getUserID());
         checkUserKeyPassword(userIDAuth);
         BucketDirectory homeBucketDirectory = UserIDUtil.getHomeBucketDirectory(userIDAuth.getUserID());
         BucketDirectory bucketDirectory = documentDirectoryFQN.prepend(homeBucketDirectory);
-        BucketContentFQNImpl ret = new BucketContentFQNImpl();
+        BucketContentFQNWithUserMataDataImpl ret = new BucketContentFQNWithUserMataDataImpl();
         BucketContent bucketContent = bucketService.readDocumentBucket(bucketDirectory, recursiveFlag);
-        bucketContent.getFiles().forEach(bucketPath ->
-                ret.getFiles().add(BucketPath2FQNHelper.path2FQN(homeBucketDirectory, bucketPath)));
+        bucketContent.getFiles().forEach(bucketPath -> {
+                    DocumentFQN filename = BucketPath2FQNHelper.path2FQN(homeBucketDirectory, bucketPath);
+                    ret.getFiles().add(filename);
+                    ret.put(filename, bucketContent.getUserMetaData(bucketPath));
+                }
+        );
 
         // Filtere das eigene directroy raus.
         DocumentDirectoryFQN dir = documentDirectoryFQN.getValue().startsWith(BucketPath.BUCKET_SEPARATOR) ?
