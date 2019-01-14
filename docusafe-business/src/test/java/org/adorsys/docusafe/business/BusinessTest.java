@@ -1,6 +1,7 @@
 package org.adorsys.docusafe.business;
 
 import com.googlecode.catchexception.CatchException;
+import com.sun.tools.internal.ws.wsdl.document.jaxws.Exception;
 import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.docusafe.business.exceptions.NoWriteAccessException;
 import org.adorsys.docusafe.business.exceptions.UserIDDoesNotExistException;
@@ -39,16 +40,24 @@ public class BusinessTest extends BusinessTestBase {
         Assert.assertFalse(service.documentExists(userIDAuth, documentFQN));
         DocumentContent documentContent = new DocumentContent(("Einfach nur a bisserl Text").getBytes());
         UserMetaData userMetaData = new UserMetaData();
-        userMetaData.put("first",  "1");
-        userMetaData.put("second",  "2");
+        userMetaData.put("first", "1");
+        userMetaData.put("second", "2");
         DSDocument dsDocument = new DSDocument(documentFQN, documentContent, new DSDocumentMetaInfo(userMetaData));
         service.storeDocument(userIDAuth, dsDocument);
         Assert.assertTrue(service.documentExists(userIDAuth, documentFQN));
         BucketContentFQNWithUserMetaData list = service.list(userIDAuth, new DocumentDirectoryFQN(""), ListRecursiveFlag.TRUE);
+        final Boolean found[] = new Boolean[1];
+        found[0] = false;
         list.getFiles().stream().filter(file -> file.equals(documentFQN)).forEach(file -> {
+            found[0] = true;
             LOGGER.info("found:" + file);
             list.getUserMetaData(file).keySet().forEach(key -> LOGGER.info("UserMetaData: " + key + " " + list.getUserMetaData(file).get(key)));
+            for (String key : userMetaData.keySet()) {
+                Assert.assertEquals(userMetaData.get(key), list.getUserMetaData(file).get(key));
+            }
         });
+        Assert.assertTrue(found.length == 1);
+        Assert.assertTrue(found[0].equals(Boolean.TRUE));
     }
 
     @Test
@@ -80,7 +89,7 @@ public class BusinessTest extends BusinessTestBase {
             LOGGER.info("wait for visualVM profiler " + i);
             try {
                 Thread.currentThread().sleep(1000);
-            } catch (Exception e) {
+            } catch (InterruptedException e) {
             }
             i--;
         }
@@ -148,13 +157,8 @@ public class BusinessTest extends BusinessTestBase {
         Assert.assertTrue(service.documentExists(userIDAuth, fqn));
         service.deleteDocument(userIDAuth, fqn);
         Assert.assertFalse(service.documentExists(userIDAuth, fqn));
-        try {
-            service.readDocument(userIDAuth, fqn);
-        } catch (Exception e) {
-            LOGGER.debug("Exception expected! Test is fine");
-            return;
-        }
-        throw new BaseException("document is still readable:" + fqn);
+        CatchException.catchException(() -> service.readDocument(userIDAuth, fqn));
+        Assert.assertNotNull(CatchException.caughtException());
     }
 
     @Test
@@ -352,7 +356,7 @@ public class BusinessTest extends BusinessTestBase {
             dirs = dirs + (int) Math.pow(SUBDIRS, i);
         }
         int expectedDirsRecursive = dirs;
-        int expectedFilesRecursive = dirs*FILES + expectedFilesInRootNonRecursive;
+        int expectedFilesRecursive = dirs * FILES + expectedFilesInRootNonRecursive;
 
         LOGGER.info("expectedFilesInRootNonRecursive:       " + expectedDirectoriesInRootNonRecursive);
         LOGGER.info("expectedDirectoriesInRootNonRecursive: " + expectedFilesInRootNonRecursive);
