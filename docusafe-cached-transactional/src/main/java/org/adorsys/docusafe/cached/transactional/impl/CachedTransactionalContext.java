@@ -8,6 +8,10 @@ import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.cached.transactional.exceptions.CacheException;
 import org.adorsys.docusafe.transactional.TransactionalDocumentSafeService;
+import org.adorsys.docusafe.transactional.impl.TxBucketContentFQNImpl;
+import org.adorsys.docusafe.transactional.types.TxBucketContentFQN;
+import org.adorsys.docusafe.transactional.types.TxDocumentFQNVersion;
+import org.adorsys.docusafe.transactional.types.TxDocumentFQNWithVersion;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.types.ListRecursiveFlag;
@@ -31,11 +35,13 @@ class CachedTransactionalContext {
     private Map<DocumentFQN, DSDocument> mapToRead = null;
     private Set<DocumentFQN> setToDelete = null;
     private TransactionalDocumentSafeService transactionalFileStorage = null;
-    private BucketContentFQN bucketContent = null;
+    private TxBucketContentFQN bucketContent = null;
+    private TxID txID;
 
 
-    public CachedTransactionalContext(TransactionalDocumentSafeService transactionalFileStorage) {
+    public CachedTransactionalContext(TransactionalDocumentSafeService transactionalFileStorage, TxID txID) {
         this.transactionalFileStorage = transactionalFileStorage;
+        this.txID = txID;
         mapToStore = new HashMap<>();
         mapToRead = new HashMap<>();
         setToDelete = new HashSet<>();
@@ -66,22 +72,24 @@ class CachedTransactionalContext {
         mapToRead.remove(documentFQN);
     }
 
-    public BucketContentFQN txListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
+    public TxBucketContentFQN txListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
         if (bucketContent == null) {
             bucketContent = transactionalFileStorage.txListDocuments(userIDAuth, new DocumentDirectoryFQN("/"), ListRecursiveFlag.TRUE);
         }
 
-        BucketContentFQN ret = new BucketContentFQNImpl();
+        TxBucketContentFQN ret = new TxBucketContentFQNImpl();
         // bucketContent ist die Liste aller Documente zu Beginn der Transaktion
         // Zunächst werden alle Documente rausgefiltert, die nicht auf den Pfad passen
-        bucketContent.getFiles().forEach(file -> {
-            if (file.getValue().startsWith(documentDirectoryFQN.getValue())) {
+        bucketContent.getFilesWithVersion().forEach(file -> {
+            if (file.getDocumentFQN().getValue().startsWith(documentDirectoryFQN.getValue())) {
                 if (recursiveFlag.equals(ListRecursiveFlag.TRUE)) {
-                    ret.getFiles().add(file);
+                    ret.getFiles().add(file.getDocumentFQN());
+                    ret.getFilesWithVersion().add(file);
                 } else {
-                    String fileWithoutRoot = file.getValue().substring(documentDirectoryFQN.getValue().length());
+                    String fileWithoutRoot = file.getDocumentFQN().getValue().substring(documentDirectoryFQN.getValue().length());
                     if (fileWithoutRoot.lastIndexOf(BucketPath.BUCKET_SEPARATOR) == 0) {
-                        ret.getFiles().add(file);
+                        ret.getFiles().add(file.getDocumentFQN());
+                        ret.getFilesWithVersion().add(file);
                     }
                 }
             }
@@ -102,11 +110,13 @@ class CachedTransactionalContext {
 
         // Nun werden alle rausgefiltert, die bereits gelöscht wurden
         ret.getFiles().removeAll(setToDelete);
+        ret.getFilesWithVersion().removeAll(setToDelete);
 
         // Nun werden alle neuen/oder erneuerten Documente hinzugefuegt, die auf den Pfad passen
         mapToStore.keySet().forEach(documentFQN -> {
                     if (documentFQN.getDocumentDirectory().getValue().startsWith(documentDirectoryFQN.getValue())) {
                         ret.getFiles().add(documentFQN);
+                        ret.getFilesWithVersion().add(new TxDocumentFQNWithVersion(documentFQN, new TxDocumentFQNVersion(txID.getValue())));
                     }
                 }
         );
@@ -116,10 +126,14 @@ class CachedTransactionalContext {
         ret.getFiles().clear();
         ret.getFiles().addAll(new ArrayList<>(allFiles));
 
+        Set<TxDocumentFQNWithVersion> allFilesWithVersion = new HashSet<>(ret.getFilesWithVersion());
+        ret.getFilesWithVersion().clear();
+        ret.getFilesWithVersion().addAll(new ArrayList<>(allFilesWithVersion));
+
         return ret;
     }
 
-    public boolean txDocumentExists(TxID txid, UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+    public boolean txDocumentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
         if (setToDelete.contains(documentFQN)) {
             return false;
         }

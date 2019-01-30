@@ -14,7 +14,10 @@ import org.adorsys.docusafe.transactional.TransactionalDocumentSafeService;
 import org.adorsys.docusafe.transactional.exceptions.TxNotActiveException;
 import org.adorsys.docusafe.transactional.impl.CurrentTransactionData;
 import org.adorsys.docusafe.transactional.impl.TransactionalDocumentSafeServiceImpl;
+import org.adorsys.docusafe.transactional.types.TxBucketContentFQN;
+import org.adorsys.docusafe.transactional.types.TxDocumentFQNVersion;
 import org.adorsys.docusafe.transactional.types.TxID;
+import org.adorsys.encobject.filesystem.exceptions.FileNotFoundException;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.adorsys.encobject.types.PublicKeyJWK;
 import org.slf4j.Logger;
@@ -138,13 +141,22 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
     }
 
     @Override
-    public BucketContentFQN txListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
+    public TxBucketContentFQN txListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
         return getTransactionalContext(getCurrentTxID()).txListDocuments(userIDAuth, documentDirectoryFQN, recursiveFlag);
     }
 
     @Override
+    public TxDocumentFQNVersion getVersion(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+        TxBucketContentFQN txBucketContentFQN = txListDocuments(userIDAuth, documentFQN.getDocumentDirectory(), ListRecursiveFlag.FALSE);
+        if (txBucketContentFQN.getFilesWithVersion().isEmpty()) {
+            throw new FileNotFoundException(documentFQN.getValue(), null);
+        }
+        return txBucketContentFQN.getFilesWithVersion().stream().findFirst().get().getVersion();
+    }
+
+    @Override
     public boolean txDocumentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
-        return getTransactionalContext(getCurrentTxID()).txDocumentExists(getCurrentTxID(), userIDAuth, documentFQN);
+        return getTransactionalContext(getCurrentTxID()).txDocumentExists(userIDAuth, documentFQN);
     }
 
     @Override
@@ -174,7 +186,7 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
             cachedTransactionalContextMap = new CachedTransactionalContextMap();
             requestMemoryContext.put(CACHEND_TRANSACTIONAL_CONTEXT_MAP, cachedTransactionalContextMap);
         }
-        CachedTransactionalContext cachedTransactionalContext = new CachedTransactionalContext(transactionalFileStorage);
+        CachedTransactionalContext cachedTransactionalContext = new CachedTransactionalContext(transactionalFileStorage, txid);
         cachedTransactionalContextMap.put(txid, cachedTransactionalContext);
         return cachedTransactionalContext;
     }

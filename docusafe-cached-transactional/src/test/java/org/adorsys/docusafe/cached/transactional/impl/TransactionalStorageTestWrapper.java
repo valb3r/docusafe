@@ -7,6 +7,8 @@ import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.transactional.TransactionalDocumentSafeService;
+import org.adorsys.docusafe.transactional.types.TxBucketContentFQN;
+import org.adorsys.docusafe.transactional.types.TxDocumentFQNVersion;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.adorsys.encobject.types.PublicKeyJWK;
 
@@ -45,6 +47,7 @@ public class TransactionalStorageTestWrapper implements TransactionalDocumentSaf
     public static final String END_TRANSACTION = "endTransaction";
     public static final String FIND_PUBLIC_KEY = "findPublicEncryptionKey";
     public static final String TRANSFER_FROM_NONTX_TO_TX = "transferFromNonTxToTx";
+    public static final String GET_VERSION = "txGetVersion";
     public Map<String, Integer> counterMap = new HashMap<>();
 
     private TransactionalDocumentSafeService realTransactionalFileStorage;
@@ -71,6 +74,7 @@ public class TransactionalStorageTestWrapper implements TransactionalDocumentSaf
         inc(DELETE_FOLDER_TX);
         inc(END_TRANSACTION);
         inc(FIND_PUBLIC_KEY);
+        inc(GET_VERSION);
     }
 
     @Override
@@ -182,9 +186,15 @@ public class TransactionalStorageTestWrapper implements TransactionalDocumentSaf
     }
 
     @Override
-    public BucketContentFQN txListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
+    public TxBucketContentFQN txListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
         inc(LIST_DOCUMENTS_TX);
         return realTransactionalFileStorage.txListDocuments(userIDAuth, documentDirectoryFQN, recursiveFlag);
+    }
+
+    @Override
+    public TxDocumentFQNVersion getVersion(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+        inc(GET_VERSION);
+        return realTransactionalFileStorage.getVersion(userIDAuth, documentFQN);
     }
 
     @Override

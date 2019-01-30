@@ -12,6 +12,8 @@ import org.adorsys.docusafe.transactional.exceptions.TxAlreadyClosedException;
 import org.adorsys.docusafe.transactional.exceptions.TxInnerException;
 import org.adorsys.docusafe.transactional.exceptions.TxNotActiveException;
 import org.adorsys.docusafe.transactional.exceptions.TxRacingConditionException;
+import org.adorsys.docusafe.transactional.types.TxDocumentFQNVersion;
+import org.adorsys.docusafe.transactional.types.TxDocumentFQNWithVersion;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.bouncycastle.jcajce.provider.symmetric.ARC4;
@@ -27,8 +29,39 @@ public class TransactionalFileStorageTest extends TransactionFileStorageBaseTest
     private final static Logger LOGGER = LoggerFactory.getLogger(TransactionalFileStorageTest.class);
 
     @Test
+    public void getCorrectVersionNumber() {
+        transactionalFileStorage.createUser(userIDAuth);
+        DocumentFQN documentFQN = new DocumentFQN("testxTFolder/first.txt");
+        DocumentContent documentContent = new DocumentContent("very first".getBytes());
+        DSDocumentMetaInfo documentMetaInfo = new DSDocumentMetaInfo();
+        DSDocument document = new DSDocument(documentFQN, documentContent, documentMetaInfo);
+
+        TxDocumentFQNVersion version = null;
+        {
+            transactionalFileStorage.beginTransaction(userIDAuth);
+            CatchException.catchException(() -> transactionalFileStorage.getVersion(userIDAuth, documentFQN));
+            Assert.assertTrue(CatchException.caughtException() != null);
+            transactionalFileStorage.txStoreDocument(userIDAuth, document);
+            version = transactionalFileStorage.getVersion(userIDAuth, documentFQN);
+            transactionalFileStorage.endTransaction(userIDAuth);
+        }
+        {
+            transactionalFileStorage.beginTransaction(userIDAuth);
+            Assert.assertEquals(version,transactionalFileStorage.getVersion(userIDAuth, documentFQN));
+            transactionalFileStorage.endTransaction(userIDAuth);
+        }
+        {
+            transactionalFileStorage.beginTransaction(userIDAuth);
+            transactionalFileStorage.txDeleteDocument(userIDAuth, documentFQN);
+            CatchException.catchException(() -> transactionalFileStorage.getVersion(userIDAuth, documentFQN));
+            Assert.assertTrue(CatchException.caughtException() != null);
+            transactionalFileStorage.endTransaction(userIDAuth);
+        }
+    }
+
+    @Test
     public void testOverwrite() {
-        
+
 
         transactionalFileStorage.createUser(userIDAuth);
         DocumentFQN documentFQN = new DocumentFQN("testxTFolder/first.txt");
@@ -71,9 +104,9 @@ public class TransactionalFileStorageTest extends TransactionFileStorageBaseTest
         }
     }
 
-    @Test (expected = TxInnerException.class)
+    @Test(expected = TxInnerException.class)
     public void innerTxNotImplementedYet() {
-        
+
 
         transactionalFileStorage.createUser(userIDAuth);
         transactionalFileStorage.beginTransaction(userIDAuth);
@@ -82,7 +115,7 @@ public class TransactionalFileStorageTest extends TransactionFileStorageBaseTest
 
     @Test
     public void testCreateAndChange() {
-        
+
 
         transactionalFileStorage.createUser(userIDAuth);
         DocumentFQN documentFQN = new DocumentFQN("testxTFolder/first.txt");
@@ -148,14 +181,14 @@ public class TransactionalFileStorageTest extends TransactionFileStorageBaseTest
 
     @Test
     public void testDelete() {
-        
+
 
         transactionalFileStorage.createUser(userIDAuth);
         transactionalFileStorage.beginTransaction(userIDAuth);
 
         int N = 5;
         // TODO actually a performance test
-        N=2;
+        N = 2;
         {
             // Nun erzeuge N verschiedene Datein in einem Verzeichnis
             for (int i = 0; i < N; i++) {
@@ -222,7 +255,7 @@ public class TransactionalFileStorageTest extends TransactionFileStorageBaseTest
 
     @Test(expected = TxNotActiveException.class)
     public void testEndTxTwice() {
-        
+
 
         transactionalFileStorage.createUser(userIDAuth);
         transactionalFileStorage.beginTransaction(userIDAuth);

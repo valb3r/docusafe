@@ -1,15 +1,19 @@
 package org.adorsys.docusafe.transactional.impl.helper;
 
-import org.adorsys.docusafe.business.impl.BucketContentFQNImpl;
-import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
+import org.adorsys.docusafe.transactional.types.TxBucketContentFQN;
+import org.adorsys.docusafe.transactional.types.TxDocumentFQNVersion;
+import org.adorsys.docusafe.transactional.types.TxDocumentFQNWithVersion;
+import org.adorsys.docusafe.transactional.impl.TxBucketContentFQNImpl;
+import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -17,11 +21,11 @@ import java.util.StringTokenizer;
  * Created by peter on 14.06.18 at 17:54.
  */
 public class BucketContentFromHashMapHelper {
-    public static BucketContentFQN list(Set<DocumentFQN> keys, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
-        List<DocumentFQN> candidates = new ArrayList<>();
-        keys.forEach(documentFQN -> {
+    public static TxBucketContentFQN list(Map<DocumentFQN, TxID> documentTxMap, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
+        List<TxDocumentFQNWithVersion> candidates = new ArrayList<>();
+        documentTxMap.keySet().forEach(documentFQN -> {
             if (documentFQN.getValue().startsWith(documentDirectoryFQN.getValue())) {
-                candidates.add(documentFQN);
+                candidates.add(new TxDocumentFQNWithVersion(documentFQN, new TxDocumentFQNVersion(documentTxMap.get(documentFQN).getValue())));
             }
         });
 
@@ -34,7 +38,7 @@ public class BucketContentFromHashMapHelper {
         Set<DocumentDirectoryFQN> dirCandidates = new HashSet<>();
 
         candidates.forEach(candidate -> {
-            DocumentFQN remainder = new DocumentFQN(candidate.getValue().substring(documentDirectoryFQN.getValue().length()));
+            DocumentFQN remainder = new DocumentFQN(candidate.getDocumentFQN().getValue().substring(documentDirectoryFQN.getValue().length()));
             // candidate /a/b/c/file1
             // search    /a
             // remainder   /b/c/file1
@@ -56,22 +60,24 @@ public class BucketContentFromHashMapHelper {
         });
 
         if (recursiveFlag.equals(ListRecursiveFlag.TRUE)) {
-            BucketContentFQN bucketContentFQN = new BucketContentFQNImpl();
-            candidates.forEach(candidate -> bucketContentFQN.getFiles().add(candidate));
+            TxBucketContentFQN bucketContentFQN = new TxBucketContentFQNImpl();
+            candidates.forEach(candidate -> bucketContentFQN.getFiles().add(candidate.getDocumentFQN()));
             dirCandidates.forEach(dirCandidate -> bucketContentFQN.getDirectories().add(dirCandidate));
+            candidates.forEach(candidate -> bucketContentFQN.getFilesWithVersion().add(candidate));
             return bucketContentFQN;
         }
 
         // reduzieren
         //
-        BucketContentFQN bucketContentFQN = new BucketContentFQNImpl();
+        TxBucketContentFQN bucketContentFQN = new TxBucketContentFQNImpl();
         candidates.forEach(candidate -> {
-            DocumentFQN remainder = new DocumentFQN(candidate.getValue().substring(documentDirectoryFQN.getValue().length()));
+            DocumentFQN remainder = new DocumentFQN(candidate.getDocumentFQN().getValue().substring(documentDirectoryFQN.getValue().length()));
             // candidate /a/b/c/file1
             // search    /a
             // remainder   /b/c/file1
             if (remainder.getValue().lastIndexOf(BucketPath.BUCKET_SEPARATOR) == 0) {
-                bucketContentFQN.getFiles().add(candidate);
+                bucketContentFQN.getFiles().add(candidate.getDocumentFQN());
+                bucketContentFQN.getFilesWithVersion().add(candidate);
             }
         });
 

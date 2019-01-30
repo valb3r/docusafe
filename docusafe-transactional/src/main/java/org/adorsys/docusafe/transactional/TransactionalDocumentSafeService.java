@@ -1,10 +1,11 @@
 package org.adorsys.docusafe.transactional;
 
-import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
+import org.adorsys.docusafe.transactional.types.TxBucketContentFQN;
+import org.adorsys.docusafe.transactional.types.TxDocumentFQNVersion;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 
 /**
@@ -47,7 +48,16 @@ public interface TransactionalDocumentSafeService extends NonTransactionalDocume
      * @param recursiveFlag flag, to search deep or not
      * @return an Object, that contains a list for all files and a list for all folders that are below the documentDirectoryFQN
      */
-    BucketContentFQN txListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag);
+    TxBucketContentFQN txListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag);
+
+    /**
+     * returns the Version number of the Document or throws a FileNotFoundException
+     *
+     * @param userIDAuth user and password
+     * @param documentFQN the document, the version is requested for
+     * @return the Version number
+     */
+    TxDocumentFQNVersion getVersion(UserIDAuth userIDAuth, DocumentFQN documentFQN);
 
     /**
      * Checks the existance of a file
