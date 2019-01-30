@@ -110,7 +110,14 @@ class CachedTransactionalContext {
 
         // Nun werden alle rausgefiltert, die bereits gelöscht wurden
         ret.getFiles().removeAll(setToDelete);
-        ret.getFilesWithVersion().removeAll(setToDelete);
+        Set<TxDocumentFQNWithVersion> setToDeleteWithVersion = new HashSet<>();
+        // could be better, but at least is correct
+        for (TxDocumentFQNWithVersion documentFQNWithVersion : ret.getFilesWithVersion()) {
+            if (setToDelete.contains(documentFQNWithVersion.getDocumentFQN())) {
+                setToDeleteWithVersion.add(documentFQNWithVersion);
+            }
+        }
+        ret.getFilesWithVersion().removeAll(setToDeleteWithVersion);
 
         // Nun werden alle neuen/oder erneuerten Documente hinzugefuegt, die auf den Pfad passen
         mapToStore.keySet().forEach(documentFQN -> {
