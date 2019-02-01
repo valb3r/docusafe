@@ -24,13 +24,11 @@ import org.slf4j.LoggerFactory;
 public class NonTransactionalDocumentSafeServiceImpl implements NonTransactionalDocumentSafeService {
     private final static Logger LOGGER = LoggerFactory.getLogger(NonTransactionalDocumentSafeServiceImpl.class);
     protected DocumentSafeService documentSafeService;
-    protected RequestMemoryContext requestMemoryContext;
     final static DocumentDirectoryFQN nonTxContent = new DocumentDirectoryFQN("nonttx");
 
-    public NonTransactionalDocumentSafeServiceImpl(RequestMemoryContext requestMemoryContext, DocumentSafeService documentSafeService) {
+    public NonTransactionalDocumentSafeServiceImpl(DocumentSafeService documentSafeService) {
         LOGGER.debug("new Instance of TransactionalDocumentSafeServiceImpl");
         this.documentSafeService = documentSafeService;
-        this.requestMemoryContext = requestMemoryContext;
     }
     // ============================================================================================
     // NON-TRANSACTIONAL FOR OWNER

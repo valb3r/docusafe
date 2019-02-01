@@ -122,27 +122,27 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
     @Override
     public void beginTransaction(UserIDAuth userIDAuth) {
         transactionalFileStorage.beginTransaction(userIDAuth);
-        createTransactionalContext(getCurrentTxID());
+        createTransactionalContext(getCurrentTxID(userIDAuth.getUserID()));
     }
 
     @Override
     public void txStoreDocument(UserIDAuth userIDAuth, DSDocument dsDocument) {
-        getTransactionalContext(getCurrentTxID()).txStoreDocument(dsDocument);
+        getTransactionalContext(getCurrentTxID(userIDAuth.getUserID())).txStoreDocument(dsDocument);
     }
 
     @Override
     public DSDocument txReadDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
-        return getTransactionalContext(getCurrentTxID()).txReadDocument(userIDAuth, documentFQN);
+        return getTransactionalContext(getCurrentTxID(userIDAuth.getUserID())).txReadDocument(userIDAuth, documentFQN);
     }
 
     @Override
     public void txDeleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
-        getTransactionalContext(getCurrentTxID()).txDeleteDocument(documentFQN);
+        getTransactionalContext(getCurrentTxID(userIDAuth.getUserID())).txDeleteDocument(documentFQN);
     }
 
     @Override
     public TxBucketContentFQN txListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
-        return getTransactionalContext(getCurrentTxID()).txListDocuments(userIDAuth, documentDirectoryFQN, recursiveFlag);
+        return getTransactionalContext(getCurrentTxID(userIDAuth.getUserID())).txListDocuments(userIDAuth, documentDirectoryFQN, recursiveFlag);
     }
 
     @Override
@@ -156,7 +156,7 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
 
     @Override
     public boolean txDocumentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
-        return getTransactionalContext(getCurrentTxID()).txDocumentExists(userIDAuth, documentFQN);
+        return getTransactionalContext(getCurrentTxID(userIDAuth.getUserID())).txDocumentExists(userIDAuth, documentFQN);
     }
 
     @Override
@@ -170,12 +170,12 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
         DSDocument nonTxDsDocument = nonTxReadDocument(userIDAuth, nonTxFQN);
         DSDocument txDsDocument = new DSDocument(txFQN, nonTxDsDocument.getDocumentContent(), nonTxDsDocument.getDsDocumentMetaInfo());
         txStoreDocument(userIDAuth, txDsDocument);
-        getCurrentTransactionData().addNonTxFileToBeDeletedAfterCommit(nonTxFQN);
+        getCurrentTransactionData(userIDAuth.getUserID()).addNonTxFileToBeDeletedAfterCommit(nonTxFQN);
     }
 
     @Override
     public void endTransaction(UserIDAuth userIDAuth) {
-        TxID txid = getCurrentTxID();
+        TxID txid = getCurrentTxID(userIDAuth.getUserID());
         getTransactionalContext(txid).endTransaction(userIDAuth);
         deleteTransactionalContext(txid);
     }
@@ -218,8 +218,8 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
         cachedTransactionalContextMap.remove(txid);
     }
 
-    public TxID getCurrentTxID() {
-        CurrentTransactionData currentTransactionData = getCurrentTransactionData();
+    public TxID getCurrentTxID(UserID userID) {
+        CurrentTransactionData currentTransactionData = getCurrentTransactionData(userID);
         TxID txID = currentTransactionData.getCurrentTxID();
         if (txID == null) {
             throw new TxNotActiveException();
@@ -227,8 +227,8 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
         return txID;
     }
 
-    private CurrentTransactionData getCurrentTransactionData() {
-        CurrentTransactionData currentTransactionData = (CurrentTransactionData) requestMemoryContext.get(TransactionalDocumentSafeServiceImpl.CURRENT_TRANSACTION_DATA);
+    private CurrentTransactionData getCurrentTransactionData(UserID userID) {
+        CurrentTransactionData currentTransactionData = (CurrentTransactionData) requestMemoryContext.get(TransactionalDocumentSafeServiceImpl.CURRENT_TRANSACTION_DATA + "-" + userID.getValue());
         if (currentTransactionData == null) {
             throw new TxNotActiveException();
         }

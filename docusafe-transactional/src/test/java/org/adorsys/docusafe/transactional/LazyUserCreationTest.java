@@ -15,7 +15,8 @@ import org.slf4j.LoggerFactory;
 public class LazyUserCreationTest extends TransactionFileStorageBaseTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(TransactionalFileStorageTest.class);
 
-    // TODO DOC-73
+    // TODO DOC-73 wurde nicht umgesetzt, da Francis in Telco mit Peter entschieden hat, dass
+    // begin und endTransaction NICHT automatisch aus dem Restlayer erfolgen sollten
     // @Test
     public void createUserAfterBegin() {
 
