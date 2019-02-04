@@ -222,7 +222,7 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
         CurrentTransactionData currentTransactionData = getCurrentTransactionData(userID);
         TxID txID = currentTransactionData.getCurrentTxID();
         if (txID == null) {
-            throw new TxNotActiveException();
+            throw new TxNotActiveException(userID);
         }
         return txID;
     }
@@ -230,7 +230,7 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
     private CurrentTransactionData getCurrentTransactionData(UserID userID) {
         CurrentTransactionData currentTransactionData = (CurrentTransactionData) requestMemoryContext.get(TransactionalDocumentSafeServiceImpl.CURRENT_TRANSACTION_DATA + "-" + userID.getValue());
         if (currentTransactionData == null) {
-            throw new TxNotActiveException();
+            throw new TxNotActiveException(userID);
         }
         return currentTransactionData;
     }

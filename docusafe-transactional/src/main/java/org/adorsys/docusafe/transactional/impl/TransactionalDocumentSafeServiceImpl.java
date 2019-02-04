@@ -182,7 +182,7 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
     private CurrentTransactionData getCurrentTransactionData(UserID userID) {
         CurrentTransactionData currentTransactionData = findCurrentTransactionData(userID);
         if (currentTransactionData == null) {
-            throw new TxNotActiveException();
+            throw new TxNotActiveException(userID);
         }
         return currentTransactionData;
     }
