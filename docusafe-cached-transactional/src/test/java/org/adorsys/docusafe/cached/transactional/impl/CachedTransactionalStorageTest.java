@@ -14,6 +14,7 @@ import org.adorsys.docusafe.cached.transactional.CachedTransactionalDocumentSafe
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.transactional.RequestMemoryContext;
 import org.adorsys.docusafe.transactional.impl.TransactionalDocumentSafeServiceImpl;
+import org.adorsys.docusafe.transactional.types.TxBucketContentFQN;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.adorsys.encobject.types.ListRecursiveFlag;
@@ -52,8 +53,6 @@ public class CachedTransactionalStorageTest {
 
     @Test
     public void testTxListAndDeleteDocument() {
-        
-
         UserIDAuth userIDAuth = new UserIDAuth(new UserID("peter"), new ReadKeyPassword("petersPassword"));
         service.createUser(userIDAuth);
         userIDAuthList.add(userIDAuth);
@@ -181,5 +180,60 @@ public class CachedTransactionalStorageTest {
         Assert.assertEquals(new Integer(2), wrapper.counterMap.get(TransactionalStorageTestWrapper.LIST_DOCUMENTS));
         Assert.assertEquals(new Integer(2), wrapper.counterMap.get(TransactionalStorageTestWrapper.GRANTED_DOCUMENT_EXISTS));
         Assert.assertEquals(documentFQN, bucketContentFQN2.getFiles().get(0));
+    }
+
+    @Test
+    public void testTxDeleteFolder() {
+        UserIDAuth userIDAuth = new UserIDAuth(new UserID("peter"), new ReadKeyPassword("petersPassword"));
+        service.createUser(userIDAuth);
+        userIDAuthList.add(userIDAuth);
+
+        DocumentFQN documentFQN = new DocumentFQN("folder1/file1.txt");
+
+        {
+            service.beginTransaction(userIDAuth);
+            Assert.assertFalse(service.txDocumentExists(userIDAuth, documentFQN));
+            TxBucketContentFQN bucketContentFQN = service.txListDocuments(userIDAuth, documentFQN.getDocumentDirectory(), ListRecursiveFlag.TRUE);
+            Assert.assertTrue(bucketContentFQN.getFiles().isEmpty());
+            Assert.assertTrue(bucketContentFQN.getDirectories().isEmpty());
+            DSDocument dsDocumentWrite = new DSDocument(
+                    documentFQN,
+                    new DocumentContent("content of file".getBytes()),
+                    new DSDocumentMetaInfo()
+            );
+            service.txStoreDocument(userIDAuth, dsDocumentWrite);
+            DSDocument dsDocumentRead = service.txReadDocument(userIDAuth, documentFQN);
+            Assert.assertArrayEquals(dsDocumentWrite.getDocumentContent().getValue(), dsDocumentRead.getDocumentContent().getValue());
+            service.endTransaction(userIDAuth);
+        }
+        {
+            service.beginTransaction(userIDAuth);
+            DSDocument dsDocumentWrite = new DSDocument(
+                    documentFQN,
+                    new DocumentContent("content of file 2".getBytes()),
+                    new DSDocumentMetaInfo()
+            );
+            service.txStoreDocument(userIDAuth, dsDocumentWrite);
+            DSDocument dsDocumentRead = service.txReadDocument(userIDAuth, documentFQN);
+            Assert.assertArrayEquals(dsDocumentWrite.getDocumentContent().getValue(), dsDocumentRead.getDocumentContent().getValue());
+            TxBucketContentFQN bucketContentFQN = service.txListDocuments(userIDAuth, documentFQN.getDocumentDirectory(), ListRecursiveFlag.TRUE);
+            Assert.assertEquals(1, bucketContentFQN.getFiles().size());
+            Assert.assertEquals(1, bucketContentFQN.getDirectories().size());
+            service.endTransaction(userIDAuth);
+        }
+        {
+            service.beginTransaction(userIDAuth);
+            service.txDeleteFolder(userIDAuth, documentFQN.getDocumentDirectory());
+            service.endTransaction(userIDAuth);
+        }
+        {
+            service.beginTransaction(userIDAuth);
+            TxBucketContentFQN bucketContentFQN = service.txListDocuments(userIDAuth, documentFQN.getDocumentDirectory(), ListRecursiveFlag.TRUE);
+            Assert.assertEquals(0, bucketContentFQN.getFiles().size());
+            Assert.assertEquals(0, bucketContentFQN.getDirectories().size());
+            service.endTransaction(userIDAuth);
+        }
+
+
     }
 }

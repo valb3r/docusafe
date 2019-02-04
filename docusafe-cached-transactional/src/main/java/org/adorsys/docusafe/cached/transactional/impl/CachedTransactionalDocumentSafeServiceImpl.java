@@ -161,8 +161,8 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
 
     @Override
     public void txDeleteFolder(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN) {
-        throw new BaseException("Who needs this interface");
-
+        TxBucketContentFQN txBucketContentFQN = getTransactionalContext(getCurrentTxID(userIDAuth.getUserID())).txListDocuments(userIDAuth, documentDirectoryFQN, ListRecursiveFlag.TRUE);
+        txBucketContentFQN.getFiles().stream().forEach(documentFQN -> txDeleteDocument(userIDAuth, documentFQN));
     }
 
     @Override
