@@ -68,7 +68,7 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
     @Override
     public DSDocument txReadDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
         LOGGER.debug("txReadDocument " + documentFQN.getValue() + " " + getCurrentTxID(userIDAuth.getUserID()));
-        TxID txidOfDocument = getCurrentTxIDHashMap(userIDAuth.getUserID()).readDocument(documentFQN);
+        TxID txidOfDocument = getCurrentTxIDHashMap(userIDAuth.getUserID()).getTxIDOfDocument(documentFQN);
         DSDocument dsDocument = documentSafeService.readDocument(userIDAuth, modifyTxDocumentName(documentFQN, txidOfDocument));
         return new DSDocument(documentFQN, dsDocument.getDocumentContent(), dsDocument.getDsDocumentMetaInfo());
     }

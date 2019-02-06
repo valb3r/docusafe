@@ -1,13 +1,18 @@
 package org.adorsys.docusafe.transactional.impl;
 
+import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.docusafe.business.DocumentSafeService;
+import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
+import org.adorsys.docusafe.service.exceptions.NoDocumentGuardExists;
 import org.adorsys.docusafe.service.impl.UserMetaDataUtil;
 import org.adorsys.docusafe.service.types.DocumentContent;
+import org.adorsys.docusafe.transactional.exceptions.NoTxFoundForDocumentException;
+import org.adorsys.docusafe.transactional.exceptions.TxBaseException;
 import org.adorsys.docusafe.transactional.types.TxBucketContentFQN;
 import org.adorsys.docusafe.transactional.exceptions.TxAlreadyClosedException;
 import org.adorsys.docusafe.transactional.exceptions.TxNotFoundException;
@@ -106,8 +111,12 @@ public class TxIDHashMap {
         map.put(documentFQN, currentTxID);
     }
 
-    public TxID readDocument(DocumentFQN documentFQN) {
-        return map.get(documentFQN);
+    public TxID getTxIDOfDocument(DocumentFQN documentFQN) {
+        TxID txID = map.get(documentFQN);
+        if (txID == null) {
+            throw new NoTxFoundForDocumentException(documentFQN);
+        }
+        return txID;
     }
 
     public void deleteDocument(DocumentFQN documentFQN) {

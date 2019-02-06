@@ -33,7 +33,7 @@ public class SimpleRequestMemoryContextImpl implements RequestMemoryContext {
     public Object get(Object key) {
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
         if (requestAttributes == null) {
-            throw new BaseException("requestAttributes are null");
+            throw new BaseException("requestAttributes are null for " + key);
         }
         if (key instanceof  String) {
             String aKey = (String) key;
