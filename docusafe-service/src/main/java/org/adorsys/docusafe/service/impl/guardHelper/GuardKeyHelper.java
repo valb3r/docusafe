@@ -1,6 +1,6 @@
 package org.adorsys.docusafe.service.impl.guardHelper;
 
-import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
+import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.encobject.domain.KeyStoreAccess;
 import org.adorsys.encobject.service.api.KeystorePersistence;
 
@@ -10,5 +10,5 @@ import org.adorsys.encobject.service.api.KeystorePersistence;
 public interface GuardKeyHelper {
     KeySourceAndGuardKeyID getKeySourceAndGuardKeyID(KeystorePersistence keystorePersistence,
                                                      KeyStoreAccess keyStoreAccess,
-                                                     DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType);
+                                                     DocumentKeyIDWithKey documentKeyIDWithKey);
 }

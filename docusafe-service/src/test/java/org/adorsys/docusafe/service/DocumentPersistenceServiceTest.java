@@ -1,10 +1,9 @@
 package org.adorsys.docusafe.service;
 
 import org.adorsys.docusafe.service.impl.DocumentPersistenceServiceImpl;
-import org.adorsys.docusafe.service.impl.UserMetaDataUtil;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.service.types.complextypes.DocumentBucketPath;
-import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
+import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.encobject.domain.KeyStoreAccess;
 import org.adorsys.encobject.domain.Payload;
 import org.adorsys.encobject.domain.StorageMetadata;
@@ -33,19 +32,19 @@ public class DocumentPersistenceServiceTest {
 
     public DocumentStuff testPersistDocument(DocumentGuardService documentGuardService,
                                              DocumentBucketPath documentBucketPath,
-                                             DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType,
+                                             DocumentKeyIDWithKey documentKeyIDWithKey,
                                              DocumentContent documentContent) {
-        return testPersistDocument(documentGuardService, documentBucketPath, documentKeyIDWithKeyAndAccessType, documentContent, OverwriteFlag.FALSE);
+        return testPersistDocument(documentGuardService, documentBucketPath, documentKeyIDWithKey, documentContent, OverwriteFlag.FALSE);
     }
     public DocumentStuff testPersistDocument(DocumentGuardService documentGuardService,
                                              DocumentBucketPath documentBucketPath,
-                                             DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType,
+                                             DocumentKeyIDWithKey documentKeyIDWithKey,
                                              DocumentContent documentContent,
                                              OverwriteFlag overwriteFlag) {
         extendedStoreConnection.createContainer(documentBucketPath.getBucketDirectory());
         DocumentPersistenceService documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection, null);
         documentPersistenceService.encryptAndPersistDocument(
-                documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey(),
+                documentKeyIDWithKey,
                 documentBucketPath,
                 overwriteFlag,
                 new SimplePayloadImpl(new SimpleStorageMetadataImpl(), true, documentContent.getValue()));

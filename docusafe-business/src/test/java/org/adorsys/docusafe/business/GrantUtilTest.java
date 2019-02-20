@@ -7,7 +7,6 @@ import org.adorsys.docusafe.business.utils.GrantUtil;
 import org.adorsys.docusafe.business.utils.UserIDUtil;
 import org.adorsys.docusafe.service.BucketService;
 import org.adorsys.docusafe.service.impl.BucketServiceImpl;
-import org.adorsys.docusafe.service.types.AccessType;
 import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
@@ -65,9 +64,9 @@ public class GrantUtilTest {
         users.add(owner);
         users.add(receiver);
         BucketDirectory documentDirectory = new BucketDirectory("affe/1/2/3");
-        GrantUtil.saveBucketGrantFile(bucketService, documentDirectory, owner, receiver, AccessType.WRITE);
-        AccessType a = GrantUtil.getAccessTypeOfBucketGrantFile(bucketService, documentDirectory, owner, receiver);
-        Assert.assertEquals("accessType ", AccessType.WRITE, a);
+        GrantUtil.saveBucketGrantFile(bucketService, documentDirectory, owner, receiver, true);
+        boolean a = GrantUtil.existsAccess(bucketService, documentDirectory, owner, receiver);
+        Assert.assertTrue("accessType ", a);
     }
 
     @Test
@@ -84,25 +83,20 @@ public class GrantUtilTest {
         users.add(owner);
         users.add(receiver);
 
-        AccessType a = GrantUtil.getAccessTypeOfBucketGrantFile(bucketService, documentDirectory, owner, receiver);
-        Assert.assertEquals("accessType ", AccessType.NONE, a);
+        boolean a = GrantUtil.existsAccess(bucketService, documentDirectory, owner, receiver);
+        Assert.assertEquals("accessType ", false, a);
 
-        GrantUtil.saveBucketGrantFile(bucketService, documentDirectory, owner, receiver, AccessType.WRITE);
-        a = GrantUtil.getAccessTypeOfBucketGrantFile(bucketService, documentDirectory, owner, receiver);
-        Assert.assertEquals("accessType ", AccessType.WRITE, a);
-
-        GrantUtil.saveBucketGrantFile(bucketService, documentDirectory, owner, receiver, AccessType.READ);
-//        AccessType a;
-        a = GrantUtil.getAccessTypeOfBucketGrantFile(bucketService, documentDirectory, owner, receiver);
-        Assert.assertEquals("accessType ", AccessType.READ, a);
+        GrantUtil.saveBucketGrantFile(bucketService, documentDirectory, owner, receiver, true);
+        a = GrantUtil.existsAccess(bucketService, documentDirectory, owner, receiver);
+        Assert.assertEquals("accessType ", true, a);
 
         BucketPath grantFile = UserIDUtil.getGrantBucketDirectory(owner).append(documentDirectory).addSuffix(GrantUtil.GRANT_EXT);
 
         Assert.assertTrue("grant file exists", bucketService.fileExists(grantFile));
 
-        GrantUtil.saveBucketGrantFile(bucketService, documentDirectory, owner, receiver, AccessType.NONE);
-        a = GrantUtil.getAccessTypeOfBucketGrantFile(bucketService, documentDirectory, owner, receiver);
-        Assert.assertEquals("accessType ", AccessType.NONE, a);
+        GrantUtil.saveBucketGrantFile(bucketService, documentDirectory, owner, receiver, false);
+        a = GrantUtil.existsAccess(bucketService, documentDirectory, owner, receiver);
+        Assert.assertEquals("accessType ", false, a);
 
         Assert.assertFalse("grant file must not exist any more", bucketService.fileExists(grantFile));
     }
@@ -122,12 +116,12 @@ public class GrantUtilTest {
         BucketDirectory documentDirectory = new BucketDirectory(new BucketPath("affe/1/2/3"));
 
 
-        AccessType a = GrantUtil.getAccessTypeOfBucketGrantFile(bucketService, documentDirectory, owner, receiver);
-        Assert.assertEquals("accessType ", AccessType.NONE, a);
+        boolean a = GrantUtil.existsAccess(bucketService, documentDirectory, owner, receiver);
+        Assert.assertEquals("accessType ", false, a);
 
-        GrantUtil.saveBucketGrantFile(bucketService, documentDirectory, owner, receiver, AccessType.NONE);
-        a = GrantUtil.getAccessTypeOfBucketGrantFile(bucketService, documentDirectory, owner, receiver);
-        Assert.assertEquals("accessType ", AccessType.NONE, a);
+        GrantUtil.saveBucketGrantFile(bucketService, documentDirectory, owner, receiver, false);
+        a = GrantUtil.existsAccess(bucketService, documentDirectory, owner, receiver);
+        Assert.assertEquals("accessType ", false, a);
 
         BucketPath grantFile = UserIDUtil.getGrantBucketDirectory(owner).append(documentDirectory).addSuffix(GrantUtil.GRANT_EXT);
         Assert.assertFalse("grant file must not exist any more", bucketService.fileExists(grantFile));

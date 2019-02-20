@@ -1,6 +1,6 @@
 package org.adorsys.docusafe.service.impl;
 
-import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
+import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.encobject.domain.ReadKeyPassword;
 
 /**
@@ -8,26 +8,26 @@ import org.adorsys.encobject.domain.ReadKeyPassword;
  */
 public class PasswordAndDocumentKeyIDWithKeyAndAccessType {
     private ReadKeyPassword readKeyPassword;
-    private DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType;
+    private DocumentKeyIDWithKey documentKeyIDWithKey;
 
-    public PasswordAndDocumentKeyIDWithKeyAndAccessType(ReadKeyPassword readKeyPassword, DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType) {
+    public PasswordAndDocumentKeyIDWithKeyAndAccessType(ReadKeyPassword readKeyPassword, DocumentKeyIDWithKey documentKeyIDWithKey) {
         this.readKeyPassword = readKeyPassword;
-        this.documentKeyIDWithKeyAndAccessType = documentKeyIDWithKeyAndAccessType;
+        this.documentKeyIDWithKey = documentKeyIDWithKey;
     }
 
     public ReadKeyPassword getReadKeyPassword() {
         return readKeyPassword;
     }
 
-    public DocumentKeyIDWithKeyAndAccessType getDocumentKeyIDWithKeyAndAccessType() {
-        return documentKeyIDWithKeyAndAccessType;
+    public DocumentKeyIDWithKey getDocumentKeyIDWithKey() {
+        return documentKeyIDWithKey;
     }
 
     @Override
     public String toString() {
-        return "PasswordAndDocumentKeyIDWithKeyAndAccessType{" +
+        return "PasswordAndDocumentKeyIDWithKey{" +
                 "readKeyPassword=" + readKeyPassword +
-                ", documentKeyIDWithKeyAndAccessType=" + documentKeyIDWithKeyAndAccessType +
+                ", documentKeyIDWithKey=" + documentKeyIDWithKey +
                 '}';
     }
 }

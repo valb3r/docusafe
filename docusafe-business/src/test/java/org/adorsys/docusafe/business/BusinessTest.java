@@ -2,7 +2,6 @@ package org.adorsys.docusafe.business;
 
 import com.googlecode.catchexception.CatchException;
 import org.adorsys.cryptoutils.exceptions.BaseException;
-import org.adorsys.docusafe.business.exceptions.NoWriteAccessException;
 import org.adorsys.docusafe.business.exceptions.UserIDDoesNotExistException;
 import org.adorsys.docusafe.business.exceptions.WrongPasswordException;
 import org.adorsys.docusafe.business.types.UserID;
@@ -14,7 +13,6 @@ import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.service.exceptions.NoDocumentGuardExists;
-import org.adorsys.docusafe.service.types.AccessType;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.adorsys.encobject.domain.UserMetaData;
@@ -177,26 +175,7 @@ public class BusinessTest extends BusinessTestBase {
 
 
     @Test
-    public void grantAccessToFolder() {
-
-        UserIDAuth userIDAuthPeter = createUser(new UserID("peter"), new ReadKeyPassword("keyPasswordForPeter"));
-        UserIDAuth userIDAuthFrancis = createUser(new UserID("francis"), new ReadKeyPassword("keyPasswordForFrancis"));
-        DocumentFQN documentFQN = new DocumentFQN("first/document.txt");
-        DSDocument dsDocument1 = createDocument(userIDAuthPeter, documentFQN);
-
-        DocumentDirectoryFQN documentDirectoryFQN = new DocumentDirectoryFQN("first");
-
-        service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentDirectoryFQN, AccessType.WRITE);
-
-        DSDocument dsDocument = service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
-        Assert.assertEquals("document content ok", dsDocument1.getDocumentContent(), dsDocument.getDocumentContent());
-
-        service.storeGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), dsDocument);
-    }
-
-    // Hier speichert Benuzter B etwas für Benutzer A und will es anschliessend lesen
-    @Test
-    public void grantReadAccessToFolder() {
+    public void grantAndRevokeAccessToFolder() {
 
         UserIDAuth userIDAuthPeter = createUser(new UserID("peter"), new ReadKeyPassword("keyPasswordForPeter"));
         UserIDAuth userIDAuthFrancis = createUser(new UserID("francis"), new ReadKeyPassword("keyPasswordForFrancis"));
@@ -205,7 +184,7 @@ public class BusinessTest extends BusinessTestBase {
 
         DocumentDirectoryFQN documentDirectoryFQN = new DocumentDirectoryFQN("first/next");
 
-        service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentDirectoryFQN, AccessType.WRITE);
+        service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentDirectoryFQN, true);
 
         DSDocument dsDocument = service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
         Assert.assertEquals("document content ok", dsDocument1.getDocumentContent(), dsDocument.getDocumentContent());
@@ -215,12 +194,8 @@ public class BusinessTest extends BusinessTestBase {
         service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
         // and read as peter
         service.readDocument(userIDAuthPeter, documentFQN);
-        service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentDirectoryFQN, AccessType.READ);
-        CatchException.catchException(() -> service.storeGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), dsDocument));
-        Assert.assertTrue(CatchException.caughtException() instanceof NoWriteAccessException);
-        service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
 
-        service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentDirectoryFQN, AccessType.NONE);
+        service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentDirectoryFQN, false);
         CatchException.catchException(() -> service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN));
         Assert.assertTrue(CatchException.caughtException() instanceof NoDocumentGuardExists);
     }
@@ -237,7 +212,7 @@ public class BusinessTest extends BusinessTestBase {
         CatchException.catchException(() -> service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN));
         Assert.assertNotNull(CatchException.caughtException());
 
-        service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentFQN.getDocumentDirectory(), AccessType.WRITE);
+        service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentFQN.getDocumentDirectory(), true);
         service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
         service.readDocument(userIDAuthPeter, documentFQN);
     }

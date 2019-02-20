@@ -1,7 +1,7 @@
 package org.adorsys.docusafe.service.impl.guardHelper;
 
 import org.adorsys.docusafe.service.types.GuardKeyID;
-import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
+import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.encobject.domain.KeyStoreAccess;
 import org.adorsys.encobject.service.api.KeyStore2KeySourceHelper;
 import org.adorsys.encobject.service.api.KeystorePersistence;
@@ -21,7 +21,7 @@ public class GuardKeyForSecretKeyHelper implements GuardKeyHelper{
     @Override
     public KeySourceAndGuardKeyID getKeySourceAndGuardKeyID(KeystorePersistence keystorePersistence,
                                                             KeyStoreAccess keyStoreAccess,
-                                                            DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType) {
+                                                            DocumentKeyIDWithKey documentKeyIDWithKey) {
         KeyStore2KeySourceHelper.KeySourceAndKeyID forSecretKey = KeyStore2KeySourceHelper.getForSecretKey(keystorePersistence, keyStoreAccess);
         GuardKeyID guardKeyID = new GuardKeyID(forSecretKey.getKeyID().getValue());
         LOGGER.debug("Guard created with symmetric KeyID :" + guardKeyID);

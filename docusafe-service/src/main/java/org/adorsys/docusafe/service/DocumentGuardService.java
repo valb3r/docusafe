@@ -3,7 +3,6 @@ package org.adorsys.docusafe.service;
 import org.adorsys.docusafe.service.impl.GuardKeyType;
 import org.adorsys.docusafe.service.types.DocumentKeyID;
 import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKey;
-import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
 import org.adorsys.encobject.domain.KeyStoreAccess;
 import org.adorsys.encobject.types.OverwriteFlag;
 
@@ -14,9 +13,9 @@ public interface DocumentGuardService {
     DocumentKeyIDWithKey createDocumentKeyIdWithKey();
 
     void createDocumentGuardFor(GuardKeyType guardKeyType, KeyStoreAccess keyStoreAccess,
-                                DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType,
+                                DocumentKeyIDWithKey documentKeyIDWithKey,
                                 OverwriteFlag overwriteFlag);
 
-    DocumentKeyIDWithKeyAndAccessType loadDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(KeyStoreAccess keyStoreAccess,
+    DocumentKeyIDWithKey loadDocumentKeyIDWithKeyFromDocumentGuard(KeyStoreAccess keyStoreAccess,
                                                                                              DocumentKeyID documentKeyID);
 }

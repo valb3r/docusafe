@@ -4,7 +4,7 @@ import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.docusafe.service.DocumentGuardService;
 import org.adorsys.docusafe.service.impl.DocumentKeyID2DocumentKeyCache;
 import org.adorsys.docusafe.service.types.DocumentKeyID;
-import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
+import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.encobject.domain.KeyStoreAccess;
 import org.adorsys.encobject.service.api.KeySource;
 import org.adorsys.encobject.types.KeyID;
@@ -37,16 +37,16 @@ public class DocumentGuardBasedKeySourceImpl implements KeySource {
             // We assume keystore container is docuement guard container
             DocumentKeyID documentKeyID = new DocumentKeyID(keyID.getValue());
             if (documentKeyID2DocumentKeyCache != null) {
-                DocumentKeyIDWithKeyAndAccessType fromCache = documentKeyID2DocumentKeyCache.get(keyStoreAccess, documentKeyID);
+                DocumentKeyIDWithKey fromCache = documentKeyID2DocumentKeyCache.get(keyStoreAccess, documentKeyID);
                 if (fromCache != null) {
                     LOGGER.debug("return cached KEY WITH ID " + documentKeyID);
-                    return fromCache.getDocumentKeyIDWithKey().getDocumentKey().getSecretKey();
+                    return fromCache.getDocumentKey().getSecretKey();
                 }
             }
             LOGGER.debug("try to load KEY WITH ID " + documentKeyID);
-            DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = documentGuardService.loadDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(keyStoreAccess, documentKeyID);
-            LOGGER.debug("LOADED DOCUMENT KEY WITH ID " + documentKeyIDWithKeyAndAccessType);
-            return documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKey().getSecretKey();
+            DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardService.loadDocumentKeyIDWithKeyFromDocumentGuard(keyStoreAccess, documentKeyID);
+            LOGGER.debug("LOADED DOCUMENT KEY WITH ID " + documentKeyIDWithKey);
+            return documentKeyIDWithKey.getDocumentKey().getSecretKey();
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }

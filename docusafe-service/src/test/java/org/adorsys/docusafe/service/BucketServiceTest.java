@@ -1,11 +1,10 @@
 package org.adorsys.docusafe.service;
 
 import org.adorsys.docusafe.service.impl.BucketServiceImpl;
-import org.adorsys.docusafe.service.types.AccessType;
 import org.adorsys.docusafe.service.types.BucketContent;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.service.types.complextypes.DocumentBucketPath;
-import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
+import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
@@ -47,12 +46,12 @@ public class BucketServiceTest {
         }
         DocumentContent documentContent = new DocumentContent("Affe".getBytes());
         DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest(extendedStoreConnection);
-        DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = new DocumentKeyIDWithKeyAndAccessType(documentGuardServiceTest.createKeyIDWithKey(), AccessType.WRITE);
+        DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardServiceTest.createKeyIDWithKey();
         DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest(extendedStoreConnection);
 
         for (int i = 0; i<subfiles; i++) {
             documentPersistenceServiceTest.testPersistDocument(null, new DocumentBucketPath(rootDirectory.appendName("file").add("" + i)),
-                    documentKeyIDWithKeyAndAccessType, documentContent, OverwriteFlag.FALSE);
+                    documentKeyIDWithKey, documentContent, OverwriteFlag.FALSE);
 
         }
         for (int i = 0; i<subdirs; i++) {
