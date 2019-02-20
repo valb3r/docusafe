@@ -2,7 +2,6 @@ package org.adorsys.docusafe.cached.transactional.impl;
 
 import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
 import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
-import org.adorsys.docusafe.business.impl.WithCache;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
@@ -15,7 +14,6 @@ import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.transactional.RequestMemoryContext;
 import org.adorsys.docusafe.transactional.impl.TransactionalDocumentSafeServiceImpl;
 import org.adorsys.docusafe.transactional.types.TxBucketContentFQN;
-import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.junit.After;
@@ -37,7 +35,7 @@ public class CachedTransactionalStorageTest {
     private RequestMemoryContext memoryContext = new SimpleRequestMemoryContextImpl();
     private TransactionalStorageTestWrapper wrapper = new TransactionalStorageTestWrapper(
             new TransactionalDocumentSafeServiceImpl(memoryContext,
-                    new DocumentSafeServiceImpl(WithCache.FALSE, ExtendedStoreConnectionFactory.get())));
+                    new DocumentSafeServiceImpl(ExtendedStoreConnectionFactory.get())));
     private CachedTransactionalDocumentSafeService service = new CachedTransactionalDocumentSafeServiceImpl(memoryContext, wrapper);
 
     List<UserIDAuth> userIDAuthList = new ArrayList<>();

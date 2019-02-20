@@ -85,20 +85,15 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
     private ExtendedStoreConnection extendedStoreConnection;
     private DocusafeCacheWrapper docusafeCacheWrapper = null;
 
-    public DocumentSafeServiceImpl(WithCache withCache, ExtendedStoreConnection extendedStoreConnection) {
+    public DocumentSafeServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
         this.extendedStoreConnection = extendedStoreConnection;
         this.bucketService = new BucketServiceImpl(extendedStoreConnection);
         this.keyStoreService = new KeyStoreServiceImpl(extendedStoreConnection);
         this.documentGuardService = new DocumentGuardServiceImpl(extendedStoreConnection);
         this.documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection, this);
         this.keySourceService = new KeySourceServiceImpl(extendedStoreConnection);
-
-        if (withCache.equals(WithCache.TRUE)) {
-            docusafeCacheWrapper = new DocusafeCacheWrapperImpl(CacheType.GUAVA);
-        }
-        if (withCache.equals(WithCache.TRUE_HASH_MAP)) {
-            docusafeCacheWrapper = new DocusafeCacheWrapperImpl(CacheType.HASH_MAP);
-        }
+        this.docusafeCacheWrapper = new DocusafeCacheWrapperImpl(CacheType.GUAVA);
+        // docusafeCacheWrapper = new DocusafeCacheWrapperImpl(CacheType.HASH_MAP);
     }
 
     /**
@@ -590,13 +585,10 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         }
 
         DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = documentGuardService.loadDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(keyStoreAccess, documentKeyID);
-
-        DocumentGuardCache documentGuardCache = docusafeCacheWrapper != null ? docusafeCacheWrapper.getDocumentGuardCache() : null;
-        if (documentGuardCache != null) {
-            String cacheKey = DocumentGuardCache.cacheKeyToString(keyStoreAccess, documentKeyID);
-            documentGuardCache.put(cacheKey, new PasswordAndDocumentKeyIDWithKeyAndAccessType(keyStoreAccess.getKeyStoreAuth().getReadKeyPassword(), documentKeyIDWithKeyAndAccessType));
-            LOGGER.debug("AAA insert document key for cache key " + cacheKey);
-        }
+        DocumentGuardCache documentGuardCache = docusafeCacheWrapper.getDocumentGuardCache();
+        String cacheKey = DocumentGuardCache.cacheKeyToString(keyStoreAccess, documentKeyID);
+        documentGuardCache.put(cacheKey, new PasswordAndDocumentKeyIDWithKeyAndAccessType(keyStoreAccess.getKeyStoreAuth().getReadKeyPassword(), documentKeyIDWithKeyAndAccessType));
+        LOGGER.debug("AAA insert document key for cache key " + cacheKey);
 
         return documentKeyIDWithKeyAndAccessType;
     }
@@ -606,60 +598,47 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
                                       OverwriteFlag overwriteFlag) {
 
         documentGuardService.createDocumentGuardFor(guardKeyType, keyStoreAccess, documentKeyIDWithKeyAndAccessType, overwriteFlag);
-
-        DocumentGuardCache documentGuardCache = docusafeCacheWrapper != null ? docusafeCacheWrapper.getDocumentGuardCache() : null;
-        if (documentGuardCache != null) {
-            String cacheKey = DocumentGuardCache.cacheKeyToString(keyStoreAccess, documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
-            if (guardKeyType.equals(GuardKeyType.PUBLIC_KEY)) {
-                // Wenn es sich um den public key handelt, dann kennen wir das Passwort nicht, da es nicht unser KeyStore ist.
-                // dann können wir den Eintrag nur löschen, aber nicht speichern.
-                // löschen, damit ein alter Eintrag mit anderem AccessType ggf. gelöscht wird.
-                // Nicht speichern, damit beim ersten Lesen der Eintrag gecached wird und dann mit Password.
-                deleteCacheKey(keyStoreAccess, documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
-            } else {
-                documentGuardCache.put(cacheKey, new PasswordAndDocumentKeyIDWithKeyAndAccessType(keyStoreAccess.getKeyStoreAuth().getReadKeyPassword(), documentKeyIDWithKeyAndAccessType));
-            }
+        DocumentGuardCache documentGuardCache = docusafeCacheWrapper.getDocumentGuardCache();
+        String cacheKey = DocumentGuardCache.cacheKeyToString(keyStoreAccess, documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
+        if (guardKeyType.equals(GuardKeyType.PUBLIC_KEY)) {
+            // Wenn es sich um den public key handelt, dann kennen wir das Passwort nicht, da es nicht unser KeyStore ist.
+            // dann können wir den Eintrag nur löschen, aber nicht speichern.
+            // löschen, damit ein alter Eintrag mit anderem AccessType ggf. gelöscht wird.
+            // Nicht speichern, damit beim ersten Lesen der Eintrag gecached wird und dann mit Password.
+            deleteCacheKey(keyStoreAccess, documentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey().getDocumentKeyID());
+        } else {
+            documentGuardCache.put(cacheKey, new PasswordAndDocumentKeyIDWithKeyAndAccessType(keyStoreAccess.getKeyStoreAuth().getReadKeyPassword(), documentKeyIDWithKeyAndAccessType));
         }
     }
 
     private void deleteCacheKey(KeyStoreAccess keyStoreAccess, DocumentKeyID documentKeyID) {
-        DocumentGuardCache documentGuardCache = docusafeCacheWrapper != null ? docusafeCacheWrapper.getDocumentGuardCache() : null;
-        if (documentGuardCache != null) {
-            String cacheKey = DocumentGuardCache.cacheKeyToString(keyStoreAccess, documentKeyID);
-            documentGuardCache.remove(cacheKey);
-        }
+        DocumentGuardCache documentGuardCache = docusafeCacheWrapper.getDocumentGuardCache();
+        String cacheKey = DocumentGuardCache.cacheKeyToString(keyStoreAccess, documentKeyID);
+        documentGuardCache.remove(cacheKey);
     }
 
     private DocumentKeyID loadCachedDocumentKeyIDForDocumentDirectory(BucketDirectory bucketDirectory) {
-        DocumentKeyIDCache documentKeyIDCache = docusafeCacheWrapper != null ? docusafeCacheWrapper.getDocumentKeyIDCache() : null;
-        if (documentKeyIDCache != null) {
-            return documentKeyIDCache.get(bucketDirectory);
-        }
-        return null;
+        DocumentKeyIDCache documentKeyIDCache = docusafeCacheWrapper.getDocumentKeyIDCache();
+        return documentKeyIDCache.get(bucketDirectory);
     }
 
     private void cacheDocumentKeyIDForDocumentDirectory(BucketDirectory bucketDirectory, DocumentKeyID documentKeyID) {
-        DocumentKeyIDCache documentKeyIDCache = docusafeCacheWrapper != null ? docusafeCacheWrapper.getDocumentKeyIDCache() : null;
-        if (documentKeyIDCache == null) {
-            return;
-        }
+        DocumentKeyIDCache documentKeyIDCache = docusafeCacheWrapper.getDocumentKeyIDCache();
         documentKeyIDCache.put(bucketDirectory, documentKeyID);
     }
 
     @Override
     public DocumentKeyIDWithKeyAndAccessType get(KeyStoreAccess keyStoreAccess, DocumentKeyID documentKeyID) {
-        DocumentGuardCache documentGuardCache = docusafeCacheWrapper != null ? docusafeCacheWrapper.getDocumentGuardCache() : null;
-        if (documentGuardCache != null) {
-            String cacheKey = DocumentGuardCache.cacheKeyToString(keyStoreAccess, documentKeyID);
-            PasswordAndDocumentKeyIDWithKeyAndAccessType passwordAndDocumentKeyIDWithKeyAndAccessTypeFromCache = documentGuardCache.get(cacheKey);
-            if (passwordAndDocumentKeyIDWithKeyAndAccessTypeFromCache != null) {
-                if (passwordAndDocumentKeyIDWithKeyAndAccessTypeFromCache.getReadKeyPassword().equals(keyStoreAccess.getKeyStoreAuth().getReadKeyPassword())) {
-                    LOGGER.debug("AAA return document key for cache key " + cacheKey);
-                    return documentGuardCache.get(cacheKey).getDocumentKeyIDWithKeyAndAccessType();
-                }
-                // Password war falsch, wir lassen den Aufrufer abtauchen und die original Exception erhalten
-                documentGuardCache.remove(cacheKey);
+        DocumentGuardCache documentGuardCache = docusafeCacheWrapper.getDocumentGuardCache();
+        String cacheKey = DocumentGuardCache.cacheKeyToString(keyStoreAccess, documentKeyID);
+        PasswordAndDocumentKeyIDWithKeyAndAccessType passwordAndDocumentKeyIDWithKeyAndAccessTypeFromCache = documentGuardCache.get(cacheKey);
+        if (passwordAndDocumentKeyIDWithKeyAndAccessTypeFromCache != null) {
+            if (passwordAndDocumentKeyIDWithKeyAndAccessTypeFromCache.getReadKeyPassword().equals(keyStoreAccess.getKeyStoreAuth().getReadKeyPassword())) {
+                LOGGER.debug("AAA return document key for cache key " + cacheKey);
+                return documentGuardCache.get(cacheKey).getDocumentKeyIDWithKeyAndAccessType();
             }
+            // Password war falsch, wir lassen den Aufrufer abtauchen und die original Exception erhalten
+            documentGuardCache.remove(cacheKey);
         }
         return null;
     }

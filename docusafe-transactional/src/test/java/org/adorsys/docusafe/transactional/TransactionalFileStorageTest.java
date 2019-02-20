@@ -1,22 +1,17 @@
 package org.adorsys.docusafe.transactional;
 
 import com.googlecode.catchexception.CatchException;
-import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.service.types.DocumentContent;
-import org.adorsys.docusafe.transactional.exceptions.TxAlreadyClosedException;
 import org.adorsys.docusafe.transactional.exceptions.TxInnerException;
 import org.adorsys.docusafe.transactional.exceptions.TxNotActiveException;
 import org.adorsys.docusafe.transactional.exceptions.TxRacingConditionException;
 import org.adorsys.docusafe.transactional.types.TxDocumentFQNVersion;
-import org.adorsys.docusafe.transactional.types.TxDocumentFQNWithVersion;
-import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.types.ListRecursiveFlag;
-import org.bouncycastle.jcajce.provider.symmetric.ARC4;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;

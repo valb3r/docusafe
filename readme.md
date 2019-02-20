@@ -22,7 +22,6 @@ The interface of this layer is ***DocumentSafeService.*** Just to give you an id
     import org.adorsys.cryptoutils.exceptions.BaseException;
     import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
     import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
-    import org.adorsys.docusafe.business.impl.WithCache;
     import org.adorsys.docusafe.business.types.UserID;
     import org.adorsys.docusafe.business.types.complex.DSDocument;
     import org.adorsys.docusafe.business.types.complex.DocumentFQN;
@@ -38,7 +37,7 @@ The interface of this layer is ***DocumentSafeService.*** Just to give you an id
     public class ReadMeMDFileTestCode {
         public static void main(String[] args) {
             // create service
-            DocumentSafeService documentSafeService = new DocumentSafeServiceImpl(WithCache.TRUE, ExtendedStoreConnectionFactory.get());
+            DocumentSafeService documentSafeService = new DocumentSafeServiceImpl(ExtendedStoreConnectionFactory.get());
     
             // create user
             UserIDAuth userIDAuth = new UserIDAuth(new UserID("peter"), new ReadKeyPassword("passwordOfPeter"));
@@ -81,7 +80,6 @@ import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
 import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
-import org.adorsys.docusafe.business.impl.WithCache;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
@@ -106,7 +104,7 @@ public class ReadMeMDFileTestCode {
         CachedTransactionalDocumentSafeService cachedTransactionalDocumentSafeService;
         {
             org.adorsys.docusafe.cached.transactional.impl.SimpleRequestMemoryContextImpl simpleRequestMemoryContext = new org.adorsys.docusafe.cached.transactional.impl.SimpleRequestMemoryContextImpl();
-            DocumentSafeService documentSafeService = new DocumentSafeServiceImpl(WithCache.TRUE, ExtendedStoreConnectionFactory.get());
+            DocumentSafeService documentSafeService = new DocumentSafeServiceImpl(ExtendedStoreConnectionFactory.get());
             TransactionalDocumentSafeService transactionalDocumentSafeService = new TransactionalDocumentSafeServiceImpl(simpleRequestMemoryContext, documentSafeService);
             cachedTransactionalDocumentSafeService = new CachedTransactionalDocumentSafeServiceImpl(simpleRequestMemoryContext, transactionalDocumentSafeService);
         }

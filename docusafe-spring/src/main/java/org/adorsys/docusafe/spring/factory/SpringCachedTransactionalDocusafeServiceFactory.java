@@ -2,7 +2,6 @@ package org.adorsys.docusafe.spring.factory;
 
 import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
-import org.adorsys.docusafe.business.impl.WithCache;
 import org.adorsys.docusafe.cached.transactional.CachedTransactionalDocumentSafeService;
 import org.adorsys.docusafe.cached.transactional.impl.CachedTransactionalDocumentSafeServiceImpl;
 import org.adorsys.docusafe.spring.SimpleRequestMemoryContextImpl;
@@ -22,15 +21,13 @@ import java.util.Map;
 public class SpringCachedTransactionalDocusafeServiceFactory {
     private final static Logger LOGGER = LoggerFactory.getLogger(SpringCachedTransactionalDocusafeServiceFactory.class);
     private SpringExtendedStoreConnectionFactory connectionFactory;
-    private Boolean withCache;
     private static int instanceCounter = 0;
     final private int instanceId;
     private Map<String, CachedTransactionalDocumentSafeService> map = new HashMap<>();
 
 
-    public SpringCachedTransactionalDocusafeServiceFactory(SpringExtendedStoreConnectionFactory connectionFactory, Boolean withCache) {
+    public SpringCachedTransactionalDocusafeServiceFactory(SpringExtendedStoreConnectionFactory connectionFactory) {
         this.connectionFactory = connectionFactory;
-        this.withCache = withCache;
         instanceId = ++instanceCounter;
         if (instanceId > 1) {
             LOGGER.warn("Expected just to exist exactly one Factory. But this is Instance No: " + instanceId);
@@ -46,7 +43,7 @@ public class SpringCachedTransactionalDocusafeServiceFactory {
         ExtendedStoreConnection extendedStoreConnection = connectionFactory.getExtendedStoreConnectionWithSubDir(basedir);
         LOGGER.info(CachedTransactionalDocumentSafeService.class.getName() + " is required as @Bean");
         LOGGER.debug("create documentSafeService");
-        DocumentSafeService documentSafeService = new DocumentSafeServiceImpl(withCache ? WithCache.TRUE : WithCache.FALSE, extendedStoreConnection);
+        DocumentSafeService documentSafeService = new DocumentSafeServiceImpl(extendedStoreConnection);
         RequestMemoryContext requestContext = new SimpleRequestMemoryContextImpl();
         LOGGER.debug("create transactionalDocumentSafeService");
         TransactionalDocumentSafeService transactionalDocumentSafeService = new TransactionalDocumentSafeServiceImpl(requestContext, documentSafeService);

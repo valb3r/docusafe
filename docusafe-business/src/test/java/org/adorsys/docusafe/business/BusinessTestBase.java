@@ -3,7 +3,6 @@ package org.adorsys.docusafe.business;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
 import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
-import org.adorsys.docusafe.business.impl.WithCache;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
@@ -17,9 +16,7 @@ import org.adorsys.docusafe.service.BucketService;
 import org.adorsys.docusafe.service.impl.BucketServiceImpl;
 import org.adorsys.docusafe.service.types.BucketContent;
 import org.adorsys.docusafe.service.types.DocumentContent;
-import org.adorsys.docusafe.service.types.DocumentKeyID;
 import org.adorsys.encobject.complextypes.BucketDirectory;
-import org.adorsys.encobject.complextypes.BucketPath;
 import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
@@ -47,7 +44,6 @@ public class BusinessTestBase {
     private final static Logger LOGGER = LoggerFactory.getLogger(BusinessTestBase.class);
     protected final static ExtendedStoreConnection extendedStoreConnection = ExtendedStoreConnectionFactory.get();
     protected DocumentSafeService service;
-    protected WithCache withCache = WithCache.FALSE;
 
     public static Set<UserIDAuth> users = new HashSet<>();
 
@@ -64,7 +60,7 @@ public class BusinessTestBase {
         LOGGER.debug("add bouncy castle provider");
         Security.addProvider(new BouncyCastleProvider());
         users.clear();
-        service = new DocumentSafeServiceImpl(withCache, extendedStoreConnection);
+        service = new DocumentSafeServiceImpl(extendedStoreConnection);
     }
 
     @After

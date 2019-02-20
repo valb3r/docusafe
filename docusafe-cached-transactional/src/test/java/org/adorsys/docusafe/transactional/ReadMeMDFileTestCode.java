@@ -4,21 +4,18 @@ import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
 import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
-import org.adorsys.docusafe.business.impl.WithCache;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.cached.transactional.CachedTransactionalDocumentSafeService;
-import org.adorsys.docusafe.cached.transactional.impl.*;
-import org.adorsys.docusafe.cached.transactional.impl.SimpleRequestMemoryContextImpl;
+import org.adorsys.docusafe.cached.transactional.impl.CachedTransactionalDocumentSafeServiceImpl;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.transactional.impl.TransactionalDocumentSafeServiceImpl;
 import org.adorsys.encobject.domain.ReadKeyPassword;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by peter on 19.02.19 09:45.
@@ -29,7 +26,7 @@ public class ReadMeMDFileTestCode {
         CachedTransactionalDocumentSafeService cachedTransactionalDocumentSafeService;
         {
             org.adorsys.docusafe.cached.transactional.impl.SimpleRequestMemoryContextImpl simpleRequestMemoryContext = new org.adorsys.docusafe.cached.transactional.impl.SimpleRequestMemoryContextImpl();
-            DocumentSafeService documentSafeService = new DocumentSafeServiceImpl(WithCache.TRUE, ExtendedStoreConnectionFactory.get());
+            DocumentSafeService documentSafeService = new DocumentSafeServiceImpl(ExtendedStoreConnectionFactory.get());
             TransactionalDocumentSafeService transactionalDocumentSafeService = new TransactionalDocumentSafeServiceImpl(simpleRequestMemoryContext, documentSafeService);
             cachedTransactionalDocumentSafeService = new CachedTransactionalDocumentSafeServiceImpl(simpleRequestMemoryContext, transactionalDocumentSafeService);
         }

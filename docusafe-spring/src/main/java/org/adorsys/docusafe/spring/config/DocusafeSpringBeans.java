@@ -34,10 +34,9 @@ public class DocusafeSpringBeans {
     }
 
     @Bean
-    public SpringCachedTransactionalDocusafeServiceFactory springCachedTransactionalDocusafeServiceFactory(SpringExtendedStoreConnectionFactory connectionFactory,
-                                                            @Value("${docusafe.cache:true}") Boolean withCache) {
+    public SpringCachedTransactionalDocusafeServiceFactory springCachedTransactionalDocusafeServiceFactory(SpringExtendedStoreConnectionFactory connectionFactory) {
         LOGGER.info(SpringCachedTransactionalDocusafeServiceFactory.class.getName() + " is required as @Bean");
-        return new SpringCachedTransactionalDocusafeServiceFactory(connectionFactory, withCache);
+        return new SpringCachedTransactionalDocusafeServiceFactory(connectionFactory);
     }
 
     @Bean

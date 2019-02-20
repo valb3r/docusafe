@@ -3,14 +3,12 @@ package org.adorsys.docusafe.transactional;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
 import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
-import org.adorsys.docusafe.business.impl.WithCache;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.transactional.impl.TransactionalDocumentSafeServiceImpl;
-import org.adorsys.docusafe.transactional.types.TxID;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -34,7 +32,7 @@ public class ParallelCommitTxTest extends TransactionFileStorageBaseTest {
     @Test
     public void parallelCommits() {
         ThreadMemoryContextImpl requestMemoryContext = new ThreadMemoryContextImpl();
-        DocumentSafeServiceImpl dssi = new DocumentSafeServiceImpl(WithCache.FALSE, ExtendedStoreConnectionFactory.get());
+        DocumentSafeServiceImpl dssi = new DocumentSafeServiceImpl(ExtendedStoreConnectionFactory.get());
         TransactionalDocumentSafeService transactionalFileStorage = new TransactionalDocumentSafeServiceImpl(requestMemoryContext, dssi);
 
         try {
