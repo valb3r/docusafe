@@ -1,5 +1,6 @@
 /*
 Ich bekomme das nicht ans laufen....
+*/
 package org.adorsys.docusafe.spring.factory;
 
 import org.adorsys.docusafe.business.types.UserID;
@@ -46,6 +47,6 @@ public class ReadMeMDFileTestCodeTest {
 
     }
 }
-*/
+
 
 
