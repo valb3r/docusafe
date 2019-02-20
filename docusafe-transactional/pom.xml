@@ -46,7 +46,7 @@
                     </execution>
                 </executions>
             </plugin>
-
+<!--
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
@@ -71,8 +71,8 @@
                     </execution>
                 </executions>
             </plugin>
+-->
         </plugins>
-
     </build>
     
 </project>

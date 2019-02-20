@@ -2,6 +2,7 @@ package org.adorsys.docusafe.business.utils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.service.BucketService;
 import org.adorsys.docusafe.service.exceptions.NoDocumentGuardExists;
 import org.adorsys.docusafe.service.types.DocumentKeyID;
@@ -48,6 +49,10 @@ public class GuardUtil {
             throw new NoDocumentGuardExists(keyStoreDirectory.append(documentDirectory.addSuffix(BUCKET_GUARD_KEY)));
         }
         return documentKeyID;
+    }
+
+    public static BucketDirectory getUniversalGuardDirecgtory(UserID userID) {
+        return UserIDUtil.getHomeBucketDirectory(userID);
     }
 
 }

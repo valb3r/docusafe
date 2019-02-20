@@ -71,7 +71,6 @@ public class BusinessUnencryptedTest extends BusinessTestBase {
         Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
 
         DocumentFQN documentFQN = new DocumentFQN("first/next/a-new-document.txt");
-        checkGuardsForDocument(userIDAuth, documentFQN, false);
         DSDocumentMetaInfo mi = new DSDocumentMetaInfo();
         UserMetaDataUtil.setNoEncryption(mi);
 
@@ -81,15 +80,14 @@ public class BusinessUnencryptedTest extends BusinessTestBase {
 
         // Speichern mit korrektem Kennwort
         DSDocument dsDocument1 = createDocument(userIDAuth, documentFQN, mi);
-        checkGuardsForDocument(userIDAuth, documentFQN, true);
-        Assert.assertEquals("Anzahl der guards", 2, getNumberOfGuards(userIDAuth.getUserID()));
+        Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
 
         // Lesen mit falschen Kennwort nicht möglich, obwohl unverschluesselt
-        CatchException.catchException(() -> readDocument(userIDAuthWrongPassword, documentFQN, dsDocument1.getDocumentContent(), true));
+        CatchException.catchException(() -> readDocument(userIDAuthWrongPassword, documentFQN, dsDocument1.getDocumentContent()));
         Assert.assertTrue(CatchException.caughtException() != null);
 
         // Lesen mit korrektem Kennwort
-        readDocument(userIDAuth, documentFQN, dsDocument1.getDocumentContent(), true);
+        readDocument(userIDAuth, documentFQN, dsDocument1.getDocumentContent());
     }
 
     @Test
@@ -101,7 +99,6 @@ public class BusinessUnencryptedTest extends BusinessTestBase {
             Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
 
             DocumentFQN documentFQN = new DocumentFQN("first/next/a-new-document.txt");
-            checkGuardsForDocument(userIDAuth, documentFQN, false);
             DSDocumentMetaInfo mi = new DSDocumentMetaInfo();
             UserMetaDataUtil.setNoEncryption(mi);
             boolean catched = false;
@@ -114,8 +111,7 @@ public class BusinessUnencryptedTest extends BusinessTestBase {
 
             // Speichern mit korrektem Kennwort
             DSDocumentStream dsDocument1 = createDocumentStream(userIDAuth, documentFQN, mi);
-            checkGuardsForDocument(userIDAuth, documentFQN, true);
-            Assert.assertEquals("Anzahl der guards", 2, getNumberOfGuards(userIDAuth.getUserID()));
+            Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
 
             {
                 boolean exceptionCaught = false;
@@ -124,8 +120,8 @@ public class BusinessUnencryptedTest extends BusinessTestBase {
                     try (InputStream is = readDocumentStream(
                             userIDAuthWrongPassword,
                             documentFQN,
-                            null, // stream kann nicht gebraucht werden, da test schon vorher auf Exception laufen muss
-                            true).
+                            null // stream kann nicht gebraucht werden, da test schon vorher auf Exception laufen muss
+                            ).
                             getDocumentStream()) {
                     }
                     ;
@@ -137,7 +133,7 @@ public class BusinessUnencryptedTest extends BusinessTestBase {
 
             // Lesen mit korrektem Kennwort
             try (InputStream is = dsDocument1.getDocumentStream()) {
-                readDocumentStream(userIDAuth, documentFQN, is, true);
+                readDocumentStream(userIDAuth, documentFQN, is);
             }
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);

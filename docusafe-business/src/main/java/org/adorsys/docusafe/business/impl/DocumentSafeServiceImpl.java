@@ -42,6 +42,7 @@ import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.service.types.DocumentKeyID;
 import org.adorsys.docusafe.service.types.complextypes.DocumentBucketPath;
 import org.adorsys.docusafe.service.types.complextypes.DocumentGuardLocation;
+import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKeyAndAccessType;
 import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
@@ -126,7 +127,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         BucketDirectory userHomeBucketDirectory = UserIDUtil.getHomeBucketDirectory(userIDAuth.getUserID());
         {   // create homeBucket
             bucketService.createBucket(userHomeBucketDirectory);
-            createSymmetricGuardForBucket(keyStoreAccess, userHomeBucketDirectory, AccessType.WRITE);
+            createSymmetricGuardForBucket(keyStoreAccess, GuardUtil.getUniversalGuardDirecgtory(userIDAuth.getUserID()), AccessType.WRITE);
         }
         {   // Now create a welcome file in the Home directory
             storeDocument(userIDAuth, createWelcomeDocument());
@@ -174,7 +175,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         storageMetadata.setSize(new Long(dsDocument.getDocumentContent().getValue().length));
         DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), dsDocument.getDocumentFQN());
         // getOrCreate dient hier nur der Authentifizierung, koennte zum Schreiben unverschluesselter Documente entfallen
-        DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, documentBucketPath.getBucketDirectory(), AccessType.WRITE);
+        DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = getMyDocumentKeyIDwithKey(userIDAuth);
 
         if (UserMetaDataUtil.isNotEncrypted(storageMetadata.getUserMetadata())) {
             documentPersistenceService.persistDocument(
@@ -228,7 +229,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         storageMetadata.mergeUserMetadata(dsDocumentStream.getDsDocumentMetaInfo());
         DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), dsDocumentStream.getDocumentFQN());
         // getOrCreate dient hier nur der Authentifizierung, koennte zum Schreiben unverschluesselter Documente entfallen
-        DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, documentBucketPath.getBucketDirectory(), AccessType.WRITE);
+        DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = getMyDocumentKeyIDwithKey(userIDAuth);
         if (UserMetaDataUtil.isNotEncrypted(storageMetadata.getUserMetadata())) {
             documentPersistenceService.persistDocumentStream(
                     documentBucketPath,
@@ -357,7 +358,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
             LOGGER.debug("granted access for " + userIDAuth + " to  " + receiverUserID + " for " + documentDirectoryFQN + " will be changed from " + grantedAccess + " to " + accessType);
         }
 
-        DocumentKeyIDWithKeyAndAccessType usersDocumentKeyIDWithKeyAndAccessType = getOrCreateDocumentKeyIDwithKeyForBucketPath(userIDAuth, documentBucketDirectory, AccessType.WRITE);
+        DocumentKeyIDWithKeyAndAccessType usersDocumentKeyIDWithKeyAndAccessType = getMyDocumentKeyIDwithKey(userIDAuth);
         {
             DocumentKeyIDWithKeyAndAccessType receiversDocumentKeyWithIDAndAccessType = new DocumentKeyIDWithKeyAndAccessType(usersDocumentKeyIDWithKeyAndAccessType.getDocumentKeyIDWithKey(), accessType);
             UserIDAuth receiverUserIDAuth = new UserIDAuth(receiverUserID, null);
@@ -504,6 +505,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
     }
 
 
+    /*
     private DocumentKeyIDWithKeyAndAccessType getOrCreateDocumentKeyIDwithKeyForBucketPath(UserIDAuth userIDAuth,
                                                                                            BucketDirectory documentDirectory,
                                                                                            AccessType accessType) {
@@ -519,6 +521,20 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         cacheDocumentKeyIDForDocumentDirectory(documentDirectory, documentKeyID);
         DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = loadCachedOrRealDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(keyStoreAccess, documentKeyID);
         LOGGER.debug("found " + documentKeyIDWithKeyAndAccessType + " for " + documentDirectory);
+        return documentKeyIDWithKeyAndAccessType;
+    }
+*/
+    private DocumentKeyIDWithKeyAndAccessType getMyDocumentKeyIDwithKey(UserIDAuth userIDAuth) {
+        BucketDirectory universalGuardDirectory = GuardUtil.getUniversalGuardDirecgtory(userIDAuth.getUserID());
+        LOGGER.debug("search key for " + universalGuardDirectory);
+        KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
+        DocumentKeyID documentKeyID = loadCachedDocumentKeyIDForDocumentDirectory(universalGuardDirectory);
+        if (documentKeyID == null) {
+            documentKeyID = GuardUtil.loadBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStorePath().getBucketDirectory(), universalGuardDirectory);
+        }
+        cacheDocumentKeyIDForDocumentDirectory(universalGuardDirectory, documentKeyID);
+        DocumentKeyIDWithKeyAndAccessType documentKeyIDWithKeyAndAccessType = loadCachedOrRealDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(keyStoreAccess, documentKeyID);
+        LOGGER.debug("found " + documentKeyIDWithKeyAndAccessType + " for " + universalGuardDirectory);
         return documentKeyIDWithKeyAndAccessType;
     }
 

@@ -162,32 +162,14 @@ public class BusinessTestBase {
     }
 
     protected DSDocument readDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN, DocumentContent documentContent) {
-        return readDocument(userIDAuth, documentFQN, documentContent, true);
-    }
-
-    protected DSDocument readDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN, DocumentContent documentContent, boolean checkGuards) {
-        DSDocument dsDocument1Result = service.readDocument(userIDAuth, documentFQN);
+        DSDocument dsDocumentResult = service.readDocument(userIDAuth, documentFQN);
         LOGGER.debug("original  document:" + new String(documentContent.getValue()));
-        LOGGER.debug("retrieved document:" + new String(dsDocument1Result.getDocumentContent().getValue()));
-        Assert.assertEquals("document content ok", documentContent, dsDocument1Result.getDocumentContent());
-        if (!checkGuards) {
-            return dsDocument1Result;
-        }
-
-        // check, there guards
-        BucketDirectory homeBucketDirectory = UserIDUtil.getHomeBucketDirectory(userIDAuth.getUserID());
-        BucketDirectory keyStoreDirectory = UserIDUtil.getKeyStoreDirectory(userIDAuth.getUserID());
-        BucketDirectory bucketDirectory = homeBucketDirectory.append(new BucketPath(dsDocument1Result.getDocumentFQN().getValue())).getBucketDirectory();
-        LOGGER.debug("check one bucket guard exists yet for " + bucketDirectory);
-        DocumentKeyID documentKeyID = GuardUtil.tryToLoadBucketGuardKeyFile(
-                new BucketServiceImpl(extendedStoreConnection),
-                keyStoreDirectory,
-                bucketDirectory);
-        Assert.assertNotNull(documentKeyID);
-        return dsDocument1Result;
+        LOGGER.debug("retrieved document:" + new String(dsDocumentResult.getDocumentContent().getValue()));
+        Assert.assertEquals("document content ok", documentContent, dsDocumentResult.getDocumentContent());
+        return dsDocumentResult;
     }
 
-    protected DSDocumentStream readDocumentStream(UserIDAuth userIDAuth, DocumentFQN documentFQN, InputStream origInputStream, boolean checkGuards) {
+    protected DSDocumentStream readDocumentStream(UserIDAuth userIDAuth, DocumentFQN documentFQN, InputStream origInputStream) {
         try {
             DSDocumentStream dsDocument1Result = service.readDocumentStream(userIDAuth, documentFQN);
             try (InputStream is2 = dsDocument1Result.getDocumentStream()) {
@@ -197,39 +179,9 @@ public class BusinessTestBase {
                 LOGGER.debug("retrieved document:" + readContent);
                 Assert.assertEquals("document content ok", origContent, readContent);
             }
-            if (!checkGuards) {
-                return dsDocument1Result;
-            }
-
-            // check, there guards
-            BucketDirectory homeBucketDirectory = UserIDUtil.getHomeBucketDirectory(userIDAuth.getUserID());
-            BucketDirectory keyStoreDirectory = UserIDUtil.getKeyStoreDirectory(userIDAuth.getUserID());
-            BucketDirectory bucketDirectory = homeBucketDirectory.append(new BucketPath(dsDocument1Result.getDocumentFQN().getValue())).getBucketDirectory();
-            LOGGER.debug("check one bucket guard exists yet for " + bucketDirectory);
-            DocumentKeyID documentKeyID = GuardUtil.tryToLoadBucketGuardKeyFile(
-                    new BucketServiceImpl(extendedStoreConnection),
-                    keyStoreDirectory,
-                    bucketDirectory);
-            Assert.assertNotNull(documentKeyID);
             return dsDocument1Result;
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
-        }
-    }
-
-    protected void checkGuardsForDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN, boolean exists) {
-        // check, there guards
-        BucketDirectory homeBucketDirectory = UserIDUtil.getHomeBucketDirectory(userIDAuth.getUserID());
-        BucketDirectory keyStoreDirectory = UserIDUtil.getKeyStoreDirectory(userIDAuth.getUserID());
-        BucketDirectory bucketDirectory = homeBucketDirectory.append(new BucketPath(documentFQN.getValue())).getBucketDirectory();
-        DocumentKeyID documentKeyID0 = GuardUtil.tryToLoadBucketGuardKeyFile(
-                new BucketServiceImpl(extendedStoreConnection),
-                keyStoreDirectory,
-                bucketDirectory);
-        if (exists) {
-            Assert.assertNotNull(documentKeyID0);
-        } else {
-            Assert.assertNull(documentKeyID0);
         }
     }
 
