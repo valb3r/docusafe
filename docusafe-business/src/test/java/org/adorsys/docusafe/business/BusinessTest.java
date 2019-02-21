@@ -375,6 +375,8 @@ public class BusinessTest extends BusinessTestBase {
             Assert.assertEquals(expectedDirsRecursive, list.getDirectories().size());
             Assert.assertEquals(expectedFilesRecursive, list.getFiles().size());
         }
+        service.deleteFolder(userIDAuth, dir);
+        LOGGER.info("removed all files");
     }
 
     @Test

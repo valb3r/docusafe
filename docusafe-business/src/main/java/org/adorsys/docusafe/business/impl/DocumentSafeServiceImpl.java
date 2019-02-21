@@ -289,7 +289,11 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
     @Override
     public void deleteFolder(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN) {
         BucketDirectory homeBucketDirectory = UserIDUtil.getHomeBucketDirectory(userIDAuth.getUserID());
-        BucketDirectory documentBucketDirectory = homeBucketDirectory.append(new BucketDirectory(documentDirectoryFQN.getValue()));
+        // DOC-84
+        BucketDirectory documentBucketDirectory = homeBucketDirectory;
+        if (! documentDirectoryFQN.getValue().equals(BucketPath.BUCKET_SEPARATOR)) {
+            documentBucketDirectory = documentBucketDirectory.append(new BucketDirectory(documentDirectoryFQN.getValue()));
+        }
         bucketService.deletePlainFolder(documentBucketDirectory);
     }
 
