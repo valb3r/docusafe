@@ -51,7 +51,7 @@ public class GuardUtil {
         return documentKeyID;
     }
 
-    public static BucketDirectory getUniversalGuardDirecgtory(UserID userID) {
+    public static BucketDirectory getUniversalGuardDirectory(UserID userID) {
         return UserIDUtil.getHomeBucketDirectory(userID);
     }
 

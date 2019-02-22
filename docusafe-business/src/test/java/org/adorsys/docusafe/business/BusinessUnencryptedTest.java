@@ -139,43 +139,4 @@ public class BusinessUnencryptedTest extends BusinessTestBase {
         }
     }
 
-    @Test
-    public void writeGrantedDocument() {
-        
-        UserIDAuth userIDAuth1 = createUser(new UserID("user1"), new ReadKeyPassword("passwordOfUser1"));
-        UserIDAuth userIDAuth1WrongPassword = new UserIDAuth(userIDAuth1.getUserID(), new ReadKeyPassword("total falsch und anders"));
-        UserIDAuth userIDAuth2 = createUser(new UserID("user2"), new ReadKeyPassword("passwordOfUser2"));
-        UserIDAuth userIDAuth2WrongPassword = new UserIDAuth(userIDAuth2.getUserID(), new ReadKeyPassword("wrong-password"));
-        Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth1.getUserID()));
-
-        DocumentFQN documentFQN = new DocumentFQN("first/next/a-new-document.txt");
-        service.grantAccessToUserForFolder(userIDAuth1, userIDAuth2.getUserID(), documentFQN.getDocumentDirectory(), true);
-
-        DSDocumentMetaInfo mi = new DSDocumentMetaInfo();
-        UserMetaDataUtil.setNoEncryption(mi);
-
-        DocumentContent documentContent = new DocumentContent("Einfach nur a bisserl Text".getBytes());
-        DSDocument dsDocument = new DSDocument(documentFQN, documentContent, mi);
-
-        // Mit falschen Kennwort schreiben nicht möglich
-        CatchException.catchException(() -> service.storeGrantedDocument(userIDAuth2WrongPassword, userIDAuth1.getUserID(), dsDocument));
-        Assert.assertTrue(CatchException.caughtException() != null);
-
-        service.storeGrantedDocument(userIDAuth2, userIDAuth1.getUserID(), dsDocument);
-
-        // Lesen mit falschen Kennwort nicht möglich, obwohl unverschluesselt
-        CatchException.catchException(() -> service.readGrantedDocument(userIDAuth2WrongPassword, userIDAuth1.getUserID(), documentFQN));
-        Assert.assertTrue(CatchException.caughtException() != null);
-
-        service.grantAccessToUserForFolder(userIDAuth1, userIDAuth2.getUserID(), documentFQN.getDocumentDirectory(), false);
-        // Lesen mit korrektem Kennwort nicht möglich, obwohl unverschluesselt, aber keine Berechtigung auf Verzeichnis
-        CatchException.catchException(() -> service.readGrantedDocument(userIDAuth2, userIDAuth1.getUserID(), documentFQN));
-        Assert.assertTrue(CatchException.caughtException() != null);
-
-        service.grantAccessToUserForFolder(userIDAuth1, userIDAuth2.getUserID(), documentFQN.getDocumentDirectory(), true);
-
-        // Lesen mit korrektem Kennwort
-        service.readGrantedDocument(userIDAuth2, userIDAuth1.getUserID(), documentFQN);
-    }
-
 }

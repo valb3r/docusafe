@@ -173,51 +173,6 @@ public class BusinessTest extends BusinessTestBase {
         readDocument(userIDAuth, dsDocument2.getDocumentFQN(), dsDocument2.getDocumentContent());
     }
 
-
-    @Test
-    public void grantAndRevokeAccessToFolder() {
-
-        UserIDAuth userIDAuthPeter = createUser(new UserID("peter"), new ReadKeyPassword("keyPasswordForPeter"));
-        UserIDAuth userIDAuthFrancis = createUser(new UserID("francis"), new ReadKeyPassword("keyPasswordForFrancis"));
-        DocumentFQN documentFQN = new DocumentFQN("first/next/a-new-document.txt");
-        DSDocument dsDocument1 = createDocument(userIDAuthPeter, documentFQN);
-
-        DocumentDirectoryFQN documentDirectoryFQN = new DocumentDirectoryFQN("first/next");
-
-        service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentDirectoryFQN, true);
-
-        DSDocument dsDocument = service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
-        Assert.assertEquals("document content ok", dsDocument1.getDocumentContent(), dsDocument.getDocumentContent());
-
-        service.storeGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), dsDocument);
-        // read again as francis
-        service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
-        // and read as peter
-        service.readDocument(userIDAuthPeter, documentFQN);
-
-        service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentDirectoryFQN, false);
-        CatchException.catchException(() -> service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN));
-        Assert.assertTrue(CatchException.caughtException() instanceof NoDocumentGuardExists);
-    }
-
-    // Hier speichert Benuzter A etwas für Benutzer A (also sich selbst) und will es anschliessend Benutzer B lesen lassen
-    @Test
-    public void grantReadAccessToFolderForOwnDocuments() {
-
-        UserIDAuth userIDAuthPeter = createUser(new UserID("peter"), new ReadKeyPassword("keyPasswordForPeter"));
-        UserIDAuth userIDAuthFrancis = createUser(new UserID("francis"), new ReadKeyPassword("keyPasswordForFrancis"));
-        DocumentFQN documentFQN = new DocumentFQN("first/document.txt");
-        DSDocument dsDocument1 = createDocument(userIDAuthPeter, documentFQN);
-
-        CatchException.catchException(() -> service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN));
-        Assert.assertNotNull(CatchException.caughtException());
-
-        service.grantAccessToUserForFolder(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentFQN.getDocumentDirectory(), true);
-        service.readGrantedDocument(userIDAuthFrancis, userIDAuthPeter.getUserID(), documentFQN);
-        service.readDocument(userIDAuthPeter, documentFQN);
-    }
-
-
     /**
      * Zunächst erstellt peter ein document.
      * Dann darf Francis das Document auch lesen, aber nicht schreiben.

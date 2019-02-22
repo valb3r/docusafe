@@ -1,5 +1,6 @@
 package org.adorsys.docusafe.business;
 
+import org.adorsys.docusafe.business.types.MoveType;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQNWithUserMetaData;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
@@ -8,6 +9,7 @@ import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.encobject.types.ListRecursiveFlag;
+import org.adorsys.encobject.types.OverwriteFlag;
 import org.adorsys.encobject.types.PublicKeyJWK;
 
 /**
@@ -21,12 +23,12 @@ public interface DocumentSafeService {
     void destroyUser(UserIDAuth userIDAuth);
 
     boolean userExists(UserID userID);
-    
+
     /**
      * returns the user public encryption key of the given user.
      */
     PublicKeyJWK findPublicEncryptionKey(UserID userID);
-    
+
     /**
      * Document
      */
@@ -43,11 +45,9 @@ public interface DocumentSafeService {
     BucketContentFQNWithUserMetaData list(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag);
 
     /**
-     * Grants
+     * move Document to other User
      */
-    void grantAccessToUserForFolder(UserIDAuth userIDAuth, UserID receiverUserID, DocumentDirectoryFQN documentDirectoryFQN, boolean grantOrRevokeGrant);
-
-    void storeGrantedDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument);
-    DSDocument readGrantedDocument(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN);
-    boolean grantedDocumentExists(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN);
+    void moveDocumnetToUser(UserIDAuth userIDAuth, UserID receiverUserID, DocumentFQN sourceDocumentFQN, DocumentFQN destDocumentFQN, MoveType moveType);
+    BucketContentFQNWithUserMetaData listInbox(UserIDAuth userIDAuth);
+    DSDocument readFromInbox(UserIDAuth userIDAuth, DocumentFQN source, DocumentFQN destination, OverwriteFlag overwriteFlag);
 }

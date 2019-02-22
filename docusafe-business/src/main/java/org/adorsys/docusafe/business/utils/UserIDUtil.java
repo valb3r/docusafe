@@ -35,8 +35,8 @@ public class UserIDUtil {
         return UserIDUtil.getUserRootBucketDirectory(userID).appendDirectory("home");
     }
 
-    public static BucketDirectory getGrantBucketDirectory(UserID userID) {
-        return UserIDUtil.getUserRootBucketDirectory(userID).appendDirectory(".grants");
+    public static BucketDirectory getInboxDirectory(UserID userID) {
+        return UserIDUtil.getUserRootBucketDirectory(userID).appendDirectory("INBOX");
     }
 
     private static ReadStorePassword getReadStorePassword(UserID userID) {
