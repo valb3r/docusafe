@@ -19,16 +19,16 @@ public class LazyUserCreationTest extends TransactionalDocumentSafeServiceBaseTe
     // @Test
     public void createUserAfterBegin() {
 
-        transactionalFileStorage.beginTransaction(userIDAuth);
-        transactionalFileStorage.createUser(userIDAuth);
+        transactionalDocumentSafeService.beginTransaction(userIDAuth);
+        transactionalDocumentSafeService.createUser(userIDAuth);
         DocumentFQN documentFQN = new DocumentFQN("testxTFolder/first.txt");
         DocumentContent documentContent = new DocumentContent("very first".getBytes());
         DSDocumentMetaInfo documentMetaInfo = new DSDocumentMetaInfo();
         DSDocument document = new DSDocument(documentFQN, documentContent, documentMetaInfo);
 
-        Assert.assertFalse(transactionalFileStorage.txDocumentExists(userIDAuth, documentFQN));
-        transactionalFileStorage.txStoreDocument(userIDAuth, document);
-        Assert.assertTrue(transactionalFileStorage.txDocumentExists(userIDAuth, documentFQN));
-        transactionalFileStorage.endTransaction(userIDAuth);
+        Assert.assertFalse(transactionalDocumentSafeService.txDocumentExists(userIDAuth, documentFQN));
+        transactionalDocumentSafeService.txStoreDocument(userIDAuth, document);
+        Assert.assertTrue(transactionalDocumentSafeService.txDocumentExists(userIDAuth, documentFQN));
+        transactionalDocumentSafeService.endTransaction(userIDAuth);
     }
 }

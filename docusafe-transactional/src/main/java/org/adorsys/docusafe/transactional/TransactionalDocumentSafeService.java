@@ -103,7 +103,7 @@ public interface TransactionalDocumentSafeService extends NonTransactionalDocume
      * @param destDocumentFQN the new path of the file for the new owner in its inbox
      * @param moveType move oder keep_copy. keep_copy means, the file exists for both users
      */
-    void txMoveDocumnetToInboxOfUser(UserIDAuth userIDAuth, UserID receiverUserID, DocumentFQN sourceDocumentFQN, DocumentFQN destDocumentFQN, MoveType moveType);
+    void txMoveDocumentToInboxOfUser(UserIDAuth userIDAuth, UserID receiverUserID, DocumentFQN sourceDocumentFQN, DocumentFQN destDocumentFQN, MoveType moveType);
 
 
     /**

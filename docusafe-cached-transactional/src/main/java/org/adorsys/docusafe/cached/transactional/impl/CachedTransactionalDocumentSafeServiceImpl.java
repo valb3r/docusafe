@@ -1,9 +1,7 @@
 package org.adorsys.docusafe.cached.transactional.impl;
 
-import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.docusafe.business.types.MoveType;
 import org.adorsys.docusafe.business.types.UserID;
-import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQNWithUserMetaData;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
@@ -42,43 +40,42 @@ import org.slf4j.LoggerFactory;
 public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransactionalDocumentSafeService {
     private final static Logger LOGGER = LoggerFactory.getLogger(CachedTransactionalDocumentSafeServiceImpl.class);
     public static final String CACHEND_TRANSACTIONAL_CONTEXT_MAP = "cachendTransactionalContextMap";
-    private TransactionalDocumentSafeService transactionalFileStorage;
+    private TransactionalDocumentSafeService transactionalDocumentSafeService;
     private RequestMemoryContext requestMemoryContext;
 
-    public CachedTransactionalDocumentSafeServiceImpl(RequestMemoryContext requestMemoryContext, TransactionalDocumentSafeService transactionalFileStorage) {
-        this.transactionalFileStorage = transactionalFileStorage;
+    public CachedTransactionalDocumentSafeServiceImpl(RequestMemoryContext requestMemoryContext, TransactionalDocumentSafeService transactionalDocumentSafeService) {
+        this.transactionalDocumentSafeService = transactionalDocumentSafeService;
         this.requestMemoryContext = requestMemoryContext;
-
     }
 
     @Override
     public void createUser(UserIDAuth userIDAuth) {
-        transactionalFileStorage.createUser(userIDAuth);
+        transactionalDocumentSafeService.createUser(userIDAuth);
     }
 
     @Override
     public void destroyUser(UserIDAuth userIDAuth) {
-        transactionalFileStorage.destroyUser(userIDAuth);
+        transactionalDocumentSafeService.destroyUser(userIDAuth);
     }
 
     @Override
     public boolean userExists(UserID userID) {
-        return transactionalFileStorage.userExists(userID);
+        return transactionalDocumentSafeService.userExists(userID);
     }
 
     @Override
     public PublicKeyJWK findPublicEncryptionKey(UserID userID) {
-        return transactionalFileStorage.findPublicEncryptionKey(userID);
+        return transactionalDocumentSafeService.findPublicEncryptionKey(userID);
     }
 
     @Override
     public BucketContentFQNWithUserMetaData nonTxListInbox(UserIDAuth userIDAuth) {
-        return transactionalFileStorage.nonTxListInbox(userIDAuth);
+        return transactionalDocumentSafeService.nonTxListInbox(userIDAuth);
     }
 
     @Override
     public void beginTransaction(UserIDAuth userIDAuth) {
-        transactionalFileStorage.beginTransaction(userIDAuth);
+        transactionalDocumentSafeService.beginTransaction(userIDAuth);
         createTransactionalContext(getCurrentTxID(userIDAuth.getUserID()));
     }
 
@@ -130,15 +127,15 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
     }
 
     @Override
-    public void txMoveDocumnetToInboxOfUser(UserIDAuth userIDAuth, UserID receiverUserID, DocumentFQN sourceDocumentFQN, DocumentFQN destDocumentFQN, MoveType moveType) {
+    public void txMoveDocumentToInboxOfUser(UserIDAuth userIDAuth, UserID receiverUserID, DocumentFQN sourceDocumentFQN, DocumentFQN destDocumentFQN, MoveType moveType) {
         // da diese Methoden intern Methoden wie txRead und txStore aufrufen, findet so das caching statt
-        transactionalFileStorage.txMoveDocumnetToInboxOfUser(userIDAuth, receiverUserID, sourceDocumentFQN, destDocumentFQN, moveType);
+        transactionalDocumentSafeService.txMoveDocumentToInboxOfUser(userIDAuth, receiverUserID, sourceDocumentFQN, destDocumentFQN, moveType);
     }
 
     @Override
     public DSDocument nonTxReadFromInbox(UserIDAuth userIDAuth, DocumentFQN source, DocumentFQN destination, OverwriteFlag overwriteFlag) {
         // da diese Methoden intern Methoden wie txRead und txStore aufrufen, findet so das caching statt
-        return transactionalFileStorage.nonTxReadFromInbox(userIDAuth, source, destination, overwriteFlag);
+        return transactionalDocumentSafeService.nonTxReadFromInbox(userIDAuth, source, destination, overwriteFlag);
     }
 
     private CachedTransactionalContext createTransactionalContext(TxID txid) {
@@ -147,7 +144,7 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
             cachedTransactionalContextMap = new CachedTransactionalContextMap();
             requestMemoryContext.put(CACHEND_TRANSACTIONAL_CONTEXT_MAP, cachedTransactionalContextMap);
         }
-        CachedTransactionalContext cachedTransactionalContext = new CachedTransactionalContext(transactionalFileStorage, txid);
+        CachedTransactionalContext cachedTransactionalContext = new CachedTransactionalContext(transactionalDocumentSafeService, txid);
         cachedTransactionalContextMap.put(txid, cachedTransactionalContext);
         return cachedTransactionalContext;
     }

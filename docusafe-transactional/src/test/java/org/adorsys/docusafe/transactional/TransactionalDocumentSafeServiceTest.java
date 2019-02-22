@@ -30,48 +30,48 @@ public class TransactionalDocumentSafeServiceTest extends TransactionalDocumentS
     @Test
     public void sendDocumentFromSystemUserToPeter() {
 
-        transactionalFileStorage.createUser(userIDAuth);
-        transactionalFileStorage.createUser(systemUserIDAuth);
+        transactionalDocumentSafeService.createUser(userIDAuth);
+        transactionalDocumentSafeService.createUser(systemUserIDAuth);
 
         DocumentFQN systemUserSourceDocFileName = new DocumentFQN("myfolder/firstFileOfSystemUser.txt");
         DocumentFQN petersInboxFileName = new DocumentFQN("peter/inboxfilename.txt");
         DocumentFQN petersTxFileName = new DocumentFQN("peterInternal/internalFilename.txt");
 
         LOGGER.debug("System user beginnt Transaction");
-        transactionalFileStorage.beginTransaction(systemUserIDAuth);
+        transactionalDocumentSafeService.beginTransaction(systemUserIDAuth);
 
         LOGGER.debug("System user erstellt document");
         DocumentContent documentContent = new DocumentContent("content for in put box".getBytes());
-        transactionalFileStorage.txStoreDocument(systemUserIDAuth, new DSDocument(systemUserSourceDocFileName, documentContent, new DSDocumentMetaInfo()));
+        transactionalDocumentSafeService.txStoreDocument(systemUserIDAuth, new DSDocument(systemUserSourceDocFileName, documentContent, new DSDocumentMetaInfo()));
 
         LOGGER.debug("System sucht Document");
-        TxBucketContentFQN txBucketContentFQN = transactionalFileStorage.txListDocuments(systemUserIDAuth, systemUserSourceDocFileName.getDocumentDirectory(), ListRecursiveFlag.TRUE);
+        TxBucketContentFQN txBucketContentFQN = transactionalDocumentSafeService.txListDocuments(systemUserIDAuth, systemUserSourceDocFileName.getDocumentDirectory(), ListRecursiveFlag.TRUE);
         Assert.assertEquals(1, txBucketContentFQN.getFiles().size());
         Assert.assertEquals(0, txBucketContentFQN.getDirectories().size());
 
         LOGGER.debug("Peter beginnt Transaction");
-        transactionalFileStorage.beginTransaction(userIDAuth);
+        transactionalDocumentSafeService.beginTransaction(userIDAuth);
 
         LOGGER.debug("Peter hat noch nix in der Inbox");
-        BucketContentFQNWithUserMetaData bucketContentFQNWithUserMetaData = transactionalFileStorage.nonTxListInbox(userIDAuth);
+        BucketContentFQNWithUserMetaData bucketContentFQNWithUserMetaData = transactionalDocumentSafeService.nonTxListInbox(userIDAuth);
         Assert.assertEquals(0, bucketContentFQNWithUserMetaData.getFiles().size());
         Assert.assertEquals(0, bucketContentFQNWithUserMetaData.getDirectories().size());
 
         LOGGER.debug("systemUser sendet Document an peter");
-        transactionalFileStorage.txMoveDocumnetToInboxOfUser(systemUserIDAuth, userIDAuth.getUserID(), systemUserSourceDocFileName, petersInboxFileName, MoveType.MOVE);
+        transactionalDocumentSafeService.txMoveDocumentToInboxOfUser(systemUserIDAuth, userIDAuth.getUserID(), systemUserSourceDocFileName, petersInboxFileName, MoveType.MOVE);
 
         LOGGER.debug("peter lädt das document");
-        transactionalFileStorage.nonTxReadFromInbox(userIDAuth, petersInboxFileName, petersTxFileName, OverwriteFlag.FALSE);
+        transactionalDocumentSafeService.nonTxReadFromInbox(userIDAuth, petersInboxFileName, petersTxFileName, OverwriteFlag.FALSE);
 
         LOGGER.debug("peter liest das document aus seinem tx space");
-        transactionalFileStorage.txReadDocument(userIDAuth, petersTxFileName);
+        transactionalDocumentSafeService.txReadDocument(userIDAuth, petersTxFileName);
 
 
     }
 
     @Test
     public void getCorrectVersionNumber() {
-        transactionalFileStorage.createUser(userIDAuth);
+        transactionalDocumentSafeService.createUser(userIDAuth);
         DocumentFQN documentFQN = new DocumentFQN("testxTFolder/first.txt");
         DocumentContent documentContent = new DocumentContent("very first".getBytes());
         DSDocumentMetaInfo documentMetaInfo = new DSDocumentMetaInfo();
@@ -79,24 +79,24 @@ public class TransactionalDocumentSafeServiceTest extends TransactionalDocumentS
 
         TxDocumentFQNVersion version = null;
         {
-            transactionalFileStorage.beginTransaction(userIDAuth);
-            CatchException.catchException(() -> transactionalFileStorage.getVersion(userIDAuth, documentFQN));
+            transactionalDocumentSafeService.beginTransaction(userIDAuth);
+            CatchException.catchException(() -> transactionalDocumentSafeService.getVersion(userIDAuth, documentFQN));
             Assert.assertTrue(CatchException.caughtException() != null);
-            transactionalFileStorage.txStoreDocument(userIDAuth, document);
-            version = transactionalFileStorage.getVersion(userIDAuth, documentFQN);
-            transactionalFileStorage.endTransaction(userIDAuth);
+            transactionalDocumentSafeService.txStoreDocument(userIDAuth, document);
+            version = transactionalDocumentSafeService.getVersion(userIDAuth, documentFQN);
+            transactionalDocumentSafeService.endTransaction(userIDAuth);
         }
         {
-            transactionalFileStorage.beginTransaction(userIDAuth);
-            Assert.assertEquals(version, transactionalFileStorage.getVersion(userIDAuth, documentFQN));
-            transactionalFileStorage.endTransaction(userIDAuth);
+            transactionalDocumentSafeService.beginTransaction(userIDAuth);
+            Assert.assertEquals(version, transactionalDocumentSafeService.getVersion(userIDAuth, documentFQN));
+            transactionalDocumentSafeService.endTransaction(userIDAuth);
         }
         {
-            transactionalFileStorage.beginTransaction(userIDAuth);
-            transactionalFileStorage.txDeleteDocument(userIDAuth, documentFQN);
-            CatchException.catchException(() -> transactionalFileStorage.getVersion(userIDAuth, documentFQN));
+            transactionalDocumentSafeService.beginTransaction(userIDAuth);
+            transactionalDocumentSafeService.txDeleteDocument(userIDAuth, documentFQN);
+            CatchException.catchException(() -> transactionalDocumentSafeService.getVersion(userIDAuth, documentFQN));
             Assert.assertTrue(CatchException.caughtException() != null);
-            transactionalFileStorage.endTransaction(userIDAuth);
+            transactionalDocumentSafeService.endTransaction(userIDAuth);
         }
     }
 
@@ -104,44 +104,44 @@ public class TransactionalDocumentSafeServiceTest extends TransactionalDocumentS
     public void testOverwrite() {
 
 
-        transactionalFileStorage.createUser(userIDAuth);
+        transactionalDocumentSafeService.createUser(userIDAuth);
         DocumentFQN documentFQN = new DocumentFQN("testxTFolder/first.txt");
         DocumentContent documentContent = new DocumentContent("very first".getBytes());
         DSDocumentMetaInfo documentMetaInfo = new DSDocumentMetaInfo();
         DSDocument document = new DSDocument(documentFQN, documentContent, documentMetaInfo);
 
         {
-            transactionalFileStorage.beginTransaction(userIDAuth);
-            transactionalFileStorage.txStoreDocument(userIDAuth, document);
-            transactionalFileStorage.endTransaction(userIDAuth);
+            transactionalDocumentSafeService.beginTransaction(userIDAuth);
+            transactionalDocumentSafeService.txStoreDocument(userIDAuth, document);
+            transactionalDocumentSafeService.endTransaction(userIDAuth);
         }
 
         {
-            transactionalFileStorage.beginTransaction(userIDAuth);
-            BucketContentFQN bucketContentFQN = transactionalFileStorage.txListDocuments(userIDAuth, documentFQN.getDocumentDirectory(), ListRecursiveFlag.TRUE);
+            transactionalDocumentSafeService.beginTransaction(userIDAuth);
+            BucketContentFQN bucketContentFQN = transactionalDocumentSafeService.txListDocuments(userIDAuth, documentFQN.getDocumentDirectory(), ListRecursiveFlag.TRUE);
             Assert.assertEquals(1, bucketContentFQN.getFiles().size());
             Assert.assertEquals(documentFQN, bucketContentFQN.getFiles().get(0));
-            DSDocument dsDocument = transactionalFileStorage.txReadDocument(userIDAuth, documentFQN);
+            DSDocument dsDocument = transactionalDocumentSafeService.txReadDocument(userIDAuth, documentFQN);
             Assert.assertEquals(documentFQN, dsDocument.getDocumentFQN());
             Assert.assertArrayEquals(document.getDocumentContent().getValue(), dsDocument.getDocumentContent().getValue());
-            transactionalFileStorage.endTransaction(userIDAuth);
+            transactionalDocumentSafeService.endTransaction(userIDAuth);
         }
         DSDocument newDocument = null;
         {
-            transactionalFileStorage.beginTransaction(userIDAuth);
-            BucketContentFQN bucketContentFQN = transactionalFileStorage.txListDocuments(userIDAuth, documentFQN.getDocumentDirectory(), ListRecursiveFlag.TRUE);
+            transactionalDocumentSafeService.beginTransaction(userIDAuth);
+            BucketContentFQN bucketContentFQN = transactionalDocumentSafeService.txListDocuments(userIDAuth, documentFQN.getDocumentDirectory(), ListRecursiveFlag.TRUE);
             Assert.assertEquals(1, bucketContentFQN.getFiles().size());
             Assert.assertEquals(documentFQN, bucketContentFQN.getFiles().get(0));
-            DSDocument dsDocument = transactionalFileStorage.txReadDocument(userIDAuth, documentFQN);
+            DSDocument dsDocument = transactionalDocumentSafeService.txReadDocument(userIDAuth, documentFQN);
             newDocument = new DSDocument(documentFQN, new DocumentContent("new content".getBytes()), dsDocument.getDsDocumentMetaInfo());
-            transactionalFileStorage.txStoreDocument(userIDAuth, newDocument);
-            transactionalFileStorage.endTransaction(userIDAuth);
+            transactionalDocumentSafeService.txStoreDocument(userIDAuth, newDocument);
+            transactionalDocumentSafeService.endTransaction(userIDAuth);
         }
         {
-            transactionalFileStorage.beginTransaction(userIDAuth);
-            DSDocument dsDocument = transactionalFileStorage.txReadDocument(userIDAuth, documentFQN);
+            transactionalDocumentSafeService.beginTransaction(userIDAuth);
+            DSDocument dsDocument = transactionalDocumentSafeService.txReadDocument(userIDAuth, documentFQN);
             Assert.assertArrayEquals(newDocument.getDocumentContent().getValue(), dsDocument.getDocumentContent().getValue());
-            transactionalFileStorage.endTransaction(userIDAuth);
+            transactionalDocumentSafeService.endTransaction(userIDAuth);
         }
     }
 
@@ -149,16 +149,16 @@ public class TransactionalDocumentSafeServiceTest extends TransactionalDocumentS
     public void innerTxNotImplementedYet() {
 
 
-        transactionalFileStorage.createUser(userIDAuth);
-        transactionalFileStorage.beginTransaction(userIDAuth);
-        transactionalFileStorage.beginTransaction(userIDAuth);
+        transactionalDocumentSafeService.createUser(userIDAuth);
+        transactionalDocumentSafeService.beginTransaction(userIDAuth);
+        transactionalDocumentSafeService.beginTransaction(userIDAuth);
     }
 
     @Test
     public void testCreateAndChange() {
 
 
-        transactionalFileStorage.createUser(userIDAuth);
+        transactionalDocumentSafeService.createUser(userIDAuth);
         DocumentFQN documentFQN = new DocumentFQN("testxTFolder/first.txt");
         DocumentContent documentContent1 = new DocumentContent("very first".getBytes());
         DocumentContent documentContent2 = new DocumentContent("second".getBytes());
@@ -167,53 +167,53 @@ public class TransactionalDocumentSafeServiceTest extends TransactionalDocumentS
 
         // Lege erste Version von first.txt an
         {
-            transactionalFileStorage.beginTransaction(userIDAuth);
+            transactionalDocumentSafeService.beginTransaction(userIDAuth);
             LOGGER.debug("FIRST TXID ");
-            Assert.assertFalse(transactionalFileStorage.txDocumentExists(userIDAuth, documentFQN));
-            transactionalFileStorage.txStoreDocument(userIDAuth, document);
-            Assert.assertTrue(transactionalFileStorage.txDocumentExists(userIDAuth, documentFQN));
-            transactionalFileStorage.endTransaction(userIDAuth);
+            Assert.assertFalse(transactionalDocumentSafeService.txDocumentExists(userIDAuth, documentFQN));
+            transactionalDocumentSafeService.txStoreDocument(userIDAuth, document);
+            Assert.assertTrue(transactionalDocumentSafeService.txDocumentExists(userIDAuth, documentFQN));
+            transactionalDocumentSafeService.endTransaction(userIDAuth);
         }
 
         // Beginne neue Transaction
         {
             // Überschreibe erste version mit zweiter Version
             requestMemoryContext.switchToUser(2);
-            transactionalFileStorage.beginTransaction(userIDAuth);
+            transactionalDocumentSafeService.beginTransaction(userIDAuth);
             LOGGER.debug("SECOND TXID ");
-            DSDocument dsDocument = transactionalFileStorage.txReadDocument(userIDAuth, documentFQN);
+            DSDocument dsDocument = transactionalDocumentSafeService.txReadDocument(userIDAuth, documentFQN);
             Assert.assertEquals(new String(documentContent1.getValue()), new String(dsDocument.getDocumentContent().getValue()));
             DSDocument document2 = new DSDocument(documentFQN, documentContent2, documentMetaInfo);
-            transactionalFileStorage.txStoreDocument(userIDAuth, document2);
+            transactionalDocumentSafeService.txStoreDocument(userIDAuth, document2);
 
             // Beginne dritte Transaktion VOR Ende der zweiten
             requestMemoryContext.switchToUser(3);
-            transactionalFileStorage.beginTransaction(userIDAuth);
+            transactionalDocumentSafeService.beginTransaction(userIDAuth);
             LOGGER.debug("THIRD TXID ");
             requestMemoryContext.switchToUser(2);
-            transactionalFileStorage.endTransaction(userIDAuth);
+            transactionalDocumentSafeService.endTransaction(userIDAuth);
 
             // Beginne vierte Transaktion NACH Ende der zweiten
             requestMemoryContext.switchToUser(4);
-            transactionalFileStorage.beginTransaction(userIDAuth);
+            transactionalDocumentSafeService.beginTransaction(userIDAuth);
             LOGGER.debug("FOURTH TXID ");
         }
 
         {
             // dritte Tx muss noch ersten Inhalt lesen
             requestMemoryContext.switchToUser(3);
-            DSDocument dsDocument = transactionalFileStorage.txReadDocument(userIDAuth, documentFQN);
+            DSDocument dsDocument = transactionalDocumentSafeService.txReadDocument(userIDAuth, documentFQN);
             Assert.assertEquals(new String(documentContent1.getValue()), new String(dsDocument.getDocumentContent().getValue()));
         }
 
         {
             // vierte Tx muss schon zweiten Inhalt lesen
             requestMemoryContext.switchToUser(4);
-            DSDocument dsDocument = transactionalFileStorage.txReadDocument(userIDAuth, documentFQN);
+            DSDocument dsDocument = transactionalDocumentSafeService.txReadDocument(userIDAuth, documentFQN);
             Assert.assertEquals(new String(documentContent2.getValue()), new String(dsDocument.getDocumentContent().getValue()));
         }
         requestMemoryContext.switchToUser(4);
-        BucketContentFQN list = transactionalFileStorage.txListDocuments(userIDAuth, new DocumentDirectoryFQN("/"), ListRecursiveFlag.TRUE);
+        BucketContentFQN list = transactionalDocumentSafeService.txListDocuments(userIDAuth, new DocumentDirectoryFQN("/"), ListRecursiveFlag.TRUE);
         list.getDirectories().forEach(dir -> LOGGER.debug("directory : " + dir));
         list.getFiles().forEach(file -> LOGGER.debug("file:" + file));
         Assert.assertEquals(1, list.getFiles().size());
@@ -224,8 +224,8 @@ public class TransactionalDocumentSafeServiceTest extends TransactionalDocumentS
     public void testDelete() {
 
 
-        transactionalFileStorage.createUser(userIDAuth);
-        transactionalFileStorage.beginTransaction(userIDAuth);
+        transactionalDocumentSafeService.createUser(userIDAuth);
+        transactionalDocumentSafeService.beginTransaction(userIDAuth);
 
         int N = 5;
         // TODO actually a performance test
@@ -237,28 +237,28 @@ public class TransactionalDocumentSafeServiceTest extends TransactionalDocumentS
                 DocumentContent docContent = new DocumentContent(("Content_" + i).getBytes());
                 DSDocumentMetaInfo docMetaInfo = new DSDocumentMetaInfo();
                 DSDocument doc = new DSDocument(docFQN, docContent, docMetaInfo);
-                transactionalFileStorage.txStoreDocument(userIDAuth, doc);
+                transactionalDocumentSafeService.txStoreDocument(userIDAuth, doc);
             }
-            transactionalFileStorage.endTransaction(userIDAuth);
+            transactionalDocumentSafeService.endTransaction(userIDAuth);
         }
 
         {
             // Nun löschen der N verschiedenen Dateien in einer Transaktion
             requestMemoryContext.switchToUser(2);
-            transactionalFileStorage.beginTransaction(userIDAuth);
+            transactionalDocumentSafeService.beginTransaction(userIDAuth);
             requestMemoryContext.switchToUser(3);
-            transactionalFileStorage.beginTransaction(userIDAuth);
+            transactionalDocumentSafeService.beginTransaction(userIDAuth);
             requestMemoryContext.switchToUser(4);
-            transactionalFileStorage.beginTransaction(userIDAuth);
+            transactionalDocumentSafeService.beginTransaction(userIDAuth);
             requestMemoryContext.switchToUser(2);
             // Nun erzeuge N verschiedene Datein in einem Verzeichnis
             for (int i = 0; i < N; i++) {
                 DocumentFQN docFQN = new DocumentFQN("folder1/file_" + i + ".txt");
-                Assert.assertTrue(transactionalFileStorage.txDocumentExists(userIDAuth, docFQN));
-                transactionalFileStorage.txDeleteDocument(userIDAuth, docFQN);
-                Assert.assertFalse(transactionalFileStorage.txDocumentExists(userIDAuth, docFQN));
+                Assert.assertTrue(transactionalDocumentSafeService.txDocumentExists(userIDAuth, docFQN));
+                transactionalDocumentSafeService.txDeleteDocument(userIDAuth, docFQN);
+                Assert.assertFalse(transactionalDocumentSafeService.txDocumentExists(userIDAuth, docFQN));
             }
-            transactionalFileStorage.endTransaction(userIDAuth);
+            transactionalDocumentSafeService.endTransaction(userIDAuth);
         }
 
         {
@@ -267,29 +267,29 @@ public class TransactionalDocumentSafeServiceTest extends TransactionalDocumentS
             for (int i = 0; i < N; i++) {
                 DocumentFQN docFQN = new DocumentFQN("folder1/file_" + i + ".txt");
                 requestMemoryContext.switchToUser(3);
-                Assert.assertTrue(transactionalFileStorage.txDocumentExists(userIDAuth, docFQN));
+                Assert.assertTrue(transactionalDocumentSafeService.txDocumentExists(userIDAuth, docFQN));
                 requestMemoryContext.switchToUser(4);
-                Assert.assertTrue(transactionalFileStorage.txDocumentExists(userIDAuth, docFQN));
+                Assert.assertTrue(transactionalDocumentSafeService.txDocumentExists(userIDAuth, docFQN));
             }
             requestMemoryContext.switchToUser(3);
-            transactionalFileStorage.txDeleteFolder(userIDAuth, new DocumentDirectoryFQN("folder1"));
+            transactionalDocumentSafeService.txDeleteFolder(userIDAuth, new DocumentDirectoryFQN("folder1"));
             // Nun sind alle Dateien in der thirdTx weg, in der fourthTx aber noch da
             for (int i = 0; i < N; i++) {
                 DocumentFQN docFQN = new DocumentFQN("folder1/file_" + i + ".txt");
                 requestMemoryContext.switchToUser(3);
-                Assert.assertFalse(transactionalFileStorage.txDocumentExists(userIDAuth, docFQN));
+                Assert.assertFalse(transactionalDocumentSafeService.txDocumentExists(userIDAuth, docFQN));
                 requestMemoryContext.switchToUser(4);
-                Assert.assertTrue(transactionalFileStorage.txDocumentExists(userIDAuth, docFQN));
+                Assert.assertTrue(transactionalDocumentSafeService.txDocumentExists(userIDAuth, docFQN));
             }
             requestMemoryContext.switchToUser(3);
             // this commit must not be successfull, because user 2 already commited the delete before.
-            CatchException.catchException(() -> transactionalFileStorage.endTransaction(userIDAuth));
+            CatchException.catchException(() -> transactionalDocumentSafeService.endTransaction(userIDAuth));
             Assert.assertTrue(CatchException.caughtException() instanceof TxRacingConditionException);
 
 
             requestMemoryContext.switchToUser(4);
             // this commit must be successfull, because the tx did not write or delete any file
-            transactionalFileStorage.endTransaction(userIDAuth);
+            transactionalDocumentSafeService.endTransaction(userIDAuth);
         }
     }
 
@@ -298,34 +298,34 @@ public class TransactionalDocumentSafeServiceTest extends TransactionalDocumentS
     public void testEndTxTwice() {
 
 
-        transactionalFileStorage.createUser(userIDAuth);
-        transactionalFileStorage.beginTransaction(userIDAuth);
-        transactionalFileStorage.endTransaction(userIDAuth);
-        transactionalFileStorage.endTransaction(userIDAuth);
+        transactionalDocumentSafeService.createUser(userIDAuth);
+        transactionalDocumentSafeService.beginTransaction(userIDAuth);
+        transactionalDocumentSafeService.endTransaction(userIDAuth);
+        transactionalDocumentSafeService.endTransaction(userIDAuth);
     }
 
     @Test
     public void twoCommitsInARow() {
-        transactionalFileStorage.createUser(userIDAuth);
+        transactionalDocumentSafeService.createUser(userIDAuth);
         DocumentFQN documentFQN = new DocumentFQN("testxTFolder/first.txt");
         DocumentContent documentContent = new DocumentContent("very first".getBytes());
         DSDocumentMetaInfo documentMetaInfo = new DSDocumentMetaInfo();
         DSDocument document = new DSDocument(documentFQN, documentContent, documentMetaInfo);
 
-        transactionalFileStorage.beginTransaction(userIDAuth);
+        transactionalDocumentSafeService.beginTransaction(userIDAuth);
         LOGGER.debug("FIRST TXID ");
-        Assert.assertFalse(transactionalFileStorage.txDocumentExists(userIDAuth, documentFQN));
-        transactionalFileStorage.txStoreDocument(userIDAuth, document);
-        Assert.assertTrue(transactionalFileStorage.txDocumentExists(userIDAuth, documentFQN));
-        transactionalFileStorage.endTransaction(userIDAuth);
+        Assert.assertFalse(transactionalDocumentSafeService.txDocumentExists(userIDAuth, documentFQN));
+        transactionalDocumentSafeService.txStoreDocument(userIDAuth, document);
+        Assert.assertTrue(transactionalDocumentSafeService.txDocumentExists(userIDAuth, documentFQN));
+        transactionalDocumentSafeService.endTransaction(userIDAuth);
 
-        transactionalFileStorage.beginTransaction(userIDAuth);
+        transactionalDocumentSafeService.beginTransaction(userIDAuth);
         LOGGER.debug("SECOND TXID ");
-        DSDocument dsDocument = transactionalFileStorage.txReadDocument(userIDAuth, documentFQN);
+        DSDocument dsDocument = transactionalDocumentSafeService.txReadDocument(userIDAuth, documentFQN);
         Assert.assertEquals(new String(documentContent.getValue()), new String(dsDocument.getDocumentContent().getValue()));
-        transactionalFileStorage.endTransaction(userIDAuth);
+        transactionalDocumentSafeService.endTransaction(userIDAuth);
 
-        CatchException.catchException(() -> transactionalFileStorage.txReadDocument(userIDAuth, documentFQN));
+        CatchException.catchException(() -> transactionalDocumentSafeService.txReadDocument(userIDAuth, documentFQN));
         Assert.assertTrue(CatchException.caughtException() instanceof TxNotActiveException);
     }
 }

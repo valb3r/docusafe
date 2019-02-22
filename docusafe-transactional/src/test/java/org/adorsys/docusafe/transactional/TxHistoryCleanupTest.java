@@ -38,7 +38,7 @@ public class TxHistoryCleanupTest extends TransactionalDocumentSafeServiceBaseTe
         int numberOfFilesToOverwritePerTx = 2;
         int expectedNumberOfFilesAfterIteration = (numberOfFilesToCreatePerTx * numberOfTransactinos) - (numberOfTransactinos * numberOfFilesToDeletePerTx);
 
-        transactionalFileStorage.createUser(userIDAuth);
+        transactionalDocumentSafeService.createUser(userIDAuth);
         DocumentDirectoryFQN documentDirectoryFQN = new DocumentDirectoryFQN("folder");
 
         LOGGER.info("numberOfTransactions:                "  + numberOfTransactinos);
@@ -51,67 +51,67 @@ public class TxHistoryCleanupTest extends TransactionalDocumentSafeServiceBaseTe
         {
             // create documents
             for (int i = 0; i < numberOfTransactinos; i++) {
-                transactionalFileStorage.beginTransaction(userIDAuth);
+                transactionalDocumentSafeService.beginTransaction(userIDAuth);
                 for (int j = 0; j < numberOfFilesToCreatePerTx; j++) {
                     DSDocument document = new DSDocument(documentDirectoryFQN.addName("file_" + staticCounter++ + ".TXT"),
                             new DocumentContent(("Content of File " + i).getBytes()),
                             new DSDocumentMetaInfo());
-                    transactionalFileStorage.txStoreDocument(userIDAuth, document);
+                    transactionalDocumentSafeService.txStoreDocument(userIDAuth, document);
                     memoryMap.put(document.getDocumentFQN(), document.getDocumentContent());
                 }
-                // show("create loop:", transactionalFileStorage.txListDocuments(userIDAuth, documentDirectoryFQN, ListRecursiveFlag.TRUE));
-                transactionalFileStorage.endTransaction(userIDAuth);
+                // show("create loop:", transactionalDocumentSafeService.txListDocuments(userIDAuth, documentDirectoryFQN, ListRecursiveFlag.TRUE));
+                transactionalDocumentSafeService.endTransaction(userIDAuth);
             }
         }
         {
             // delete documentes
             for (int i = 0; i < numberOfTransactinos; i++) {
-                transactionalFileStorage.beginTransaction(userIDAuth);
+                transactionalDocumentSafeService.beginTransaction(userIDAuth);
                 for (int j = 0; j < numberOfFilesToDeletePerTx; j++) {
-                    BucketContentFQN bucketContentFQN = transactionalFileStorage.txListDocuments(userIDAuth, documentDirectoryFQN, ListRecursiveFlag.TRUE);
+                    BucketContentFQN bucketContentFQN = transactionalDocumentSafeService.txListDocuments(userIDAuth, documentDirectoryFQN, ListRecursiveFlag.TRUE);
                     int currentNumberOfFiles = bucketContentFQN.getFiles().size();
                     int indexToDelete = getRandomInRange(currentNumberOfFiles);
                     LOGGER.debug("Transaction number " + i + " has " + currentNumberOfFiles + " files");
                     LOGGER.debug("Index to delete is " + indexToDelete);
-                    transactionalFileStorage.txDeleteDocument(userIDAuth, bucketContentFQN.getFiles().get(indexToDelete));
+                    transactionalDocumentSafeService.txDeleteDocument(userIDAuth, bucketContentFQN.getFiles().get(indexToDelete));
                     memoryMap.remove(bucketContentFQN.getFiles().get(indexToDelete));
 
                 }
 
-                // show("delete loop:", transactionalFileStorage.txListDocuments(userIDAuth, documentDirectoryFQN, ListRecursiveFlag.TRUE));
-                transactionalFileStorage.endTransaction(userIDAuth);
+                // show("delete loop:", transactionalDocumentSafeService.txListDocuments(userIDAuth, documentDirectoryFQN, ListRecursiveFlag.TRUE));
+                transactionalDocumentSafeService.endTransaction(userIDAuth);
             }
         }
         {
             // overwrite documents
             for (int i = 0; i < numberOfTransactinos; i++) {
-                transactionalFileStorage.beginTransaction(userIDAuth);
+                transactionalDocumentSafeService.beginTransaction(userIDAuth);
                 for (int j = 0; j < numberOfFilesToOverwritePerTx; j++) {
-                    // show("overwrite loop", transactionalFileStorage.txListDocuments(userIDAuth, documentDirectoryFQN, ListRecursiveFlag.TRUE));
-                    BucketContentFQN bucketContentFQN = transactionalFileStorage.txListDocuments(userIDAuth, documentDirectoryFQN, ListRecursiveFlag.TRUE);
+                    // show("overwrite loop", transactionalDocumentSafeService.txListDocuments(userIDAuth, documentDirectoryFQN, ListRecursiveFlag.TRUE));
+                    BucketContentFQN bucketContentFQN = transactionalDocumentSafeService.txListDocuments(userIDAuth, documentDirectoryFQN, ListRecursiveFlag.TRUE);
                     int currentNumberOfFiles = bucketContentFQN.getFiles().size();
                     int indexToOverwrite = getRandomInRange(currentNumberOfFiles);
-                    DSDocument dsDocument = transactionalFileStorage.txReadDocument(userIDAuth, bucketContentFQN.getFiles().get(indexToOverwrite));
+                    DSDocument dsDocument = transactionalDocumentSafeService.txReadDocument(userIDAuth, bucketContentFQN.getFiles().get(indexToOverwrite));
                     DSDocument newDsDocument = new DSDocument(dsDocument.getDocumentFQN(),
                             new DocumentContent((new String(dsDocument.getDocumentContent().getValue()) + " overwritten in tx ").getBytes()),
                             new DSDocumentMetaInfo());
-                    transactionalFileStorage.txStoreDocument(userIDAuth, newDsDocument);
+                    transactionalDocumentSafeService.txStoreDocument(userIDAuth, newDsDocument);
                     memoryMap.put(newDsDocument.getDocumentFQN(), newDsDocument.getDocumentContent());
                 }
-                transactionalFileStorage.endTransaction(userIDAuth);
+                transactionalDocumentSafeService.endTransaction(userIDAuth);
             }
         }
         {
-            transactionalFileStorage.beginTransaction(userIDAuth);
-            BucketContentFQN bucketContentFQN = transactionalFileStorage.txListDocuments(userIDAuth, documentDirectoryFQN, ListRecursiveFlag.TRUE);
+            transactionalDocumentSafeService.beginTransaction(userIDAuth);
+            BucketContentFQN bucketContentFQN = transactionalDocumentSafeService.txListDocuments(userIDAuth, documentDirectoryFQN, ListRecursiveFlag.TRUE);
             LOGGER.debug("LIST OF FILES IN TRANSACTIONAL LAYER: " + bucketContentFQN.toString());
             Assert.assertEquals(memoryMap.keySet().size(), bucketContentFQN.getFiles().size());
             bucketContentFQN.getFiles().forEach(documentFQN -> {
-                DSDocument dsDocument = transactionalFileStorage.txReadDocument(userIDAuth, documentFQN);
+                DSDocument dsDocument = transactionalDocumentSafeService.txReadDocument(userIDAuth, documentFQN);
                 Assert.assertArrayEquals(memoryMap.get(documentFQN).getValue(), dsDocument.getDocumentContent().getValue());
                 LOGGER.debug(documentFQN + " checked!");
             });
-            transactionalFileStorage.endTransaction(userIDAuth);
+            transactionalDocumentSafeService.endTransaction(userIDAuth);
             Assert.assertEquals(expectedNumberOfFilesAfterIteration, bucketContentFQN.getFiles().size());
         }
 

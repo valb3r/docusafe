@@ -20,75 +20,75 @@ public class MultipleUserSameContextTest extends TransactionalDocumentSafeServic
     @Test
     public void twoUsersCreateDocumenteInTheirOwnScopeButWithTheSameRequestContext() {
         {
-            transactionalFileStorage.createUser(userIDAuth);
-            transactionalFileStorage.createUser(systemUserIDAuth);
+            transactionalDocumentSafeService.createUser(userIDAuth);
+            transactionalDocumentSafeService.createUser(systemUserIDAuth);
 
             DSDocument document1 = createDocument("file1");
             DSDocument document2 = createDocument("file2");
 
             LOGGER.debug("user1 starts TX");
-            transactionalFileStorage.beginTransaction(userIDAuth);
+            transactionalDocumentSafeService.beginTransaction(userIDAuth);
 
             LOGGER.debug("user1 cant see the not yet created document " + document1.getDocumentFQN());
-            Assert.assertFalse(transactionalFileStorage.txDocumentExists(userIDAuth, document1.getDocumentFQN()));
+            Assert.assertFalse(transactionalDocumentSafeService.txDocumentExists(userIDAuth, document1.getDocumentFQN()));
 
             LOGGER.debug("user1 creates " + document1.getDocumentFQN());
-            transactionalFileStorage.txStoreDocument(userIDAuth, document1);
+            transactionalDocumentSafeService.txStoreDocument(userIDAuth, document1);
 
             LOGGER.debug("user1 can see his own documents " + document1.getDocumentFQN());
-            Assert.assertTrue(transactionalFileStorage.txDocumentExists(userIDAuth, document1.getDocumentFQN()));
+            Assert.assertTrue(transactionalDocumentSafeService.txDocumentExists(userIDAuth, document1.getDocumentFQN()));
 
             LOGGER.debug("user2 starts TX");
-            transactionalFileStorage.beginTransaction(systemUserIDAuth);
+            transactionalDocumentSafeService.beginTransaction(systemUserIDAuth);
 
             LOGGER.debug("user2 cant see documents of user1");
-            Assert.assertFalse(transactionalFileStorage.txDocumentExists(systemUserIDAuth, document1.getDocumentFQN()));
+            Assert.assertFalse(transactionalDocumentSafeService.txDocumentExists(systemUserIDAuth, document1.getDocumentFQN()));
 
             LOGGER.debug("user1 ends TX");
-            transactionalFileStorage.endTransaction(userIDAuth);
+            transactionalDocumentSafeService.endTransaction(userIDAuth);
 
             LOGGER.debug("user2 still cant see documents of user1");
-            Assert.assertFalse(transactionalFileStorage.txDocumentExists(systemUserIDAuth, document1.getDocumentFQN()));
+            Assert.assertFalse(transactionalDocumentSafeService.txDocumentExists(systemUserIDAuth, document1.getDocumentFQN()));
 
             LOGGER.debug("user2 creates " + document2.getDocumentFQN());
-            transactionalFileStorage.txStoreDocument(systemUserIDAuth, document2);
+            transactionalDocumentSafeService.txStoreDocument(systemUserIDAuth, document2);
 
             LOGGER.debug("user2 cant see the new document");
-            Assert.assertTrue(transactionalFileStorage.txDocumentExists(systemUserIDAuth, document2.getDocumentFQN()));
+            Assert.assertTrue(transactionalDocumentSafeService.txDocumentExists(systemUserIDAuth, document2.getDocumentFQN()));
 
             LOGGER.debug("user1 cant do anything withoud opening another tx");
-            CatchException.catchException(() -> transactionalFileStorage.txDocumentExists(userIDAuth, document1.getDocumentFQN()));
+            CatchException.catchException(() -> transactionalDocumentSafeService.txDocumentExists(userIDAuth, document1.getDocumentFQN()));
             Assert.assertNotNull(CatchException.caughtException());
 
             LOGGER.debug("user1 starts another TX");
-            transactionalFileStorage.beginTransaction(userIDAuth);
+            transactionalDocumentSafeService.beginTransaction(userIDAuth);
 
             LOGGER.debug("user1 can see his own documents " + document1.getDocumentFQN());
-            Assert.assertTrue(transactionalFileStorage.txDocumentExists(userIDAuth, document1.getDocumentFQN()));
+            Assert.assertTrue(transactionalDocumentSafeService.txDocumentExists(userIDAuth, document1.getDocumentFQN()));
 
             LOGGER.debug("user1 cant see documents of user2 " + document2.getDocumentFQN());
-            Assert.assertFalse(transactionalFileStorage.txDocumentExists(userIDAuth, document2.getDocumentFQN()));
+            Assert.assertFalse(transactionalDocumentSafeService.txDocumentExists(userIDAuth, document2.getDocumentFQN()));
 
             LOGGER.debug("user2 ends TX");
-            transactionalFileStorage.endTransaction(systemUserIDAuth);
+            transactionalDocumentSafeService.endTransaction(systemUserIDAuth);
 
             LOGGER.debug("user1 still cant see documents of user2 " + document2.getDocumentFQN());
-            Assert.assertFalse(transactionalFileStorage.txDocumentExists(userIDAuth, document2.getDocumentFQN()));
+            Assert.assertFalse(transactionalDocumentSafeService.txDocumentExists(userIDAuth, document2.getDocumentFQN()));
 
             LOGGER.debug("user1 ends TX");
-            transactionalFileStorage.endTransaction(userIDAuth);
+            transactionalDocumentSafeService.endTransaction(userIDAuth);
 
             LOGGER.debug("user1 starts another TX");
-            transactionalFileStorage.beginTransaction(userIDAuth);
+            transactionalDocumentSafeService.beginTransaction(userIDAuth);
 
             LOGGER.debug("user2 starts another TX");
-            transactionalFileStorage.beginTransaction(systemUserIDAuth);
+            transactionalDocumentSafeService.beginTransaction(systemUserIDAuth);
 
             LOGGER.debug("user1 will never see documents of user2 " + document2.getDocumentFQN());
-            Assert.assertFalse(transactionalFileStorage.txDocumentExists(userIDAuth, document2.getDocumentFQN()));
+            Assert.assertFalse(transactionalDocumentSafeService.txDocumentExists(userIDAuth, document2.getDocumentFQN()));
 
             LOGGER.debug("user2 will never see documents of user1 " + document1.getDocumentFQN());
-            Assert.assertFalse(transactionalFileStorage.txDocumentExists(systemUserIDAuth, document1.getDocumentFQN()));
+            Assert.assertFalse(transactionalDocumentSafeService.txDocumentExists(systemUserIDAuth, document1.getDocumentFQN()));
         }
     }
 

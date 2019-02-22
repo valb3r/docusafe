@@ -24,7 +24,7 @@ import java.util.Map;
  * Created by peter on 09.07.18 at 14:40.
  */
 public class TransactionalDocumentSafeServiceTestWrapper implements TransactionalDocumentSafeService {
-    int MAX = 22;
+    int MAX = 30;
 
     public static final String CREATE_USER = "createUser";
     public static final String DESTROY_USER = "destroyUser";
@@ -151,9 +151,9 @@ public class TransactionalDocumentSafeServiceTestWrapper implements Transactiona
     }
 
     @Override
-    public void txMoveDocumnetToInboxOfUser(UserIDAuth userIDAuth, UserID receiverUserID, DocumentFQN sourceDocumentFQN, DocumentFQN destDocumentFQN, MoveType moveType) {
+    public void txMoveDocumentToInboxOfUser(UserIDAuth userIDAuth, UserID receiverUserID, DocumentFQN sourceDocumentFQN, DocumentFQN destDocumentFQN, MoveType moveType) {
         inc(TX_MOVE_DOCUMENT_TO_INBOX_OF_USER);
-        realTransactionalFileStorage.txMoveDocumnetToInboxOfUser(userIDAuth, receiverUserID, sourceDocumentFQN, destDocumentFQN, moveType);
+        realTransactionalFileStorage.txMoveDocumentToInboxOfUser(userIDAuth, receiverUserID, sourceDocumentFQN, destDocumentFQN, moveType);
 
     }
 

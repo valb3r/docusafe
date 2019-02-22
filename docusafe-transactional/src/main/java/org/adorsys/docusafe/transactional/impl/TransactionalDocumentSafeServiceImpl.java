@@ -147,8 +147,8 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
     // INBOX STUFF
     // ============================================================================================
     @Override
-    public void txMoveDocumnetToInboxOfUser(UserIDAuth userIDAuth, UserID receiverUserID, DocumentFQN sourceDocumentFQN, DocumentFQN destDocumentFQN, MoveType moveType) {
-        LOGGER.debug("start txMoveDocumnetToInboxOfUser from " + userIDAuth.getUserID() + " " + sourceDocumentFQN + " to " + receiverUserID + " " + destDocumentFQN);
+    public void txMoveDocumentToInboxOfUser(UserIDAuth userIDAuth, UserID receiverUserID, DocumentFQN sourceDocumentFQN, DocumentFQN destDocumentFQN, MoveType moveType) {
+        LOGGER.debug("start txMoveDocumentToInboxOfUser from " + userIDAuth.getUserID() + " " + sourceDocumentFQN + " to " + receiverUserID + " " + destDocumentFQN);
 
         // Hier kann die Methode des documentSafeService nicht benutzt werden, da das Document ggf. erst in dieser Tx angelegt wurde und pyhsisch noch nicht exisitiert.
         DSDocument document = txReadDocument(userIDAuth, sourceDocumentFQN);
@@ -158,7 +158,7 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
         if (moveType.equals(MoveType.MOVE)) {
             txDeleteDocument(userIDAuth, sourceDocumentFQN);
         }
-        LOGGER.debug("finished txMoveDocumnetToInboxOfUser from " + userIDAuth.getUserID() + " " + sourceDocumentFQN + " to " + receiverUserID + " " + destDocumentFQN);
+        LOGGER.debug("finished txMoveDocumentToInboxOfUser from " + userIDAuth.getUserID() + " " + sourceDocumentFQN + " to " + receiverUserID + " " + destDocumentFQN);
     }
 
     @Override
