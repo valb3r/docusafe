@@ -5,15 +5,14 @@ import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.junit.Assert;
-import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Created by peter on 28.11.18 17:11.
  */
-public class LazyUserCreationTest extends TransactionFileStorageBaseTest {
-    private final static Logger LOGGER = LoggerFactory.getLogger(TransactionalFileStorageTest.class);
+public class LazyUserCreationTest extends TransactionalDocumentSafeServiceBaseTest {
+    private final static Logger LOGGER = LoggerFactory.getLogger(TransactionalDocumentSafeServiceTest.class);
 
     // TODO DOC-73 wurde nicht umgesetzt, da Francis in Telco mit Peter entschieden hat, dass
     // begin und endTransaction NICHT automatisch aus dem Restlayer erfolgen sollten

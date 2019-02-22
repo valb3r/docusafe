@@ -23,7 +23,7 @@ import java.util.concurrent.Semaphore;
  * Created by peter on 13.06.18 at 11:38.
  */
 // @SuppressWarnings("Duplicates")
-public class ParallelCommitTxTest extends TransactionFileStorageBaseTest {
+public class ParallelCommitTxTest extends TransactionalDocumentSafeServiceBaseTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(ParallelCommitTxTest.class);
     private final static int PARALLEL_INSTANCES = 5;
     private final static String FILENAME = "paralleltest.txt";

@@ -6,7 +6,6 @@ import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.service.types.DocumentContent;
-import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.apache.commons.lang3.time.StopWatch;
 import org.junit.Assert;
@@ -21,7 +20,7 @@ import java.util.concurrent.ThreadLocalRandom;
 /**
  * Created by peter on 11.07.18 at 11:20.
  */
-public class TxHistoryCleanupTest extends TransactionFileStorageBaseTest {
+public class TxHistoryCleanupTest extends TransactionalDocumentSafeServiceBaseTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(TxHistoryCleanupTest.class);
 
     @Test

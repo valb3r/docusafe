@@ -1,7 +1,9 @@
 package org.adorsys.docusafe.transactional;
 
 import com.googlecode.catchexception.CatchException;
+import org.adorsys.docusafe.business.types.MoveType;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
+import org.adorsys.docusafe.business.types.complex.BucketContentFQNWithUserMetaData;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
@@ -10,8 +12,10 @@ import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.transactional.exceptions.TxInnerException;
 import org.adorsys.docusafe.transactional.exceptions.TxNotActiveException;
 import org.adorsys.docusafe.transactional.exceptions.TxRacingConditionException;
+import org.adorsys.docusafe.transactional.types.TxBucketContentFQN;
 import org.adorsys.docusafe.transactional.types.TxDocumentFQNVersion;
 import org.adorsys.encobject.types.ListRecursiveFlag;
+import org.adorsys.encobject.types.OverwriteFlag;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -20,8 +24,50 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by peter on 12.06.18 at 08:44.
  */
-public class TransactionalFileStorageTest extends TransactionFileStorageBaseTest {
-    private final static Logger LOGGER = LoggerFactory.getLogger(TransactionalFileStorageTest.class);
+public class TransactionalDocumentSafeServiceTest extends TransactionalDocumentSafeServiceBaseTest {
+    private final static Logger LOGGER = LoggerFactory.getLogger(TransactionalDocumentSafeServiceTest.class);
+
+    @Test
+    public void sendDocumentFromSystemUserToPeter() {
+
+        transactionalFileStorage.createUser(userIDAuth);
+        transactionalFileStorage.createUser(systemUserIDAuth);
+
+        DocumentFQN systemUserSourceDocFileName = new DocumentFQN("myfolder/firstFileOfSystemUser.txt");
+        DocumentFQN petersInboxFileName = new DocumentFQN("peter/inboxfilename.txt");
+        DocumentFQN petersTxFileName = new DocumentFQN("peterInternal/internalFilename.txt");
+
+        LOGGER.debug("System user beginnt Transaction");
+        transactionalFileStorage.beginTransaction(systemUserIDAuth);
+
+        LOGGER.debug("System user erstellt document");
+        DocumentContent documentContent = new DocumentContent("content for in put box".getBytes());
+        transactionalFileStorage.txStoreDocument(systemUserIDAuth, new DSDocument(systemUserSourceDocFileName, documentContent, new DSDocumentMetaInfo()));
+
+        LOGGER.debug("System sucht Document");
+        TxBucketContentFQN txBucketContentFQN = transactionalFileStorage.txListDocuments(systemUserIDAuth, systemUserSourceDocFileName.getDocumentDirectory(), ListRecursiveFlag.TRUE);
+        Assert.assertEquals(1, txBucketContentFQN.getFiles().size());
+        Assert.assertEquals(0, txBucketContentFQN.getDirectories().size());
+
+        LOGGER.debug("Peter beginnt Transaction");
+        transactionalFileStorage.beginTransaction(userIDAuth);
+
+        LOGGER.debug("Peter hat noch nix in der Inbox");
+        BucketContentFQNWithUserMetaData bucketContentFQNWithUserMetaData = transactionalFileStorage.nonTxListInbox(userIDAuth);
+        Assert.assertEquals(0, bucketContentFQNWithUserMetaData.getFiles().size());
+        Assert.assertEquals(0, bucketContentFQNWithUserMetaData.getDirectories().size());
+
+        LOGGER.debug("systemUser sendet Document an peter");
+        transactionalFileStorage.txMoveDocumnetToInboxOfUser(systemUserIDAuth, userIDAuth.getUserID(), systemUserSourceDocFileName, petersInboxFileName, MoveType.MOVE);
+
+        LOGGER.debug("peter lädt das document");
+        transactionalFileStorage.nonTxReadFromInbox(userIDAuth, petersInboxFileName, petersTxFileName, OverwriteFlag.FALSE);
+
+        LOGGER.debug("peter liest das document aus seinem tx space");
+        transactionalFileStorage.txReadDocument(userIDAuth, petersTxFileName);
+
+
+    }
 
     @Test
     public void getCorrectVersionNumber() {
@@ -42,7 +88,7 @@ public class TransactionalFileStorageTest extends TransactionFileStorageBaseTest
         }
         {
             transactionalFileStorage.beginTransaction(userIDAuth);
-            Assert.assertEquals(version,transactionalFileStorage.getVersion(userIDAuth, documentFQN));
+            Assert.assertEquals(version, transactionalFileStorage.getVersion(userIDAuth, documentFQN));
             transactionalFileStorage.endTransaction(userIDAuth);
         }
         {

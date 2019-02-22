@@ -1,8 +1,10 @@
 package org.adorsys.docusafe.cached.transactional.impl;
 
 import org.adorsys.cryptoutils.exceptions.BaseException;
+import org.adorsys.docusafe.business.types.MoveType;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
+import org.adorsys.docusafe.business.types.complex.BucketContentFQNWithUserMetaData;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
@@ -19,6 +21,7 @@ import org.adorsys.docusafe.transactional.types.TxDocumentFQNVersion;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.adorsys.encobject.filesystem.exceptions.FileNotFoundException;
 import org.adorsys.encobject.types.ListRecursiveFlag;
+import org.adorsys.encobject.types.OverwriteFlag;
 import org.adorsys.encobject.types.PublicKeyJWK;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,59 +67,13 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
     }
 
     @Override
-    public void grantAccessToNonTxFolder(UserIDAuth userIDAuth, UserID receiverUserID, DocumentDirectoryFQN documentDirectoryFQN) {
-        transactionalFileStorage.grantAccessToNonTxFolder(userIDAuth, receiverUserID, documentDirectoryFQN);
-    }
-
-    @Override
     public PublicKeyJWK findPublicEncryptionKey(UserID userID) {
         return transactionalFileStorage.findPublicEncryptionKey(userID);
     }
 
     @Override
-    public void nonTxStoreDocument(UserIDAuth userIDAuth, DSDocument dsDocument) {
-        transactionalFileStorage.nonTxStoreDocument(userIDAuth, dsDocument);
-    }
-
-    @Override
-    public void nonTxStoreDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument) {
-        transactionalFileStorage.nonTxStoreDocument(userIDAuth, documentOwner, dsDocument);
-
-    }
-
-    @Override
-    public DSDocument nonTxReadDocument(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN) {
-        return transactionalFileStorage.nonTxReadDocument(userIDAuth, documentOwner, documentFQN);
-    }
-
-    @Override
-    public DSDocument nonTxReadDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
-        return transactionalFileStorage.nonTxReadDocument(userIDAuth, documentFQN);
-    }
-
-    @Override
-    public boolean nonTxDocumentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
-        return transactionalFileStorage.nonTxDocumentExists(userIDAuth, documentFQN);
-    }
-
-    @Override
-    public boolean nonTxDocumentExists(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN) {
-        return transactionalFileStorage.nonTxDocumentExists(userIDAuth, documentOwner, documentFQN);
-    }
-
-    @Override
-    public void nonTxDeleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
-        transactionalFileStorage.nonTxDeleteDocument(userIDAuth, documentFQN);
-    }
-
-    @Override
-    public void nonTxDeleteFolder(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN) {
-        transactionalFileStorage.nonTxDeleteFolder(userIDAuth, documentDirectoryFQN);
-    }
-
-    @Override
-    public BucketContentFQN nonTxListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
-        return transactionalFileStorage.nonTxListDocuments(userIDAuth, documentDirectoryFQN, recursiveFlag);
+    public BucketContentFQNWithUserMetaData nonTxListInbox(UserIDAuth userIDAuth) {
+        return transactionalFileStorage.nonTxListInbox(userIDAuth);
     }
 
     @Override
@@ -166,18 +123,22 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
     }
 
     @Override
-    public void transferFromNonTxToTx(UserIDAuth userIDAuth, DocumentFQN nonTxFQN, DocumentFQN txFQN) {
-        DSDocument nonTxDsDocument = nonTxReadDocument(userIDAuth, nonTxFQN);
-        DSDocument txDsDocument = new DSDocument(txFQN, nonTxDsDocument.getDocumentContent(), nonTxDsDocument.getDsDocumentMetaInfo());
-        txStoreDocument(userIDAuth, txDsDocument);
-        getCurrentTransactionData(userIDAuth.getUserID()).addNonTxFileToBeDeletedAfterCommit(nonTxFQN);
-    }
-
-    @Override
     public void endTransaction(UserIDAuth userIDAuth) {
         TxID txid = getCurrentTxID(userIDAuth.getUserID());
         getTransactionalContext(txid).endTransaction(userIDAuth);
         deleteTransactionalContext(txid);
+    }
+
+    @Override
+    public void txMoveDocumnetToInboxOfUser(UserIDAuth userIDAuth, UserID receiverUserID, DocumentFQN sourceDocumentFQN, DocumentFQN destDocumentFQN, MoveType moveType) {
+        // da diese Methoden intern Methoden wie txRead und txStore aufrufen, findet so das caching statt
+        transactionalFileStorage.txMoveDocumnetToInboxOfUser(userIDAuth, receiverUserID, sourceDocumentFQN, destDocumentFQN, moveType);
+    }
+
+    @Override
+    public DSDocument nonTxReadFromInbox(UserIDAuth userIDAuth, DocumentFQN source, DocumentFQN destination, OverwriteFlag overwriteFlag) {
+        // da diese Methoden intern Methoden wie txRead und txStore aufrufen, findet so das caching statt
+        return transactionalFileStorage.nonTxReadFromInbox(userIDAuth, source, destination, overwriteFlag);
     }
 
     private CachedTransactionalContext createTransactionalContext(TxID txid) {

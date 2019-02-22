@@ -1,12 +1,15 @@
 package org.adorsys.docusafe.transactional;
 
+import org.adorsys.docusafe.business.types.MoveType;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
+import org.adorsys.docusafe.business.types.complex.BucketContentFQNWithUserMetaData;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.encobject.types.ListRecursiveFlag;
+import org.adorsys.encobject.types.OverwriteFlag;
 import org.adorsys.encobject.types.PublicKeyJWK;
 
 /**
@@ -18,19 +21,16 @@ public interface NonTransactionalDocumentSafeService {
     void createUser(UserIDAuth userIDAuth);
     void destroyUser(UserIDAuth userIDAuth);
     boolean userExists(UserID userID);
-    void grantAccessToNonTxFolder(UserIDAuth userIDAuth, UserID receiverUserID, DocumentDirectoryFQN documentDirectoryFQN);
     PublicKeyJWK findPublicEncryptionKey(UserID userID);
 
+    // INBOX STUFF
+    /**
+     * This methods rereads the inbox every time it is called. so even in one tx
+     * the context can change.
+     *
+     * @param userIDAuth user and password
+     * @return the recursive list of files found in the inbox
+     */
+    BucketContentFQNWithUserMetaData nonTxListInbox(UserIDAuth userIDAuth);
 
-    void nonTxStoreDocument(UserIDAuth userIDAuth, DSDocument dsDocument);
-    DSDocument nonTxReadDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
-    boolean nonTxDocumentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN);
-    void nonTxDeleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
-    void nonTxDeleteFolder(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN);
-    BucketContentFQN nonTxListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag);
-
-    // NON-TRANSACTIONAL FOR OTHERS
-    void nonTxStoreDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument);
-    DSDocument nonTxReadDocument(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN);
-    boolean nonTxDocumentExists(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN);
 }

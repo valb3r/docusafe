@@ -6,7 +6,6 @@ import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
-import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.cached.transactional.CachedTransactionalDocumentSafeService;
@@ -30,10 +29,10 @@ import java.util.List;
  * Created by peter on 09.07.18 at 13:52.
  */
 
-public class CachedTransactionalStorageTest {
-    private final static Logger LOGGER = LoggerFactory.getLogger(CachedTransactionalStorageTest.class);
+public class CachedTransactionalDocumentSafeServiceTest {
+    private final static Logger LOGGER = LoggerFactory.getLogger(CachedTransactionalDocumentSafeServiceTest.class);
     private RequestMemoryContext memoryContext = new SimpleRequestMemoryContextImpl();
-    private TransactionalStorageTestWrapper wrapper = new TransactionalStorageTestWrapper(
+    private TransactionalDocumentSafeServiceTestWrapper wrapper = new TransactionalDocumentSafeServiceTestWrapper(
             new TransactionalDocumentSafeServiceImpl(memoryContext,
                     new DocumentSafeServiceImpl(ExtendedStoreConnectionFactory.get())));
     private CachedTransactionalDocumentSafeService service = new CachedTransactionalDocumentSafeServiceImpl(memoryContext, wrapper);
@@ -57,7 +56,7 @@ public class CachedTransactionalStorageTest {
 
         DocumentFQN documentFQN = new DocumentFQN("folder1/file1.txt");
         service.beginTransaction(userIDAuth);
-        Assert.assertEquals(new Integer(0), wrapper.counterMap.get(TransactionalStorageTestWrapper.LIST_DOCUMENTS_TX));
+        Assert.assertEquals(new Integer(0), wrapper.counterMap.get(TransactionalDocumentSafeServiceTestWrapper.TX_LIST_DOCUMENTS));
         BucketContentFQN bucketContentFQN = service.txListDocuments(userIDAuth, documentFQN.getDocumentDirectory(), ListRecursiveFlag.TRUE);
         Assert.assertTrue(bucketContentFQN.getFiles().isEmpty());
         Assert.assertTrue(bucketContentFQN.getDirectories().isEmpty());
@@ -79,14 +78,14 @@ public class CachedTransactionalStorageTest {
         Assert.assertTrue(bucketContentFQN2.getDirectories().isEmpty());
         Assert.assertTrue(service.txDocumentExists(userIDAuth, documentFQN));
 
-        Assert.assertEquals(new Integer(0), wrapper.counterMap.get(TransactionalStorageTestWrapper.STORE_DOCUMENT_TX));
-        Assert.assertEquals(new Integer(0), wrapper.counterMap.get(TransactionalStorageTestWrapper.READ_DOCUMENT_TX));
-        Assert.assertEquals(new Integer(1), wrapper.counterMap.get(TransactionalStorageTestWrapper.LIST_DOCUMENTS_TX));
+        Assert.assertEquals(new Integer(0), wrapper.counterMap.get(TransactionalDocumentSafeServiceTestWrapper.TX_STORE_DOCUMENT));
+        Assert.assertEquals(new Integer(0), wrapper.counterMap.get(TransactionalDocumentSafeServiceTestWrapper.TX_READ_DOCUMENT));
+        Assert.assertEquals(new Integer(1), wrapper.counterMap.get(TransactionalDocumentSafeServiceTestWrapper.TX_LIST_DOCUMENTS));
         service.endTransaction(userIDAuth);
         LOGGER.debug(wrapper.toString());
-        Assert.assertEquals(new Integer(1), wrapper.counterMap.get(TransactionalStorageTestWrapper.STORE_DOCUMENT_TX));
-        Assert.assertEquals(new Integer(0), wrapper.counterMap.get(TransactionalStorageTestWrapper.READ_DOCUMENT_TX));
-        Assert.assertEquals(new Integer(1), wrapper.counterMap.get(TransactionalStorageTestWrapper.LIST_DOCUMENTS_TX));
+        Assert.assertEquals(new Integer(1), wrapper.counterMap.get(TransactionalDocumentSafeServiceTestWrapper.TX_STORE_DOCUMENT));
+        Assert.assertEquals(new Integer(0), wrapper.counterMap.get(TransactionalDocumentSafeServiceTestWrapper.TX_READ_DOCUMENT));
+        Assert.assertEquals(new Integer(1), wrapper.counterMap.get(TransactionalDocumentSafeServiceTestWrapper.TX_LIST_DOCUMENTS));
         Assert.assertEquals(documentFQN, bucketContentFQN2.getFiles().get(0));
     }
 
@@ -124,61 +123,15 @@ public class CachedTransactionalStorageTest {
             Assert.assertArrayEquals(dsDocumentWrite.getDocumentContent().getValue(), dsDocumentRead.getDocumentContent().getValue());
         }
 
-        Assert.assertEquals(new Integer(0), wrapper.counterMap.get(TransactionalStorageTestWrapper.STORE_DOCUMENT_TX));
-        Assert.assertEquals(new Integer(0), wrapper.counterMap.get(TransactionalStorageTestWrapper.READ_DOCUMENT_TX));
+        Assert.assertEquals(new Integer(0), wrapper.counterMap.get(TransactionalDocumentSafeServiceTestWrapper.TX_STORE_DOCUMENT));
+        Assert.assertEquals(new Integer(0), wrapper.counterMap.get(TransactionalDocumentSafeServiceTestWrapper.TX_READ_DOCUMENT));
         service.endTransaction(userIDAuth);
         LOGGER.debug(wrapper.toString());
-        Assert.assertEquals(new Integer(1), wrapper.counterMap.get(TransactionalStorageTestWrapper.STORE_DOCUMENT_TX));
-        Assert.assertEquals(new Integer(0), wrapper.counterMap.get(TransactionalStorageTestWrapper.READ_DOCUMENT_TX));
+        Assert.assertEquals(new Integer(1), wrapper.counterMap.get(TransactionalDocumentSafeServiceTestWrapper.TX_STORE_DOCUMENT));
+        Assert.assertEquals(new Integer(0), wrapper.counterMap.get(TransactionalDocumentSafeServiceTestWrapper.TX_READ_DOCUMENT));
     }
 
 
-    @Test
-    public void testNonTxListAndDeleteDocument() {
-        
-
-        UserIDAuth userIDAuth = new UserIDAuth(new UserID("peter"), new ReadKeyPassword("petersPassword"));
-        service.createUser(userIDAuth);
-        userIDAuthList.add(userIDAuth);
-
-        UserIDAuth userIDAuth2 = new UserIDAuth(new UserID("francis"), new ReadKeyPassword("francisPassword"));
-        service.createUser(userIDAuth2);
-        userIDAuthList.add(userIDAuth2);
-
-        DocumentDirectoryFQN francisFolder = new DocumentDirectoryFQN("francis");
-        service.grantAccessToNonTxFolder(userIDAuth, userIDAuth2.getUserID(), francisFolder);
-        DocumentFQN documentFQN = francisFolder.addName("file1.txt");
-        BucketContentFQN bucketContentFQN = service.nonTxListDocuments(userIDAuth, documentFQN.getDocumentDirectory(), ListRecursiveFlag.TRUE);
-        Assert.assertTrue(bucketContentFQN.getFiles().isEmpty());
-        Assert.assertTrue(bucketContentFQN.getDirectories().isEmpty());
-        Assert.assertFalse(service.nonTxDocumentExists(userIDAuth, documentFQN));
-        Assert.assertFalse(service.nonTxDocumentExists(userIDAuth2, userIDAuth.getUserID(), documentFQN));
-
-        // document speichern
-        {
-            DSDocument dsDocumentWrite = new DSDocument(
-                    documentFQN,
-                    new DocumentContent("content of file".getBytes()),
-                    new DSDocumentMetaInfo()
-            );
-            service.nonTxStoreDocument(userIDAuth2, userIDAuth.getUserID(), dsDocumentWrite);
-            DSDocument dsDocumentRead = service.nonTxReadDocument(userIDAuth, documentFQN);
-            Assert.assertArrayEquals(dsDocumentWrite.getDocumentContent().getValue(), dsDocumentRead.getDocumentContent().getValue());
-        }
-        BucketContentFQN bucketContentFQN2 = service.nonTxListDocuments(userIDAuth, documentFQN.getDocumentDirectory(), ListRecursiveFlag.TRUE);
-        Assert.assertEquals(1, bucketContentFQN2.getFiles().size());
-        Assert.assertTrue(bucketContentFQN2.getDirectories().isEmpty());
-        Assert.assertTrue(service.nonTxDocumentExists(userIDAuth2, userIDAuth.getUserID(), documentFQN));
-        Assert.assertTrue(service.nonTxDocumentExists(userIDAuth, documentFQN));
-
-        LOGGER.debug(wrapper.toString());
-        Assert.assertEquals(new Integer(1), wrapper.counterMap.get(TransactionalStorageTestWrapper.STORE_GRANTED_DOCUMENT));
-        Assert.assertEquals(new Integer(0), wrapper.counterMap.get(TransactionalStorageTestWrapper.STORE_DOCUMENT));
-        Assert.assertEquals(new Integer(1), wrapper.counterMap.get(TransactionalStorageTestWrapper.READ_DOCUMENT));
-        Assert.assertEquals(new Integer(2), wrapper.counterMap.get(TransactionalStorageTestWrapper.LIST_DOCUMENTS));
-        Assert.assertEquals(new Integer(2), wrapper.counterMap.get(TransactionalStorageTestWrapper.GRANTED_DOCUMENT_EXISTS));
-        Assert.assertEquals(documentFQN, bucketContentFQN2.getFiles().get(0));
-    }
 
     @Test
     public void testTxDeleteFolder() {

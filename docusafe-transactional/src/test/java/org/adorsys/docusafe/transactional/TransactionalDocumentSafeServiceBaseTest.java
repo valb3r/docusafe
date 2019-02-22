@@ -14,11 +14,12 @@ import org.junit.Before;
 /**
  * Created by peter on 15.06.18 at 12:52.
  */
-public class TransactionFileStorageBaseTest {
+public class TransactionalDocumentSafeServiceBaseTest {
 
     SimpleRequestMemoryContextImpl requestMemoryContext = new SimpleRequestMemoryContextImpl();
     DocumentSafeServiceImpl dssi = new DocumentSafeServiceImpl(ExtendedStoreConnectionFactory.get());
     TransactionalDocumentSafeService transactionalFileStorage = new TransactionalDocumentSafeServiceImpl(requestMemoryContext, dssi);
+    NonTransactionalDocumentSafeService nonTransactionalDocumentSafeService = transactionalFileStorage;
     UserIDAuth userIDAuth = new UserIDAuth(new UserID("peter"), new ReadKeyPassword("password"));
     UserIDAuth systemUserIDAuth = new UserIDAuth(new UserID("system"), new ReadKeyPassword("systemPassword"));
 

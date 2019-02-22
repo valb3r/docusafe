@@ -1,7 +1,8 @@
 package org.adorsys.docusafe.cached.transactional.impl;
 
+import org.adorsys.docusafe.business.types.MoveType;
 import org.adorsys.docusafe.business.types.UserID;
-import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
+import org.adorsys.docusafe.business.types.complex.BucketContentFQNWithUserMetaData;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
@@ -10,6 +11,7 @@ import org.adorsys.docusafe.transactional.TransactionalDocumentSafeService;
 import org.adorsys.docusafe.transactional.types.TxBucketContentFQN;
 import org.adorsys.docusafe.transactional.types.TxDocumentFQNVersion;
 import org.adorsys.encobject.types.ListRecursiveFlag;
+import org.adorsys.encobject.types.OverwriteFlag;
 import org.adorsys.encobject.types.PublicKeyJWK;
 
 import java.util.ArrayList;
@@ -21,60 +23,47 @@ import java.util.Map;
 /**
  * Created by peter on 09.07.18 at 14:40.
  */
-public class TransactionalStorageTestWrapper implements TransactionalDocumentSafeService {
+public class TransactionalDocumentSafeServiceTestWrapper implements TransactionalDocumentSafeService {
     int MAX = 22;
 
     public static final String CREATE_USER = "createUser";
     public static final String DESTROY_USER = "destroyUser";
     public static final String USER_EXISTS = "userExists";
-    public static final String GRANT_ACCESS = "grantAccessToNonTxFolder";
-    public static final String STORE_DOCUMENT = "nonTxStoreDocument";
-    public static final String STORE_GRANTED_DOCUMENT = "storeGrantedDocument";
-    public static final String READ_GRANTED_DOCUMENT = "readGrantedDocument";
-    public static final String READ_DOCUMENT = "nonTxReadDocument";
-    public static final String DOCUMENT_EXISTS = "nonTxDocumentExists";
-    public static final String GRANTED_DOCUMENT_EXISTS = "grantedDocumentExists";
-    public static final String DELETE_DOCUMENT = "nonTxDeleteDocument";
-    public static final String DELETE_FOLDER = "nonTxDeleteFolder";
-    public static final String LIST_DOCUMENTS = "nonTxListDocuments";
     public static final String BEGIN_TX = "beginTx";
-    public static final String STORE_DOCUMENT_TX = "storeDocumentTx";
-    public static final String READ_DOCUMENT_TX = "readDocumentTx";
-    public static final String DELETE_DOCUMENT_TX = "deleteDocumentTx";
-    public static final String LIST_DOCUMENTS_TX = "listDocumentsTx";
-    public static final String DOCUMENT_EXISTS_TX = "documentExistsTx";
-    public static final String DELETE_FOLDER_TX = "deleteFolderTx";
+    public static final String TX_STORE_DOCUMENT = "storeDocumentTx";
+    public static final String TX_READ_DOCUMENT = "readDocumentTx";
+    public static final String TX_DELETE_DOCUMENT = "deleteDocumentTx";
+    public static final String TX_LIST_DOCUMENTS = "listDocumentsTx";
+    public static final String TX_DOCUMENT_EXISTS = "documentExistsTx";
+    public static final String TX_DELETE_FOLDER = "deleteFolderTx";
     public static final String END_TRANSACTION = "endTransaction";
     public static final String FIND_PUBLIC_KEY = "findPublicEncryptionKey";
-    public static final String TRANSFER_FROM_NONTX_TO_TX = "transferFromNonTxToTx";
     public static final String GET_VERSION = "txGetVersion";
+    public static final String NON_TX_LIST_INBOX = "nonTxListInbox";
+    public static final String TX_MOVE_DOCUMENT_TO_INBOX_OF_USER = "txMoveDocumentToInboxOfUser";
+    public static final String NON_TX_READ_FROM_INBOX = "nonTxReadFromInbox";
+
     public Map<String, Integer> counterMap = new HashMap<>();
 
     private TransactionalDocumentSafeService realTransactionalFileStorage;
-    public TransactionalStorageTestWrapper(TransactionalDocumentSafeService realTransactionalFileStorage) {
+    public TransactionalDocumentSafeServiceTestWrapper(TransactionalDocumentSafeService realTransactionalFileStorage) {
         this.realTransactionalFileStorage = realTransactionalFileStorage;
         inc(CREATE_USER);
         inc(DESTROY_USER);
         inc(USER_EXISTS);
-        inc(GRANT_ACCESS);
-        inc(STORE_DOCUMENT);
-        inc(STORE_GRANTED_DOCUMENT);
-        inc(READ_GRANTED_DOCUMENT);
-        inc(READ_DOCUMENT);
-        inc(DOCUMENT_EXISTS);
-        inc(GRANTED_DOCUMENT_EXISTS);
-        inc(DELETE_DOCUMENT);
-        inc(DELETE_FOLDER);
-        inc(LIST_DOCUMENTS);
         inc(BEGIN_TX);
-        inc(STORE_DOCUMENT_TX);
-        inc(READ_DOCUMENT_TX);
-        inc(DELETE_DOCUMENT_TX);
-        inc(LIST_DOCUMENTS_TX);
-        inc(DELETE_FOLDER_TX);
+        inc(TX_STORE_DOCUMENT);
+        inc(TX_READ_DOCUMENT);
+        inc(TX_DELETE_DOCUMENT);
+        inc(TX_LIST_DOCUMENTS);
+        inc(TX_DOCUMENT_EXISTS);
+        inc(TX_DELETE_FOLDER);
         inc(END_TRANSACTION);
         inc(FIND_PUBLIC_KEY);
         inc(GET_VERSION);
+        inc(NON_TX_LIST_INBOX);
+        inc(TX_MOVE_DOCUMENT_TO_INBOX_OF_USER);
+        inc(NON_TX_READ_FROM_INBOX);
     }
 
     @Override
@@ -96,69 +85,15 @@ public class TransactionalStorageTestWrapper implements TransactionalDocumentSaf
     }
 
     @Override
-    public void grantAccessToNonTxFolder(UserIDAuth userIDAuth, UserID receiverUserID, DocumentDirectoryFQN documentDirectoryFQN) {
-        inc(GRANT_ACCESS);
-        realTransactionalFileStorage.grantAccessToNonTxFolder(userIDAuth, receiverUserID, documentDirectoryFQN);
-    }
-
-    @Override
     public PublicKeyJWK findPublicEncryptionKey(UserID userID) {
         inc(FIND_PUBLIC_KEY);
         return realTransactionalFileStorage.findPublicEncryptionKey(userID);
     }
 
     @Override
-    public void nonTxStoreDocument(UserIDAuth userIDAuth, DSDocument dsDocument) {
-        inc(STORE_DOCUMENT);
-        realTransactionalFileStorage.nonTxStoreDocument(userIDAuth, dsDocument);
-    }
-
-    @Override
-    public void nonTxStoreDocument(UserIDAuth userIDAuth, UserID documentOwner, DSDocument dsDocument) {
-        inc(STORE_GRANTED_DOCUMENT);
-        realTransactionalFileStorage.nonTxStoreDocument(userIDAuth, documentOwner, dsDocument);
-    }
-
-    @Override
-    public DSDocument nonTxReadDocument(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN) {
-        inc(READ_GRANTED_DOCUMENT);
-        return realTransactionalFileStorage.nonTxReadDocument(userIDAuth, documentOwner, documentFQN);
-    }
-
-    @Override
-    public boolean nonTxDocumentExists(UserIDAuth userIDAuth, UserID documentOwner, DocumentFQN documentFQN) {
-        inc(GRANTED_DOCUMENT_EXISTS);
-        return realTransactionalFileStorage.nonTxDocumentExists(userIDAuth, documentOwner, documentFQN);
-    }
-
-    @Override
-    public DSDocument nonTxReadDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
-        inc(READ_DOCUMENT);
-        return realTransactionalFileStorage.nonTxReadDocument(userIDAuth, documentFQN);
-    }
-
-    @Override
-    public boolean nonTxDocumentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
-        inc(DOCUMENT_EXISTS);
-        return realTransactionalFileStorage.nonTxDocumentExists(userIDAuth, documentFQN);
-    }
-
-    @Override
-    public void nonTxDeleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
-        inc(DELETE_DOCUMENT);
-        realTransactionalFileStorage.nonTxDeleteDocument(userIDAuth, documentFQN);
-    }
-
-    @Override
-    public void nonTxDeleteFolder(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN) {
-        inc(DELETE_FOLDER);
-        realTransactionalFileStorage.nonTxDeleteFolder(userIDAuth, documentDirectoryFQN);
-    }
-
-    @Override
-    public BucketContentFQN nonTxListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
-        inc(LIST_DOCUMENTS);
-        return realTransactionalFileStorage.nonTxListDocuments(userIDAuth, documentDirectoryFQN, recursiveFlag);
+    public BucketContentFQNWithUserMetaData nonTxListInbox(UserIDAuth userIDAuth) {
+        inc(NON_TX_LIST_INBOX);
+        return realTransactionalFileStorage.nonTxListInbox(userIDAuth);
     }
 
     @Override
@@ -169,25 +104,25 @@ public class TransactionalStorageTestWrapper implements TransactionalDocumentSaf
 
     @Override
     public void txStoreDocument(UserIDAuth userIDAuth, DSDocument dsDocument) {
-        inc(STORE_DOCUMENT_TX);
+        inc(TX_STORE_DOCUMENT);
         realTransactionalFileStorage.txStoreDocument(userIDAuth, dsDocument);
     }
 
     @Override
     public DSDocument txReadDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
-        inc(READ_DOCUMENT_TX);
+        inc(TX_READ_DOCUMENT);
         return realTransactionalFileStorage.txReadDocument(userIDAuth, documentFQN);
     }
 
     @Override
     public void txDeleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
-        inc(DELETE_DOCUMENT_TX);
+        inc(TX_DELETE_DOCUMENT);
         realTransactionalFileStorage.txDeleteDocument(userIDAuth, documentFQN);
     }
 
     @Override
     public TxBucketContentFQN txListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
-        inc(LIST_DOCUMENTS_TX);
+        inc(TX_LIST_DOCUMENTS);
         return realTransactionalFileStorage.txListDocuments(userIDAuth, documentDirectoryFQN, recursiveFlag);
     }
 
@@ -199,26 +134,33 @@ public class TransactionalStorageTestWrapper implements TransactionalDocumentSaf
 
     @Override
     public boolean txDocumentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
-        inc(DOCUMENT_EXISTS_TX);
+        inc(TX_DOCUMENT_EXISTS);
         return realTransactionalFileStorage.txDocumentExists(userIDAuth, documentFQN);
     }
 
     @Override
     public void txDeleteFolder(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN) {
-        inc(DELETE_FOLDER_TX);
+        inc(TX_DELETE_FOLDER);
         realTransactionalFileStorage.txDeleteFolder(userIDAuth, documentDirectoryFQN);
-    }
-
-    @Override
-    public void transferFromNonTxToTx(UserIDAuth userIDAuth, DocumentFQN nonTxFQN, DocumentFQN txFQN) {
-        inc(TRANSFER_FROM_NONTX_TO_TX);
-        realTransactionalFileStorage.transferFromNonTxToTx(userIDAuth, nonTxFQN, txFQN);
     }
 
     @Override
     public void endTransaction(UserIDAuth userIDAuth) {
         inc(END_TRANSACTION);
         realTransactionalFileStorage.endTransaction(userIDAuth);
+    }
+
+    @Override
+    public void txMoveDocumnetToInboxOfUser(UserIDAuth userIDAuth, UserID receiverUserID, DocumentFQN sourceDocumentFQN, DocumentFQN destDocumentFQN, MoveType moveType) {
+        inc(TX_MOVE_DOCUMENT_TO_INBOX_OF_USER);
+        realTransactionalFileStorage.txMoveDocumnetToInboxOfUser(userIDAuth, receiverUserID, sourceDocumentFQN, destDocumentFQN, moveType);
+
+    }
+
+    @Override
+    public DSDocument nonTxReadFromInbox(UserIDAuth userIDAuth, DocumentFQN source, DocumentFQN destination, OverwriteFlag overwriteFlag) {
+        inc(NON_TX_READ_FROM_INBOX);
+        return realTransactionalFileStorage.nonTxReadFromInbox(userIDAuth, source, destination, overwriteFlag);
     }
 
     private void inc(String s) {
@@ -231,7 +173,7 @@ public class TransactionalStorageTestWrapper implements TransactionalDocumentSaf
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
-        sb.append("TransactionalStorageTestWrapper{");
+        sb.append("TransactionalDocumentSafeServiceTestWrapper{");
         List<String> keys = new ArrayList<>();
         keys.addAll(counterMap.keySet());
 

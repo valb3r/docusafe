@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by peter on 01.02.19 10:59.
  */
-public class MultipleUserSameContextTest extends TransactionFileStorageBaseTest {
+public class MultipleUserSameContextTest extends TransactionalDocumentSafeServiceBaseTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(MultipleUserSameContextTest.class);
 
     // DOC-80

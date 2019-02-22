@@ -32,17 +32,20 @@ public class InboxTest extends BusinessTestBase {
         Assert.assertNotNull(CatchException.caughtException());
 
         LOGGER.debug("Peter gibt das Document an Francis");
-        service.moveDocumnetToUser(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentFQNReadme, documentFQNReadmeCopiedToFrancis, MoveType.KEEP_COPY);
+        service.moveDocumnetToInboxOfUser(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentFQNReadme, documentFQNReadmeCopiedToFrancis, MoveType.KEEP_COPY);
         DSDocument document2 = service.readFromInbox(userIDAuthFrancis, documentFQNReadmeCopiedToFrancis, documentFQNReadmeCopiedToFrancis, OverwriteFlag.FALSE);
+        Assert.assertEquals(documentFQNReadmeCopiedToFrancis, document2.getDocumentFQN());
 
         LOGGER.debug("Das Document existiert nun auch bei Francis");
         DSDocument document3 = service.readDocument(userIDAuthFrancis, documentFQNReadmeCopiedToFrancis);
+        Assert.assertEquals(documentFQNReadmeCopiedToFrancis, document3.getDocumentFQN());
 
         LOGGER.debug("Das Document existiert auch bei Peter");
         DSDocument document4 = service.readDocument(userIDAuthPeter, documentFQNReadme);
+        Assert.assertEquals(documentFQNReadme, document4.getDocumentFQN());
 
         LOGGER.debug("Jetzt wird es aber wirklich verschoben");
-        service.moveDocumnetToUser(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentFQNReadme, documentFQNReadmeCopiedToFrancis, MoveType.MOVE);
+        service.moveDocumnetToInboxOfUser(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentFQNReadme, documentFQNReadmeCopiedToFrancis, MoveType.MOVE);
         CatchException.catchException(() -> service.readDocument(userIDAuthPeter, documentFQNReadme));
 
         LOGGER.debug("Das Document existiert nun bei Peter nicht mehr, daher die Exception");
@@ -56,7 +59,7 @@ public class InboxTest extends BusinessTestBase {
         DocumentFQN documentFQNReadme = new DocumentFQN("README.txt");
 
         LOGGER.debug("Peter gibt ein Document an Francis");
-        service.moveDocumnetToUser(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentFQNReadme, documentFQNReadme, MoveType.MOVE);
+        service.moveDocumnetToInboxOfUser(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentFQNReadme, documentFQNReadme, MoveType.MOVE);
 
         LOGGER.debug("Da Francis das Document schon hat, gibt es eine Exception");
         CatchException.catchException( () -> service.readFromInbox(userIDAuthFrancis, documentFQNReadme, documentFQNReadme, OverwriteFlag.FALSE));
@@ -74,9 +77,9 @@ public class InboxTest extends BusinessTestBase {
         DocumentFQN documentFQNReadme = new DocumentFQN("README.txt");
 
         LOGGER.debug("Peter gibt ein Document an Francis");
-        service.moveDocumnetToUser(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentFQNReadme, documentFQNReadme, MoveType.KEEP_COPY);
+        service.moveDocumnetToInboxOfUser(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentFQNReadme, documentFQNReadme, MoveType.KEEP_COPY);
         LOGGER.debug("Peter gibt das  Document erneut an Francis, aber es wurde noch nicht abgeholt, daher Exception");
-        CatchException.catchException( () -> service.moveDocumnetToUser(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentFQNReadme, documentFQNReadme, MoveType.MOVE));
+        CatchException.catchException( () -> service.moveDocumnetToInboxOfUser(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentFQNReadme, documentFQNReadme, MoveType.MOVE));
         Assert.assertNotNull(CatchException.caughtException());
     }
 
@@ -89,7 +92,7 @@ public class InboxTest extends BusinessTestBase {
 
         LOGGER.debug("Peter gibt das selbe Document mehrfach an Francis");
         for (DocumentFQN doc : destinationFileList) {
-            service.moveDocumnetToUser(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentFQNReadme, doc, MoveType.KEEP_COPY);
+            service.moveDocumnetToInboxOfUser(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentFQNReadme, doc, MoveType.KEEP_COPY);
         }
 
         BucketContentFQNWithUserMetaData bucketContentFQNWithUserMetaData = service.listInbox(userIDAuthFrancis);

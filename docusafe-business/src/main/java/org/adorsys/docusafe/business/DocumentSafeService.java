@@ -45,9 +45,9 @@ public interface DocumentSafeService {
     BucketContentFQNWithUserMetaData list(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag);
 
     /**
-     * move Document to other User
+     * InboxStuff
      */
-    void moveDocumnetToUser(UserIDAuth userIDAuth, UserID receiverUserID, DocumentFQN sourceDocumentFQN, DocumentFQN destDocumentFQN, MoveType moveType);
+    void moveDocumnetToInboxOfUser(UserIDAuth userIDAuth, UserID receiverUserID, DocumentFQN sourceDocumentFQN, DocumentFQN destDocumentFQN, MoveType moveType);
     BucketContentFQNWithUserMetaData listInbox(UserIDAuth userIDAuth);
     DSDocument readFromInbox(UserIDAuth userIDAuth, DocumentFQN source, DocumentFQN destination, OverwriteFlag overwriteFlag);
 }

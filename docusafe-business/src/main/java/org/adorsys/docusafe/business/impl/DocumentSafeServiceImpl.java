@@ -68,10 +68,6 @@ import java.util.List;
  */
 public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKeyID2DocumentKeyCache {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentSafeServiceImpl.class);
-    public static final String USER_AUTH_CACHE = "userAuthCache";
-    public static final String GUARD_MAP = "GUARD_MAP";
-    public static final String DOCUMENT_KEY_MAP = "DOCUMENT_KEY_MAP";
-
 
     private BucketService bucketService;
     private KeyStoreService keyStoreService;
@@ -89,7 +85,6 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         this.documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection, this);
         this.keySourceService = new KeySourceServiceImpl(extendedStoreConnection);
         this.docusafeCacheWrapper = new DocusafeCacheWrapperImpl(CacheType.GUAVA);
-        // docusafeCacheWrapper = new DocusafeCacheWrapperImpl(CacheType.HASH_MAP);
     }
 
     /**
@@ -318,27 +313,22 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         return ret;
     }
 
+    /**
+     * INBOX STUFF
+     * ===========================================================================================
+     */
     @Override
-    public void moveDocumnetToUser(UserIDAuth userIDAuth, UserID receiverUserID, DocumentFQN sourceDocumentFQN, DocumentFQN destDocumentFQN, MoveType moveType) {
+    public void moveDocumnetToInboxOfUser(UserIDAuth userIDAuth, UserID receiverUserID, DocumentFQN sourceDocumentFQN, DocumentFQN destDocumentFQN, MoveType moveType) {
         // Das ist eine Kopie von storeDocument, sollte besser gelöst werden , insbesondere wird hier im Universalfall der nicht Verschlüsselung doch verschlüsselt
-        LOGGER.debug("start moveDocumentToUser " + "FROM:" + userIDAuth.getUserID() + " " + sourceDocumentFQN + " TO:" + receiverUserID + " " + destDocumentFQN);
+        LOGGER.debug("start moveDocumentToInboxOfUser " + "FROM:" + userIDAuth.getUserID() + " " + sourceDocumentFQN + " TO:" + receiverUserID + " " + destDocumentFQN);
         DSDocument document = readDocument(userIDAuth, sourceDocumentFQN);
-        DocumentKeyIDWithKey documentKeyIDWithKey = createNewAsymmetricGuardForUser(receiverUserID);
 
-        SimpleStorageMetadataImpl storageMetadata = new SimpleStorageMetadataImpl();
-        storageMetadata.mergeUserMetadata(document.getDsDocumentMetaInfo());
-        storageMetadata.setSize(new Long(document.getDocumentContent().getValue().length));
-        DocumentBucketPath documentBucketPath = new DocumentBucketPath(UserIDUtil.getInboxDirectory(receiverUserID).appendName(destDocumentFQN.getValue()));
-        documentPersistenceService.encryptAndPersistDocument(
-                documentKeyIDWithKey,
-                documentBucketPath,
-                OverwriteFlag.FALSE,
-                new SimplePayloadImpl(storageMetadata, document.getDocumentContent().getValue()));
+        writeDocumentToInboxOfUser(receiverUserID, document, destDocumentFQN);
 
         if (moveType.equals(MoveType.MOVE)) {
             deleteDocument(userIDAuth, sourceDocumentFQN);
         }
-        LOGGER.debug("finished moveDocumentToUser " + "FROM:" + userIDAuth.getUserID() + " " + sourceDocumentFQN + " TO:" + receiverUserID + " " + destDocumentFQN);
+        LOGGER.debug("finished moveDocumentToInboxOfUser " + "FROM:" + userIDAuth.getUserID() + " " + sourceDocumentFQN + " TO:" + receiverUserID + " " + destDocumentFQN);
     }
 
     @Override
@@ -375,17 +365,15 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
     public DSDocument readFromInbox(UserIDAuth userIDAuth, DocumentFQN source, DocumentFQN destination, OverwriteFlag overwriteFlag) {
         // Das ist eine Kopie von readDocument, sollte besser gelöst werden, insbesondere wird hier im Universalfall der nicht Verschlüsselung doch verschlüsselt
         LOGGER.debug("start readDocument from inbox for " + userIDAuth + " from " + source + " to " + destination);
-        DocumentBucketPath inboxDocumentBucketPath = new DocumentBucketPath(UserIDUtil.getInboxDirectory(userIDAuth.getUserID()).appendName(source.getValue()));
-        StorageMetadata storageMetadata = extendedStoreConnection.getStorageMetadata(inboxDocumentBucketPath);
-        KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
-        Payload payload = documentPersistenceService.loadAndDecryptDocument(storageMetadata, keyStoreAccess, inboxDocumentBucketPath);
+
+        Payload payload = readPayloadOfInboxDocument(userIDAuth, source);
 
         LOGGER.debug("document " + source + " has been read successfuly from the inbox. now document must be saved " + destination);
         DocumentKeyIDWithKey myDocumentKeyIDwithKey = getMyDocumentKeyIDwithKey(userIDAuth);
         documentPersistenceService.encryptAndPersistDocument(myDocumentKeyIDwithKey, getTheDocumentBucketPath(userIDAuth.getUserID(), destination), overwriteFlag, payload);
 
         LOGGER.debug("now document must be removed from the inbox " + source);
-        bucketService.deletePlainFile(inboxDocumentBucketPath);
+        deleteDocumentFromInbox(userIDAuth, source);
 
         LOGGER.debug("finished readDocument from inbox for " + userIDAuth + " from " + source + " to " + destination);
         return new DSDocument(destination, new DocumentContent(payload.getData()), new DSDocumentMetaInfo(payload.getStorageMetadata().getUserMetadata()));
@@ -396,6 +384,37 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
     public PublicKeyJWK findPublicEncryptionKey(UserID userID) {
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(new UserIDAuth(userID, null));
         return keySourceService.findPublicEncryptionKey(keyStoreAccess);
+    }
+
+    /**
+     * Public but not from the interface. backdoor methods for derived classes
+     *
+     */
+    public void writeDocumentToInboxOfUser(UserID receiverUserID, DSDocument document, DocumentFQN destDocumentFQN) {
+        DocumentKeyIDWithKey documentKeyIDWithKey = createNewAsymmetricGuardForUser(receiverUserID);
+
+        SimpleStorageMetadataImpl storageMetadata = new SimpleStorageMetadataImpl();
+        storageMetadata.mergeUserMetadata(document.getDsDocumentMetaInfo());
+        storageMetadata.setSize(new Long(document.getDocumentContent().getValue().length));
+        DocumentBucketPath documentBucketPath = new DocumentBucketPath(UserIDUtil.getInboxDirectory(receiverUserID).appendName(destDocumentFQN.getValue()));
+        documentPersistenceService.encryptAndPersistDocument(
+                documentKeyIDWithKey,
+                documentBucketPath,
+                OverwriteFlag.FALSE,
+                new SimplePayloadImpl(storageMetadata, document.getDocumentContent().getValue()));
+
+    }
+
+    public Payload readPayloadOfInboxDocument(UserIDAuth userIDAuth, DocumentFQN source) {
+        DocumentBucketPath inboxDocumentBucketPath = new DocumentBucketPath(UserIDUtil.getInboxDirectory(userIDAuth.getUserID()).appendName(source.getValue()));
+        StorageMetadata storageMetadata = extendedStoreConnection.getStorageMetadata(inboxDocumentBucketPath);
+        KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
+        return documentPersistenceService.loadAndDecryptDocument(storageMetadata, keyStoreAccess, inboxDocumentBucketPath);
+    }
+
+    public void deleteDocumentFromInbox(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
+        DocumentBucketPath inboxDocumentBucketPath = new DocumentBucketPath(UserIDUtil.getInboxDirectory(userIDAuth.getUserID()).appendName(documentFQN.getValue()));
+        bucketService.deletePlainFile(inboxDocumentBucketPath);
     }
 
     /**

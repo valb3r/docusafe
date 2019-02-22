@@ -1,5 +1,7 @@
 package org.adorsys.docusafe.transactional;
 
+import org.adorsys.docusafe.business.types.MoveType;
+import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
@@ -7,6 +9,7 @@ import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.transactional.types.TxBucketContentFQN;
 import org.adorsys.docusafe.transactional.types.TxDocumentFQNVersion;
 import org.adorsys.encobject.types.ListRecursiveFlag;
+import org.adorsys.encobject.types.OverwriteFlag;
 
 /**
  * Created by peter on 11.06.18 at 14:56.
@@ -78,17 +81,6 @@ public interface TransactionalDocumentSafeService extends NonTransactionalDocume
     void txDeleteFolder(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN);
 
     /**
-     * Gets a file from the nonTx Context and stores it in the tx Context.
-     * After this call, the file exists in both spaces (tx and nonTx).
-     * After the commit, this file will be deleted automaticly.
-     *
-     * @param userIDAuth user and password
-     * @param nonTxFQN name of the file in the non transactional context (e.g. source)
-     * @param txFQN name of the file in the transactional context (e.g. destination)
-     */
-    void transferFromNonTxToTx(UserIDAuth userIDAuth, DocumentFQN nonTxFQN, DocumentFQN txFQN);
-
-    /**
      * Commits the running transaction and all its changes.
      * If during this transaction any files have been transfered from the nonTxContext, they will automaticly be destroyed after
      * the commit. This "postcommit" action can not throw Exceptions.
@@ -96,4 +88,32 @@ public interface TransactionalDocumentSafeService extends NonTransactionalDocume
      * @param userIDAuth user and password
      */
     void endTransaction(UserIDAuth userIDAuth);
+
+
+    /** ====================================================================
+     * INBOX STUFF
+     */
+
+    /**
+     * After this call, the file is copied or moved to the new user.
+     * After the commit the file is (depending on the moveType) really deleted or not
+     * @param userIDAuth user and password
+     * @param receiverUserID the new owner of the document
+     * @param sourceDocumentFQN the path of the file of the user
+     * @param destDocumentFQN the new path of the file for the new owner in its inbox
+     * @param moveType move oder keep_copy. keep_copy means, the file exists for both users
+     */
+    void txMoveDocumnetToInboxOfUser(UserIDAuth userIDAuth, UserID receiverUserID, DocumentFQN sourceDocumentFQN, DocumentFQN destDocumentFQN, MoveType moveType);
+
+
+    /**
+     * After this call, the file is copied from the inbox to the user tx space. now it exists in the inbox and the tx space.
+     * After the commit the file is deleted in the inbox automaticly
+     * @param userIDAuth user and password
+     * @param source file path in the inbox
+     * @param destination file path in the tx space
+     * @param overwriteFlag determines, if the file will overwrite an existing file in the tx space
+     * @return the document, that has been moved
+     */
+    DSDocument nonTxReadFromInbox(UserIDAuth userIDAuth, DocumentFQN source, DocumentFQN destination, OverwriteFlag overwriteFlag);
 }
