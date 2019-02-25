@@ -1,8 +1,10 @@
 package org.adorsys.docusafe.cached.transactional.impl;
 
 import org.adorsys.docusafe.transactional.TransactionalDocumentSafeServiceTest;
+import org.adorsys.docusafe.transactional.impl.TransactionalDocumentSafeServiceImpl;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +18,9 @@ public class CachedTransactionalDocumentSafeServiceTest extends TransactionalDoc
     @Before
     public void preTestCached() {
         LOGGER.debug("preTestCached changed transactionalDocumentSafeService");
+
+        // erst mal einen neuen TransactionalDocumentSafeService anlegen
+        transactionalDocumentSafeService = new TransactionalDocumentSafeServiceImpl(requestMemoryContext, dss);
 
         // erst mal machen wir aus der transactionalDocumentSafeService eine cachedTransactionalDocumentSafeService;
         transactionalDocumentSafeService = new CachedTransactionalDocumentSafeServiceImpl(requestMemoryContext, transactionalDocumentSafeService, dss);
@@ -33,5 +38,12 @@ public class CachedTransactionalDocumentSafeServiceTest extends TransactionalDoc
     @After
     public void afterTestCached() {
         LOGGER.debug("afterTestCached " + transactionalDocumentSafeService.toString());
+    }
+
+
+    @Test
+    @Override
+    public void sendDocumentFromSystemUserToPeter() {
+        super.sendDocumentFromSystemUserToPeter();
     }
 }

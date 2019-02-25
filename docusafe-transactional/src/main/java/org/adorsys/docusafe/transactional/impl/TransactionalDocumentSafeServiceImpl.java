@@ -152,6 +152,7 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
     // INBOX STUFF
     // ============================================================================================
     @Override
+    @SuppressWarnings("Duplicates")
     public void txMoveDocumentToInboxOfUser(UserIDAuth userIDAuth, UserID receiverUserID, DocumentFQN sourceDocumentFQN, DocumentFQN destDocumentFQN, MoveType moveType) {
         // kopiert aus der TransactionalDocumenetSafeServiceImpl
         LOGGER.debug("start txMoveDocumentToInboxOfUser from " + userIDAuth.getUserID() + " " + sourceDocumentFQN + " to " + receiverUserID + " " + destDocumentFQN);
@@ -166,6 +167,7 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
     }
 
     @Override
+    @SuppressWarnings("Duplicates")
     public DSDocument txMoveDocumentFromInbox(UserIDAuth userIDAuth, DocumentFQN source, DocumentFQN destination, OverwriteFlag overwriteFlag) {
         // kopiert aus der TransactionalDocumenetSafeServiceImpl
         LOGGER.debug("start nonTxReadFromInbox for " + userIDAuth +  " " + source + " to " + destination + " overwrite:" + overwriteFlag);

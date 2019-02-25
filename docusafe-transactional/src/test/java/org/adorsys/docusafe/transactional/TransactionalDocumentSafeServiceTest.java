@@ -66,7 +66,8 @@ public class TransactionalDocumentSafeServiceTest extends TransactionalDocumentS
         LOGGER.debug("peter liest das document aus seinem tx space");
         transactionalDocumentSafeService.txReadDocument(userIDAuth, petersTxFileName);
 
-
+        transactionalDocumentSafeService.endTransaction(userIDAuth);
+        transactionalDocumentSafeService.endTransaction(systemUserIDAuth);
     }
 
     @Test
