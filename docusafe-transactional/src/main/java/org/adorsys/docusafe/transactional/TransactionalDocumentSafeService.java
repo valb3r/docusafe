@@ -115,5 +115,5 @@ public interface TransactionalDocumentSafeService extends NonTransactionalDocume
      * @param overwriteFlag determines, if the file will overwrite an existing file in the tx space
      * @return the document, that has been moved
      */
-    DSDocument nonTxReadFromInbox(UserIDAuth userIDAuth, DocumentFQN source, DocumentFQN destination, OverwriteFlag overwriteFlag);
+    DSDocument txMoveDocumentFromInbox(UserIDAuth userIDAuth, DocumentFQN source, DocumentFQN destination, OverwriteFlag overwriteFlag);
 }

@@ -116,7 +116,7 @@ public class TxHistoryCleanupTest extends TransactionalDocumentSafeServiceBaseTe
         }
 
         // Nun gehen wir direkt auf das Filesystem. Hier gibt es nun alle Dateien zu sehen
-        BucketContentFQN list = dssi.list(userIDAuth, new DocumentDirectoryFQN("/"), ListRecursiveFlag.TRUE);
+        BucketContentFQN list = dss.list(userIDAuth, new DocumentDirectoryFQN("/"), ListRecursiveFlag.TRUE);
         LOGGER.debug("LIST OF FILES IN DOCUMENTSAFE: " + list.toString());
 //        Assert.assertEquals(numberOfFiles, list.getFiles().size());
         st.stop();

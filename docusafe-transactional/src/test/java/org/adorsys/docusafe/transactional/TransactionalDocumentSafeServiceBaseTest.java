@@ -2,6 +2,7 @@ package org.adorsys.docusafe.transactional;
 
 import com.googlecode.catchexception.CatchException;
 import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
+import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
@@ -20,8 +21,8 @@ public class TransactionalDocumentSafeServiceBaseTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(TransactionalDocumentSafeServiceBaseTest.class);
 
     protected SimpleRequestMemoryContextImpl requestMemoryContext = new SimpleRequestMemoryContextImpl();
-    protected DocumentSafeServiceImpl dssi = new DocumentSafeServiceImpl(ExtendedStoreConnectionFactory.get());
-    protected TransactionalDocumentSafeService transactionalDocumentSafeService = new TransactionalDocumentSafeServiceImpl(requestMemoryContext, dssi);
+    protected DocumentSafeService dss = new DocumentSafeServiceImpl(ExtendedStoreConnectionFactory.get());
+    protected TransactionalDocumentSafeService transactionalDocumentSafeService = new TransactionalDocumentSafeServiceImpl(requestMemoryContext, dss);
     protected NonTransactionalDocumentSafeService nonTransactionalDocumentSafeService = transactionalDocumentSafeService;
     protected UserIDAuth userIDAuth = new UserIDAuth(new UserID("peter"), new ReadKeyPassword("password"));
     protected UserIDAuth systemUserIDAuth = new UserIDAuth(new UserID("system"), new ReadKeyPassword("systemPassword"));

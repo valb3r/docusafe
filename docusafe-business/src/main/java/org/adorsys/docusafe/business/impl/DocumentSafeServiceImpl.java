@@ -362,21 +362,25 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
     }
 
     @Override
-    public DSDocument readFromInbox(UserIDAuth userIDAuth, DocumentFQN source, DocumentFQN destination, OverwriteFlag overwriteFlag) {
+    public DSDocument moveDocumentFromInbox(UserIDAuth userIDAuth, DocumentFQN source, DocumentFQN destination, OverwriteFlag overwriteFlag) {
         // Das ist eine Kopie von readDocument, sollte besser gelöst werden, insbesondere wird hier im Universalfall der nicht Verschlüsselung doch verschlüsselt
         LOGGER.debug("start readDocument from inbox for " + userIDAuth + " from " + source + " to " + destination);
 
-        Payload payload = readPayloadOfInboxDocument(userIDAuth, source);
+        DSDocument dsDocument = readDocumentFromInbox(userIDAuth, source);
+        SimpleStorageMetadataImpl storageMetadata = new SimpleStorageMetadataImpl();
+        storageMetadata.mergeUserMetadata(dsDocument.getDsDocumentMetaInfo());
+        storageMetadata.setSize(new Long(dsDocument.getDocumentContent().getValue().length));
 
         LOGGER.debug("document " + source + " has been read successfuly from the inbox. now document must be saved " + destination);
         DocumentKeyIDWithKey myDocumentKeyIDwithKey = getMyDocumentKeyIDwithKey(userIDAuth);
-        documentPersistenceService.encryptAndPersistDocument(myDocumentKeyIDwithKey, getTheDocumentBucketPath(userIDAuth.getUserID(), destination), overwriteFlag, payload);
+        documentPersistenceService.encryptAndPersistDocument(myDocumentKeyIDwithKey, getTheDocumentBucketPath(userIDAuth.getUserID(), destination), overwriteFlag,
+                new SimplePayloadImpl(storageMetadata, dsDocument.getDocumentContent().getValue()));
 
         LOGGER.debug("now document must be removed from the inbox " + source);
         deleteDocumentFromInbox(userIDAuth, source);
 
         LOGGER.debug("finished readDocument from inbox for " + userIDAuth + " from " + source + " to " + destination);
-        return new DSDocument(destination, new DocumentContent(payload.getData()), new DSDocumentMetaInfo(payload.getStorageMetadata().getUserMetadata()));
+        return new DSDocument(destination, dsDocument.getDocumentContent(), dsDocument.getDsDocumentMetaInfo());
 
     }
 
@@ -386,10 +390,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         return keySourceService.findPublicEncryptionKey(keyStoreAccess);
     }
 
-    /**
-     * Public but not from the interface. backdoor methods for derived classes
-     *
-     */
+    @Override
     public void writeDocumentToInboxOfUser(UserID receiverUserID, DSDocument document, DocumentFQN destDocumentFQN) {
         DocumentKeyIDWithKey documentKeyIDWithKey = createNewAsymmetricGuardForUser(receiverUserID);
 
@@ -405,13 +406,16 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
 
     }
 
-    public Payload readPayloadOfInboxDocument(UserIDAuth userIDAuth, DocumentFQN source) {
+    @Override
+    public DSDocument readDocumentFromInbox(UserIDAuth userIDAuth, DocumentFQN source) {
         DocumentBucketPath inboxDocumentBucketPath = new DocumentBucketPath(UserIDUtil.getInboxDirectory(userIDAuth.getUserID()).appendName(source.getValue()));
         StorageMetadata storageMetadata = extendedStoreConnection.getStorageMetadata(inboxDocumentBucketPath);
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
-        return documentPersistenceService.loadAndDecryptDocument(storageMetadata, keyStoreAccess, inboxDocumentBucketPath);
+        Payload payload = documentPersistenceService.loadAndDecryptDocument(storageMetadata, keyStoreAccess, inboxDocumentBucketPath);
+        return new DSDocument(source, new DocumentContent(payload.getData()), new DSDocumentMetaInfo(payload.getStorageMetadata().getUserMetadata()));
     }
 
+    @Override
     public void deleteDocumentFromInbox(UserIDAuth userIDAuth, DocumentFQN documentFQN) {
         DocumentBucketPath inboxDocumentBucketPath = new DocumentBucketPath(UserIDUtil.getInboxDirectory(userIDAuth.getUserID()).appendName(documentFQN.getValue()));
         bucketService.deletePlainFile(inboxDocumentBucketPath);

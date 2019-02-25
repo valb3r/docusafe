@@ -33,7 +33,7 @@ public class InboxTest extends BusinessTestBase {
 
         LOGGER.debug("Peter gibt das Document an Francis");
         service.moveDocumnetToInboxOfUser(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentFQNReadme, documentFQNReadmeCopiedToFrancis, MoveType.KEEP_COPY);
-        DSDocument document2 = service.readFromInbox(userIDAuthFrancis, documentFQNReadmeCopiedToFrancis, documentFQNReadmeCopiedToFrancis, OverwriteFlag.FALSE);
+        DSDocument document2 = service.moveDocumentFromInbox(userIDAuthFrancis, documentFQNReadmeCopiedToFrancis, documentFQNReadmeCopiedToFrancis, OverwriteFlag.FALSE);
         Assert.assertEquals(documentFQNReadmeCopiedToFrancis, document2.getDocumentFQN());
 
         LOGGER.debug("Das Document existiert nun auch bei Francis");
@@ -62,11 +62,11 @@ public class InboxTest extends BusinessTestBase {
         service.moveDocumnetToInboxOfUser(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentFQNReadme, documentFQNReadme, MoveType.MOVE);
 
         LOGGER.debug("Da Francis das Document schon hat, gibt es eine Exception");
-        CatchException.catchException( () -> service.readFromInbox(userIDAuthFrancis, documentFQNReadme, documentFQNReadme, OverwriteFlag.FALSE));
+        CatchException.catchException( () -> service.moveDocumentFromInbox(userIDAuthFrancis, documentFQNReadme, documentFQNReadme, OverwriteFlag.FALSE));
         Assert.assertNotNull(CatchException.caughtException());
 
         LOGGER.debug("Da Francis das Document schon hat, forciert er die Kopie, dann gibt es keine Exception");
-        service.readFromInbox(userIDAuthFrancis, documentFQNReadme, documentFQNReadme, OverwriteFlag.TRUE);
+        service.moveDocumentFromInbox(userIDAuthFrancis, documentFQNReadme, documentFQNReadme, OverwriteFlag.TRUE);
     }
 
 

@@ -41,7 +41,7 @@ public class TransactionalDocumentSafeServiceTestWrapper implements Transactiona
     public static final String GET_VERSION = "txGetVersion";
     public static final String NON_TX_LIST_INBOX = "nonTxListInbox";
     public static final String TX_MOVE_DOCUMENT_TO_INBOX_OF_USER = "txMoveDocumentToInboxOfUser";
-    public static final String NON_TX_READ_FROM_INBOX = "nonTxReadFromInbox";
+    public static final String TX_MOVE_FROM_INBOX = "txmoveDocumentFromInbox";
 
     public Map<String, Integer> counterMap = new HashMap<>();
 
@@ -63,7 +63,7 @@ public class TransactionalDocumentSafeServiceTestWrapper implements Transactiona
         inc(GET_VERSION);
         inc(NON_TX_LIST_INBOX);
         inc(TX_MOVE_DOCUMENT_TO_INBOX_OF_USER);
-        inc(NON_TX_READ_FROM_INBOX);
+        inc(TX_MOVE_FROM_INBOX);
     }
 
     @Override
@@ -158,9 +158,9 @@ public class TransactionalDocumentSafeServiceTestWrapper implements Transactiona
     }
 
     @Override
-    public DSDocument nonTxReadFromInbox(UserIDAuth userIDAuth, DocumentFQN source, DocumentFQN destination, OverwriteFlag overwriteFlag) {
-        inc(NON_TX_READ_FROM_INBOX);
-        return realTransactionalFileStorage.nonTxReadFromInbox(userIDAuth, source, destination, overwriteFlag);
+    public DSDocument txMoveDocumentFromInbox(UserIDAuth userIDAuth, DocumentFQN source, DocumentFQN destination, OverwriteFlag overwriteFlag) {
+        inc(TX_MOVE_FROM_INBOX);
+        return realTransactionalFileStorage.txMoveDocumentFromInbox(userIDAuth, source, destination, overwriteFlag);
     }
 
     private void inc(String s) {

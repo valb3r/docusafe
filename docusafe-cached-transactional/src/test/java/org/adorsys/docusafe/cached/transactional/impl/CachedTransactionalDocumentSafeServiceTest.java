@@ -18,7 +18,7 @@ public class CachedTransactionalDocumentSafeServiceTest extends TransactionalDoc
         LOGGER.debug("preTestCached changed transactionalDocumentSafeService");
 
         // erst mal machen wir aus der transactionalDocumentSafeService eine cachedTransactionalDocumentSafeService;
-        transactionalDocumentSafeService = new CachedTransactionalDocumentSafeServiceImpl(requestMemoryContext, transactionalDocumentSafeService);
+        transactionalDocumentSafeService = new CachedTransactionalDocumentSafeServiceImpl(requestMemoryContext, transactionalDocumentSafeService, dss);
 
         // diese wrappen wir
         wrapper = new TransactionalDocumentSafeServiceTestWrapper(transactionalDocumentSafeService);
@@ -34,15 +34,4 @@ public class CachedTransactionalDocumentSafeServiceTest extends TransactionalDoc
     public void afterTestCached() {
         LOGGER.debug("afterTestCached " + transactionalDocumentSafeService.toString());
     }
-
-    /*
-    @Override
-    public void sendDocumentFromSystemUserToPeter() {
-        LOGGER.debug("XXXXXXXXXXXX");
-        super.sendDocumentFromSystemUserToPeter();
-
-    }
-*/
-
-
 }

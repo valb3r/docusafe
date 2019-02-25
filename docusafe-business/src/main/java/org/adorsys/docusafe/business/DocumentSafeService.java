@@ -20,6 +20,7 @@ public interface DocumentSafeService {
      * User
      */
     void createUser(UserIDAuth userIDAuth);
+
     void destroyUser(UserIDAuth userIDAuth);
 
     boolean userExists(UserID userID);
@@ -33,13 +34,17 @@ public interface DocumentSafeService {
      * Document
      */
     void storeDocument(UserIDAuth userIDAuth, DSDocument dsDocument);
+
     DSDocument readDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
 
     void storeDocumentStream(UserIDAuth userIDAuth, DSDocumentStream dsDocumentStream);
+
     DSDocumentStream readDocumentStream(UserIDAuth userIDAuth, DocumentFQN documentFQN);
 
     void deleteDocument(UserIDAuth userIDAuth, DocumentFQN documentFQN);
+
     boolean documentExists(UserIDAuth userIDAuth, DocumentFQN documentFQN);
+
     void deleteFolder(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN);
 
     BucketContentFQNWithUserMetaData list(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag);
@@ -47,7 +52,19 @@ public interface DocumentSafeService {
     /**
      * InboxStuff
      */
-    void moveDocumnetToInboxOfUser(UserIDAuth userIDAuth, UserID receiverUserID, DocumentFQN sourceDocumentFQN, DocumentFQN destDocumentFQN, MoveType moveType);
     BucketContentFQNWithUserMetaData listInbox(UserIDAuth userIDAuth);
-    DSDocument readFromInbox(UserIDAuth userIDAuth, DocumentFQN source, DocumentFQN destination, OverwriteFlag overwriteFlag);
+
+    void writeDocumentToInboxOfUser(UserID receiverUserID, DSDocument document, DocumentFQN destDocumentFQN);
+
+    DSDocument readDocumentFromInbox(UserIDAuth userIDAuth, DocumentFQN source);
+
+    void deleteDocumentFromInbox(UserIDAuth userIDAuth, DocumentFQN documentFQN);
+
+    /**
+     * conveniance methods
+     */
+    void moveDocumnetToInboxOfUser(UserIDAuth userIDAuth, UserID receiverUserID, DocumentFQN sourceDocumentFQN, DocumentFQN destDocumentFQN, MoveType moveType);
+
+    DSDocument moveDocumentFromInbox(UserIDAuth userIDAuth, DocumentFQN source, DocumentFQN destination, OverwriteFlag overwriteFlag);
 }
+

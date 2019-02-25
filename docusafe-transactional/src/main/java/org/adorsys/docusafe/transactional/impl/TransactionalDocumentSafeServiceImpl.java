@@ -10,7 +10,10 @@ import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
+import org.adorsys.docusafe.business.utils.UserIDUtil;
 import org.adorsys.docusafe.service.types.DocumentContent;
+import org.adorsys.docusafe.service.types.complextypes.DocumentBucketPath;
+import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.docusafe.transactional.RequestMemoryContext;
 import org.adorsys.docusafe.transactional.TransactionalDocumentSafeService;
 import org.adorsys.docusafe.transactional.exceptions.TxInnerException;
@@ -18,8 +21,12 @@ import org.adorsys.docusafe.transactional.exceptions.TxNotActiveException;
 import org.adorsys.docusafe.transactional.types.TxBucketContentFQN;
 import org.adorsys.docusafe.transactional.types.TxDocumentFQNVersion;
 import org.adorsys.docusafe.transactional.types.TxID;
+import org.adorsys.encobject.domain.KeyStoreAccess;
 import org.adorsys.encobject.domain.Payload;
+import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.filesystem.exceptions.FileNotFoundException;
+import org.adorsys.encobject.service.impl.SimplePayloadImpl;
+import org.adorsys.encobject.service.impl.SimpleStorageMetadataImpl;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.adorsys.encobject.types.OverwriteFlag;
 import org.adorsys.encobject.types.PublicKeyJWK;
@@ -35,14 +42,12 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
     private final static Logger LOGGER = LoggerFactory.getLogger(TransactionalDocumentSafeServiceImpl.class);
     final static DocumentDirectoryFQN txMeta = new DocumentDirectoryFQN("meta.tx");
     final static DocumentDirectoryFQN txContent = new DocumentDirectoryFQN("tx");
-    private DocumentSafeServiceImpl documentSafeServiceImpl;
     private RequestMemoryContext requestMemoryContext;
 
     public static final String CURRENT_TRANSACTION_DATA = "CurrentTransactionData";
 
     public TransactionalDocumentSafeServiceImpl(RequestMemoryContext requestMemoryContext, DocumentSafeService documentSafeService) {
         super(documentSafeService);
-        this.documentSafeServiceImpl = (DocumentSafeServiceImpl) documentSafeService;
         this.requestMemoryContext = requestMemoryContext;
         LOGGER.debug("new Instance of TransactionalDocumentSafeServiceImpl");
     }
@@ -129,7 +134,7 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
             for (DocumentFQN doc : getCurrentTransactionData(userIDAuth.getUserID()).getNonTxInboxDocumentsToBeDeletedAfterCommit()) {
                 try {
                     LOGGER.debug("delete file of inbox after commit " + doc);
-                    documentSafeServiceImpl.deleteDocumentFromInbox(userIDAuth, doc);
+                    documentSafeService.deleteDocumentFromInbox(userIDAuth, doc);
                 } catch(BaseException e) {
                     LOGGER.warn("Exception is ignored. File deletion after commit does not raise exception");
                 } catch (Exception e) {
@@ -148,12 +153,11 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
     // ============================================================================================
     @Override
     public void txMoveDocumentToInboxOfUser(UserIDAuth userIDAuth, UserID receiverUserID, DocumentFQN sourceDocumentFQN, DocumentFQN destDocumentFQN, MoveType moveType) {
+        // kopiert aus der TransactionalDocumenetSafeServiceImpl
         LOGGER.debug("start txMoveDocumentToInboxOfUser from " + userIDAuth.getUserID() + " " + sourceDocumentFQN + " to " + receiverUserID + " " + destDocumentFQN);
-
-        // Hier kann die Methode des documentSafeService nicht benutzt werden, da das Document ggf. erst in dieser Tx angelegt wurde und pyhsisch noch nicht exisitiert.
         DSDocument document = txReadDocument(userIDAuth, sourceDocumentFQN);
 
-        documentSafeServiceImpl.writeDocumentToInboxOfUser(receiverUserID, document, destDocumentFQN);
+        documentSafeService.writeDocumentToInboxOfUser(receiverUserID, document, destDocumentFQN);
 
         if (moveType.equals(MoveType.MOVE)) {
             txDeleteDocument(userIDAuth, sourceDocumentFQN);
@@ -162,15 +166,16 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
     }
 
     @Override
-    public DSDocument nonTxReadFromInbox(UserIDAuth userIDAuth, DocumentFQN source, DocumentFQN destination, OverwriteFlag overwriteFlag) {
+    public DSDocument txMoveDocumentFromInbox(UserIDAuth userIDAuth, DocumentFQN source, DocumentFQN destination, OverwriteFlag overwriteFlag) {
+        // kopiert aus der TransactionalDocumenetSafeServiceImpl
         LOGGER.debug("start nonTxReadFromInbox for " + userIDAuth +  " " + source + " to " + destination + " overwrite:" + overwriteFlag);
 
         // Hier kann die Methode des documentSafeService nicht benutzt werden, da es nicht im Transaktionskontext geschieht
         // Also muss das Document hier von Hand aus der Inbox geholt und gespeichert werden.
 
-        // Holen des Documentes aus der Inbox mittels backdor Methode
-        Payload payload = documentSafeServiceImpl.readPayloadOfInboxDocument(userIDAuth, source);
-        DSDocument dsDocument = new DSDocument(destination, new DocumentContent(payload.getData()), new DSDocumentMetaInfo(payload.getStorageMetadata().getUserMetadata()));
+        // Holen des Documentens, aber ändern des Pfades
+        DSDocument documentFromInbox = documentSafeService.readDocumentFromInbox(userIDAuth, source);
+        DSDocument dsDocument = new DSDocument(destination, documentFromInbox.getDocumentContent(), documentFromInbox.getDsDocumentMetaInfo());
 
         // Speichern des Documents
         txStoreDocument(userIDAuth, dsDocument);

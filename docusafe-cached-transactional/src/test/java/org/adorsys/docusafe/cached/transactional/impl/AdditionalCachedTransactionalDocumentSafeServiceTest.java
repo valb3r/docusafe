@@ -1,6 +1,7 @@
 package org.adorsys.docusafe.cached.transactional.impl;
 
 import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
+import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
@@ -32,9 +33,9 @@ import java.util.List;
 public class AdditionalCachedTransactionalDocumentSafeServiceTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(AdditionalCachedTransactionalDocumentSafeServiceTest.class);
     private RequestMemoryContext memoryContext = new SimpleRequestMemoryContextImpl();
-    private TransactionalDocumentSafeServiceTestWrapper wrapper = new TransactionalDocumentSafeServiceTestWrapper(new TransactionalDocumentSafeServiceImpl(memoryContext,
-                    new DocumentSafeServiceImpl(ExtendedStoreConnectionFactory.get())));
-    private TransactionalDocumentSafeService cachedService = new CachedTransactionalDocumentSafeServiceImpl(memoryContext, wrapper);
+    private DocumentSafeService dss = new DocumentSafeServiceImpl(ExtendedStoreConnectionFactory.get());
+    private TransactionalDocumentSafeServiceTestWrapper wrapper = new TransactionalDocumentSafeServiceTestWrapper(new TransactionalDocumentSafeServiceImpl(memoryContext, dss));
+    private TransactionalDocumentSafeService cachedService = new CachedTransactionalDocumentSafeServiceImpl(memoryContext, wrapper, dss );
     private List<UserIDAuth> userIDAuthList = new ArrayList<>();
 
 

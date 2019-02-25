@@ -48,7 +48,7 @@ public class SpringCachedTransactionalDocusafeServiceFactory {
         LOGGER.debug("create transactionalDocumentSafeService");
         TransactionalDocumentSafeService transactionalDocumentSafeService = new TransactionalDocumentSafeServiceImpl(requestContext, documentSafeService);
         LOGGER.debug("create cachedTransactionalDocumentSafeService");
-        CachedTransactionalDocumentSafeService cachedTransactionalDocumentSafeService = new CachedTransactionalDocumentSafeServiceImpl(requestContext, transactionalDocumentSafeService);
+        CachedTransactionalDocumentSafeService cachedTransactionalDocumentSafeService = new CachedTransactionalDocumentSafeServiceImpl(requestContext, transactionalDocumentSafeService, documentSafeService);
         map.put(basedir, cachedTransactionalDocumentSafeService);
         return cachedTransactionalDocumentSafeService;
     }

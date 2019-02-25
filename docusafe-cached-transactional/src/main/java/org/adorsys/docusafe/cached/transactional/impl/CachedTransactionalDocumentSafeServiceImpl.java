@@ -1,14 +1,17 @@
 package org.adorsys.docusafe.cached.transactional.impl;
 
+import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.types.MoveType;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.BucketContentFQNWithUserMetaData;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
+import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.cached.transactional.CachedTransactionalDocumentSafeService;
 import org.adorsys.docusafe.cached.transactional.exceptions.CacheException;
+import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.transactional.RequestMemoryContext;
 import org.adorsys.docusafe.transactional.TransactionalDocumentSafeService;
 import org.adorsys.docusafe.transactional.exceptions.TxNotActiveException;
@@ -17,6 +20,7 @@ import org.adorsys.docusafe.transactional.impl.TransactionalDocumentSafeServiceI
 import org.adorsys.docusafe.transactional.types.TxBucketContentFQN;
 import org.adorsys.docusafe.transactional.types.TxDocumentFQNVersion;
 import org.adorsys.docusafe.transactional.types.TxID;
+import org.adorsys.encobject.domain.Payload;
 import org.adorsys.encobject.filesystem.exceptions.FileNotFoundException;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.adorsys.encobject.types.OverwriteFlag;
@@ -42,9 +46,11 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
     public static final String CACHEND_TRANSACTIONAL_CONTEXT_MAP = "cachendTransactionalContextMap";
     private TransactionalDocumentSafeService transactionalDocumentSafeService;
     private RequestMemoryContext requestMemoryContext;
+    private DocumentSafeService documentSafeService;
 
-    public CachedTransactionalDocumentSafeServiceImpl(RequestMemoryContext requestMemoryContext, TransactionalDocumentSafeService transactionalDocumentSafeService) {
+    public CachedTransactionalDocumentSafeServiceImpl(RequestMemoryContext requestMemoryContext, TransactionalDocumentSafeService transactionalDocumentSafeService, DocumentSafeService documentSafeService) {
         this.transactionalDocumentSafeService = transactionalDocumentSafeService;
+        this.documentSafeService =documentSafeService;
         this.requestMemoryContext = requestMemoryContext;
     }
 
@@ -127,15 +133,40 @@ public class CachedTransactionalDocumentSafeServiceImpl implements CachedTransac
     }
 
     @Override
+    @SuppressWarnings("Duplicates")
     public void txMoveDocumentToInboxOfUser(UserIDAuth userIDAuth, UserID receiverUserID, DocumentFQN sourceDocumentFQN, DocumentFQN destDocumentFQN, MoveType moveType) {
-        // da diese Methoden intern Methoden wie txRead und txStore aufrufen, findet so das caching statt
-        transactionalDocumentSafeService.txMoveDocumentToInboxOfUser(userIDAuth, receiverUserID, sourceDocumentFQN, destDocumentFQN, moveType);
+        LOGGER.debug("start txMoveDocumentToInboxOfUser from " + userIDAuth.getUserID() + " " + sourceDocumentFQN + " to " + receiverUserID + " " + destDocumentFQN);
+        DSDocument document = txReadDocument(userIDAuth, sourceDocumentFQN);
+
+        documentSafeService.writeDocumentToInboxOfUser(receiverUserID, document, destDocumentFQN);
+
+        if (moveType.equals(MoveType.MOVE)) {
+            txDeleteDocument(userIDAuth, sourceDocumentFQN);
+        }
+        LOGGER.debug("finished txMoveDocumentToInboxOfUser from " + userIDAuth.getUserID() + " " + sourceDocumentFQN + " to " + receiverUserID + " " + destDocumentFQN);
     }
 
     @Override
-    public DSDocument nonTxReadFromInbox(UserIDAuth userIDAuth, DocumentFQN source, DocumentFQN destination, OverwriteFlag overwriteFlag) {
-        // da diese Methoden intern Methoden wie txRead und txStore aufrufen, findet so das caching statt
-        return transactionalDocumentSafeService.nonTxReadFromInbox(userIDAuth, source, destination, overwriteFlag);
+    @SuppressWarnings("Duplicates")
+    public DSDocument txMoveDocumentFromInbox(UserIDAuth userIDAuth, DocumentFQN source, DocumentFQN destination, OverwriteFlag overwriteFlag) {
+        LOGGER.debug("start nonTxReadFromInbox for " + userIDAuth +  " " + source + " to " + destination + " overwrite:" + overwriteFlag);
+
+        // Hier kann die Methode des documentSafeService nicht benutzt werden, da es nicht im Transaktionskontext geschieht
+        // Also muss das Document hier von Hand aus der Inbox geholt und gespeichert werden.
+
+        // Holen des Documentes aus der Inbox mittels backdor Methode
+        DSDocument dsDocumentFromInbox = documentSafeService.readDocumentFromInbox(userIDAuth, source);
+        DSDocument dsDocument = new DSDocument(destination, dsDocumentFromInbox.getDocumentContent(), dsDocumentFromInbox.getDsDocumentMetaInfo());
+
+        // Speichern des Documents
+        txStoreDocument(userIDAuth, dsDocument);
+
+        // Merken, dass es aus der Inbox nach dem Commit gelöscht werden muss
+        getCurrentTransactionData(userIDAuth.getUserID()).addNonTxInboxFileToBeDeletedAfterCommit(source);
+
+        LOGGER.debug("finishdd nonTxReadFromInbox for " + userIDAuth +  " " + source + " to " + destination + " overwrite:" + overwriteFlag);
+        // Anstatt das locale Object zurückzugeben rufen wir die richtige Methode auf, die es ja nur aus Map lesen sollte.
+        return txReadDocument(userIDAuth, destination);
     }
 
     private CachedTransactionalContext createTransactionalContext(TxID txid) {

@@ -61,7 +61,7 @@ public class TransactionalDocumentSafeServiceTest extends TransactionalDocumentS
         transactionalDocumentSafeService.txMoveDocumentToInboxOfUser(systemUserIDAuth, userIDAuth.getUserID(), systemUserSourceDocFileName, petersInboxFileName, MoveType.MOVE);
 
         LOGGER.debug("peter lädt das document");
-        transactionalDocumentSafeService.nonTxReadFromInbox(userIDAuth, petersInboxFileName, petersTxFileName, OverwriteFlag.FALSE);
+        transactionalDocumentSafeService.txMoveDocumentFromInbox(userIDAuth, petersInboxFileName, petersTxFileName, OverwriteFlag.FALSE);
 
         LOGGER.debug("peter liest das document aus seinem tx space");
         transactionalDocumentSafeService.txReadDocument(userIDAuth, petersTxFileName);
