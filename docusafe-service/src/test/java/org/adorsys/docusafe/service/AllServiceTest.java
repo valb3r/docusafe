@@ -463,7 +463,7 @@ public class AllServiceTest {
     }
 
     // @Test
-    // TODO spezialtest, bei dem das directory auch als pfad benutzt wird, kann mit dsc-encryption-filename-only nicht gehen
+    // TODO special test. In this test, the directory name is used as a filename, this can not run with the option dsc-encryption-filename-only
     public void createBucketWithDot() {
         
         BucketServiceTest bucketServiceTest = new BucketServiceTest(extendedStoreConnection);
