@@ -122,30 +122,34 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
 
     @Override
     public void endTransaction(UserIDAuth userIDAuth) {
-        TxID txid = getCurrentTxID(userIDAuth.getUserID());
-        LOGGER.debug("endTransaction " + txid.getValue());
-        boolean changed = getCurrentTransactionData(userIDAuth.getUserID()).anyDifferenceToInitalState();
-        if (changed) {
-            LOGGER.info("something has changed, so write down the new state");
-            TxIDHashMap txIDHashMap = getCurrentTxIDHashMap(userIDAuth.getUserID());
-            txIDHashMap.setEndTransactionDate(new Date());
-            txIDHashMap.saveOnce(documentSafeService, userIDAuth);
-            txIDHashMap.transactionIsOver(documentSafeService, userIDAuth);
-            for (DocumentFQN doc : getCurrentTransactionData(userIDAuth.getUserID()).getNonTxInboxDocumentsToBeDeletedAfterCommit()) {
-                try {
-                    LOGGER.debug("delete file of inbox after commit " + doc);
-                    documentSafeService.deleteDocumentFromInbox(userIDAuth, doc);
-                } catch(BaseException e) {
-                    LOGGER.warn("Exception is ignored. File deletion after commit does not raise exception");
-                } catch (Exception e) {
-                    new BaseException(e);
-                    LOGGER.warn("Exception is ignored. File deletion after commit does not raise exception");
+        try {
+            TxID txid = getCurrentTxID(userIDAuth.getUserID());
+            LOGGER.debug("endTransaction " + txid.getValue());
+            boolean changed = getCurrentTransactionData(userIDAuth.getUserID()).anyDifferenceToInitalState();
+            if (changed) {
+                LOGGER.info("something has changed, so write down the new state");
+                TxIDHashMap txIDHashMap = getCurrentTxIDHashMap(userIDAuth.getUserID());
+                txIDHashMap.setEndTransactionDate(new Date());
+                txIDHashMap.saveOnce(documentSafeService, userIDAuth);
+                txIDHashMap.transactionIsOver(documentSafeService, userIDAuth);
+                for (DocumentFQN doc : getCurrentTransactionData(userIDAuth.getUserID()).getNonTxInboxDocumentsToBeDeletedAfterCommit()) {
+                    try {
+                        LOGGER.debug("delete file of inbox after commit " + doc);
+                        documentSafeService.deleteDocumentFromInbox(userIDAuth, doc);
+                    } catch (BaseException e) {
+                        LOGGER.warn("Exception is ignored. File deletion after commit does not raise exception");
+                    } catch (Exception e) {
+                        new BaseException(e);
+                        LOGGER.warn("Exception is ignored. File deletion after commit does not raise exception");
+                    }
                 }
+            } else {
+                LOGGER.info("nothing has changed, so nothing has to be written down");
             }
-        } else {
-            LOGGER.info("nothing has changed, so nothing has to be written down");
         }
-        setCurrentTransactionDataToNull(userIDAuth.getUserID());
+        finally {
+            setCurrentTransactionDataToNull(userIDAuth.getUserID());
+        }
     }
 
     // ============================================================================================

@@ -26,6 +26,9 @@ public class SameUserSameTimeDifferentRequestsTest extends TransactionalDocument
 
         DSDocument document1 = createDocument("file1");
         DSDocument document2 = createDocument("file2");
+        DSDocument document3 = createDocument("file3");
+        DSDocument document4 = createDocument("file4");
+        DSDocument document5 = createDocument("file5");
 
         {
             LOGGER.debug("user1 starts TX");
@@ -41,22 +44,65 @@ public class SameUserSameTimeDifferentRequestsTest extends TransactionalDocument
             LOGGER.debug("user1 starts TX");
             transactionalDocumentSafeService.beginTransaction(userIDAuth);
 
-            secondRequestMemoryContext
             LOGGER.debug("user1 in a new context starts another TX");
             secondTransactionalDocumentSafeService.beginTransaction(userIDAuth);
 
-            LOGGER.debug("user2 creates " + document2.getDocumentFQN());
+            LOGGER.debug("user1 in the second tx creates " + document2.getDocumentFQN());
             secondTransactionalDocumentSafeService.txStoreDocument(userIDAuth, document2);
 
-            LOGGER.debug("user1 creates " + document2.getDocumentFQN());
+            LOGGER.debug("user1 in the first tx creates " + document2.getDocumentFQN());
             transactionalDocumentSafeService.txStoreDocument(userIDAuth, document2);
 
-            LOGGER.debug("user1 ends TX");
+            LOGGER.debug("user1 first tx ends TX");
             transactionalDocumentSafeService.endTransaction(userIDAuth);
 
-            LOGGER.debug("user1 in the new context ends TX");
+            LOGGER.debug("user1 second tx ends TX and gets exception");
             CatchException.catchException(() ->secondTransactionalDocumentSafeService.endTransaction(userIDAuth));
             Assert.assertNotNull(CatchException.caughtException());
+        }
+        {
+            {
+                LOGGER.debug("user1 starts TX");
+                transactionalDocumentSafeService.beginTransaction(userIDAuth);
+
+                LOGGER.debug("user1 in a new context starts another TX");
+                secondTransactionalDocumentSafeService.beginTransaction(userIDAuth);
+
+                LOGGER.debug("user1 in the first tx creates " + document1.getDocumentFQN());
+                transactionalDocumentSafeService.txStoreDocument(userIDAuth, document1);
+
+                LOGGER.debug("user1 first tx ends TX");
+                transactionalDocumentSafeService.endTransaction(userIDAuth);
+            }
+            {
+                LOGGER.debug("user1 starts TX");
+                transactionalDocumentSafeService.beginTransaction(userIDAuth);
+
+                LOGGER.debug("user1 in the first tx creates " + document2.getDocumentFQN());
+                transactionalDocumentSafeService.txStoreDocument(userIDAuth, document2);
+
+                LOGGER.debug("user1 first tx ends TX");
+                transactionalDocumentSafeService.endTransaction(userIDAuth);
+            }
+            {
+                LOGGER.debug("user1 starts TX");
+                transactionalDocumentSafeService.beginTransaction(userIDAuth);
+
+                LOGGER.debug("user1 in the first tx creates " + document3.getDocumentFQN());
+                transactionalDocumentSafeService.txStoreDocument(userIDAuth, document3);
+
+                LOGGER.debug("user1 first tx ends TX");
+                transactionalDocumentSafeService.endTransaction(userIDAuth);
+            }
+            {
+                LOGGER.debug("user1 in the second context creates " + document4.getDocumentFQN());
+                secondTransactionalDocumentSafeService.txStoreDocument(userIDAuth, document4);
+
+                LOGGER.debug("user1 second context ends TX");
+//                secondTransactionalDocumentSafeService.endTransaction(userIDAuth);
+                CatchException.catchException(() ->secondTransactionalDocumentSafeService.endTransaction(userIDAuth));
+                LOGGER.info("should be reached");
+            }
         }
 
 
