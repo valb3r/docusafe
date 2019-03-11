@@ -1,6 +1,10 @@
 package org.adorsys.docusafe.transactional;
 
+import com.googlecode.catchexception.CatchException;
+import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFactory;
+import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
+import org.adorsys.docusafe.transactional.impl.TransactionalDocumentSafeServiceImpl;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -11,6 +15,9 @@ import org.slf4j.LoggerFactory;
  */
 public class SameUserSameTimeDifferentRequestsTest extends TransactionalDocumentSafeServiceBaseTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(SameUserSameTimeDifferentRequestsTest.class);
+
+    SimpleRequestMemoryContextImpl secondRequestMemoryContext = new SimpleRequestMemoryContextImpl();
+    TransactionalDocumentSafeService secondTransactionalDocumentSafeService = new TransactionalDocumentSafeServiceImpl(secondRequestMemoryContext, new DocumentSafeServiceImpl(ExtendedStoreConnectionFactory.get()));
 
     @Test
     @SuppressWarnings("Duplicates")
@@ -34,24 +41,22 @@ public class SameUserSameTimeDifferentRequestsTest extends TransactionalDocument
             LOGGER.debug("user1 starts TX");
             transactionalDocumentSafeService.beginTransaction(userIDAuth);
 
-            requestMemoryContext.switchToUser(2);
-            LOGGER.debug("user1 starts another TX");
-            transactionalDocumentSafeService.beginTransaction(userIDAuth);
+            secondRequestMemoryContext
+            LOGGER.debug("user1 in a new context starts another TX");
+            secondTransactionalDocumentSafeService.beginTransaction(userIDAuth);
 
-            LOGGER.debug("user1 creates " + document2.getDocumentFQN());
-            transactionalDocumentSafeService.txStoreDocument(userIDAuth, document2);
+            LOGGER.debug("user2 creates " + document2.getDocumentFQN());
+            secondTransactionalDocumentSafeService.txStoreDocument(userIDAuth, document2);
 
-            requestMemoryContext.switchToUser(1);
             LOGGER.debug("user1 creates " + document2.getDocumentFQN());
             transactionalDocumentSafeService.txStoreDocument(userIDAuth, document2);
 
             LOGGER.debug("user1 ends TX");
             transactionalDocumentSafeService.endTransaction(userIDAuth);
 
-
-            requestMemoryContext.switchToUser(2);
-            LOGGER.debug("user1 ends TX");
-     //       transactionalDocumentSafeService.endTransaction(userIDAuth);
+            LOGGER.debug("user1 in the new context ends TX");
+            CatchException.catchException(() ->secondTransactionalDocumentSafeService.endTransaction(userIDAuth));
+            Assert.assertNotNull(CatchException.caughtException());
         }
 
 
