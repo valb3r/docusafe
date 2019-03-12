@@ -2,18 +2,12 @@ package org.adorsys.docusafe.transactional.impl;
 
 import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.docusafe.business.DocumentSafeService;
-import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
 import org.adorsys.docusafe.business.types.MoveType;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
-import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
-import org.adorsys.docusafe.business.utils.UserIDUtil;
-import org.adorsys.docusafe.service.types.DocumentContent;
-import org.adorsys.docusafe.service.types.complextypes.DocumentBucketPath;
-import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.docusafe.transactional.RequestMemoryContext;
 import org.adorsys.docusafe.transactional.TransactionalDocumentSafeService;
 import org.adorsys.docusafe.transactional.exceptions.TxInnerException;
@@ -21,12 +15,7 @@ import org.adorsys.docusafe.transactional.exceptions.TxNotActiveException;
 import org.adorsys.docusafe.transactional.types.TxBucketContentFQN;
 import org.adorsys.docusafe.transactional.types.TxDocumentFQNVersion;
 import org.adorsys.docusafe.transactional.types.TxID;
-import org.adorsys.encobject.domain.KeyStoreAccess;
-import org.adorsys.encobject.domain.Payload;
-import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.filesystem.exceptions.FileNotFoundException;
-import org.adorsys.encobject.service.impl.SimplePayloadImpl;
-import org.adorsys.encobject.service.impl.SimpleStorageMetadataImpl;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.adorsys.encobject.types.OverwriteFlag;
 import org.adorsys.encobject.types.PublicKeyJWK;
@@ -66,8 +55,8 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
 
         TxID currentTxID = new TxID();
         LOGGER.debug("beginTransaction " + currentTxID.getValue());
-        TxIDHashMap txIDHashMap = TxIDHashMap.fromPreviousFileOrNew(documentSafeService, userIDAuth, currentTxID, beginTxDate);
-        currentTransactionData = new CurrentTransactionData(currentTxID, txIDHashMap);
+        TxIDHashMapWrapper txIDHashMapWrapper = TxIDHashMapWrapper.fromPreviousFileOrNew(documentSafeService, userIDAuth, currentTxID, beginTxDate);
+        currentTransactionData = new CurrentTransactionData(currentTxID, txIDHashMapWrapper);
         setCurrentTransactionData(userIDAuth.getUserID(), currentTransactionData);
     }
 
@@ -95,8 +84,8 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
     @Override
     public TxBucketContentFQN txListDocuments(UserIDAuth userIDAuth, DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {
         LOGGER.debug("txListDocuments " + getCurrentTxID(userIDAuth.getUserID()));
-        TxIDHashMap txIDHashMap = getCurrentTxIDHashMap(userIDAuth.getUserID());
-        return txIDHashMap.list(documentDirectoryFQN, recursiveFlag);
+        TxIDHashMapWrapper txIDHashMapWrapper = getCurrentTxIDHashMap(userIDAuth.getUserID());
+        return txIDHashMapWrapper.list(documentDirectoryFQN, recursiveFlag);
     }
 
     @Override
@@ -128,10 +117,10 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
             boolean changed = getCurrentTransactionData(userIDAuth.getUserID()).anyDifferenceToInitalState();
             if (changed) {
                 LOGGER.info("something has changed, so write down the new state");
-                TxIDHashMap txIDHashMap = getCurrentTxIDHashMap(userIDAuth.getUserID());
-                txIDHashMap.setEndTransactionDate(new Date());
-                txIDHashMap.saveOnce(documentSafeService, userIDAuth);
-                txIDHashMap.transactionIsOver(documentSafeService, userIDAuth);
+                TxIDHashMapWrapper txIDHashMapWrapper = getCurrentTxIDHashMap(userIDAuth.getUserID());
+                txIDHashMapWrapper.setEndTransactionDate(new Date());
+                txIDHashMapWrapper.saveOnce(documentSafeService, userIDAuth);
+                txIDHashMapWrapper.transactionIsOver(documentSafeService, userIDAuth);
                 for (DocumentFQN doc : getCurrentTransactionData(userIDAuth.getUserID()).getNonTxInboxDocumentsToBeDeletedAfterCommit()) {
                     try {
                         LOGGER.debug("delete file of inbox after commit " + doc);
@@ -217,7 +206,7 @@ public class TransactionalDocumentSafeServiceImpl extends NonTransactionalDocume
         return getCurrentTransactionData(userID).getCurrentTxID();
     }
 
-    private TxIDHashMap getCurrentTxIDHashMap(UserID userID) {
+    private TxIDHashMapWrapper getCurrentTxIDHashMap(UserID userID) {
         return getCurrentTransactionData(userID).getCurrentTxHashMap();
     }
 

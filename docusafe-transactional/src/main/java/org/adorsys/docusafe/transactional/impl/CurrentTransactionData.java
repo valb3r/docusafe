@@ -19,11 +19,11 @@ import java.util.Set;
 public class CurrentTransactionData {
     private final static Logger LOGGER = LoggerFactory.getLogger(CurrentTransactionData.class);
     private TxID currentTxID = null;
-    private TxIDHashMap currentTxHashMap = null;
-    private TxIDHashMap initialTxHashMap = null;
+    private TxIDHashMapWrapper currentTxHashMap = null;
+    private TxIDHashMapWrapper initialTxHashMap = null;
     private Set<DocumentFQN> nonTxInboxDocumentsToBeDeletedAfterCommit = new HashSet<>();
 
-    public CurrentTransactionData(TxID currentTxID, TxIDHashMap currentTxHashMap) {
+    public CurrentTransactionData(TxID currentTxID, TxIDHashMapWrapper currentTxHashMap) {
         this.currentTxID = currentTxID;
         this.currentTxHashMap = currentTxHashMap;
         initialTxHashMap = currentTxHashMap.clone();
@@ -33,7 +33,7 @@ public class CurrentTransactionData {
         return currentTxID;
     }
 
-    public TxIDHashMap getCurrentTxHashMap() {
+    public TxIDHashMapWrapper getCurrentTxHashMap() {
         return currentTxHashMap;
     }
 
