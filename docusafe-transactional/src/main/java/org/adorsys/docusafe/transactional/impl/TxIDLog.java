@@ -48,7 +48,7 @@ public class TxIDLog {
                 size = txIDLog.txidList.size();
                 DSDocumentMetaInfo metaInfo = new DSDocumentMetaInfo();
                 if (dontEncrypt) {
-                    LOGGER.debug("save " + txidLogFilename + " encrypted");
+                    LOGGER.debug("save " + txidLogFilename + " unencrypted");
                     UserMetaDataUtil.setNoEncryption(metaInfo);
                 }
                 DSDocument document = new DSDocument(txidLogFilename, new Class2JsonHelper().txidLogToContent(txIDLog), metaInfo);
