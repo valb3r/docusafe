@@ -62,14 +62,18 @@ public class SameUserSameTimeDifferentRequestsTest extends TransactionalDocument
         }
         {
             {
+                LOGGER.debug("user1 in a new context starts another TX");
+                secondTransactionalDocumentSafeService.beginTransaction(userIDAuth);
+            }
+            {
                 LOGGER.debug("user1 starts TX");
                 transactionalDocumentSafeService.beginTransaction(userIDAuth);
 
-                LOGGER.debug("user1 in a new context starts another TX");
-                secondTransactionalDocumentSafeService.beginTransaction(userIDAuth);
+                LOGGER.debug("user1 in the first tx creates " + document2.getDocumentFQN());
+                transactionalDocumentSafeService.txStoreDocument(userIDAuth, document2);
 
-                LOGGER.debug("user1 in the first tx creates " + document1.getDocumentFQN());
-                transactionalDocumentSafeService.txStoreDocument(userIDAuth, document1);
+                LOGGER.debug("user1 in the first tx creates " + document5.getDocumentFQN());
+                transactionalDocumentSafeService.txStoreDocument(userIDAuth, document5);
 
                 LOGGER.debug("user1 first tx ends TX");
                 transactionalDocumentSafeService.endTransaction(userIDAuth);
@@ -81,15 +85,11 @@ public class SameUserSameTimeDifferentRequestsTest extends TransactionalDocument
                 LOGGER.debug("user1 in the first tx creates " + document2.getDocumentFQN());
                 transactionalDocumentSafeService.txStoreDocument(userIDAuth, document2);
 
-                LOGGER.debug("user1 first tx ends TX");
-                transactionalDocumentSafeService.endTransaction(userIDAuth);
-            }
-            {
-                LOGGER.debug("user1 starts TX");
-                transactionalDocumentSafeService.beginTransaction(userIDAuth);
-
                 LOGGER.debug("user1 in the first tx creates " + document3.getDocumentFQN());
                 transactionalDocumentSafeService.txStoreDocument(userIDAuth, document3);
+
+                LOGGER.debug("user1 in the first tx DELETES " + document5.getDocumentFQN());
+                transactionalDocumentSafeService.txDeleteDocument(userIDAuth, document5.getDocumentFQN());
 
                 LOGGER.debug("user1 first tx ends TX");
                 transactionalDocumentSafeService.endTransaction(userIDAuth);

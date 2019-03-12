@@ -54,6 +54,10 @@ public class TxIDHashMap {
         }
     }
 
+    public HashMap<DocumentFQN, TxID> getMap() {
+        return map;
+    }
+
     public TxIDHashMap clone() {
         TxIDHashMap newTxIDHashMap = new TxIDHashMap(lastCommitedTxID, currentTxID, beginTx);
         newTxIDHashMap.map = new HashMap<>(map);
