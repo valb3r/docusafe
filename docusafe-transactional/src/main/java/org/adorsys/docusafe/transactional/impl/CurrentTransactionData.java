@@ -38,8 +38,8 @@ public class CurrentTransactionData {
     }
 
     public boolean anyDifferenceToInitalState() {
-        Set<DocumentFQN> currentFQNs = new HashSet<>(currentTxHashMap.map.keySet());
-        Set<DocumentFQN> initialFQNs = new HashSet<>(initialTxHashMap.map.keySet());
+        Set<DocumentFQN> currentFQNs = new HashSet<>(currentTxHashMap.getMap().keySet());
+        Set<DocumentFQN> initialFQNs = new HashSet<>(initialTxHashMap.getMap().keySet());
         if (currentFQNs.size() > initialFQNs.size()) {
             currentFQNs.removeAll(initialFQNs);
             currentFQNs.forEach(fqn -> LOGGER.debug(" new file has been created: " + fqn));
@@ -55,8 +55,8 @@ public class CurrentTransactionData {
                 LOGGER.debug(" old file has been removed: " + fqn);
                 return true;
             }
-            TxID currentTxID = currentTxHashMap.map.get(fqn);
-            TxID initialTxID = initialTxHashMap.map.get(fqn);
+            TxID currentTxID = currentTxHashMap.getMap().get(fqn);
+            TxID initialTxID = initialTxHashMap.getMap().get(fqn);
             if (!currentTxID.equals(initialTxID)) {
                 LOGGER.debug(" old file has changed:" + fqn);
                 return true;

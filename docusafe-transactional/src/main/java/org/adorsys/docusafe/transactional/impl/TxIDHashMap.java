@@ -43,7 +43,7 @@ public class TxIDHashMap {
     private TxID currentTxID;
     private Date beginTx;
     private Date endTx;
-    HashMap<DocumentFQN, TxID> map = new HashMap<>();
+    private HashMap<DocumentFQN, TxID> map = new HashMap<>();
 
     private TxIDHashMap(LastCommitedTxID lastCommitedTxID, TxID currentTx, Date beginTxDate) {
         this.lastCommitedTxID = lastCommitedTxID;
