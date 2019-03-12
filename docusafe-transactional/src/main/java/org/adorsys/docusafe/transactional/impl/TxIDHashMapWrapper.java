@@ -50,7 +50,7 @@ public class TxIDHashMapWrapper {
         }
     }
 
-    public HashMap<DocumentFQN, TxID> getMap() {
+    public TxIDHashMap getMap() {
         return map;
     }
 
