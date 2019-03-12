@@ -21,6 +21,7 @@ public class CurrentTransactionData {
     private TxID currentTxID = null;
     private TxIDHashMapWrapper currentTxHashMap = null;
     private TxIDHashMapWrapper initialTxHashMap = null;
+    private TxIDHashMap documentsReadInThisTx = new TxIDHashMap();
     private Set<DocumentFQN> nonTxInboxDocumentsToBeDeletedAfterCommit = new HashSet<>();
 
     public CurrentTransactionData(TxID currentTxID, TxIDHashMapWrapper currentTxHashMap) {
@@ -36,6 +37,16 @@ public class CurrentTransactionData {
     public TxIDHashMapWrapper getCurrentTxHashMap() {
         return currentTxHashMap;
     }
+
+    public TxIDHashMapWrapper getInitialTxHashMap() {
+        return initialTxHashMap;
+    }
+
+    public TxIDHashMap getDocumentsReadInThisTx() {
+        return documentsReadInThisTx;
+    }
+
+    
 
     public boolean anyDifferenceToInitalState() {
         Set<DocumentFQN> currentFQNs = new HashSet<>(currentTxHashMap.getMap().keySet());

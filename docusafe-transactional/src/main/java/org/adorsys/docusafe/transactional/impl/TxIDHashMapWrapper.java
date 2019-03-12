@@ -35,11 +35,28 @@ public class TxIDHashMapWrapper {
     private final static Logger LOGGER = LoggerFactory.getLogger(TxIDHashMapWrapper.class);
     private final static DocumentFQN filenamebase = new DocumentFQN("TransactionalHashMap.txt");
 
+    private TxID mergedTxID = new LastCommitedTxID("NULL");
     private LastCommitedTxID lastCommitedTxID;
     private TxID currentTxID;
     private Date beginTx;
     private Date endTx;
     private TxIDHashMap map = new TxIDHashMap();
+
+    public LastCommitedTxID getLastCommitedTxID() {
+        return lastCommitedTxID;
+    }
+
+    public TxID getCurrentTxID() {
+        return currentTxID;
+    }
+
+    public Date getBeginTx() {
+        return beginTx;
+    }
+
+    public Date getEndTx() {
+        return endTx;
+    }
 
     private TxIDHashMapWrapper(LastCommitedTxID lastCommitedTxID, TxID currentTx, Date beginTxDate) {
         this.lastCommitedTxID = lastCommitedTxID;
@@ -142,8 +159,8 @@ public class TxIDHashMapWrapper {
         endTx = endTransactionDate;
     }
 
-    public void transactionIsOver(DocumentSafeService documentSafeService, UserIDAuth userIDAuth) {
-        TxIDLog.saveJustFinishedTx(documentSafeService, userIDAuth, beginTx, endTx, lastCommitedTxID, currentTxID);
+    public void transactionIsOver(DocumentSafeService documentSafeService, UserIDAuth userIDAuth, CurrentTransactionData currentTransactionData) {
+        TxIDLog.saveJustFinishedTx(documentSafeService, userIDAuth, currentTransactionData);
     }
 
     public TxBucketContentFQN list(DocumentDirectoryFQN documentDirectoryFQN, ListRecursiveFlag recursiveFlag) {

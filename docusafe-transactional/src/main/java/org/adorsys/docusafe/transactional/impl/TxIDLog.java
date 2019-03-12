@@ -9,10 +9,7 @@ import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.service.impl.UserMetaDataUtil;
 import org.adorsys.docusafe.transactional.exceptions.TxRacingConditionException;
-import org.adorsys.docusafe.transactional.impl.helper.Class2JsonHelper;
-import org.adorsys.docusafe.transactional.impl.helper.CleanupLogic;
-import org.adorsys.docusafe.transactional.impl.helper.TransactionInformation;
-import org.adorsys.docusafe.transactional.impl.helper.TransactionInformationList;
+import org.adorsys.docusafe.transactional.impl.helper.*;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,9 +57,12 @@ public class TxIDLog {
         return null;
     }
 
-    public static void saveJustFinishedTx(DocumentSafeService documentSafeService, UserIDAuth userIDAuth, Date start, Date finished, LastCommitedTxID previousTxID, TxID currentTxID) {
+    public static void saveJustFinishedTx(DocumentSafeService documentSafeService, UserIDAuth userIDAuth, CurrentTransactionData currentTransactionData) {
         // we synchonize not all methods, but those, refering to the same user
-        synchronized(userIDAuth.getUserID().getValue()) {
+
+
+        synchronized (userIDAuth.getUserID().getValue()) {
+            TxIDHashMapWrapper joinedTx = null;
             TxIDLog txIDLog = new TxIDLog();
             DSDocumentMetaInfo metaInfo = new DSDocumentMetaInfo();
             if (dontEncrypt) {
@@ -77,19 +77,35 @@ public class TxIDLog {
             if (!txIDLog.txidList.isEmpty()) {
                 TransactionInformation lastTuple = txIDLog.txidList.get(txIDLog.txidList.size() - 1);
                 LastCommitedTxID lastCommitedTxID = new LastCommitedTxID(lastTuple.getCurrentTxID().getValue());
+
+                // now read file of lastCommittedTx
+                LastCommitedTxID previousTxID = currentTransactionData.getCurrentTxHashMap().getLastCommitedTxID();
                 if (!lastCommitedTxID.equals(previousTxID)) {
-                        throw new TxRacingConditionException(currentTxID, lastCommitedTxID, previousTxID);
+                    TxIDHashMapWrapper stateOfLastCommitedTx = TxIDHashMapWrapper.readHashMapOfTx(documentSafeService, userIDAuth, lastCommitedTxID);
+                    joinedTx = new ParallelTransactionLogic().join(stateOfLastCommitedTx, currentTransactionData.getInitialTxHashMap(), currentTransactionData.getCurrentTxHashMap(), currentTransactionData.getDocumentsReadInThisTx());
+                    joinedTx.saveOnce(documentSafeService, userIDAuth);
                 }
             }
 
-            txIDLog.txidList.add(new TransactionInformation(start, finished, previousTxID, currentTxID));
+            {
+                LastCommitedTxID previousTxID = currentTransactionData.getCurrentTxHashMap().getLastCommitedTxID();
+                TxID currentTxID = currentTransactionData.getCurrentTxHashMap().getCurrentTxID();
+                Date start = currentTransactionData.getCurrentTxHashMap().getBeginTx();
+                Date finished = currentTransactionData.getCurrentTxHashMap().getEndTx();
+                txIDLog.txidList.add(new TransactionInformation(start, finished, previousTxID, currentTxID));
+            }
+            if (joinedTx != null) {
+                LastCommitedTxID previousTxID = joinedTx.getLastCommitedTxID();
+                TxID currentTxID = joinedTx.getCurrentTxID();
+                Date start = joinedTx.getBeginTx();
+                Date finished = joinedTx.getEndTx();
+                txIDLog.txidList.add(new TransactionInformation(start, finished, previousTxID, currentTxID));
+            }
             DSDocument document = new DSDocument(txidLogFilename, new Class2JsonHelper().txidLogToContent(txIDLog), metaInfo);
             documentSafeService.storeDocument(userIDAuth, document);
             LOGGER.debug("successfully wrote new Version to " + txidLogFilename);
         }
     }
-
-
 
 
 }
