@@ -117,7 +117,7 @@ public class BusinessTest extends BusinessTestBase {
     public void testCreateUser() {
 
         UserIDAuth userIDAuth = createUser();
-        Assert.assertEquals("Anzahl der guards muss 1 betragen", 1, getNumberOfGuards(userIDAuth.getUserID()));
+        Assert.assertEquals("Anzahl der guards muss 0 betragen", 0, getNumberOfGuards(userIDAuth.getUserID()));
     }
 
 
@@ -126,7 +126,6 @@ public class BusinessTest extends BusinessTestBase {
 
         UserIDAuth userIDAuth = createUser(new UserID("affe"), new ReadKeyPassword("ab_irgendwas_cd"));
         DocumentFQN fqn = new DocumentFQN("README.txt");
-        Assert.assertEquals("Anzahl der guards muss 1 betragen", 1, getNumberOfGuards(userIDAuth.getUserID()));
         // Dieser Read muss ok sein
         service.readDocument(userIDAuth, fqn);
         userIDAuth = new UserIDAuth(new UserID("affe"), new ReadKeyPassword("ab_123456789_cd"));
@@ -162,15 +161,14 @@ public class BusinessTest extends BusinessTestBase {
     public void storeDSDocumentInANewFolder() {
 
         UserIDAuth userIDAuth = createUser();
-        Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
-
         DocumentFQN documentFQN = new DocumentFQN("first/next/a-new-document.txt");
         DSDocument dsDocument1 = createDocument(userIDAuth, documentFQN);
-        Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
-        readDocument(userIDAuth, documentFQN, dsDocument1.getDocumentContent());
+        DSDocument dsDocument1R = readDocument(userIDAuth, documentFQN, dsDocument1.getDocumentContent());
+        Assert.assertArrayEquals(dsDocument1.getDocumentContent().getValue(), dsDocument1R.getDocumentContent().getValue());
 
         DSDocument dsDocument2 = createDocument(userIDAuth, new DocumentFQN("first/next/another-new-document.txt"));
-        readDocument(userIDAuth, dsDocument2.getDocumentFQN(), dsDocument2.getDocumentContent());
+        DSDocument dsDocument2R = readDocument(userIDAuth, dsDocument2.getDocumentFQN(), dsDocument2.getDocumentContent());
+        Assert.assertArrayEquals(dsDocument2.getDocumentContent().getValue(), dsDocument2R.getDocumentContent().getValue());
     }
 
     /**

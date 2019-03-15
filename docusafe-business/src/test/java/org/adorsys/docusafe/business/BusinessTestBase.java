@@ -118,7 +118,7 @@ public class BusinessTestBase {
         UserIDAuth userIDAuth = new UserIDAuth(userID, readKeyPassword);
         users.add(userIDAuth);
         service.createUser(userIDAuth);
-        Assert.assertEquals("Anzahl der guards muss genau 1 sein", 1, getNumberOfGuards(userIDAuth.getUserID()));
+        Assert.assertEquals("Anzahl der guards muss genau 0 sein", 0, getNumberOfGuards(userIDAuth.getUserID()));
         return userIDAuth;
     }
 

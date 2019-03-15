@@ -1,5 +1,6 @@
 package org.adorsys.docusafe.service.impl;
 
+import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.docusafe.service.DocumentGuardService;
 import org.adorsys.docusafe.service.DocumentPersistenceService;
 import org.adorsys.docusafe.service.keysource.DocumentGuardBasedKeySourceImpl;
@@ -14,12 +15,17 @@ import org.adorsys.encobject.exceptions.FileExistsException;
 import org.adorsys.encobject.service.api.EncryptedPersistenceService;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
 import org.adorsys.encobject.service.api.KeySource;
+import org.adorsys.encobject.service.api.KeystorePersistence;
 import org.adorsys.encobject.service.impl.AESEncryptionStreamServiceImpl;
+import org.adorsys.encobject.service.impl.BlobStoreKeystorePersistenceImpl;
 import org.adorsys.encobject.service.impl.EncryptedPersistenceServiceImpl;
+import org.adorsys.encobject.service.impl.KeyStoreBasedSecretKeySourceImpl;
 import org.adorsys.encobject.types.KeyID;
 import org.adorsys.encobject.types.OverwriteFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.security.KeyStore;
 
 /**
  * Sample use of the encobject api to implement our protocol.
@@ -36,6 +42,7 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
     private ExtendedStoreConnection extendedStoreConnection;
     private BucketServiceImpl bucketService = null;
     private DocumentKeyID2DocumentKeyCache documentKeyID2DocumentKeyCache = null;
+    private KeystorePersistence keystorePersistence;
 
     public DocumentPersistenceServiceImpl(ExtendedStoreConnection extendedStoreConnection,
                                           DocumentKeyID2DocumentKeyCache documentKeyID2DocumentKeyCache) {
@@ -44,6 +51,7 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
         this.documentGuardService = new DocumentGuardServiceImpl(extendedStoreConnection);
         this.bucketService = new BucketServiceImpl(extendedStoreConnection);
         this.documentKeyID2DocumentKeyCache = documentKeyID2DocumentKeyCache;
+        this.keystorePersistence = new BlobStoreKeystorePersistenceImpl(extendedStoreConnection);
     }
 
     /**
@@ -76,9 +84,22 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
             StorageMetadata storageMetadata,
             KeyStoreAccess keyStoreAccess,
             DocumentBucketPath documentBucketPath) {
+        if (storageMetadata == null) {
+            throw new BaseException("storageMetadata for load document " + documentBucketPath + " must not be null");
+        }
 
-        LOGGER.debug("start load and decrypt document " + documentBucketPath + " " + keyStoreAccess);
-        KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess, documentKeyID2DocumentKeyCache);
+        LOGGER.info("start load and decrypt document " + documentBucketPath + " " + keyStoreAccess);
+        LOGGER.info("===========================");
+        storageMetadata.getUserMetadata().keySet().forEach(key ->
+            LOGGER.info(key + " -> " + storageMetadata.getUserMetadata().get(key))
+        );
+
+//        KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess, documentKeyID2DocumentKeyCache);
+        // TODO DO NOT READ THE KEYSTORE EVERY TIME!!!
+        LOGGER.warn("TODO DO NOT READ THE KEYSTORE EVERY TIME!!!");
+        KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStorePath().getObjectHandle(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
+        KeySource keySource = new KeyStoreBasedSecretKeySourceImpl(userKeystore, keyStoreAccess.getKeyStoreAuth().getReadKeyHandler());
+
         Payload payload = encryptedPersistenceService.loadAndDecrypt(documentBucketPath, keySource, storageMetadata);
         LOGGER.debug("finished load and decrypt " + documentBucketPath);
         return payload;

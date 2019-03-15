@@ -35,6 +35,7 @@ import org.adorsys.docusafe.service.impl.PasswordAndDocumentKeyIDWithKeyAndAcces
 import org.adorsys.docusafe.service.impl.UserMetaDataUtil;
 import org.adorsys.docusafe.service.types.BucketContent;
 import org.adorsys.docusafe.service.types.DocumentContent;
+import org.adorsys.docusafe.service.types.DocumentKey;
 import org.adorsys.docusafe.service.types.DocumentKeyID;
 import org.adorsys.docusafe.service.types.complextypes.DocumentBucketPath;
 import org.adorsys.docusafe.service.types.complextypes.DocumentGuardLocation;
@@ -48,14 +49,14 @@ import org.adorsys.encobject.domain.PayloadStream;
 import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
+import org.adorsys.encobject.service.api.KeyStore2KeySourceHelper;
 import org.adorsys.encobject.service.api.KeyStoreService;
-import org.adorsys.encobject.service.impl.KeyStoreServiceImpl;
-import org.adorsys.encobject.service.impl.SimplePayloadImpl;
-import org.adorsys.encobject.service.impl.SimplePayloadStreamImpl;
-import org.adorsys.encobject.service.impl.SimpleStorageMetadataImpl;
+import org.adorsys.encobject.service.api.KeystorePersistence;
+import org.adorsys.encobject.service.impl.*;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.adorsys.encobject.types.OverwriteFlag;
 import org.adorsys.encobject.types.PublicKeyJWK;
+import org.adorsys.encobject.types.SecretKeyIDWithKey;
 import org.adorsys.jkeygen.keystore.KeyStoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,6 +77,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
     private KeySourceService keySourceService;
     private ExtendedStoreConnection extendedStoreConnection;
     private DocusafeCacheWrapper docusafeCacheWrapper = null;
+    private KeystorePersistence keystorePersistence = null;
 
     public DocumentSafeServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
         this.extendedStoreConnection = extendedStoreConnection;
@@ -85,6 +87,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         this.documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection, this);
         this.keySourceService = new KeySourceServiceImpl(extendedStoreConnection);
         this.docusafeCacheWrapper = new DocusafeCacheWrapperImpl(CacheType.GUAVA);
+        this.keystorePersistence = new BlobStoreKeystorePersistenceImpl(extendedStoreConnection);
     }
 
     /**
@@ -113,7 +116,6 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         BucketDirectory userHomeBucketDirectory = UserIDUtil.getHomeBucketDirectory(userIDAuth.getUserID());
         {   // create homeBucket
             bucketService.createBucket(userHomeBucketDirectory);
-            createSymmetricGuardForBucket(keyStoreAccess, GuardUtil.getUniversalGuardDirectory(userIDAuth.getUserID()));
         }
         {
             bucketService.createBucket(UserIDUtil.getInboxDirectory(userIDAuth.getUserID()));
@@ -165,7 +167,12 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         storageMetadata.setSize(new Long(dsDocument.getDocumentContent().getValue().length));
         DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), dsDocument.getDocumentFQN());
         // getOrCreate dient hier nur der Authentifizierung, koennte zum Schreiben unverschluesselter Documente entfallen
-        DocumentKeyIDWithKey myDocumentKeyIDwithKey = getMyDocumentKeyIDwithKey(userIDAuth);
+
+
+
+        DocumentKeyIDWithKey documentKeyIDWithKey = getAnySecretKeyIDWithKeyFromKeyStore(userIDAuth);
+        LOGGER.info(documentKeyIDWithKey.toString());
+        // DocumentKeyIDWithKey myDocumentKeyIDwithKey = getMyDocumentKeyIDwithKey(userIDAuth);
 
         if (UserMetaDataUtil.isNotEncrypted(storageMetadata.getUserMetadata())) {
             documentPersistenceService.persistDocument(
@@ -177,7 +184,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         }
 
         documentPersistenceService.encryptAndPersistDocument(
-                myDocumentKeyIDwithKey,
+                documentKeyIDWithKey,
                 documentBucketPath,
                 OverwriteFlag.TRUE,
                 new SimplePayloadImpl(storageMetadata, dsDocument.getDocumentContent().getValue()));
@@ -421,6 +428,23 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         bucketService.deletePlainFile(inboxDocumentBucketPath);
     }
 
+    @Override
+    public DocumentKeyIDWithKey get(KeyStoreAccess keyStoreAccess, DocumentKeyID documentKeyID) {
+        DocumentGuardCache documentGuardCache = docusafeCacheWrapper.getDocumentGuardCache();
+        String cacheKey = DocumentGuardCache.cacheKeyToString(keyStoreAccess, documentKeyID);
+        PasswordAndDocumentKeyIDWithKeyAndAccessType passwordAndDocumentKeyIDWithKeyAndAccessTypeFromCache = documentGuardCache.get(cacheKey);
+        if (passwordAndDocumentKeyIDWithKeyAndAccessTypeFromCache != null) {
+            if (passwordAndDocumentKeyIDWithKeyAndAccessTypeFromCache.getReadKeyPassword().equals(keyStoreAccess.getKeyStoreAuth().getReadKeyPassword())) {
+                LOGGER.debug("return document key for cache key " + cacheKey);
+                return documentGuardCache.get(cacheKey).getDocumentKeyIDWithKey();
+            }
+            // Password war falsch, wir lassen den Aufrufer abtauchen und die original Exception erhalten
+            documentGuardCache.remove(cacheKey);
+        }
+        return null;
+    }
+
+
     /**
      * PRIVATE STUFF
      * ===========================================================================================
@@ -523,14 +547,8 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
                 userAuthCache.remove(userIDAuth.getUserID());
             }
         }
-        KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
-        BucketDirectory documentDirectory = UserIDUtil.getHomeBucketDirectory(userIDAuth.getUserID());
-        DocumentKeyID documentKeyID = GuardUtil.tryToLoadBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStorePath().getBucketDirectory(), documentDirectory);
-        if (documentKeyID == null) {
-            throw new UserIDDoesNotExistException(userIDAuth.getUserID());
-        }
         try {
-            loadCachedOrRealDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(keyStoreAccess, documentKeyID);
+            getAnySecretKeyIDWithKeyFromKeyStore(userIDAuth);
             if (userAuthCache != null) {
                 userAuthCache.put(userIDAuth.getUserID(), userIDAuth.getReadKeyPassword());
             }
@@ -588,20 +606,9 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         documentKeyIDCache.put(bucketDirectory, documentKeyID);
     }
 
-    @Override
-    public DocumentKeyIDWithKey get(KeyStoreAccess keyStoreAccess, DocumentKeyID documentKeyID) {
-        DocumentGuardCache documentGuardCache = docusafeCacheWrapper.getDocumentGuardCache();
-        String cacheKey = DocumentGuardCache.cacheKeyToString(keyStoreAccess, documentKeyID);
-        PasswordAndDocumentKeyIDWithKeyAndAccessType passwordAndDocumentKeyIDWithKeyAndAccessTypeFromCache = documentGuardCache.get(cacheKey);
-        if (passwordAndDocumentKeyIDWithKeyAndAccessTypeFromCache != null) {
-            if (passwordAndDocumentKeyIDWithKeyAndAccessTypeFromCache.getReadKeyPassword().equals(keyStoreAccess.getKeyStoreAuth().getReadKeyPassword())) {
-                LOGGER.debug("return document key for cache key " + cacheKey);
-                return documentGuardCache.get(cacheKey).getDocumentKeyIDWithKey();
-            }
-            // Password war falsch, wir lassen den Aufrufer abtauchen und die original Exception erhalten
-            documentGuardCache.remove(cacheKey);
-        }
-        return null;
+    private DocumentKeyIDWithKey getAnySecretKeyIDWithKeyFromKeyStore(UserIDAuth userIDAuth) {
+        SecretKeyIDWithKey secretKeyIDWithKey = KeyStore2KeySourceHelper.getSecretKeyIDWithKey(keystorePersistence, getKeyStoreAccess(userIDAuth));
+        return new DocumentKeyIDWithKey(new DocumentKeyID(secretKeyIDWithKey.getKeyID().getValue()), new DocumentKey(secretKeyIDWithKey.getSecretKey()));
     }
 
     public static String showCache(DocumentSafeService instance) {

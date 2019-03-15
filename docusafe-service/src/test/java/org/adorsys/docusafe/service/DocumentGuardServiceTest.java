@@ -62,9 +62,7 @@ public class DocumentGuardServiceTest {
     }
 
     public DocumentKeyIDWithKey createKeyIDWithKey() {
-        BlobStoreKeystorePersistenceImpl keystorePersistence = null;
-        DocumentGuardService documentGuardService = new DocumentGuardServiceImpl(extendedStoreConnection);
-        return documentGuardService.createDocumentKeyIdWithKey();
+        return new DocumentGuardServiceImpl(extendedStoreConnection).createDocumentKeyIdWithKey();
     }
 
     public static class DocumentGuardStuff {

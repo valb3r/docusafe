@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 public class GuardKeyForSecretKeyHelper implements GuardKeyHelper{
     private final static Logger LOGGER = LoggerFactory.getLogger(GuardKeyForSecretKeyHelper.class);
     /**
+     * gets a random secret key from the keystore.
+     *
      * holt sich aus dem KeyStore einen beliebigen SecretKey, mit dem der übergebene DocumentKey symmetrisch veschlüsselt wird
      * Dort, wo der KeyStore liegt wird dann ein DocumentGuard erzeugt, der den verschlüsselten DocumentKey enthält.
      * Im Header des DocumentGuards steht die DocuemntKeyID.
