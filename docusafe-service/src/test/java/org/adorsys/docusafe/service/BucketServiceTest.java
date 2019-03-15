@@ -36,11 +36,11 @@ public class BucketServiceTest {
         return bucketService.fileExists(bucketPath);
     }
 
-    public void createFiles(ExtendedStoreConnection extendedStoreConnection, BucketDirectory rootDirectory, int subdirs, int subfiles) {
-        createFilesAndFoldersRecursivly(rootDirectory, subdirs, subfiles, 3, extendedStoreConnection);
+    public void createFiles(KeyStoreServiceTest.KeyStoreStuff keyStoreStuff, ExtendedStoreConnection extendedStoreConnection, BucketDirectory rootDirectory, int subdirs, int subfiles) {
+        createFilesAndFoldersRecursivly(keyStoreStuff, rootDirectory, subdirs, subfiles, 3, extendedStoreConnection);
     }
 
-    private void createFilesAndFoldersRecursivly(BucketDirectory rootDirectory, int subdirs, int subfiles, int depth , ExtendedStoreConnection extendedStoreConnection) {
+    private void createFilesAndFoldersRecursivly(KeyStoreServiceTest.KeyStoreStuff keyStoreStuff, BucketDirectory rootDirectory, int subdirs, int subfiles, int depth , ExtendedStoreConnection extendedStoreConnection) {
         if (depth == 0) {
             return;
         }
@@ -50,12 +50,12 @@ public class BucketServiceTest {
         DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest(extendedStoreConnection);
 
         for (int i = 0; i<subfiles; i++) {
-            documentPersistenceServiceTest.testPersistDocument(null, new DocumentBucketPath(rootDirectory.appendName("file").add("" + i)),
-                    documentKeyIDWithKey, documentContent, OverwriteFlag.FALSE);
+            documentPersistenceServiceTest.testPersistDocument(keyStoreStuff, new DocumentBucketPath(rootDirectory.appendName("file").add("" + i)),
+                    documentContent, OverwriteFlag.FALSE);
 
         }
         for (int i = 0; i<subdirs; i++) {
-            createFilesAndFoldersRecursivly(rootDirectory.appendDirectory("subdir" + i), subdirs, subfiles, depth-1, extendedStoreConnection);
+            createFilesAndFoldersRecursivly(keyStoreStuff, rootDirectory.appendDirectory("subdir" + i), subdirs, subfiles, depth-1, extendedStoreConnection);
         }
     }
 

@@ -35,31 +35,6 @@ public class DocumentPersistenceServiceTest {
         this.extendedStoreConnection = extendedStoreConnection;
     }
 
-    public DocumentStuff testPersistDocument(DocumentGuardService documentGuardService,
-                                             DocumentBucketPath documentBucketPath,
-                                             DocumentKeyIDWithKey documentKeyIDWithKey,
-                                             DocumentContent documentContent) {
-        return testPersistDocument(documentGuardService, documentBucketPath, documentKeyIDWithKey, documentContent, OverwriteFlag.FALSE);
-    }
-    public DocumentStuff testPersistDocument(DocumentGuardService documentGuardService,
-                                             DocumentBucketPath documentBucketPath,
-                                             DocumentKeyIDWithKey documentKeyIDWithKey,
-                                             DocumentContent documentContent,
-                                             OverwriteFlag overwriteFlag) {
-        if (true )
-            throw new BaseException("only used for asymmeetric encryption");
-        extendedStoreConnection.createContainer(documentBucketPath.getBucketDirectory());
-        DocumentPersistenceService documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection, null);
-        documentPersistenceService.encryptAndPersistDocument(
-                documentKeyIDWithKey,
-                documentBucketPath,
-                overwriteFlag,
-                new SimplePayloadImpl(new SimpleStorageMetadataImpl(), true, documentContent.getValue()));
-        createdBuckets.add(documentBucketPath);
-        AllServiceTest.buckets.add(documentBucketPath.getBucketDirectory());
-        return new DocumentStuff(documentBucketPath);
-    }
-
     public DocumentStuff testPersistDocument(KeyStoreServiceTest.KeyStoreStuff keyStoreStuff,
                                              DocumentBucketPath documentBucketPath,
                                              DocumentContent documentContent) {

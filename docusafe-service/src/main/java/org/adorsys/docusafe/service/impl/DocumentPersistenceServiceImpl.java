@@ -94,15 +94,23 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
             LOGGER.info(key + " -> " + storageMetadata.getUserMetadata().get(key))
         );
 
-//        KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess, documentKeyID2DocumentKeyCache);
-        // TODO DO NOT READ THE KEYSTORE EVERY TIME!!!
-        LOGGER.warn("TODO DO NOT READ THE KEYSTORE EVERY TIME!!!");
-        KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStorePath().getObjectHandle(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
-        KeySource keySource = new KeyStoreBasedSecretKeySourceImpl(userKeystore, keyStoreAccess.getKeyStoreAuth().getReadKeyHandler());
+        KeyID keyID = getDocumentKeyID(storageMetadata);
+        KeySource keySource;
+        if (keyID.getValue().startsWith("DK")) {
+            keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess, documentKeyID2DocumentKeyCache);
+        } else {
+            LOGGER.warn("TODO DO NOT READ THE KEYSTORE EVERY TIME!!!");
+            KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStorePath().getObjectHandle(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
+            keySource = new KeyStoreBasedSecretKeySourceImpl(userKeystore, keyStoreAccess.getKeyStoreAuth().getReadKeyHandler());
+        }
 
         Payload payload = encryptedPersistenceService.loadAndDecrypt(documentBucketPath, keySource, storageMetadata);
         LOGGER.debug("finished load and decrypt " + documentBucketPath);
         return payload;
+    }
+
+    private KeyID getDocumentKeyID(StorageMetadata storageMetadata) {
+        return new KeyID(storageMetadata.getUserMetadata().get(EncryptedPersistenceServiceImpl.ENCRYPTION_KEY_ID));
     }
 
     @Override

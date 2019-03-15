@@ -16,22 +16,13 @@ import org.adorsys.docusafe.service.utils.ShowKeyStore;
 import org.adorsys.docusafe.service.utils.TestKeyUtils;
 import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
-import org.adorsys.encobject.domain.KeyStoreAccess;
-import org.adorsys.encobject.domain.KeyStoreAuth;
-import org.adorsys.encobject.domain.Payload;
-import org.adorsys.encobject.domain.ReadKeyPassword;
-import org.adorsys.encobject.domain.ReadStorePassword;
-import org.adorsys.encobject.domain.StorageMetadata;
-import org.adorsys.encobject.domain.StorageType;
-import org.adorsys.encobject.exceptions.FileExistsException;
+import org.adorsys.encobject.domain.*;
 import org.adorsys.encobject.exceptions.KeyStoreExistsException;
 import org.adorsys.encobject.service.api.ContainerPersistence;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
-import org.adorsys.encobject.service.api.KeyStore2KeySourceHelper;
 import org.adorsys.encobject.service.impl.ContainerPersistenceImpl;
 import org.adorsys.encobject.service.impl.generator.KeyStoreCreationConfigImpl;
 import org.adorsys.encobject.types.ListRecursiveFlag;
-import org.adorsys.encobject.types.OverwriteFlag;
 import org.adorsys.encobject.types.SecretKeyIDWithKey;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -45,11 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UTFDataFormatException;
 import java.security.UnrecoverableKeyException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Created by peter on 04.01.18.
@@ -261,29 +248,6 @@ public class AllServiceTest {
         }
     }
 
-
-    @Test
-    public void testCreateDocument() {
-        
-        try {
-            DocumentContent documentContent = new DocumentContent("Ein Affe im Zoo ist nie allein".getBytes());
-
-            KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest(extendedStoreConnection).createKeyStore();
-            DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest(extendedStoreConnection);
-            DocumentGuardServiceTest.DocumentGuardStuff documentGuardStuff = documentGuardServiceTest.testCreateSymmetricDocumentGuard(
-                    keyStoreStuff.keyStoreAccess);
-            DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardServiceTest.testLoadDocumentGuard(
-                    keyStoreStuff.keyStoreAccess,
-                    documentGuardStuff.documentKeyIDWithKey.getDocumentKeyID());
-            new DocumentPersistenceServiceTest(extendedStoreConnection).testPersistDocument(
-                    documentGuardStuff.documentGuardService,
-                    new DocumentBucketPath("documentbucketpath1/doc1.txt"),
-                    documentKeyIDWithKey, documentContent);
-        } catch (Exception e) {
-            BaseExceptionHandler.handle(e);
-        }
-    }
-
     @Test
     public void testCreateAndLoadDocument() {
         
@@ -310,136 +274,22 @@ public class AllServiceTest {
     }
 
 
-    /**
-     * Es wird ein KeyStore angelegt, der nur einen symmetrischen Key enthält.
-     * Ein Document wird angelegt, es wird mit einem neuen DocumentKey verschlüsselt.
-     * Dieser wird mit dem symmetrischen Key des KeyStores in einem DocumentGuard abgelegt.
-     * <p>
-     * Dann wird ein zweiter KeyStore angelegt, der nur ein Private/Public-Keypain enthält.
-     * Es wird ein DocumentGuard für den oben erzeugten DocumentKey erzeugt, aber nur
-     * mit dem PublicKey. Es gibt keinen Zugriff auf ReadKeyPassword.
-     * <p>
-     * Das Document wird nun mit dem Privaten Key gelesen.
-     */
-    @Test
-    public void testCreate_oneDocument_twoKeyStores_twoGuards_LoadDocument() {
-        
-        String container1 = "user1/secretkey";
-        String container2 = "user2/enckey";
-        DocumentBucketPath documentBucketPath = new DocumentBucketPath("documentbucketpath3/subfolder/1/2/3");
-        DocumentContent documentContent = new DocumentContent("Ein Affe im Zoo ist nie allein".getBytes());
-
-        try {
-            FullStuff symmetricStuff = createKeyStoreAndDocument(container1, documentBucketPath, documentContent);
-            createPublicKeyStoreForKnownDocument(container2, documentContent, symmetricStuff.documentStuff.documentBucketPath, symmetricStuff.documentGuardStuff.documentKeyIDWithKey, true);
-        } catch (Exception e) {
-            BaseExceptionHandler.handle(e);
-        }
-    }
-
-    /**
-     * wie der vorige Test, nur dass der SecretKey nicht gelesen werden können soll,
-     * weil er nicht bekannt ist. Daher expected Excption
-     */
-    @Test
-    public void testCreate_oneDocument_twoKeyStores_twoGuards_LoadDocument_with_expected_failure() {
-        
-        String container1 = "user1/secretkey";
-        String container2 = "user2/enckey";
-        DocumentBucketPath documentBucketPath = new DocumentBucketPath("documentbucketpath/4");
-
-        DocumentContent documentContent = new DocumentContent("Ein Affe im Zoo ist nie allein".getBytes());
-
-        FullStuff symmetricStuff = createKeyStoreAndDocument(container1, documentBucketPath, documentContent);
-        CatchException.catchException(() -> createPublicKeyStoreForKnownDocument(container2, documentContent, symmetricStuff.documentStuff.documentBucketPath, symmetricStuff.documentGuardStuff.documentKeyIDWithKey, false));
-        Assert.assertTrue(CatchException.caughtException() != null);
-    }
-
-    // @Test
-    public void cleanDB() {
-        if (extendedStoreConnection instanceof AmazonS3ExtendedStoreConnection) {
-            ((AmazonS3ExtendedStoreConnection) extendedStoreConnection).cleanDatabase();
-        }
-    }
-    @Test
-    public void testCreate_oneDocument_twoKeyStores_twoGuards_ChangeDocument() {
-        
-        String container1 = "user1/secretkey";
-        String container2 = "user2/enckey";
-        DocumentBucketPath documentBucketPath = new DocumentBucketPath("documentbucketpath5/1/2/3");
-
-        DocumentContent documentContent = new DocumentContent("Ein Affe im Zoo ist nie allein".getBytes());
-        try {
-            FullStuff symmetricStuff = createKeyStoreAndDocument(container1, documentBucketPath, documentContent);
-            DocumentKeyIDWithKey documentKeyIDWithKey = new  DocumentGuardServiceTest(extendedStoreConnection).createKeyIDWithKey();
-            FullStuff asymmetricStuff = createPublicKeyStoreForKnownDocument(container2, documentContent, symmetricStuff.documentStuff.documentBucketPath, documentKeyIDWithKey, true);
-
-            // Neuer Inhalt für das Document, für das es bereits zwei Guards gibt
-            DocumentContent newDocumentContent = new DocumentContent("ein anderer affe im zoo".getBytes());
-            DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest(extendedStoreConnection);
-            DocumentPersistenceServiceTest.DocumentStuff documentStuff = documentPersistenceServiceTest.testPersistDocument(
-                    asymmetricStuff.documentGuardStuff.documentGuardService,
-                    documentBucketPath,
-                    asymmetricStuff.documentGuardStuff.documentKeyIDWithKey,
-                    newDocumentContent,
-                    OverwriteFlag.TRUE
-            );
-            LOGGER.debug("Document erfolgreich ERNEUT geschrieben");
-
-            // Load with asymmetric key
-            Payload payload = documentPersistenceServiceTest.testLoadDocument(
-                    asymmetricStuff.documentGuardStuff.documentGuardService,
-                    asymmetricStuff.keyStoreStuff.keyStoreAccess,
-                    documentStuff.documentBucketPath);
-            Assert.assertEquals("Content of Document", newDocumentContent.toString(), new DocumentContent(payload.getData()).toString());
-            LOGGER.debug("Document erfolgreich mit DocumentGuard für EncKey gelesen");
-
-        } catch (Exception e) {
-            BaseExceptionHandler.handle(e);
-        }
-    }
 
     private DocumentKeyIDWithKey toDocumentKeyIDWithKey(SecretKeyIDWithKey randomSecretKeyIDWithKey) {
         return new DocumentKeyIDWithKey(new DocumentKeyID(randomSecretKeyIDWithKey.getKeyID().getValue()), new DocumentKey(randomSecretKeyIDWithKey.getSecretKey()));
     }
 
-    @Test(expected = FileExistsException.class)
-    public void testCreateDocumentTwice() {
-        
-        DocumentBucketPath documentBucketPath = new DocumentBucketPath("user1/bucket/folder1");
-        DocumentContent documentContent = new DocumentContent("Affe".getBytes());
-
-        DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest(extendedStoreConnection);
-        DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardServiceTest.createKeyIDWithKey();
-
-        DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest(extendedStoreConnection);
-        DocumentBucketPath netDocumentBucketPath = new DocumentBucketPath(documentBucketPath.append("AffenDocument-1"));
-        documentPersistenceServiceTest.testPersistDocument(null, netDocumentBucketPath, documentKeyIDWithKey, documentContent, OverwriteFlag.FALSE);
-        documentPersistenceServiceTest.testPersistDocument(null, netDocumentBucketPath, documentKeyIDWithKey, documentContent, OverwriteFlag.FALSE);
-    }
-
-    @Test
-    public void testCreateDocumentTwiceButOverwrite() {
-        
-        DocumentBucketPath documentBucketPath = new DocumentBucketPath("user1/bucket/folder1");
-        DocumentContent documentContent = new DocumentContent("Affe".getBytes());
-
-        DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest(extendedStoreConnection);
-        DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardServiceTest.createKeyIDWithKey();
-
-        DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest(extendedStoreConnection);
-        DocumentBucketPath netDocumentBucketPath = new DocumentBucketPath(documentBucketPath.append("AffenDocument-1"));
-        documentPersistenceServiceTest.testPersistDocument(null, netDocumentBucketPath, documentKeyIDWithKey, documentContent, OverwriteFlag.FALSE);
-        documentPersistenceServiceTest.testPersistDocument(null, netDocumentBucketPath, documentKeyIDWithKey, documentContent, OverwriteFlag.TRUE);
-
-    }
-
     @Test
     public void testBucketService1() {
-        
+        KeyStoreServiceTest.KeyStoreStuff keyStoreStuff = new KeyStoreServiceTest(extendedStoreConnection).createKeyStore("keystorecontainer",
+                new ReadStorePassword("ccccccccccccccccccccc"),
+                new ReadKeyPassword("dddddddddddddddddddddd"),
+                "second",
+                new KeyStoreCreationConfigImpl(0, 0, 1));
+
         BucketServiceTest bucketServiceTest = new BucketServiceTest(extendedStoreConnection);
         BucketDirectory rootDirectory = new BucketDirectory("user1");
-        bucketServiceTest.createFiles(extendedStoreConnection, rootDirectory, 3, 2);
+        bucketServiceTest.createFiles(keyStoreStuff, extendedStoreConnection, rootDirectory, 3, 2);
 
         BucketContent bucketContent1 = bucketServiceTest.listBucket(rootDirectory, ListRecursiveFlag.FALSE);
         LOGGER.debug("1 einfaches listing" + bucketContent1.toString());
@@ -462,35 +312,6 @@ public class AllServiceTest {
         boolean exists = bucketServiceTest.bucketExists(bucketDirectory);
         Assert.assertFalse("bucket must not exist", exists);
     }
-
-    // @Test
-    // TODO spezialtest, bei dem das directory auch als pfad benutzt wird, kann mit dsc-encryption-filename-only nicht gehen
-    public void createBucketWithDot() {
-        
-        BucketServiceTest bucketServiceTest = new BucketServiceTest(extendedStoreConnection);
-
-        DocumentBucketPath documentBucketPath = new DocumentBucketPath("user1/.hidden/Affenfile.txt");
-        DocumentContent documentContent = new DocumentContent("Affe".getBytes());
-
-        DocumentGuardServiceTest documentGuardServiceTest = new DocumentGuardServiceTest(extendedStoreConnection);
-        DocumentKeyIDWithKey documentKeyIDWithKey = documentGuardServiceTest.createKeyIDWithKey();
-
-        DocumentPersistenceServiceTest documentPersistenceServiceTest = new DocumentPersistenceServiceTest(extendedStoreConnection);
-
-        documentPersistenceServiceTest.testPersistDocument(null, documentBucketPath, documentKeyIDWithKey, documentContent, OverwriteFlag.FALSE);
-
-        BucketDirectory pathAsDirectory = new BucketDirectory(documentBucketPath);
-        LOGGER.debug("bucketPath " + documentBucketPath);
-        LOGGER.debug("pathAsDir  " + pathAsDirectory);
-        BucketContent bucketContent = bucketServiceTest.listBucket(pathAsDirectory, ListRecursiveFlag.TRUE);
-        LOGGER.debug(bucketContent.toString());
-        Assert.assertTrue("this is no bucket, so no result expected", bucketContent.getFiles().isEmpty());
-        Assert.assertTrue("this is no bucket, so no result expected", bucketContent.getSubdirectories().isEmpty());
-        boolean fileExsits = bucketServiceTest.fileExists(documentBucketPath);
-        Assert.assertEquals("file should exist", true, fileExsits);
-
-    }
-
 
     @Test
     public void createManyBuckets() {
