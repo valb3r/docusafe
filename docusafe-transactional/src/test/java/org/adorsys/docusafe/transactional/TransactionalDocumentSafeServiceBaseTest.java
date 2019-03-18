@@ -5,7 +5,11 @@ import org.adorsys.cryptoutils.storeconnectionfactory.ExtendedStoreConnectionFac
 import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.impl.DocumentSafeServiceImpl;
 import org.adorsys.docusafe.business.types.UserID;
+import org.adorsys.docusafe.business.types.complex.DSDocument;
+import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
+import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
+import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.transactional.impl.TransactionalDocumentSafeServiceImpl;
 import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
@@ -42,5 +46,13 @@ public class TransactionalDocumentSafeServiceBaseTest {
         CatchException.catchException(() -> transactionalDocumentSafeService.destroyUser(userIDAuth));
         CatchException.catchException(() -> transactionalDocumentSafeService.destroyUser(systemUserIDAuth));
     }
+
+    protected DSDocument createDocument(String name) {
+        DocumentFQN documentFQN = new DocumentFQN(name);
+        DocumentContent documentContent = new DocumentContent(("CONTENT OF FILE " + name).getBytes());
+        DSDocumentMetaInfo documentMetaInfo = new DSDocumentMetaInfo();
+        return new DSDocument(documentFQN, documentContent, documentMetaInfo);
+    }
+
 
 }

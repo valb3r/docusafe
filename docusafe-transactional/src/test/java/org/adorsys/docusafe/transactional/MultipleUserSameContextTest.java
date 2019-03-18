@@ -92,10 +92,4 @@ public class MultipleUserSameContextTest extends TransactionalDocumentSafeServic
         }
     }
 
-    private DSDocument createDocument(String name) {
-        DocumentFQN documentFQN = new DocumentFQN(name);
-        DocumentContent documentContent = new DocumentContent(("CONTENT OF FILE " + name).getBytes());
-        DSDocumentMetaInfo documentMetaInfo = new DSDocumentMetaInfo();
-        return new DSDocument(documentFQN, documentContent, documentMetaInfo);
-    }
 }

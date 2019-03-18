@@ -14,7 +14,7 @@ import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.transactional.impl.LastCommitedTxID;
-import org.adorsys.docusafe.transactional.impl.TxIDHashMap;
+import org.adorsys.docusafe.transactional.impl.TxIDHashMapWrapper;
 import org.adorsys.docusafe.transactional.impl.TxIDLog;
 import org.adorsys.docusafe.transactional.types.TxID;
 import org.slf4j.Logger;
@@ -38,19 +38,19 @@ public class Class2JsonHelper {
             .setDateFormat(DATE_FORMAT_STRING)
             .create();
 
-    public TxIDHashMap txidHashMapFromContent(DocumentContent documentContent) {
+    public TxIDHashMapWrapper txidHashMapFromContent(DocumentContent documentContent) {
         try {
             String jsonString = new String(documentContent.getValue(), CHARSET);
             LOGGER.trace("content to hashmap:" + jsonString);
-            return gson.fromJson(jsonString, TxIDHashMap.class);
+            return gson.fromJson(jsonString, TxIDHashMapWrapper.class);
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);
         }
     }
 
-    public DocumentContent txidHashMapToContent(TxIDHashMap txIDHashMap) {
+    public DocumentContent txidHashMapToContent(TxIDHashMapWrapper txIDHashMapWrapper) {
         try {
-            String s = gson.toJson(txIDHashMap);
+            String s = gson.toJson(txIDHashMapWrapper);
             LOGGER.trace("hashmap to content:" + s);
             return new DocumentContent(s.getBytes(CHARSET));
         } catch (Exception e) {

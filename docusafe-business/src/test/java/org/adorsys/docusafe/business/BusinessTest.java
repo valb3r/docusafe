@@ -29,6 +29,16 @@ import org.slf4j.LoggerFactory;
 public class BusinessTest extends BusinessTestBase {
     private final static Logger LOGGER = LoggerFactory.getLogger(BusinessTest.class);
 
+    // Demo for Maksym how path and filename encryption blows up the path length
+    // @Test
+    public void blowUpPathLengthByEncryption() {
+
+        UserIDAuth userIDAuth = createUser();
+
+        DocumentFQN documentFQN = new DocumentFQN("a/b/c/file1.txt");
+        DSDocument dsDocument1 = createDocument(userIDAuth, documentFQN);
+    }
+
     @Test
     public void documentListMetadata_DOC_77() {
         UserIDAuth userIDAuth = createUser(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));

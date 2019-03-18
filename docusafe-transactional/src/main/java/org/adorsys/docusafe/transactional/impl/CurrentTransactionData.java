@@ -19,11 +19,12 @@ import java.util.Set;
 public class CurrentTransactionData {
     private final static Logger LOGGER = LoggerFactory.getLogger(CurrentTransactionData.class);
     private TxID currentTxID = null;
-    private TxIDHashMap currentTxHashMap = null;
-    private TxIDHashMap initialTxHashMap = null;
+    private TxIDHashMapWrapper currentTxHashMap = null;
+    private TxIDHashMapWrapper initialTxHashMap = null;
+    private TxIDHashMap documentsReadInThisTx = new TxIDHashMap();
     private Set<DocumentFQN> nonTxInboxDocumentsToBeDeletedAfterCommit = new HashSet<>();
 
-    public CurrentTransactionData(TxID currentTxID, TxIDHashMap currentTxHashMap) {
+    public CurrentTransactionData(TxID currentTxID, TxIDHashMapWrapper currentTxHashMap) {
         this.currentTxID = currentTxID;
         this.currentTxHashMap = currentTxHashMap;
         initialTxHashMap = currentTxHashMap.clone();
@@ -33,13 +34,23 @@ public class CurrentTransactionData {
         return currentTxID;
     }
 
-    public TxIDHashMap getCurrentTxHashMap() {
+    public TxIDHashMapWrapper getCurrentTxHashMap() {
         return currentTxHashMap;
     }
 
+    public TxIDHashMapWrapper getInitialTxHashMap() {
+        return initialTxHashMap;
+    }
+
+    public TxIDHashMap getDocumentsReadInThisTx() {
+        return documentsReadInThisTx;
+    }
+
+    
+
     public boolean anyDifferenceToInitalState() {
-        Set<DocumentFQN> currentFQNs = new HashSet<>(currentTxHashMap.map.keySet());
-        Set<DocumentFQN> initialFQNs = new HashSet<>(initialTxHashMap.map.keySet());
+        Set<DocumentFQN> currentFQNs = new HashSet<>(currentTxHashMap.getMap().keySet());
+        Set<DocumentFQN> initialFQNs = new HashSet<>(initialTxHashMap.getMap().keySet());
         if (currentFQNs.size() > initialFQNs.size()) {
             currentFQNs.removeAll(initialFQNs);
             currentFQNs.forEach(fqn -> LOGGER.debug(" new file has been created: " + fqn));
@@ -55,8 +66,8 @@ public class CurrentTransactionData {
                 LOGGER.debug(" old file has been removed: " + fqn);
                 return true;
             }
-            TxID currentTxID = currentTxHashMap.map.get(fqn);
-            TxID initialTxID = initialTxHashMap.map.get(fqn);
+            TxID currentTxID = currentTxHashMap.getMap().get(fqn);
+            TxID initialTxID = initialTxHashMap.getMap().get(fqn);
             if (!currentTxID.equals(initialTxID)) {
                 LOGGER.debug(" old file has changed:" + fqn);
                 return true;
