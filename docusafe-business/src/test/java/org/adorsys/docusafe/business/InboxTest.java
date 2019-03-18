@@ -8,6 +8,7 @@ import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.encobject.domain.ReadKeyPassword;
+import org.adorsys.encobject.exceptions.FileExistsException;
 import org.adorsys.encobject.types.OverwriteFlag;
 import org.junit.Assert;
 import org.junit.Test;
@@ -71,7 +72,7 @@ public class InboxTest extends BusinessTestBase {
 
 
     @Test
-    public  void copyReadmeWithTwice() {
+    public  void copyReadmeTwice() {
         UserIDAuth userIDAuthPeter = createUser(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));
         UserIDAuth userIDAuthFrancis = createUser(new UserID("UserFrancis"), new ReadKeyPassword("franciskey"));
         DocumentFQN documentFQNReadme = new DocumentFQN("README.txt");
@@ -80,7 +81,7 @@ public class InboxTest extends BusinessTestBase {
         service.moveDocumnetToInboxOfUser(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentFQNReadme, documentFQNReadme, MoveType.KEEP_COPY);
         LOGGER.debug("Peter gibt das  Document erneut an Francis, aber es wurde noch nicht abgeholt, daher Exception");
         CatchException.catchException( () -> service.moveDocumnetToInboxOfUser(userIDAuthPeter, userIDAuthFrancis.getUserID(), documentFQNReadme, documentFQNReadme, MoveType.MOVE));
-        Assert.assertNotNull(CatchException.caughtException());
+        Assert.assertTrue(CatchException.caughtException() instanceof FileExistsException);
     }
 
     @Test

@@ -48,6 +48,7 @@ import org.adorsys.encobject.domain.Payload;
 import org.adorsys.encobject.domain.PayloadStream;
 import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.adorsys.encobject.domain.StorageMetadata;
+import org.adorsys.encobject.exceptions.SymmetricEncryptionException;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
 import org.adorsys.encobject.service.api.KeyStore2KeySourceHelper;
 import org.adorsys.encobject.service.api.KeyStoreService;
@@ -61,6 +62,7 @@ import org.adorsys.jkeygen.keystore.KeyStoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.security.KeyStore;
 import java.security.UnrecoverableEntryException;
 import java.util.List;
 
@@ -77,7 +79,6 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
     private KeySourceService keySourceService;
     private ExtendedStoreConnection extendedStoreConnection;
     private DocusafeCacheWrapper docusafeCacheWrapper = null;
-    private KeystorePersistence keystorePersistence = null;
 
     public DocumentSafeServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
         this.extendedStoreConnection = extendedStoreConnection;
@@ -87,7 +88,6 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         this.documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection, this);
         this.keySourceService = new KeySourceServiceImpl(extendedStoreConnection);
         this.docusafeCacheWrapper = new DocusafeCacheWrapperImpl(CacheType.GUAVA);
-        this.keystorePersistence = new BlobStoreKeystorePersistenceImpl(extendedStoreConnection);
     }
 
     /**
@@ -168,11 +168,8 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), dsDocument.getDocumentFQN());
         // getOrCreate dient hier nur der Authentifizierung, koennte zum Schreiben unverschluesselter Documente entfallen
 
-
-
         DocumentKeyIDWithKey documentKeyIDWithKey = getAnySecretKeyIDWithKeyFromKeyStore(userIDAuth);
         LOGGER.info(documentKeyIDWithKey.toString());
-        // DocumentKeyIDWithKey myDocumentKeyIDwithKey = getMyDocumentKeyIDwithKey(userIDAuth);
 
         if (UserMetaDataUtil.isNotEncrypted(storageMetadata.getUserMetadata())) {
             documentPersistenceService.persistDocument(
@@ -379,8 +376,8 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         storageMetadata.setSize(new Long(dsDocument.getDocumentContent().getValue().length));
 
         LOGGER.debug("document " + source + " has been read successfuly from the inbox. now document must be saved " + destination);
-        DocumentKeyIDWithKey myDocumentKeyIDwithKey = getMyDocumentKeyIDwithKey(userIDAuth);
-        documentPersistenceService.encryptAndPersistDocument(myDocumentKeyIDwithKey, getTheDocumentBucketPath(userIDAuth.getUserID(), destination), overwriteFlag,
+        DocumentKeyIDWithKey documentKeyIDWithKey = getAnySecretKeyIDWithKeyFromKeyStore(userIDAuth);
+        documentPersistenceService.encryptAndPersistDocument(documentKeyIDWithKey, getTheDocumentBucketPath(userIDAuth.getUserID(), destination), overwriteFlag,
                 new SimplePayloadImpl(storageMetadata, dsDocument.getDocumentContent().getValue()));
 
         LOGGER.debug("now document must be removed from the inbox " + source);
@@ -552,10 +549,10 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
             if (userAuthCache != null) {
                 userAuthCache.put(userIDAuth.getUserID(), userIDAuth.getReadKeyPassword());
             }
+        } catch (SymmetricEncryptionException e) {
+            throw new WrongPasswordException(userIDAuth.getUserID());
         } catch (BaseException e) {
-            if (e.getCause() instanceof UnrecoverableEntryException) {
-                throw new WrongPasswordException(userIDAuth.getUserID());
-            }
+            throw new UserIDDoesNotExistException(userIDAuth.getUserID());
         }
     }
 
@@ -607,7 +604,12 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
     }
 
     private DocumentKeyIDWithKey getAnySecretKeyIDWithKeyFromKeyStore(UserIDAuth userIDAuth) {
-        SecretKeyIDWithKey secretKeyIDWithKey = KeyStore2KeySourceHelper.getSecretKeyIDWithKey(keystorePersistence, getKeyStoreAccess(userIDAuth));
+        LOGGER.warn("do not reload keystore every time for encryption");
+        KeyStoreAuth keyStoreAuth = UserIDUtil.getKeyStoreAuth(userIDAuth);
+        BucketPath keyStorePath = UserIDUtil.getKeyStorePath(userIDAuth.getUserID());
+        KeyStore keystore = keyStoreService.loadKeystore(keyStorePath, keyStoreAuth.getReadStoreHandler());
+        KeyStoreAccess keyStoreAccess = new KeyStoreAccess(keyStorePath, keyStoreAuth);
+        SecretKeyIDWithKey secretKeyIDWithKey = KeyStore2KeySourceHelper.getRandomSecretKeyIDWithKey(keyStoreAccess, keystore);
         return new DocumentKeyIDWithKey(new DocumentKeyID(secretKeyIDWithKey.getKeyID().getValue()), new DocumentKey(secretKeyIDWithKey.getSecretKey()));
     }
 

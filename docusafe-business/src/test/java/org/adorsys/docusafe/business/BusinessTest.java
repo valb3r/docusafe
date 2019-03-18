@@ -79,8 +79,6 @@ public class BusinessTest extends BusinessTestBase {
         int i = 0;
 
         UserIDAuth userIDAuth = createUser();
-        Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
-
 
         while (i > 0) {
             LOGGER.info("wait for visualVM profiler " + i);
@@ -115,7 +113,6 @@ public class BusinessTest extends BusinessTestBase {
 
     @Test
     public void testCreateUser() {
-
         UserIDAuth userIDAuth = createUser();
         Assert.assertEquals("Anzahl der guards muss 0 betragen", 0, getNumberOfGuards(userIDAuth.getUserID()));
     }
@@ -169,18 +166,6 @@ public class BusinessTest extends BusinessTestBase {
         DSDocument dsDocument2 = createDocument(userIDAuth, new DocumentFQN("first/next/another-new-document.txt"));
         DSDocument dsDocument2R = readDocument(userIDAuth, dsDocument2.getDocumentFQN(), dsDocument2.getDocumentContent());
         Assert.assertArrayEquals(dsDocument2.getDocumentContent().getValue(), dsDocument2R.getDocumentContent().getValue());
-    }
-
-    /**
-     * Zunächst erstellt peter ein document.
-     * Dann darf Francis das Document auch lesen, aber nicht schreiben.
-     * Dann darf er auch schreiben.
-     * Schließlich darf er garnicht mehr drauf zugreifen.
-     * Zuletzt wird gezeigt, dass Peter das Dokument nach wie vor schreiben darf.
-     */
-    @Test
-    public void tryOverwriteGrantAccessToFolder() {
-        // Fliegt mit DOC-82 eh alles raus
     }
 
     @Test

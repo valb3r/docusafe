@@ -111,41 +111,6 @@ public class PersistAndLoadTest {
     }
 
     @Test
-    public void asymmetricEncryption() {
-
-        LOGGER.debug("create keystore with only one public and private key");
-        BucketPath keyStorePath = new BucketPath("asymmetrictest/keystoredirectory/keystore");
-        KeyStoreAuth keyStoreAuth = new KeyStoreAuth(new ReadStorePassword("readStorePassword"), new ReadKeyPassword("readKeyPassword"));
-        extendedStoreConnection.createContainer(keyStorePath.getBucketDirectory());
-        directoriesToDeleteAfterTest.add(keyStorePath.getBucketDirectory());
-        keyStoreService.createKeyStore(keyStoreAuth, KeyStoreType.DEFAULT, keyStorePath, new KeyStoreCreationConfigImpl(1, 0, 0));
-
-        KeyStoreAccess keyStoreAccess = new KeyStoreAccess(keyStorePath, keyStoreAuth);
-
-        LOGGER.debug("create document guard");
-        DocumentKeyIDWithKey documentKeyIdWithKey = documentGuardService.createDocumentKeyIdWithKey();
-        documentGuardService.createDocumentGuardFor(GuardKeyType.PUBLIC_KEY, keyStoreAccess, documentKeyIdWithKey, OverwriteFlag.FALSE);
-
-
-        LOGGER.debug("encrypt the document with the key inside the document guard");
-        String documentContentString = "Just keep it simple and stupid - > kiss";
-        DocumentBucketPath documentBucketPath = new DocumentBucketPath("asymmetrictest/documentdirectory/document.txt");
-        Payload payloadWrite = new SimplePayloadImpl(documentContentString.getBytes());
-        documentPersistenceService.encryptAndPersistDocument(documentKeyIdWithKey, documentBucketPath, OverwriteFlag.FALSE, payloadWrite);
-
-        LOGGER.debug("decrypt the document with the key inside the document guard can not be possible without correct keystore password");
-        StorageMetadata storageMetadata = extendedStoreConnection.getStorageMetadata(documentBucketPath);
-        KeyStoreAccess keyStoreAccessWithWrongPassword = new KeyStoreAccess(keyStorePath, new KeyStoreAuth(keyStoreAccess.getKeyStoreAuth().getReadStorePassword(), new ReadKeyPassword("")));
-        CatchException.catchException(() -> documentPersistenceService.loadAndDecryptDocument(storageMetadata, keyStoreAccessWithWrongPassword, documentBucketPath));
-        Assert.assertTrue(CatchException.caughtException() instanceof BaseException);
-
-        LOGGER.debug("decrypt the document with the key inside the document guard");
-        Payload payloadRead = documentPersistenceService.loadAndDecryptDocument(storageMetadata, keyStoreAccess, documentBucketPath);
-
-        Assert.assertArrayEquals(payloadWrite.getData(), payloadRead.getData());
-    }
-
-    @Test
     public void symmetricEncryptionStoreTwice() {
 
         LOGGER.debug("create keystore with only one secret key");
@@ -182,4 +147,40 @@ public class PersistAndLoadTest {
             documentPersistenceService.encryptAndPersistDocument(documentKeyIDWithKey, documentBucketPath, OverwriteFlag.TRUE, payloadWrite);
         }
     }
+
+    @Test
+    public void asymmetricEncryption() {
+
+        LOGGER.debug("create keystore with only one public and private key");
+        BucketPath keyStorePath = new BucketPath("asymmetrictest/keystoredirectory/keystore");
+        KeyStoreAuth keyStoreAuth = new KeyStoreAuth(new ReadStorePassword("readStorePassword"), new ReadKeyPassword("readKeyPassword"));
+        extendedStoreConnection.createContainer(keyStorePath.getBucketDirectory());
+        directoriesToDeleteAfterTest.add(keyStorePath.getBucketDirectory());
+        keyStoreService.createKeyStore(keyStoreAuth, KeyStoreType.DEFAULT, keyStorePath, new KeyStoreCreationConfigImpl(1, 0, 0));
+
+        KeyStoreAccess keyStoreAccess = new KeyStoreAccess(keyStorePath, keyStoreAuth);
+
+        LOGGER.debug("create document guard");
+        DocumentKeyIDWithKey documentKeyIdWithKey = documentGuardService.createDocumentKeyIdWithKey();
+        documentGuardService.createDocumentGuardFor(GuardKeyType.PUBLIC_KEY, keyStoreAccess, documentKeyIdWithKey, OverwriteFlag.FALSE);
+
+
+        LOGGER.debug("encrypt the document with the key inside the document guard");
+        String documentContentString = "Just keep it simple and stupid - > kiss";
+        DocumentBucketPath documentBucketPath = new DocumentBucketPath("asymmetrictest/documentdirectory/document.txt");
+        Payload payloadWrite = new SimplePayloadImpl(documentContentString.getBytes());
+        documentPersistenceService.encryptAndPersistDocument(documentKeyIdWithKey, documentBucketPath, OverwriteFlag.FALSE, payloadWrite);
+
+        LOGGER.debug("decrypt the document with the key inside the document guard can not be possible without correct keystore password");
+        StorageMetadata storageMetadata = extendedStoreConnection.getStorageMetadata(documentBucketPath);
+        KeyStoreAccess keyStoreAccessWithWrongPassword = new KeyStoreAccess(keyStorePath, new KeyStoreAuth(keyStoreAccess.getKeyStoreAuth().getReadStorePassword(), new ReadKeyPassword("")));
+        CatchException.catchException(() -> documentPersistenceService.loadAndDecryptDocument(storageMetadata, keyStoreAccessWithWrongPassword, documentBucketPath));
+        Assert.assertTrue(CatchException.caughtException() instanceof BaseException);
+
+        LOGGER.debug("decrypt the document with the key inside the document guard");
+        Payload payloadRead = documentPersistenceService.loadAndDecryptDocument(storageMetadata, keyStoreAccess, documentBucketPath);
+
+        Assert.assertArrayEquals(payloadWrite.getData(), payloadRead.getData());
+    }
+
 }
