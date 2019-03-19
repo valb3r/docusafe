@@ -34,7 +34,7 @@ import static org.powermock.api.mockito.PowerMockito.spy;
 @SuppressWarnings("Duplicates")
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({DocumentPersistenceServiceImpl.class})
-@PowerMockIgnore("javax.crypto.*")
+@PowerMockIgnore("javax.*")
 public class BusinessTest extends BusinessTestBase {
     private final static Logger LOGGER = LoggerFactory.getLogger(BusinessTest.class);
 
