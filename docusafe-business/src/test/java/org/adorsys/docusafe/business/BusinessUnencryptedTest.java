@@ -26,20 +26,7 @@ import java.io.InputStream;
 public class BusinessUnencryptedTest extends BusinessTestBase {
     private final static Logger LOGGER = LoggerFactory.getLogger(BusinessUnencryptedTest.class);
 
-    @Before
-    public void before() {
-        super.before();
-    }
-
-    @Override
-    public void after() {
-        try {
-            super.after();
-        } finally {
-        }
-    }
-
-    // DOC-86 has to be fixed @Test
+    @Test
     public void createUAndDeleteUser() {
         {
             
@@ -60,7 +47,7 @@ public class BusinessUnencryptedTest extends BusinessTestBase {
         }
     }
 
-    // DOC-86 has to be fixed @Test
+    @Test
     public void writeDocument() {
         
         UserIDAuth userIDAuth = createUser();
@@ -84,13 +71,13 @@ public class BusinessUnencryptedTest extends BusinessTestBase {
         readDocument(userIDAuth, documentFQN, dsDocument1.getDocumentContent());
     }
 
-    // DOC-86 has to be fixed @Test
+    @Test
     public void writeDocumentStream() {
         try {
             
             UserIDAuth userIDAuth = createUser();
             UserIDAuth userIDAuthWrongPassword = new UserIDAuth(userIDAuth.getUserID(), new ReadKeyPassword("total falsch und anders"));
-            Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
+            Assert.assertEquals("number of guards", 0, getNumberOfGuards(userIDAuth.getUserID()));
 
             DocumentFQN documentFQN = new DocumentFQN("first/next/a-new-document.txt");
             DSDocumentMetaInfo mi = new DSDocumentMetaInfo();
@@ -98,14 +85,14 @@ public class BusinessUnencryptedTest extends BusinessTestBase {
             boolean catched = false;
 
             {
-                // Speichern mit falschen Kennwort nicht möglich, obwohl unverschluesselt
+                // storage must not be possible, because the wrong password is given, though the document is not encrypted at all
                 CatchException.catchException(() -> createDocumentStream(userIDAuthWrongPassword, documentFQN, mi));
                 Assert.assertTrue(CatchException.caughtException() != null);
             }
 
             // Speichern mit korrektem Kennwort
-            DSDocumentStream dsDocument1 = createDocumentStream(userIDAuth, documentFQN, mi);
-            Assert.assertEquals("Anzahl der guards", 1, getNumberOfGuards(userIDAuth.getUserID()));
+            DSDocumentStream dsDocumentStream = createDocumentStream(userIDAuth, documentFQN, mi);
+            Assert.assertEquals("Anzahl der guards", 0, getNumberOfGuards(userIDAuth.getUserID()));
 
             {
                 boolean exceptionCaught = false;
@@ -126,8 +113,9 @@ public class BusinessUnencryptedTest extends BusinessTestBase {
             }
 
             // Lesen mit korrektem Kennwort
-            try (InputStream is = dsDocument1.getDocumentStream()) {
+            try (InputStream is = dsDocumentStream.getDocumentStream()) {
                 readDocumentStream(userIDAuth, documentFQN, is);
+
             }
         } catch (Exception e) {
             throw BaseExceptionHandler.handle(e);

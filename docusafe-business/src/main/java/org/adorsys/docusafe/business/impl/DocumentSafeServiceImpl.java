@@ -223,7 +223,8 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         storageMetadata.mergeUserMetadata(dsDocumentStream.getDsDocumentMetaInfo());
         DocumentBucketPath documentBucketPath = getTheDocumentBucketPath(userIDAuth.getUserID(), dsDocumentStream.getDocumentFQN());
         // getOrCreate dient hier nur der Authentifizierung, koennte zum Schreiben unverschluesselter Documente entfallen
-        DocumentKeyIDWithKey myDocumentKeyIDwithKey = getMyDocumentKeyIDwithKey(userIDAuth);
+        DocumentKeyIDWithKey myDocumentKeyIDwithKey = getAnySecretKeyIDWithKeyFromKeyStore(userIDAuth);
+
         if (UserMetaDataUtil.isNotEncrypted(storageMetadata.getUserMetadata())) {
             documentPersistenceService.persistDocumentStream(
                     documentBucketPath,
@@ -501,20 +502,6 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         DocumentFQN documentFQN = new DocumentFQN("README.txt");
         DSDocument dsDocument = new DSDocument(documentFQN, documentContent, null);
         return dsDocument;
-    }
-
-    private DocumentKeyIDWithKey getMyDocumentKeyIDwithKey(UserIDAuth userIDAuth) {
-        BucketDirectory universalGuardDirectory = GuardUtil.getUniversalGuardDirectory(userIDAuth.getUserID());
-        LOGGER.debug("search key for " + universalGuardDirectory);
-        KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
-        DocumentKeyID documentKeyID = loadCachedDocumentKeyIDForDocumentDirectory(universalGuardDirectory);
-        if (documentKeyID == null) {
-            documentKeyID = GuardUtil.loadBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStorePath().getBucketDirectory(), universalGuardDirectory);
-        }
-        cacheDocumentKeyIDForDocumentDirectory(universalGuardDirectory, documentKeyID);
-        DocumentKeyIDWithKey documentKeyIDWithKey = loadCachedOrRealDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(keyStoreAccess, documentKeyID);
-        LOGGER.debug("found " + documentKeyIDWithKey + " for " + universalGuardDirectory);
-        return documentKeyIDWithKey;
     }
 
     private DocumentKeyIDWithKey getDocumentKeyIDwithKeyForBucketPath(UserIDAuth userIDAuth, BucketDirectory documentDirectory) {
