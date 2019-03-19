@@ -52,7 +52,6 @@ import org.adorsys.encobject.exceptions.SymmetricEncryptionException;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
 import org.adorsys.encobject.service.api.KeyStore2KeySourceHelper;
 import org.adorsys.encobject.service.api.KeyStoreService;
-import org.adorsys.encobject.service.api.KeystorePersistence;
 import org.adorsys.encobject.service.impl.*;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.adorsys.encobject.types.OverwriteFlag;
@@ -63,8 +62,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.security.KeyStore;
-import java.security.UnrecoverableEntryException;
-import java.util.List;
 
 /**
  * Created by peter on 19.01.18 at 14:39.

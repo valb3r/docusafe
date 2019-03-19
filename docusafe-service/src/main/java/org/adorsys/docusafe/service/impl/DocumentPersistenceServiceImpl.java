@@ -5,6 +5,7 @@ import org.adorsys.docusafe.service.DocumentGuardService;
 import org.adorsys.docusafe.service.DocumentPersistenceService;
 import org.adorsys.docusafe.service.keysource.DocumentGuardBasedKeySourceImpl;
 import org.adorsys.docusafe.service.keysource.DocumentKeyIDWithKeyBasedSourceImpl;
+import org.adorsys.docusafe.service.types.DocumentKeyID;
 import org.adorsys.docusafe.service.types.complextypes.DocumentBucketPath;
 import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.encobject.domain.KeyStoreAccess;
@@ -12,14 +13,8 @@ import org.adorsys.encobject.domain.Payload;
 import org.adorsys.encobject.domain.PayloadStream;
 import org.adorsys.encobject.domain.StorageMetadata;
 import org.adorsys.encobject.exceptions.FileExistsException;
-import org.adorsys.encobject.service.api.EncryptedPersistenceService;
-import org.adorsys.encobject.service.api.ExtendedStoreConnection;
-import org.adorsys.encobject.service.api.KeySource;
-import org.adorsys.encobject.service.api.KeystorePersistence;
-import org.adorsys.encobject.service.impl.AESEncryptionStreamServiceImpl;
-import org.adorsys.encobject.service.impl.BlobStoreKeystorePersistenceImpl;
-import org.adorsys.encobject.service.impl.EncryptedPersistenceServiceImpl;
-import org.adorsys.encobject.service.impl.KeyStoreBasedSecretKeySourceImpl;
+import org.adorsys.encobject.service.api.*;
+import org.adorsys.encobject.service.impl.*;
 import org.adorsys.encobject.types.KeyID;
 import org.adorsys.encobject.types.OverwriteFlag;
 import org.slf4j.Logger;
@@ -42,7 +37,7 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
     private ExtendedStoreConnection extendedStoreConnection;
     private BucketServiceImpl bucketService = null;
     private DocumentKeyID2DocumentKeyCache documentKeyID2DocumentKeyCache = null;
-    private KeystorePersistence keystorePersistence;
+    private KeyStoreService keyStoreService = null;
 
     public DocumentPersistenceServiceImpl(ExtendedStoreConnection extendedStoreConnection,
                                           DocumentKeyID2DocumentKeyCache documentKeyID2DocumentKeyCache) {
@@ -51,7 +46,7 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
         this.documentGuardService = new DocumentGuardServiceImpl(extendedStoreConnection);
         this.bucketService = new BucketServiceImpl(extendedStoreConnection);
         this.documentKeyID2DocumentKeyCache = documentKeyID2DocumentKeyCache;
-        this.keystorePersistence = new BlobStoreKeystorePersistenceImpl(extendedStoreConnection);
+        this.keyStoreService = new KeyStoreServiceImpl(extendedStoreConnection);
     }
 
     /**
@@ -94,14 +89,22 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
             LOGGER.info(key + " -> " + storageMetadata.getUserMetadata().get(key))
         );
 
-        KeyID keyID = getDocumentKeyID(storageMetadata);
+        DocumentKeyID keyID = new DocumentKeyID(getDocumentKeyID(storageMetadata).getValue());
         KeySource keySource;
         if (keyID.getValue().startsWith("DK")) {
             keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess, documentKeyID2DocumentKeyCache);
         } else {
-            LOGGER.warn("TODO DO NOT READ THE KEYSTORE EVERY TIME!!!");
-            KeyStore userKeystore = keystorePersistence.loadKeystore(keyStoreAccess.getKeyStorePath().getObjectHandle(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
-            keySource = new KeyStoreBasedSecretKeySourceImpl(userKeystore, keyStoreAccess.getKeyStoreAuth().getReadKeyHandler());
+            DocumentKeyIDWithKey fromCache = documentKeyID2DocumentKeyCache.get(keyStoreAccess, keyID);
+            if (fromCache == null) {
+                LOGGER.warn("TODO DO NOT READ THE KEYSTORE EVERY TIME!!!");
+                KeyStore userKeystore = keyStoreService.loadKeystore(keyStoreAccess.getKeyStorePath(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
+                keySource = new KeyStoreBasedSecretKeySourceImpl(userKeystore, keyStoreAccess.getKeyStoreAuth().getReadKeyHandler());
+                // put into cache now
+
+
+            } else {
+                keySource = new DocumentKeyIDWithKeyBasedSourceImpl(fromCache);
+            }
         }
 
         Payload payload = encryptedPersistenceService.loadAndDecrypt(documentBucketPath, keySource, storageMetadata);

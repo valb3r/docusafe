@@ -40,6 +40,19 @@ public class BusinessTest extends BusinessTestBase {
     }
 
 
+    @Test
+    public void testCache_DOC_86() {
+        // avoid reading the keystore twice
+        UserIDAuth userIDAuth = createUser(new UserID("UserPeter"), new ReadKeyPassword("peterkey"));
+        DocumentFQN documentFQN = new DocumentFQN("first/next/document.txt");
+        DocumentContent documentContent = new DocumentContent(("Einfach nur a bisserl Text").getBytes());
+        DSDocument dsDocument = new DSDocument(documentFQN, documentContent, new DSDocumentMetaInfo());
+        service.storeDocument(userIDAuth, dsDocument);
+        service.readDocument(userIDAuth, dsDocument.getDocumentFQN());
+        // Maksym try to prrove  with mock
+        service.readDocument(userIDAuth, dsDocument.getDocumentFQN());
+
+    }
 
     @Test
     public void documentListMetadata_DOC_77() {
