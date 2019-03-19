@@ -1,30 +1,25 @@
 package org.adorsys.docusafe.business;
 
 import com.googlecode.catchexception.CatchException;
+import lombok.extern.slf4j.Slf4j;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.docusafe.business.types.UserID;
-import org.adorsys.docusafe.business.types.complex.DSDocument;
-import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
-import org.adorsys.docusafe.business.types.complex.DSDocumentStream;
-import org.adorsys.docusafe.business.types.complex.DocumentFQN;
-import org.adorsys.docusafe.business.types.complex.UserIDAuth;
+import org.adorsys.docusafe.business.types.complex.*;
 import org.adorsys.docusafe.service.impl.UserMetaDataUtil;
-import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.encobject.domain.ReadKeyPassword;
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 
 /**
  * Created by peter on 20.06.18 at 10:04.
  */
-@SuppressWarnings("Duplicates")
+@Slf4j
 public class BusinessUnencryptedTest extends BusinessTestBase {
-    private final static Logger LOGGER = LoggerFactory.getLogger(BusinessUnencryptedTest.class);
 
     @Test
     public void createUAndDeleteUser() {
@@ -122,4 +117,29 @@ public class BusinessUnencryptedTest extends BusinessTestBase {
         }
     }
 
+    @Test
+    public void saveAndReadStreamTest() throws Exception {
+        UserIDAuth userIDAuth = createUser();
+
+        DocumentFQN documentFQN = new DocumentFQN("VeryBigDocument.txt");
+        DSDocumentMetaInfo mi = new DSDocumentMetaInfo();
+        UserMetaDataUtil.setNoEncryption(mi);
+
+        String content = "test stream content";
+        try (ByteArrayInputStream bis = new ByteArrayInputStream(content.getBytes())) {
+            DSDocumentStream dsDocumentStream = new DSDocumentStream(documentFQN, bis, mi);
+
+            service.storeDocumentStream(userIDAuth, dsDocumentStream);
+            log.info("successfully stored stream content: " + content);
+        }
+
+        String readContent;
+        DSDocumentStream dsReadDocumentStream = service.readDocumentStream(userIDAuth, documentFQN);
+        try (InputStream is = dsReadDocumentStream.getDocumentStream()) {
+            readContent = IOUtils.toString(is, Charset.defaultCharset());
+            log.info("successfully read stream content: " + readContent);
+        }
+
+        Assert.assertEquals(content, readContent);
+    }
 }
