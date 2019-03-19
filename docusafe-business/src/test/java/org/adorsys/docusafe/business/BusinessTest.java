@@ -12,8 +12,10 @@ import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
 import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
+import org.adorsys.docusafe.business.utils.UserIDUtil;
 import org.adorsys.docusafe.service.exceptions.NoDocumentGuardExists;
 import org.adorsys.docusafe.service.types.DocumentContent;
+import org.adorsys.encobject.domain.Payload;
 import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.adorsys.encobject.domain.UserMetaData;
 import org.adorsys.encobject.types.ListRecursiveFlag;
@@ -49,8 +51,10 @@ public class BusinessTest extends BusinessTestBase {
         DSDocument dsDocument = new DSDocument(documentFQN, documentContent, new DSDocumentMetaInfo());
         service.storeDocument(userIDAuth, dsDocument);
         service.readDocument(userIDAuth, dsDocument.getDocumentFQN());
-        // Maksym try to prrove  with mock
+        Payload theKeyStore = extendedStoreConnection.getBlob(UserIDUtil.getKeyStorePath(userIDAuth.getUserID()));
+        extendedStoreConnection.removeBlob(UserIDUtil.getKeyStorePath(userIDAuth.getUserID()));
         service.readDocument(userIDAuth, dsDocument.getDocumentFQN());
+        extendedStoreConnection.putBlob(UserIDUtil.getKeyStorePath(userIDAuth.getUserID()), theKeyStore);
 
     }
 

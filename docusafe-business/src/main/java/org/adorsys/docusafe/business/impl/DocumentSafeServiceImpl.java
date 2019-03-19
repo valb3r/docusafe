@@ -7,7 +7,6 @@ import org.adorsys.docusafe.business.exceptions.UserIDAlreadyExistsException;
 import org.adorsys.docusafe.business.exceptions.UserIDDoesNotExistException;
 import org.adorsys.docusafe.business.exceptions.WrongPasswordException;
 import org.adorsys.docusafe.business.impl.caches.DocumentGuardCache;
-import org.adorsys.docusafe.business.impl.caches.DocumentKeyIDCache;
 import org.adorsys.docusafe.business.impl.caches.UserAuthCache;
 import org.adorsys.docusafe.business.types.MoveType;
 import org.adorsys.docusafe.business.types.UserID;
@@ -19,7 +18,6 @@ import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
 import org.adorsys.docusafe.business.types.complex.UserIDAuth;
 import org.adorsys.docusafe.business.utils.BucketPath2FQNHelper;
-import org.adorsys.docusafe.business.utils.GuardUtil;
 import org.adorsys.docusafe.business.utils.UserIDUtil;
 import org.adorsys.docusafe.service.BucketService;
 import org.adorsys.docusafe.service.DocumentGuardService;
@@ -31,14 +29,13 @@ import org.adorsys.docusafe.service.impl.DocumentKeyID2DocumentKeyCache;
 import org.adorsys.docusafe.service.impl.DocumentPersistenceServiceImpl;
 import org.adorsys.docusafe.service.impl.GuardKeyType;
 import org.adorsys.docusafe.service.impl.KeySourceServiceImpl;
-import org.adorsys.docusafe.service.impl.PasswordAndDocumentKeyIDWithKeyAndAccessType;
+import org.adorsys.docusafe.service.impl.PasswordAndDocumentKeyIDWithKey;
 import org.adorsys.docusafe.service.impl.UserMetaDataUtil;
 import org.adorsys.docusafe.service.types.BucketContent;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.service.types.DocumentKey;
 import org.adorsys.docusafe.service.types.DocumentKeyID;
 import org.adorsys.docusafe.service.types.complextypes.DocumentBucketPath;
-import org.adorsys.docusafe.service.types.complextypes.DocumentGuardLocation;
 import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
@@ -427,9 +424,9 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
     public DocumentKeyIDWithKey get(KeyStoreAccess keyStoreAccess, DocumentKeyID documentKeyID) {
         DocumentGuardCache documentGuardCache = docusafeCacheWrapper.getDocumentGuardCache();
         String cacheKey = DocumentGuardCache.cacheKeyToString(keyStoreAccess, documentKeyID);
-        PasswordAndDocumentKeyIDWithKeyAndAccessType passwordAndDocumentKeyIDWithKeyAndAccessTypeFromCache = documentGuardCache.get(cacheKey);
-        if (passwordAndDocumentKeyIDWithKeyAndAccessTypeFromCache != null) {
-            if (passwordAndDocumentKeyIDWithKeyAndAccessTypeFromCache.getReadKeyPassword().equals(keyStoreAccess.getKeyStoreAuth().getReadKeyPassword())) {
+        PasswordAndDocumentKeyIDWithKey passwordAndDocumentKeyIDWithKeyFromCache = documentGuardCache.get(cacheKey);
+        if (passwordAndDocumentKeyIDWithKeyFromCache != null) {
+            if (passwordAndDocumentKeyIDWithKeyFromCache.getReadKeyPassword().equals(keyStoreAccess.getKeyStoreAuth().getReadKeyPassword())) {
                 LOGGER.debug("return document key for cache key " + cacheKey);
                 return documentGuardCache.get(cacheKey).getDocumentKeyIDWithKey();
             }
@@ -439,25 +436,21 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         return null;
     }
 
+    @Override
+    public void put(KeyStoreAccess keyStoreAccess, DocumentKeyIDWithKey documentKeyIDWithKey) {
+        DocumentGuardCache documentGuardCache = docusafeCacheWrapper.getDocumentGuardCache();
+        String cacheKey = DocumentGuardCache.cacheKeyToString(keyStoreAccess, documentKeyIDWithKey.getDocumentKeyID());
+        PasswordAndDocumentKeyIDWithKey passwordAndDocumentKeyIDWithKey = new PasswordAndDocumentKeyIDWithKey(keyStoreAccess.getKeyStoreAuth().getReadKeyPassword(), documentKeyIDWithKey);
+        documentGuardCache.put(cacheKey, passwordAndDocumentKeyIDWithKey);
+    }
+
+
 
     /**
      * PRIVATE STUFF
      * ===========================================================================================
      */
-    /**
-     * Es wird extra nur die KeyID zurückgegeben. Damit der Zugriff auf den Key wirklich über den
-     * KeyStore erfolgt und damit dann auch getestet ist.
-     */
-    private DocumentKeyID createSymmetricGuardForBucket(KeyStoreAccess keyStoreAccess, BucketDirectory documentDirectory) {
-        LOGGER.debug("start create new guard for " + documentDirectory);
-        DocumentKeyIDWithKey documentKeyIdWithKey = documentGuardService.createDocumentKeyIdWithKey();
-        createCachedDocumentGuardFor(GuardKeyType.SECRET_KEY, keyStoreAccess, documentKeyIdWithKey, OverwriteFlag.FALSE);
-        GuardUtil.saveBucketGuardKeyFile(bucketService,
-                keyStoreAccess.getKeyStorePath().getBucketDirectory(),
-                documentDirectory, documentKeyIdWithKey.getDocumentKeyID());
-        LOGGER.debug("finished create new guard for " + documentDirectory);
-        return documentKeyIdWithKey.getDocumentKeyID();
-    }
+
 
     private DocumentKeyIDWithKey createNewAsymmetricGuardForUser(UserID receiversUserID) {
         LOGGER.debug("start create asymmetric guard for " + receiversUserID);
@@ -467,19 +460,6 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         createCachedDocumentGuardFor(GuardKeyType.PUBLIC_KEY, receiverKeyStoreAccess, documentKeyIDWithKey, OverwriteFlag.FALSE);
         LOGGER.debug("finished create asymmetric guard for " + receiversUserID);
         return documentKeyIDWithKey;
-    }
-
-    private void deleteGuardForBucket(KeyStoreAccess keyStoreAccess,
-                                      DocumentKeyIDWithKey documentKeyIDWithKey,
-                                      BucketDirectory documentDirectory
-    ) {
-        LOGGER.debug("start delete guard for " + documentDirectory);
-        BucketPath documentGuardFileBucketPath = DocumentGuardLocation.getBucketPathOfGuard(keyStoreAccess.getKeyStorePath(),
-                documentKeyIDWithKey.getDocumentKeyID());
-        bucketService.deletePlainFile(documentGuardFileBucketPath);
-
-        GuardUtil.deleteBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStorePath().getBucketDirectory(), documentDirectory);
-        LOGGER.debug("finished delete guard for " + documentDirectory);
     }
 
     private KeyStoreAccess getKeyStoreAccess(UserIDAuth userIDAuth) {
@@ -499,17 +479,6 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         DocumentFQN documentFQN = new DocumentFQN("README.txt");
         DSDocument dsDocument = new DSDocument(documentFQN, documentContent, null);
         return dsDocument;
-    }
-
-    private DocumentKeyIDWithKey getDocumentKeyIDwithKeyForBucketPath(UserIDAuth userIDAuth, BucketDirectory documentDirectory) {
-        LOGGER.debug("get key for " + documentDirectory);
-        KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
-        DocumentKeyID documentKeyID = GuardUtil.loadBucketGuardKeyFile(bucketService, keyStoreAccess.getKeyStorePath().getBucketDirectory(), documentDirectory);
-
-        DocumentKeyIDWithKey documentKeyIDWithKey = loadCachedOrRealDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(keyStoreAccess, documentKeyID);
-
-        LOGGER.debug("found " + documentKeyIDWithKey + " for " + documentDirectory);
-        return documentKeyIDWithKey;
     }
 
     private void checkUserKeyPassword(UserIDAuth userIDAuth) {
@@ -540,21 +509,6 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         }
     }
 
-    private DocumentKeyIDWithKey loadCachedOrRealDocumentKeyIDWithKeyAndAccessTypeFromDocumentGuard(KeyStoreAccess keyStoreAccess, DocumentKeyID documentKeyID) {
-        DocumentKeyIDWithKey fromCache = get(keyStoreAccess, documentKeyID);
-        if (fromCache != null) {
-            return fromCache;
-        }
-
-        DocumentKeyIDWithKey documentKeyIDWithKeyAndAccessType = documentGuardService.loadDocumentKeyIDWithKeyFromDocumentGuard(keyStoreAccess, documentKeyID);
-        DocumentGuardCache documentGuardCache = docusafeCacheWrapper.getDocumentGuardCache();
-        String cacheKey = DocumentGuardCache.cacheKeyToString(keyStoreAccess, documentKeyID);
-        documentGuardCache.put(cacheKey, new PasswordAndDocumentKeyIDWithKeyAndAccessType(keyStoreAccess.getKeyStoreAuth().getReadKeyPassword(), documentKeyIDWithKeyAndAccessType));
-        LOGGER.debug("insert document key for cache key " + cacheKey);
-
-        return documentKeyIDWithKeyAndAccessType;
-    }
-
     void createCachedDocumentGuardFor(GuardKeyType guardKeyType, KeyStoreAccess keyStoreAccess,
                                       DocumentKeyIDWithKey documentKeyIDWithKey,
                                       OverwriteFlag overwriteFlag) {
@@ -563,28 +517,12 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         if (guardKeyType.equals(GuardKeyType.SECRET_KEY)) {
             DocumentGuardCache documentGuardCache = docusafeCacheWrapper.getDocumentGuardCache();
             String cacheKey = DocumentGuardCache.cacheKeyToString(keyStoreAccess, documentKeyIDWithKey.getDocumentKeyID());
-            documentGuardCache.put(cacheKey, new PasswordAndDocumentKeyIDWithKeyAndAccessType(keyStoreAccess.getKeyStoreAuth().getReadKeyPassword(), documentKeyIDWithKey));
+            documentGuardCache.put(cacheKey, new PasswordAndDocumentKeyIDWithKey(keyStoreAccess.getKeyStoreAuth().getReadKeyPassword(), documentKeyIDWithKey));
         }
         // else {
         //       guards für public Keys werden nicht gecached. Zum einen, weil das password nicht bekannt ist
         //       und zum anderen weil der Benutzer viele asymmetrische Guards haben kann.
         // }
-    }
-
-    private void deleteCacheKey(KeyStoreAccess keyStoreAccess, DocumentKeyID documentKeyID) {
-        DocumentGuardCache documentGuardCache = docusafeCacheWrapper.getDocumentGuardCache();
-        String cacheKey = DocumentGuardCache.cacheKeyToString(keyStoreAccess, documentKeyID);
-        documentGuardCache.remove(cacheKey);
-    }
-
-    private DocumentKeyID loadCachedDocumentKeyIDForDocumentDirectory(BucketDirectory bucketDirectory) {
-        DocumentKeyIDCache documentKeyIDCache = docusafeCacheWrapper.getDocumentKeyIDCache();
-        return documentKeyIDCache.get(bucketDirectory);
-    }
-
-    private void cacheDocumentKeyIDForDocumentDirectory(BucketDirectory bucketDirectory, DocumentKeyID documentKeyID) {
-        DocumentKeyIDCache documentKeyIDCache = docusafeCacheWrapper.getDocumentKeyIDCache();
-        documentKeyIDCache.put(bucketDirectory, documentKeyID);
     }
 
     private DocumentKeyIDWithKey getAnySecretKeyIDWithKeyFromKeyStore(UserIDAuth userIDAuth) {

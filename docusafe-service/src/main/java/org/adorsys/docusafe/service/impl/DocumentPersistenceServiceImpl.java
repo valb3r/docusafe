@@ -5,6 +5,7 @@ import org.adorsys.docusafe.service.DocumentGuardService;
 import org.adorsys.docusafe.service.DocumentPersistenceService;
 import org.adorsys.docusafe.service.keysource.DocumentGuardBasedKeySourceImpl;
 import org.adorsys.docusafe.service.keysource.DocumentKeyIDWithKeyBasedSourceImpl;
+import org.adorsys.docusafe.service.types.DocumentKey;
 import org.adorsys.docusafe.service.types.DocumentKeyID;
 import org.adorsys.docusafe.service.types.complextypes.DocumentBucketPath;
 import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKey;
@@ -20,6 +21,8 @@ import org.adorsys.encobject.types.OverwriteFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.crypto.SecretKey;
+import java.security.Key;
 import java.security.KeyStore;
 
 /**
@@ -89,19 +92,18 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
             LOGGER.info(key + " -> " + storageMetadata.getUserMetadata().get(key))
         );
 
-        DocumentKeyID keyID = new DocumentKeyID(getDocumentKeyID(storageMetadata).getValue());
+        DocumentKeyID documentKeyID= getDocumentKeyID(storageMetadata);
         KeySource keySource;
-        if (keyID.getValue().startsWith("DK")) {
+        if (documentKeyID.getValue().startsWith("DK")) {
             keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess, documentKeyID2DocumentKeyCache);
         } else {
-            DocumentKeyIDWithKey fromCache = documentKeyID2DocumentKeyCache.get(keyStoreAccess, keyID);
+            DocumentKeyIDWithKey fromCache = documentKeyID2DocumentKeyCache.get(keyStoreAccess, documentKeyID);
             if (fromCache == null) {
                 LOGGER.warn("TODO DO NOT READ THE KEYSTORE EVERY TIME!!!");
                 KeyStore userKeystore = keyStoreService.loadKeystore(keyStoreAccess.getKeyStorePath(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
                 keySource = new KeyStoreBasedSecretKeySourceImpl(userKeystore, keyStoreAccess.getKeyStoreAuth().getReadKeyHandler());
-                // put into cache now
-
-
+                SecretKey key = (SecretKey) keySource.readKey(new KeyID(documentKeyID.getValue()));
+                documentKeyID2DocumentKeyCache.put(keyStoreAccess, new DocumentKeyIDWithKey(documentKeyID, new DocumentKey(key)));
             } else {
                 keySource = new DocumentKeyIDWithKeyBasedSourceImpl(fromCache);
             }
@@ -112,8 +114,8 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
         return payload;
     }
 
-    private KeyID getDocumentKeyID(StorageMetadata storageMetadata) {
-        return new KeyID(storageMetadata.getUserMetadata().get(EncryptedPersistenceServiceImpl.ENCRYPTION_KEY_ID));
+    private DocumentKeyID getDocumentKeyID(StorageMetadata storageMetadata) {
+        return new DocumentKeyID(storageMetadata.getUserMetadata().get(EncryptedPersistenceServiceImpl.ENCRYPTION_KEY_ID));
     }
 
     @Override
