@@ -1,33 +1,53 @@
 package org.adorsys.docusafe.business;
 
 import com.googlecode.catchexception.CatchException;
+import lombok.SneakyThrows;
 import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.docusafe.business.exceptions.UserIDDoesNotExistException;
 import org.adorsys.docusafe.business.exceptions.WrongPasswordException;
 import org.adorsys.docusafe.business.types.UserID;
-import org.adorsys.docusafe.business.types.complex.BucketContentFQN;
-import org.adorsys.docusafe.business.types.complex.BucketContentFQNWithUserMetaData;
-import org.adorsys.docusafe.business.types.complex.DSDocument;
-import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
-import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
-import org.adorsys.docusafe.business.types.complex.DocumentFQN;
-import org.adorsys.docusafe.business.types.complex.UserIDAuth;
-import org.adorsys.docusafe.service.exceptions.NoDocumentGuardExists;
+import org.adorsys.docusafe.business.types.complex.*;
+import org.adorsys.docusafe.service.impl.DocumentPersistenceServiceImpl;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.encobject.domain.ReadKeyPassword;
 import org.adorsys.encobject.domain.UserMetaData;
+import org.adorsys.encobject.service.impl.KeyStoreServiceImpl;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.verify;
+import static org.powermock.api.mockito.PowerMockito.spy;
 
 /**
  * Created by peter on 19.01.18 at 16:25.
  */
 @SuppressWarnings("Duplicates")
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({DocumentPersistenceServiceImpl.class})
+@PowerMockIgnore("javax.crypto.*")
 public class BusinessTest extends BusinessTestBase {
     private final static Logger LOGGER = LoggerFactory.getLogger(BusinessTest.class);
+
+    private KeyStoreServiceImpl keyStoreService;
+
+    @Override
+    @Before
+    @SneakyThrows
+    public void before() {
+        keyStoreService = spy(new KeyStoreServiceImpl(extendedStoreConnection));
+        PowerMockito.whenNew(KeyStoreServiceImpl.class).withAnyArguments().thenReturn(keyStoreService);
+        super.before();
+    }
 
     // Demo for Maksym how path and filename encryption blows up the path length
     // @Test
@@ -48,10 +68,13 @@ public class BusinessTest extends BusinessTestBase {
         DocumentContent documentContent = new DocumentContent(("Einfach nur a bisserl Text").getBytes());
         DSDocument dsDocument = new DSDocument(documentFQN, documentContent, new DSDocumentMetaInfo());
         service.storeDocument(userIDAuth, dsDocument);
+
         service.readDocument(userIDAuth, dsDocument.getDocumentFQN());
+        verify(keyStoreService).loadKeystore(any(), any());
         // Maksym try to prrove  with mock
         service.readDocument(userIDAuth, dsDocument.getDocumentFQN());
-
+        // should be read from cache, hence 1 invocation
+        verify(keyStoreService).loadKeystore(any(), any());
     }
 
     @Test
