@@ -97,13 +97,14 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
         if (documentKeyID.getValue().startsWith("DK")) {
             keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess, documentKeyID2DocumentKeyCache);
         } else {
-            DocumentKeyIDWithKey fromCache = documentKeyID2DocumentKeyCache.get(keyStoreAccess, documentKeyID);
+            DocumentKeyIDWithKey fromCache = documentKeyID2DocumentKeyCache != null ? documentKeyID2DocumentKeyCache.get(keyStoreAccess, documentKeyID) : null;
             if (fromCache == null) {
-                LOGGER.warn("TODO DO NOT READ THE KEYSTORE EVERY TIME!!!");
                 KeyStore userKeystore = keyStoreService.loadKeystore(keyStoreAccess.getKeyStorePath(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
                 keySource = new KeyStoreBasedSecretKeySourceImpl(userKeystore, keyStoreAccess.getKeyStoreAuth().getReadKeyHandler());
-                SecretKey key = (SecretKey) keySource.readKey(new KeyID(documentKeyID.getValue()));
-                documentKeyID2DocumentKeyCache.put(keyStoreAccess, new DocumentKeyIDWithKey(documentKeyID, new DocumentKey(key)));
+                if (documentKeyID2DocumentKeyCache != null) {
+                    SecretKey key = (SecretKey) keySource.readKey(new KeyID(documentKeyID.getValue()));
+                    documentKeyID2DocumentKeyCache.put(keyStoreAccess, new DocumentKeyIDWithKey(documentKeyID, new DocumentKey(key)));
+                }
             } else {
                 keySource = new DocumentKeyIDWithKeyBasedSourceImpl(fromCache);
             }
