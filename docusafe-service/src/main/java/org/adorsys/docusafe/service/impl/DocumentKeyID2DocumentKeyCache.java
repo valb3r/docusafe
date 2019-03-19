@@ -9,4 +9,5 @@ import org.adorsys.encobject.domain.KeyStoreAccess;
  */
 public interface DocumentKeyID2DocumentKeyCache {
     DocumentKeyIDWithKey get(KeyStoreAccess keyStoreAccess, DocumentKeyID documentKeyID);
+    void put(KeyStoreAccess keyStoreAccess, DocumentKeyIDWithKey documentKeyIDWithKey);
 }

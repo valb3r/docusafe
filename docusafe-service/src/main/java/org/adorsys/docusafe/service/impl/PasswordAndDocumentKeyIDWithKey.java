@@ -6,11 +6,11 @@ import org.adorsys.encobject.domain.ReadKeyPassword;
 /**
  * Created by peter on 28.06.18 at 14:12.
  */
-public class PasswordAndDocumentKeyIDWithKeyAndAccessType {
+public class PasswordAndDocumentKeyIDWithKey {
     private ReadKeyPassword readKeyPassword;
     private DocumentKeyIDWithKey documentKeyIDWithKey;
 
-    public PasswordAndDocumentKeyIDWithKeyAndAccessType(ReadKeyPassword readKeyPassword, DocumentKeyIDWithKey documentKeyIDWithKey) {
+    public PasswordAndDocumentKeyIDWithKey(ReadKeyPassword readKeyPassword, DocumentKeyIDWithKey documentKeyIDWithKey) {
         this.readKeyPassword = readKeyPassword;
         this.documentKeyIDWithKey = documentKeyIDWithKey;
     }
