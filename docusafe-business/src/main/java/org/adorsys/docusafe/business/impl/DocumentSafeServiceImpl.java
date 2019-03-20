@@ -58,6 +58,7 @@ import org.adorsys.jkeygen.keystore.KeyStoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import java.security.KeyStore;
 
 /**
@@ -66,14 +67,36 @@ import java.security.KeyStore;
 public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKeyID2DocumentKeyCache {
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentSafeServiceImpl.class);
 
-    private BucketService bucketService;
-    private KeyStoreService keyStoreService;
-    private DocumentGuardService documentGuardService;
-    private DocumentPersistenceService documentPersistenceService;
-    private KeySourceService keySourceService;
-    private ExtendedStoreConnection extendedStoreConnection;
-    private DocusafeCacheWrapper docusafeCacheWrapper = null;
+    private final BucketService bucketService;
+    private final KeyStoreService keyStoreService;
+    private final DocumentGuardService documentGuardService;
+    private final DocumentPersistenceService documentPersistenceService;
+    private final KeySourceService keySourceService;
+    private final ExtendedStoreConnection extendedStoreConnection;
+    private final DocusafeCacheWrapper docusafeCacheWrapper;
 
+    @Inject
+    public DocumentSafeServiceImpl(
+            BucketService bucketService,
+            KeyStoreService keyStoreService,
+            DocumentGuardService documentGuardService,
+            DocumentPersistenceService documentPersistenceService,
+            KeySourceService keySourceService,
+            ExtendedStoreConnection extendedStoreConnection,
+            DocusafeCacheWrapper docusafeCacheWrapper) {
+        this.bucketService = bucketService;
+        this.keyStoreService = keyStoreService;
+        this.documentGuardService = documentGuardService;
+        this.documentPersistenceService = documentPersistenceService;
+        this.keySourceService = keySourceService;
+        this.extendedStoreConnection = extendedStoreConnection;
+        this.docusafeCacheWrapper = docusafeCacheWrapper;
+    } 
+
+    /**
+     * @deprecated please use Dagger-based injection instead.
+     */
+    @Deprecated
     public DocumentSafeServiceImpl(ExtendedStoreConnection extendedStoreConnection) {
         this.extendedStoreConnection = extendedStoreConnection;
         this.bucketService = new BucketServiceImpl(extendedStoreConnection);
