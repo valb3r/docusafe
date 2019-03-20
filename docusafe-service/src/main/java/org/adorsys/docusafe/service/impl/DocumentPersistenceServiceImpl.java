@@ -34,6 +34,7 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
 
 
     private final static Logger LOGGER = LoggerFactory.getLogger(DocumentPersistenceServiceImpl.class);
+    public static final String DOCUMENT_GUARD_KEY_PREFIX = "DK";
 
     private EncryptedPersistenceService encryptedPersistenceService;
     private DocumentGuardService documentGuardService;
@@ -65,13 +66,7 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
             Payload payload) {
 
         LOGGER.debug("start encrypt and persist " + documentBucketPath);
-        if (overwriteFlag.equals(OverwriteFlag.FALSE)) {
-            if (bucketService.fileExists(documentBucketPath)) {
-                throw new FileExistsException(documentBucketPath + " existiert und overwrite flag ist false");
-            }
-        }
-        KeySource keySource = new DocumentKeyIDWithKeyBasedSourceImpl(documentKeyIDWithKey);
-        LOGGER.debug("Document wird verschlüsselt mit " + documentKeyIDWithKey);
+        KeySource keySource = getKeySource(documentKeyIDWithKey, documentBucketPath, overwriteFlag);
         KeyID keyID = new KeyID(documentKeyIDWithKey.getDocumentKeyID().getValue());
         encryptedPersistenceService.encryptAndPersist(documentBucketPath, payload, keySource, keyID);
         LOGGER.debug("finished encrypt and persist " + documentBucketPath);
@@ -82,33 +77,7 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
             StorageMetadata storageMetadata,
             KeyStoreAccess keyStoreAccess,
             DocumentBucketPath documentBucketPath) {
-        if (storageMetadata == null) {
-            throw new BaseException("storageMetadata for load document " + documentBucketPath + " must not be null");
-        }
-
-        LOGGER.info("start load and decrypt document " + documentBucketPath + " " + keyStoreAccess);
-        LOGGER.info("===========================");
-        storageMetadata.getUserMetadata().keySet().forEach(key ->
-            LOGGER.info(key + " -> " + storageMetadata.getUserMetadata().get(key))
-        );
-
-        DocumentKeyID documentKeyID= getDocumentKeyID(storageMetadata);
-        KeySource keySource;
-        if (documentKeyID.getValue().startsWith("DK")) {
-            keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess, documentKeyID2DocumentKeyCache);
-        } else {
-            DocumentKeyIDWithKey fromCache = documentKeyID2DocumentKeyCache != null ? documentKeyID2DocumentKeyCache.get(keyStoreAccess, documentKeyID) : null;
-            if (fromCache == null) {
-                KeyStore userKeystore = keyStoreService.loadKeystore(keyStoreAccess.getKeyStorePath(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
-                keySource = new KeyStoreBasedSecretKeySourceImpl(userKeystore, keyStoreAccess.getKeyStoreAuth().getReadKeyHandler());
-                if (documentKeyID2DocumentKeyCache != null) {
-                    SecretKey key = (SecretKey) keySource.readKey(new KeyID(documentKeyID.getValue()));
-                    documentKeyID2DocumentKeyCache.put(keyStoreAccess, new DocumentKeyIDWithKey(documentKeyID, new DocumentKey(key)));
-                }
-            } else {
-                keySource = new DocumentKeyIDWithKeyBasedSourceImpl(fromCache);
-            }
-        }
+        KeySource keySource = getKeySource(storageMetadata, keyStoreAccess, documentBucketPath);
 
         Payload payload = encryptedPersistenceService.loadAndDecrypt(documentBucketPath, keySource, storageMetadata);
         LOGGER.debug("finished load and decrypt " + documentBucketPath);
@@ -151,13 +120,7 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
             PayloadStream payloadStream) {
 
         LOGGER.debug("start encrypt and persist stream " + documentBucketPath);
-        if (overwriteFlag.equals(OverwriteFlag.FALSE)) {
-            if (bucketService.fileExists(documentBucketPath)) {
-                throw new FileExistsException(documentBucketPath + " existiert und overwrite flag ist false");
-            }
-        }
-        KeySource keySource = new DocumentKeyIDWithKeyBasedSourceImpl(documentKeyIDWithKey);
-        LOGGER.debug("Document wird verschlüsselt mit " + documentKeyIDWithKey);
+        KeySource keySource = getKeySource(documentKeyIDWithKey, documentBucketPath, overwriteFlag);
         KeyID keyID = new KeyID(documentKeyIDWithKey.getDocumentKeyID().getValue());
         encryptedPersistenceService.encryptAndPersistStream(documentBucketPath, payloadStream, keySource, keyID);
         LOGGER.debug("finished encrypt and persist " + documentBucketPath);
@@ -169,7 +132,10 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
             KeyStoreAccess keyStoreAccess,
             DocumentBucketPath documentBucketPath) {
         LOGGER.debug("start load and decrypt stream " + documentBucketPath + " " + keyStoreAccess);
-        KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess, documentKeyID2DocumentKeyCache);
+
+        KeySource keySource = getKeySource(storageMetadata, keyStoreAccess, documentBucketPath);
+
+        //KeySource keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess, documentKeyID2DocumentKeyCache);
         PayloadStream payloadStream = encryptedPersistenceService.loadAndDecryptStream(documentBucketPath, keySource, storageMetadata);
         LOGGER.debug("finished load and decrypt stream " + documentBucketPath);
         return payloadStream;
@@ -197,4 +163,48 @@ public class DocumentPersistenceServiceImpl implements DocumentPersistenceServic
         LOGGER.debug("finished persist " + documentBucketPath);
 
     }
+
+    private KeySource getKeySource(StorageMetadata storageMetadata, KeyStoreAccess keyStoreAccess, DocumentBucketPath documentBucketPath) {
+
+        if (storageMetadata == null) {
+            throw new BaseException("storageMetadata for load document " + documentBucketPath + " must not be null");
+        }
+
+        LOGGER.info("start load and decrypt document " + documentBucketPath + " " + keyStoreAccess);
+        LOGGER.info("===========================");
+        storageMetadata.getUserMetadata().keySet().forEach(key ->
+                LOGGER.info(key + " -> " + storageMetadata.getUserMetadata().get(key))
+        );
+
+        DocumentKeyID documentKeyID = getDocumentKeyID(storageMetadata);
+        KeySource keySource;
+        if (documentKeyID.getValue().startsWith(DOCUMENT_GUARD_KEY_PREFIX)) {
+            keySource = new DocumentGuardBasedKeySourceImpl(documentGuardService, keyStoreAccess, documentKeyID2DocumentKeyCache);
+        } else {
+            DocumentKeyIDWithKey fromCache = documentKeyID2DocumentKeyCache != null ? documentKeyID2DocumentKeyCache.get(keyStoreAccess, documentKeyID) : null;
+            if (fromCache == null) {
+                KeyStore userKeystore = keyStoreService.loadKeystore(keyStoreAccess.getKeyStorePath(), keyStoreAccess.getKeyStoreAuth().getReadStoreHandler());
+                keySource = new KeyStoreBasedSecretKeySourceImpl(userKeystore, keyStoreAccess.getKeyStoreAuth().getReadKeyHandler());
+                if (documentKeyID2DocumentKeyCache != null) {
+                    SecretKey key = (SecretKey) keySource.readKey(new KeyID(documentKeyID.getValue()));
+                    documentKeyID2DocumentKeyCache.put(keyStoreAccess, new DocumentKeyIDWithKey(documentKeyID, new DocumentKey(key)));
+                }
+            } else {
+                keySource = new DocumentKeyIDWithKeyBasedSourceImpl(fromCache);
+            }
+        }
+        return keySource;
+    }
+
+    private KeySource getKeySource(DocumentKeyIDWithKey documentKeyIDWithKey, DocumentBucketPath documentBucketPath, OverwriteFlag overwriteFlag) {
+        if (overwriteFlag.equals(OverwriteFlag.FALSE)) {
+            if (bucketService.fileExists(documentBucketPath)) {
+                throw new FileExistsException(documentBucketPath + " existiert und overwrite flag ist false");
+            }
+        }
+        KeySource keySource = new DocumentKeyIDWithKeyBasedSourceImpl(documentKeyIDWithKey);
+        LOGGER.debug("Document wird verschlüsselt mit " + documentKeyIDWithKey);
+        return keySource;
+    }
+
 }
