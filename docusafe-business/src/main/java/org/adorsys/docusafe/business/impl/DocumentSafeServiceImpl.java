@@ -1,5 +1,7 @@
 package org.adorsys.docusafe.business.impl;
 
+import dagger.Lazy;
+import dagger.internal.DoubleCheck;
 import org.adorsys.cryptoutils.exceptions.BaseException;
 import org.adorsys.cryptoutils.exceptions.BaseExceptionHandler;
 import org.adorsys.docusafe.business.DocumentSafeService;
@@ -10,27 +12,14 @@ import org.adorsys.docusafe.business.impl.caches.DocumentGuardCache;
 import org.adorsys.docusafe.business.impl.caches.UserAuthCache;
 import org.adorsys.docusafe.business.types.MoveType;
 import org.adorsys.docusafe.business.types.UserID;
-import org.adorsys.docusafe.business.types.complex.BucketContentFQNWithUserMetaData;
-import org.adorsys.docusafe.business.types.complex.DSDocument;
-import org.adorsys.docusafe.business.types.complex.DSDocumentMetaInfo;
-import org.adorsys.docusafe.business.types.complex.DSDocumentStream;
-import org.adorsys.docusafe.business.types.complex.DocumentDirectoryFQN;
-import org.adorsys.docusafe.business.types.complex.DocumentFQN;
-import org.adorsys.docusafe.business.types.complex.UserIDAuth;
+import org.adorsys.docusafe.business.types.complex.*;
 import org.adorsys.docusafe.business.utils.BucketPath2FQNHelper;
 import org.adorsys.docusafe.business.utils.UserIDUtil;
 import org.adorsys.docusafe.service.BucketService;
 import org.adorsys.docusafe.service.DocumentGuardService;
 import org.adorsys.docusafe.service.DocumentPersistenceService;
 import org.adorsys.docusafe.service.KeySourceService;
-import org.adorsys.docusafe.service.impl.BucketServiceImpl;
-import org.adorsys.docusafe.service.impl.DocumentGuardServiceImpl;
-import org.adorsys.docusafe.service.impl.DocumentKeyID2DocumentKeyCache;
-import org.adorsys.docusafe.service.impl.DocumentPersistenceServiceImpl;
-import org.adorsys.docusafe.service.impl.GuardKeyType;
-import org.adorsys.docusafe.service.impl.KeySourceServiceImpl;
-import org.adorsys.docusafe.service.impl.PasswordAndDocumentKeyIDWithKey;
-import org.adorsys.docusafe.service.impl.UserMetaDataUtil;
+import org.adorsys.docusafe.service.impl.*;
 import org.adorsys.docusafe.service.types.BucketContent;
 import org.adorsys.docusafe.service.types.DocumentContent;
 import org.adorsys.docusafe.service.types.DocumentKey;
@@ -39,17 +28,15 @@ import org.adorsys.docusafe.service.types.complextypes.DocumentBucketPath;
 import org.adorsys.docusafe.service.types.complextypes.DocumentKeyIDWithKey;
 import org.adorsys.encobject.complextypes.BucketDirectory;
 import org.adorsys.encobject.complextypes.BucketPath;
-import org.adorsys.encobject.domain.KeyStoreAccess;
-import org.adorsys.encobject.domain.KeyStoreAuth;
-import org.adorsys.encobject.domain.Payload;
-import org.adorsys.encobject.domain.PayloadStream;
-import org.adorsys.encobject.domain.ReadKeyPassword;
-import org.adorsys.encobject.domain.StorageMetadata;
+import org.adorsys.encobject.domain.*;
 import org.adorsys.encobject.exceptions.SymmetricEncryptionException;
 import org.adorsys.encobject.service.api.ExtendedStoreConnection;
 import org.adorsys.encobject.service.api.KeyStore2KeySourceHelper;
 import org.adorsys.encobject.service.api.KeyStoreService;
-import org.adorsys.encobject.service.impl.*;
+import org.adorsys.encobject.service.impl.KeyStoreServiceImpl;
+import org.adorsys.encobject.service.impl.SimplePayloadImpl;
+import org.adorsys.encobject.service.impl.SimplePayloadStreamImpl;
+import org.adorsys.encobject.service.impl.SimpleStorageMetadataImpl;
 import org.adorsys.encobject.types.ListRecursiveFlag;
 import org.adorsys.encobject.types.OverwriteFlag;
 import org.adorsys.encobject.types.PublicKeyJWK;
@@ -70,7 +57,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
     private final BucketService bucketService;
     private final KeyStoreService keyStoreService;
     private final DocumentGuardService documentGuardService;
-    private final DocumentPersistenceService documentPersistenceService;
+    private final Lazy<DocumentPersistenceService> documentPersistenceService;
     private final KeySourceService keySourceService;
     private final ExtendedStoreConnection extendedStoreConnection;
     private final DocusafeCacheWrapper docusafeCacheWrapper;
@@ -80,7 +67,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
             BucketService bucketService,
             KeyStoreService keyStoreService,
             DocumentGuardService documentGuardService,
-            DocumentPersistenceService documentPersistenceService,
+            Lazy<DocumentPersistenceService> documentPersistenceService,
             KeySourceService keySourceService,
             ExtendedStoreConnection extendedStoreConnection,
             DocusafeCacheWrapper docusafeCacheWrapper) {
@@ -102,7 +89,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         this.bucketService = new BucketServiceImpl(extendedStoreConnection);
         this.keyStoreService = new KeyStoreServiceImpl(extendedStoreConnection);
         this.documentGuardService = new DocumentGuardServiceImpl(extendedStoreConnection);
-        this.documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection, this);
+        this.documentPersistenceService = DoubleCheck.lazy(() -> new DocumentPersistenceServiceImpl(extendedStoreConnection, this));
         this.keySourceService = new KeySourceServiceImpl(extendedStoreConnection);
         this.docusafeCacheWrapper = new DocusafeCacheWrapperImpl(CacheType.GUAVA);
     }
@@ -189,7 +176,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         LOGGER.info(documentKeyIDWithKey.toString());
 
         if (UserMetaDataUtil.isNotEncrypted(storageMetadata.getUserMetadata())) {
-            documentPersistenceService.persistDocument(
+            documentPersistenceService.get().persistDocument(
                     documentBucketPath,
                     OverwriteFlag.TRUE,
                     new SimplePayloadImpl(storageMetadata, dsDocument.getDocumentContent().getValue()));
@@ -197,7 +184,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
             return;
         }
 
-        documentPersistenceService.encryptAndPersistDocument(
+        documentPersistenceService.get().encryptAndPersistDocument(
                 documentKeyIDWithKey,
                 documentBucketPath,
                 OverwriteFlag.TRUE,
@@ -212,14 +199,14 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         StorageMetadata storageMetadata = extendedStoreConnection.getStorageMetadata(documentBucketPath);
         if (UserMetaDataUtil.isNotEncrypted(storageMetadata.getUserMetadata())) {
             checkUserKeyPassword(userIDAuth);
-            Payload payload = documentPersistenceService.loadDocument(storageMetadata, documentBucketPath);
+            Payload payload = documentPersistenceService.get().loadDocument(storageMetadata, documentBucketPath);
             DSDocument dsDocument = new DSDocument(documentFQN, new DocumentContent(payload.getData()), new DSDocumentMetaInfo(payload.getStorageMetadata().getUserMetadata()));
             LOGGER.debug("finished readDocument for " + userIDAuth + " " + documentFQN);
             return dsDocument;
         }
 
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
-        Payload payload = documentPersistenceService.loadAndDecryptDocument(storageMetadata, keyStoreAccess, documentBucketPath);
+        Payload payload = documentPersistenceService.get().loadAndDecryptDocument(storageMetadata, keyStoreAccess, documentBucketPath);
         LOGGER.debug("finished readDocument for " + userIDAuth + " " + documentFQN);
         DSDocument dsDocument = new DSDocument(documentFQN, new DocumentContent(payload.getData()), new DSDocumentMetaInfo(payload.getStorageMetadata().getUserMetadata()));
         // man könnte auch früher prüfen, aber das wäre doppelt so teuer
@@ -243,7 +230,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         DocumentKeyIDWithKey myDocumentKeyIDwithKey = getAnySecretKeyIDWithKeyFromKeyStore(userIDAuth);
 
         if (UserMetaDataUtil.isNotEncrypted(storageMetadata.getUserMetadata())) {
-            documentPersistenceService.persistDocumentStream(
+            documentPersistenceService.get().persistDocumentStream(
                     documentBucketPath,
                     OverwriteFlag.TRUE,
                     new SimplePayloadStreamImpl(storageMetadata, dsDocumentStream.getDocumentStream()));
@@ -251,7 +238,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
             return;
         }
 
-        documentPersistenceService.encryptAndPersistDocumentStream(
+        documentPersistenceService.get().encryptAndPersistDocumentStream(
                 myDocumentKeyIDwithKey,
                 documentBucketPath,
                 OverwriteFlag.TRUE,
@@ -269,14 +256,14 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
             StorageMetadata storageMetadata = extendedStoreConnection.getStorageMetadata(documentBucketPath);
             if (UserMetaDataUtil.isNotEncrypted(storageMetadata.getUserMetadata())) {
                 checkUserKeyPassword(userIDAuth);
-                PayloadStream payloadStream = documentPersistenceService.loadDocumentStream(storageMetadata, documentBucketPath);
+                PayloadStream payloadStream = documentPersistenceService.get().loadDocumentStream(storageMetadata, documentBucketPath);
                 DSDocumentStream dsDocumentStream = new DSDocumentStream(documentFQN, payloadStream.openStream(), new DSDocumentMetaInfo(payloadStream.getStorageMetadata().getUserMetadata()));
                 LOGGER.debug("finished readDocumentStream for " + userIDAuth + " " + documentFQN);
                 return dsDocumentStream;
             }
 
             KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
-            PayloadStream payloadStream = documentPersistenceService.loadAndDecryptDocumentStream(storageMetadata, keyStoreAccess, documentBucketPath);
+            PayloadStream payloadStream = documentPersistenceService.get().loadAndDecryptDocumentStream(storageMetadata, keyStoreAccess, documentBucketPath);
             LOGGER.debug("finished read and decrypt DocumentStream for " + userIDAuth + " " + documentFQN);
             DSDocumentStream dsDocumentStream = new DSDocumentStream(documentFQN, payloadStream.openStream(), new DSDocumentMetaInfo(payloadStream.getStorageMetadata().getUserMetadata()));
             return dsDocumentStream;
@@ -395,7 +382,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
 
         LOGGER.debug("document " + source + " has been read successfuly from the inbox. now document must be saved " + destination);
         DocumentKeyIDWithKey documentKeyIDWithKey = getAnySecretKeyIDWithKeyFromKeyStore(userIDAuth);
-        documentPersistenceService.encryptAndPersistDocument(documentKeyIDWithKey, getTheDocumentBucketPath(userIDAuth.getUserID(), destination), overwriteFlag,
+        documentPersistenceService.get().encryptAndPersistDocument(documentKeyIDWithKey, getTheDocumentBucketPath(userIDAuth.getUserID(), destination), overwriteFlag,
                 new SimplePayloadImpl(storageMetadata, dsDocument.getDocumentContent().getValue()));
 
         LOGGER.debug("now document must be removed from the inbox " + source);
@@ -420,7 +407,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         storageMetadata.mergeUserMetadata(document.getDsDocumentMetaInfo());
         storageMetadata.setSize(new Long(document.getDocumentContent().getValue().length));
         DocumentBucketPath documentBucketPath = new DocumentBucketPath(UserIDUtil.getInboxDirectory(receiverUserID).appendName(destDocumentFQN.getValue()));
-        documentPersistenceService.encryptAndPersistDocument(
+        documentPersistenceService.get().encryptAndPersistDocument(
                 documentKeyIDWithKey,
                 documentBucketPath,
                 OverwriteFlag.FALSE,
@@ -433,7 +420,7 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         DocumentBucketPath inboxDocumentBucketPath = new DocumentBucketPath(UserIDUtil.getInboxDirectory(userIDAuth.getUserID()).appendName(source.getValue()));
         StorageMetadata storageMetadata = extendedStoreConnection.getStorageMetadata(inboxDocumentBucketPath);
         KeyStoreAccess keyStoreAccess = getKeyStoreAccess(userIDAuth);
-        Payload payload = documentPersistenceService.loadAndDecryptDocument(storageMetadata, keyStoreAccess, inboxDocumentBucketPath);
+        Payload payload = documentPersistenceService.get().loadAndDecryptDocument(storageMetadata, keyStoreAccess, inboxDocumentBucketPath);
         return new DSDocument(source, new DocumentContent(payload.getData()), new DSDocumentMetaInfo(payload.getStorageMetadata().getUserMetadata()));
     }
 

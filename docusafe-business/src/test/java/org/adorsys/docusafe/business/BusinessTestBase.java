@@ -55,7 +55,10 @@ public class BusinessTestBase {
         LOGGER.debug("add bouncy castle provider");
         Security.addProvider(new BouncyCastleProvider());
         users.clear();
-        service = new DocumentSafeServiceImpl(extendedStoreConnection);
+        service = DaggerDefaultDocumentSafeService.builder()
+                .storeConnection(extendedStoreConnection)
+                .build()
+                .documentSafeService();
     }
 
     @After
