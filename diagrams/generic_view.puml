@@ -36,6 +36,10 @@ cloud "Lookup service" {
   }
 }
 
+actor User1 as user1
+actor User2 as user2
+
+card "Docusafe library functionality" {
 package {
   card "User 1 data" as User1data {
     [INBOX] as inboxUsr1
@@ -43,7 +47,6 @@ package {
       .keystore
       Private files
     ]
-    inboxUsr1  ..[hidden] filesUsr1
   }
 
   card "User 2 data" as User2data {
@@ -52,31 +55,29 @@ package {
       .keystore
       Private files
     ]
-    inboxUsr2  ..[hidden] filesUsr2
   }
 }
 
-actor User1 as user1
+
 node user1privateFilesAccess [
 <&key> AWS key/secret
 <&folder> s3 data path
 ]
 
-user1 ==^ privateStoreUser1 : "Read my private files" <&key> login/password
+user1 ==^ privateStoreUser1 : "Read my private files" **<&key>login/password**
 mapPrivate1 --> user1privateFilesAccess
 privateAccessKey1 --> user1privateFilesAccess
-user1privateFilesAccess --> filesUsr1 :  <&key> login/password
+user1privateFilesAccess --> filesUsr1 :  **<&key>login/password**
 
-actor User2 as user2
 node user2shareFilesAccess [
 <&key> AWS key/secret
 <&folder> s3 data path
 ]
 
-user2 ==^ user1publicKey : Share <&file> file with user 1
-user1publicKey --> sharingStoreUser1 : Read storage using User 1 <&key>public key
+user2 ==^ user1publicKey : Share **<&file>file** with user 1
+user1publicKey --> sharingStoreUser1 : Read storage using User 1 **<&key>public key**
 mapInbox1 --> user2shareFilesAccess
 publicAccessKey1 --> user2shareFilesAccess
-user2shareFilesAccess --> inboxUsr1 : <&file> encrypt with <&key> User1 public key
-
+user2shareFilesAccess --> inboxUsr1 : <&file> encrypt with **<&key>User 1 public key**
+}
 @enduml
