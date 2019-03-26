@@ -42,7 +42,10 @@ actor User2 as user2
 card "Docusafe library functionality" {
 package {
   card "User 1 data" as User1data {
-    [INBOX] as inboxUsr1
+    node inboxUsr1 [
+      .keystore
+      INBOX
+    ]
     node filesUsr1 [
       .keystore
       Private files
@@ -50,7 +53,10 @@ package {
   }
 
   card "User 2 data" as User2data {
-    [INBOX] as inboxUsr2
+    node inboxUsr2 [
+      .keystore
+      INBOX
+    ]
     node filesUsr2 [
       .keystore
       Private files
