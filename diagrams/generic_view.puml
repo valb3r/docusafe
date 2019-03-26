@@ -9,7 +9,7 @@ cloud "Lookup service" {
         [DFS access keys] as privateAccessKey1
       }
 
-      frame "Sharing store (encrypted with **<&key>system secret + public key**)" as sharingStoreUser1 {
+      frame "Sharing store \n (encrypted with **<&key>system secret + public key**)" as sharingStoreUser1 {
         [Inbox path] as mapInbox1
         [Inbox access key] as publicAccessKey1
       }
@@ -81,9 +81,9 @@ node user2shareFilesAccess [
 ]
 
 user2 ==^ user1publicKey : Share **<&file>file** with user 1
-user1publicKey --> sharingStoreUser1 : Read storage using User 1 **<&key>system secret + public key**
+user1publicKey --> sharingStoreUser1 : Read storage using User 1 \n **<&key>system secret + public key**
 mapInbox1 --> user2shareFilesAccess
 publicAccessKey1 --> user2shareFilesAccess
-user2shareFilesAccess --> inboxUsr1 : <&file> encrypt with **<&key>User 1 public key**
+user2shareFilesAccess --> inboxUsr1 : <&file> encrypt with \n **<&key>User 1 public key**
 }
 @enduml
