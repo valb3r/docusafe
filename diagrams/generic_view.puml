@@ -1,0 +1,80 @@
+@startuml
+cloud "Lookup service" {
+  package "Lookup DFS" {
+  left to right direction
+    frame "Data for user 1" {
+
+      frame "Private store" as privateStoreUser1 {
+        [DFS private files storage paths] as mapPrivate1
+        [DFS access keys] as privateAccessKey1
+      }
+
+      frame "Sharing store" as sharingStoreUser1 {
+        [Inbox path] as mapInbox1
+        [Inbox access key] as publicAccessKey1
+      }
+    }
+
+    frame "Data for user 2" {
+
+      frame "Private store" as privateStoreUser2 {
+        [DFS private files storage paths] as mapPrivate2
+        [DFS access keys] as privateAccessKey2
+      }
+
+      frame "Sharing store" as sharingStoreUser2 {
+        [Inbox path] as mapInbox2
+        [Inbox access key] as publicAccessKey2
+      }
+    }
+
+    frame "Public key storage" {
+      left to right direction
+      [User 1 public key] as user1publicKey
+      [User 2 public key] as user2publicKey
+    }
+  }
+}
+
+package {
+  cloud "User 1 data" as User1data {
+    [.keystore] as keystoreUsr1
+    [INBOX] as inboxUsr1
+    [Private files] as filesUsr1
+    keystoreUsr1  ..[hidden] inboxUsr1
+    inboxUsr1  ..[hidden] filesUsr1
+  }
+
+  cloud "User 2 data" as User2data {
+    [.keystore] as keystoreUsr2
+    [INBOX] as inboxUsr2
+    [Private files] as filesUsr2
+    keystoreUsr2  ..[hidden] inboxUsr2
+    inboxUsr2  ..[hidden] filesUsr2
+  }
+}
+
+actor User1 as user1
+node user1privateFilesAccess [
+<&key> AWS key/secret
+<&folder> s3 data path
+]
+
+user1 --> privateStoreUser1 : "Read my private files" <&key> login/password
+mapPrivate1 --> user1privateFilesAccess
+privateAccessKey1 --> user1privateFilesAccess
+user1privateFilesAccess --> filesUsr1
+
+actor User2 as user2
+node user2shareFilesAccess [
+<&key> AWS key/secret
+<&folder> s3 data path
+]
+
+user2 --> user1publicKey : Share <&file> file with user 1
+user1publicKey --> sharingStoreUser1 : Read storage using User 1 <&key>public key
+mapInbox1 --> user2shareFilesAccess
+publicAccessKey1 --> user2shareFilesAccess
+user2shareFilesAccess --> inboxUsr1
+
+@enduml
