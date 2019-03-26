@@ -1,8 +1,10 @@
 @startuml
 actor User
-User->"Lookup server" as ls : Share my **<&file>file** with User 2
+User->"Lookup server (default) / Interface" as ls : Share my **<&file>file** with User 2
+box "Internal flow within lookup server"
 ls->"Public key Service" as lss : get User 2 public metadata from Lookup DFS
 lss->"Lookup DFS Service" as DFS : Read public key store
+end box
 DFS->lss : User 2 **<&key>public key**
 lss->DFS : Read public store for User 2 using **<&key>public key**
 DFS->lss : User 2 inbox location and access key **s3:bucket1 : <&key>access1**

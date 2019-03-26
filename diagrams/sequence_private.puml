@@ -1,8 +1,10 @@
 @startuml
 actor User
-User->"Lookup server" as ls : Get my private file list with **<&key>login/password**
+User->"Lookup server (default) / Interface" as ls : Get my private file list with **<&key>login/password**
+box "Internal flow within lookup server"
 ls->"Metadata Service" as lss : get User 1 metadata from Lookup DFS
 lss->"Lookup DFS Service" as DFS : Read private store for User 1 using **<&key>password**
+end box
 DFS->lss : Map of **[s3:bucket1 : <&key>access1, minio:bucket2 : <&key>access2]**
 lss->ls : User data paths and credentials
 loop Each path
