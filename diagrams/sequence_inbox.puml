@@ -10,6 +10,6 @@ ls->"Storage Service" as ss : put **<&file>file** to **s3:bucket1** with **<&key
 ss->ss : Encrypt **<&file>file** using User 2 **<&key>public key**
 ss->"Storage adapter" as sa : Save encrypted **<&file>file** to User 2 **s3:bucket1** using **<&key>access**
 sa->ss : Signal done
-ss->la : Done
-la->User : Done
+ss->ls
+ls->User : Done
 @enduml
