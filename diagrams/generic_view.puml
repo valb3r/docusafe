@@ -38,18 +38,20 @@ cloud "Lookup service" {
 
 package {
   cloud "User 1 data" as User1data {
-    [.keystore] as keystoreUsr1
     [INBOX] as inboxUsr1
-    [Private files] as filesUsr1
-    keystoreUsr1  ..[hidden] inboxUsr1
+    node filesUsr1 [
+      .keystore
+      Private files
+    ]
     inboxUsr1  ..[hidden] filesUsr1
   }
 
   cloud "User 2 data" as User2data {
-    [.keystore] as keystoreUsr2
     [INBOX] as inboxUsr2
-    [Private files] as filesUsr2
-    keystoreUsr2  ..[hidden] inboxUsr2
+    node filesUsr2 [
+      .keystore
+      Private files
+    ]
     inboxUsr2  ..[hidden] filesUsr2
   }
 }
@@ -60,10 +62,10 @@ node user1privateFilesAccess [
 <&folder> s3 data path
 ]
 
-user1 --> privateStoreUser1 : "Read my private files" <&key> login/password
+user1 ==^ privateStoreUser1 : "Read my private files" <&key> login/password
 mapPrivate1 --> user1privateFilesAccess
 privateAccessKey1 --> user1privateFilesAccess
-user1privateFilesAccess --> filesUsr1
+user1privateFilesAccess --> filesUsr1 :  <&key> login/password
 
 actor User2 as user2
 node user2shareFilesAccess [
@@ -71,10 +73,10 @@ node user2shareFilesAccess [
 <&folder> s3 data path
 ]
 
-user2 --> user1publicKey : Share <&file> file with user 1
+user2 ==^ user1publicKey : Share <&file> file with user 1
 user1publicKey --> sharingStoreUser1 : Read storage using User 1 <&key>public key
 mapInbox1 --> user2shareFilesAccess
 publicAccessKey1 --> user2shareFilesAccess
-user2shareFilesAccess --> inboxUsr1
+user2shareFilesAccess --> inboxUsr1 : <&file> encrypt with <&key> User1 public key
 
 @enduml
