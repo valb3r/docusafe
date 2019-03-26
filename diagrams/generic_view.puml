@@ -37,7 +37,7 @@ cloud "Lookup service" {
 }
 
 package {
-  cloud "User 1 data" as User1data {
+  card "User 1 data" as User1data {
     [INBOX] as inboxUsr1
     node filesUsr1 [
       .keystore
@@ -46,7 +46,7 @@ package {
     inboxUsr1  ..[hidden] filesUsr1
   }
 
-  cloud "User 2 data" as User2data {
+  card "User 2 data" as User2data {
     [INBOX] as inboxUsr2
     node filesUsr2 [
       .keystore
