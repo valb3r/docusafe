@@ -99,6 +99,17 @@ public class DocumentSafeServiceImpl implements DocumentSafeService, DocumentKey
         }
     }
 
+    public DocumentSafeServiceImpl(DocusafeCacheWrapper wrapper, ExtendedStoreConnection extendedStoreConnection) {
+        this.extendedStoreConnection = extendedStoreConnection;
+        this.bucketService = new BucketServiceImpl(extendedStoreConnection);
+        this.keyStoreService = new KeyStoreServiceImpl(extendedStoreConnection);
+        this.documentGuardService = new DocumentGuardServiceImpl(extendedStoreConnection);
+        this.documentPersistenceService = new DocumentPersistenceServiceImpl(extendedStoreConnection, this);
+        this.keySourceService = new KeySourceServiceImpl(extendedStoreConnection);
+
+        this.docusafeCacheWrapper = wrapper;
+    }
+
     /**
      * USER
      * ===========================================================================================

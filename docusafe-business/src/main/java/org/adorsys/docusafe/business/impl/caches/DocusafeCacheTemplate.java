@@ -8,4 +8,6 @@ public interface DocusafeCacheTemplate<K,V> {
     void put(K key, V value);
     void remove(K key);
     long size();
+
+    void clear();
 }

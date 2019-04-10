@@ -29,5 +29,8 @@ public class DocusafeCacheTemplateHashMapImpl<K,V> implements DocusafeCacheTempl
         return map.size();
     }
 
-
+    @Override
+    public void clear() {
+        map.clear();
+    }
 }
