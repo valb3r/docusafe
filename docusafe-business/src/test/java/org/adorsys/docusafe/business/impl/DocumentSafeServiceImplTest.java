@@ -1,7 +1,5 @@
 package org.adorsys.docusafe.business.impl;
 
-import lombok.extern.slf4j.Slf4j;
-import org.adorsys.docusafe.business.DocumentSafeService;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
@@ -143,7 +141,14 @@ public class DocumentSafeServiceImplTest {
             log.info("Caught!");
         }
 
+        // other container takes over
+        blobPayload.put(new BucketPath(
+            "bp-1", ".keys/bp-1/home/2.bgk"),
+            new SimplePayloadImpl("{\"value\":\"BADBAD-b639-439b-99b6-ee73f849d009\"}".getBytes()));
+
         safeService.storeDocument(auth, dsDocument);
+
+
 
         cacheWrapper.getDocumentGuardCache().clear();
         cacheWrapper.getDocumentKeyIDCache().clear();
