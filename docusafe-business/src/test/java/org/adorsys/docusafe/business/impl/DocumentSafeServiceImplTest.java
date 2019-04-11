@@ -1,5 +1,6 @@
 package org.adorsys.docusafe.business.impl;
 
+import lombok.SneakyThrows;
 import org.adorsys.docusafe.business.types.UserID;
 import org.adorsys.docusafe.business.types.complex.DSDocument;
 import org.adorsys.docusafe.business.types.complex.DocumentFQN;
@@ -17,6 +18,9 @@ import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -31,29 +35,55 @@ public class DocumentSafeServiceImplTest {
     private Map<BucketPath, String> blobBytes = new HashMap<>();
     private Map<BucketPath, StorageMetadata> meta = new HashMap<>();
 
+    private DocusafeCacheWrapper cacheWrapper = new DocusafeCacheWrapperImpl(CacheType.HASH_MAP);
+    private ExtendedStoreConnection connection = mock(ExtendedStoreConnection.class);
+    private DocumentSafeServiceImpl safeService = new DocumentSafeServiceImpl(cacheWrapper, connection);
+
     @Test
     public void storeDocumentStream() {
-
-        DocusafeCacheWrapper cacheWrapper = new DocusafeCacheWrapperImpl(CacheType.HASH_MAP);
-
-        ExtendedStoreConnection connection = mock(ExtendedStoreConnection.class);
-        DocumentSafeServiceImpl safeService = new DocumentSafeServiceImpl(cacheWrapper, connection);
-
-        //blob.put(new BucketPath("bp-1", ".keys/KS-1"), new SimplePayloadImpl(new SimpleStorageMetadataImpl(), "1".getBytes()));
         UserIDAuth auth = new UserIDAuth(new UserID("1"), new ReadKeyPassword("2"));
         DSDocument dsDocument = new DSDocument(new DocumentFQN("2/foo.bar"), new DocumentContent("a".getBytes()), null);
         DSDocument dsDocumentAnother = new DSDocument(new DocumentFQN("2/foo1.bar"), new DocumentContent("b".getBytes()), null);
         AtomicInteger keyPutCount = new AtomicInteger();
 
+        prepareFS();
+
+
+        safeService.createUser(auth);
+        log.info("Store document");
+
+        ExecutorService svc = Executors.newFixedThreadPool(2);
+
+        svc.submit(() -> safeService.storeDocument(auth, dsDocument));
+        svc.submit(() -> safeService.storeDocument(auth, dsDocumentAnother));
+
+        //cacheWrapper.getDocumentGuardCache().clear();
+        //cacheWrapper.getDocumentKeyIDCache().clear();
+
+        svc.shutdown();
+        try {
+            svc.awaitTermination(1000, TimeUnit.MILLISECONDS);
+        } catch (Exception ex) {
+
+        }
+
+        cacheWrapper.getDocumentGuardCache().clear();
+        cacheWrapper.getDocumentKeyIDCache().clear();
+        cacheWrapper.getUserAuthCache().clear();
+
+        log.info("Read data");
+        safeService.readDocument(auth, dsDocument.getDocumentFQN());
+    }
+
+    private String unroll(UserMetaData meta) {
+        return meta.keySet().stream().map(it -> it + ":" + meta.get(it)).collect(Collectors.joining(","));
+    }
+
+    private void prepareFS() {
         doAnswer(inv -> {
             BucketPath path = inv.getArgumentAt(0, BucketPath.class);
             Payload payload = inv.getArgumentAt(1, Payload.class);
             log.info("PUT-payload to {} with meta {}", path, unroll(payload.getStorageMetadata().getUserMetadata()));
-            if (path.toString().contains(".keys")) {
-                if (keyPutCount.getAndIncrement() == 3) {
-                  //throw new RuntimeException("BOOM!");
-                }
-            }
             blobPayload.put(path, payload);
             meta.put(path, payload.getStorageMetadata());
             return null;
@@ -90,12 +120,13 @@ public class DocumentSafeServiceImplTest {
             BucketPath path = inv.getArgumentAt(0, BucketPath.class);
             byte[] payload = inv.getArgumentAt(1, byte[].class);
             log.info("PUT-bytes to {} with meta {}", path, new String(payload));
+            blobBytes.put(path, new String(payload));
 
-            if (path.toString().contains(".keys/bp-1/home/2.bgk") && gpkCounter.getAndIncrement() == 0) {
-                throw new RuntimeException("BOOM!");
+            if (gpkCounter.getAndIncrement() == 1) {
+                cacheWrapper.getDocumentGuardCache().clear();
+                cacheWrapper.getDocumentKeyIDCache().clear();
             }
 
-            blobBytes.put(path, new String(payload));
             return null;
         }).when(connection).putBlob(any(), any(byte[].class));
 
@@ -129,38 +160,5 @@ public class DocumentSafeServiceImplTest {
 
 
         }).when(connection).blobExists(any());
-
-
-
-        safeService.createUser(auth);
-        log.info("Store document");
-
-        try {
-            safeService.storeDocument(auth, dsDocument);
-        } catch (Exception ex) {
-            log.info("Caught!");
-        }
-
-        // other container takes over
-        blobPayload.put(new BucketPath(
-            "bp-1", ".keys/bp-1/home/2.bgk"),
-            new SimplePayloadImpl("{\"value\":\"BADBAD-b639-439b-99b6-ee73f849d009\"}".getBytes()));
-
-        safeService.storeDocument(auth, dsDocument);
-
-
-
-        cacheWrapper.getDocumentGuardCache().clear();
-        cacheWrapper.getDocumentKeyIDCache().clear();
-
-        safeService.storeDocument(auth, dsDocumentAnother);
-        //safeService.storeDocument(auth, dsDocument);
-
-        log.info("Read data");
-        safeService.readDocument(auth, dsDocument.getDocumentFQN());
-    }
-
-    private String unroll(UserMetaData meta) {
-        return meta.keySet().stream().map(it -> it + ":" + meta.get(it)).collect(Collectors.joining(","));
     }
 }
